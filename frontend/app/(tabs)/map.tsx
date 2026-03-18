@@ -3,12 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
   ActivityIndicator,
   TouchableOpacity,
   SafeAreaView,
+  ScrollView,
 } from 'react-native';
-import MapView, { Marker, Callout, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
@@ -24,6 +23,8 @@ interface Event {
   city: string;
   eventType: string;
   date: string;
+  time: string;
+  address: string;
 }
 
 export default function MapScreen() {
@@ -60,49 +61,66 @@ export default function MapScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Event Locations</Text>
-        <Text style={styles.headerSubtitle}>{events.length} events on map</Text>
+        <Text style={styles.headerSubtitle}>{events.length} events with locations</Text>
       </View>
       
-      <MapView
-        provider={PROVIDER_GOOGLE}
-        style={styles.map}
-        initialRegion={{
-          latitude: 35.4676,
-          longitude: -97.5164,
-          latitudeDelta: 2,
-          longitudeDelta: 2,
-        }}
-      >
-        {events.map((event) => (
-          <Marker
-            key={event.id}
-            coordinate={{
-              latitude: event.latitude!,
-              longitude: event.longitude!,
-            }}
-            pinColor="#FF6B35"
-          >
-            <Callout
-              onPress={() => router.push(`/event/${event.id}`)}
-              style={styles.callout}
-            >
-              <View style={styles.calloutContent}>
-                <Text style={styles.calloutTitle}>{event.title}</Text>
-                <Text style={styles.calloutType}>{event.eventType}</Text>
-                <Text style={styles.calloutDate}>{event.date}</Text>
-                <Text style={styles.calloutLocation}>{event.city}</Text>
-              </View>
-            </Callout>
-          </Marker>
-        ))}
-      </MapView>
+      <View style={styles.infoBox}>
+        <Ionicons name="information-circle" size={24} color="#FF6B35" />
+        <Text style={styles.infoText}>
+          Download the mobile app to view events on an interactive map!
+        </Text>
+      </View>
 
-      {events.length === 0 && (
-        <View style={styles.emptyOverlay}>
-          <Ionicons name="map" size={48} color="#666" />
-          <Text style={styles.emptyText}>No events with locations yet</Text>
-        </View>
-      )}
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.listContent}>
+        {events.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="map" size={64} color="#333" />
+            <Text style={styles.emptyText}>No events with locations yet</Text>
+          </View>
+        ) : (
+          events.map((event) => (
+            <TouchableOpacity
+              key={event.id}
+              style={styles.eventCard}
+              onPress={() => router.push(`/event/${event.id}`)}
+            >
+              <View style={styles.eventHeader}>
+                <View style={styles.locationIcon}>
+                  <Ionicons name="location" size={24} color="#FF6B35" />
+                </View>
+                <View style={styles.eventContent}>
+                  <Text style={styles.eventTitle}>{event.title}</Text>
+                  <Text style={styles.eventType}>{event.eventType}</Text>
+                  <View style={styles.eventDetails}>
+                    <View style={styles.detailRow}>
+                      <Ionicons name="calendar" size={14} color="#888" />
+                      <Text style={styles.detailText}>{event.date} at {event.time}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Ionicons name="pin" size={14} color="#888" />
+                      <Text style={styles.detailText}>{event.city}</Text>
+                    </View>
+                    {event.address && (
+                      <View style={styles.detailRow}>
+                        <Ionicons name="navigate" size={14} color="#888" />
+                        <Text style={styles.detailText}>{event.address}</Text>
+                      </View>
+                    )}
+                  </View>
+                  {event.latitude && event.longitude && (
+                    <View style={styles.coordinatesRow}>
+                      <Ionicons name="globe" size={12} color="#666" />
+                      <Text style={styles.coordinatesText}>
+                        {event.latitude.toFixed(4)}, {event.longitude.toFixed(4)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -133,48 +151,90 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 4,
   },
-  map: {
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    padding: 16,
+    marginHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  infoText: {
+    flex: 1,
+    color: '#aaa',
+    fontSize: 13,
+    marginLeft: 12,
+    lineHeight: 18,
+  },
+  scrollView: {
     flex: 1,
   },
-  callout: {
-    width: 200,
+  listContent: {
+    padding: 20,
+    paddingTop: 0,
   },
-  calloutContent: {
-    padding: 8,
+  eventCard: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
   },
-  calloutTitle: {
-    fontSize: 16,
+  eventHeader: {
+    flexDirection: 'row',
+  },
+  locationIcon: {
+    marginRight: 12,
+  },
+  eventContent: {
+    flex: 1,
+  },
+  eventTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 4,
   },
-  calloutType: {
+  eventType: {
     fontSize: 12,
     color: '#FF6B35',
-    marginBottom: 2,
+    fontWeight: '600',
+    marginBottom: 12,
   },
-  calloutDate: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 2,
+  eventDetails: {
+    gap: 6,
   },
-  calloutLocation: {
-    fontSize: 12,
-    color: '#666',
-  },
-  emptyOverlay: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -100 }, { translateY: -50 }],
+  detailRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(26, 26, 26, 0.9)',
-    padding: 24,
-    borderRadius: 16,
-    width: 200,
+  },
+  detailText: {
+    fontSize: 13,
+    color: '#888',
+    marginLeft: 6,
+  },
+  coordinatesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#2a2a2a',
+  },
+  coordinatesText: {
+    fontSize: 11,
+    color: '#666',
+    marginLeft: 6,
+    fontFamily: 'monospace',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
   },
   emptyText: {
-    color: '#fff',
-    marginTop: 12,
-    textAlign: 'center',
+    fontSize: 16,
+    color: '#666',
+    marginTop: 16,
   },
 });
