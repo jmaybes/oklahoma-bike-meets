@@ -146,32 +146,33 @@ export default function HomeScreen() {
         />
       </View>
 
-      <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        data={eventTypes}
-        keyExtractor={(item) => item}
-        style={styles.filterList}
-        contentContainerStyle={styles.filterContent}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[
-              styles.filterChip,
-              selectedType === item && styles.filterChipActive,
-            ]}
-            onPress={() => setSelectedType(item)}
-          >
-            <Text
+      <View style={styles.filterContainer}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={eventTypes}
+          keyExtractor={(item) => item}
+          contentContainerStyle={styles.filterContent}
+          renderItem={({ item }) => (
+            <TouchableOpacity
               style={[
-                styles.filterChipText,
-                selectedType === item && styles.filterChipTextActive,
+                styles.filterChip,
+                selectedType === item && styles.filterChipActive,
               ]}
+              onPress={() => setSelectedType(item)}
             >
-              {item}
-            </Text>
-          </TouchableOpacity>
-        )}
-      />
+              <Text
+                style={[
+                  styles.filterChipText,
+                  selectedType === item && styles.filterChipTextActive,
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
 
       <FlatList
         data={filteredEvents}
@@ -240,19 +241,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  filterList: {
-    flexGrow: 0,
+  filterContainer: {
     marginBottom: 16,
   },
   filterContent: {
     paddingHorizontal: 20,
+    paddingRight: 60,
   },
   filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     backgroundColor: '#1a1a1a',
     borderRadius: 20,
-    marginRight: 8,
+    marginRight: 10,
+    minWidth: 90,
+    alignItems: 'center',
   },
   filterChipActive: {
     backgroundColor: '#FF6B35',
