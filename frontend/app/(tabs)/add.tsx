@@ -11,17 +11,20 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import * as ImagePicker from 'expo-image-picker';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function AddEventScreen() {
   const { user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [photos, setPhotos] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -41,6 +44,38 @@ export default function AddEventScreen() {
 
   const eventTypes = ['Car Meet', 'Car Show', 'Cruise', 'Race', 'Other'];
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to upload images!');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      quality: 0.7,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets) {
+      const base64Images = result.assets
+        .filter(asset => asset.base64)
+        .map(asset => `data:image/jpeg;base64,${asset.base64}`);
+      
+      if (photos.length + base64Images.length > 5) {
+        Alert.alert('Limit Reached', 'You can upload a maximum of 5 images');
+        return;
+      }
+      
+      setPhotos([...photos, ...base64Images]);
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos(photos.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async () => {
     if (!formData.title || !formData.date || !formData.time || !formData.city) {
       Alert.alert('Error', 'Please fill in all required fields');
@@ -57,6 +92,7 @@ export default function AddEventScreen() {
         ...formData,
         carTypes: carTypesArray,
         userId: user?.id || null,
+        photos: photos,
       };
 
       await axios.post(`${API_URL}/api/events`, eventData);
@@ -82,6 +118,7 @@ export default function AddEventScreen() {
             contactInfo: '',
             website: '',
           });
+          setPhotos([]);
           router.push('/(tabs)/home');
         }}
       ]);
@@ -255,6 +292,28 @@ export default function AddEventScreen() {
               onChangeText={(text) => setFormData({ ...formData, website: text })}
             />
 
+            <Text style={styles.label}>Event Photos (Max 5)</Text>
+            <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+              <Ionicons name="images" size={24} color="#FF6B35" />
+              <Text style={styles.uploadButtonText}>Upload Photos</Text>
+            </TouchableOpacity>
+
+            {photos.length > 0 && (
+              <View style={styles.photosPreview}>
+                {photos.map((photo, index) => (
+                  <View key={index} style={styles.photoContainer}>
+                    <Image source={{ uri: photo }} style={styles.photoPreview} />
+                    <TouchableOpacity
+                      style={styles.removePhotoButton}
+                      onPress={() => removePhoto(index)}
+                    >
+                      <Ionicons name="close-circle" size={24} color="#FF3B30" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+
             <TouchableOpacity
               style={[styles.submitButton, loading && styles.submitButtonDisabled]}
               onPress={handleSubmit}
@@ -385,5 +444,44 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 8,
+  },
+  uploadButton: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FF6B35',
+    borderStyle: 'dashed',
+  },
+  uploadButtonText: {
+    color: '#FF6B35',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  photosPreview: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 16,
+  },
+  photoContainer: {
+    position: 'relative',
+  },
+  photoPreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    backgroundColor: '#2a2a2a',
+  },
+  removePhotoButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#0c0c0c',
+    borderRadius: 12,
   },
 });

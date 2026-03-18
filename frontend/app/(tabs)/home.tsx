@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   SafeAreaView,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -27,6 +28,7 @@ interface Event {
   eventType: string;
   entryFee: string;
   attendeeCount: number;
+  photos?: string[];
 }
 
 export default function HomeScreen() {
@@ -88,33 +90,42 @@ export default function HomeScreen() {
       style={styles.eventCard}
       onPress={() => router.push(`/event/${item.id}`)}
     >
-      <View style={styles.eventHeader}>
-        <View style={styles.eventTypeContainer}>
-          <Ionicons name="car-sport" size={16} color="#FF6B35" />
-          <Text style={styles.eventType}>{item.eventType}</Text>
+      {item.photos && item.photos.length > 0 && (
+        <Image 
+          source={{ uri: item.photos[0] }} 
+          style={styles.eventImage}
+          resizeMode="cover"
+        />
+      )}
+      <View style={styles.eventContent}>
+        <View style={styles.eventHeader}>
+          <View style={styles.eventTypeContainer}>
+            <Ionicons name="car-sport" size={16} color="#FF6B35" />
+            <Text style={styles.eventType}>{item.eventType}</Text>
+          </View>
+          {item.entryFee && (
+            <Text style={styles.entryFee}>{item.entryFee}</Text>
+          )}
         </View>
-        {item.entryFee && (
-          <Text style={styles.entryFee}>{item.entryFee}</Text>
-        )}
-      </View>
-      
-      <Text style={styles.eventTitle}>{item.title}</Text>
-      <Text style={styles.eventDescription} numberOfLines={2}>
-        {item.description}
-      </Text>
-      
-      <View style={styles.eventDetails}>
-        <View style={styles.detailRow}>
-          <Ionicons name="calendar" size={16} color="#888" />
-          <Text style={styles.detailText}>{item.date} at {item.time}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Ionicons name="location" size={16} color="#888" />
-          <Text style={styles.detailText}>{item.city}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Ionicons name="people" size={16} color="#888" />
-          <Text style={styles.detailText}>{item.attendeeCount} attending</Text>
+        
+        <Text style={styles.eventTitle}>{item.title}</Text>
+        <Text style={styles.eventDescription} numberOfLines={2}>
+          {item.description}
+        </Text>
+        
+        <View style={styles.eventDetails}>
+          <View style={styles.detailRow}>
+            <Ionicons name="calendar" size={16} color="#888" />
+            <Text style={styles.detailText}>{item.date} at {item.time}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons name="location" size={16} color="#888" />
+            <Text style={styles.detailText}>{item.city}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons name="people" size={16} color="#888" />
+            <Text style={styles.detailText}>{item.attendeeCount} attending</Text>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -275,8 +286,16 @@ const styles = StyleSheet.create({
   eventCard: {
     backgroundColor: '#1a1a1a',
     borderRadius: 16,
-    padding: 16,
     marginBottom: 16,
+    overflow: 'hidden',
+  },
+  eventImage: {
+    width: '100%',
+    height: 180,
+    backgroundColor: '#2a2a2a',
+  },
+  eventContent: {
+    padding: 16,
   },
   eventHeader: {
     flexDirection: 'row',
