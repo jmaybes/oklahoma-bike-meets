@@ -61,7 +61,11 @@ export default function AddEventScreen() {
 
       await axios.post(`${API_URL}/api/events`, eventData);
       
-      Alert.alert('Success', 'Event created successfully!', [
+      const approvalMessage = user?.isAdmin 
+        ? 'Event created and published successfully!' 
+        : 'Event submitted successfully! It will be visible after admin approval.';
+      
+      Alert.alert('Success', approvalMessage, [
         { text: 'OK', onPress: () => {
           setFormData({
             title: '',

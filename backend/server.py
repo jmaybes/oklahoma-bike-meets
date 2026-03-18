@@ -56,6 +56,7 @@ def user_helper(user) -> dict:
         "email": user["email"],
         "name": user["name"],
         "profilePic": user.get("profilePic", ""),
+        "isAdmin": user.get("isAdmin", False),
         "createdAt": user["createdAt"],
     }
 
@@ -102,6 +103,7 @@ class UserCreate(BaseModel):
     name: str
     password: str
     profilePic: str = ""
+    isAdmin: bool = False
 
 class UserLogin(BaseModel):
     email: str
@@ -132,7 +134,15 @@ async def root():
 async def create_event(event: EventCreate):
     event_dict = event.dict()
     event_dict["createdAt"] = datetime.utcnow().isoformat()
-    event_dict["isApproved"] = True
+    
+    # If userId is provided, check if user is admin
+    if event_dict.get("userId"):
+        user = await db.users.find_one({"_id": ObjectId(event_dict["userId"])})
+        event_dict["isApproved"] = user.get("isAdmin", False) if user else False
+    else:
+        # Guest submissions require approval
+        event_dict["isApproved"] = False
+    
     event_dict["attendeeCount"] = 0
     
     result = await db.events.insert_one(event_dict)
@@ -329,6 +339,66 @@ async def get_event_comments(event_id: str):
         "rating": comment.get("rating"),
         "createdAt": comment["createdAt"]
     } for comment in comments]
+
+# Admin Routes
+@api_router.get("/admin/events/pending")
+async def get_pending_events(admin_id: str):
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+    
+    pending_events = await db.events.find({"isApproved": False}).sort("createdAt", -1).to_list(1000)
+    return [event_helper(event) for event in pending_events]
+
+@api_router.put("/admin/events/{event_id}/approve")
+async def approve_event(event_id: str, admin_id: str):
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+    
+    # Approve event
+    if not ObjectId.is_valid(event_id):
+        raise HTTPException(status_code=400, detail="Invalid event ID")
+    
+    result = await db.events.update_one(
+        {"_id": ObjectId(event_id)},
+        {"$set": {"isApproved": True}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    updated_event = await db.events.find_one({"_id": ObjectId(event_id)})
+    return event_helper(updated_event)
+
+@api_router.delete("/admin/events/{event_id}/reject")
+async def reject_event(event_id: str, admin_id: str):
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+    
+    # Delete event
+    if not ObjectId.is_valid(event_id):
+        raise HTTPException(status_code=400, detail="Invalid event ID")
+    
+    result = await db.events.delete_one({"_id": ObjectId(event_id)})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    return {"message": "Event rejected and deleted"}
 
 # Include the router in the main app
 app.include_router(api_router)

@@ -85,6 +85,23 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
+        {user?.isAdmin && (
+          <View style={styles.menuSection}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="shield-checkmark" size={20} color="#FF6B35" />
+              <Text style={styles.sectionHeaderText}>Admin</Text>
+            </View>
+            <TouchableOpacity 
+              style={[styles.menuItem, styles.adminMenuItem]} 
+              onPress={() => router.push('/admin/pending')}
+            >
+              <Ionicons name="time" size={24} color="#FF6B35" />
+              <Text style={styles.menuItemText}>Pending Events</Text>
+              <Ionicons name="chevron-forward" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem}>
             <Ionicons name="notifications" size={24} color="#888" />
@@ -188,6 +205,19 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 20,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
+  sectionHeaderText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FF6B35',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -195,6 +225,10 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
+  },
+  adminMenuItem: {
+    borderWidth: 2,
+    borderColor: '#FF6B35',
   },
   menuItemText: {
     flex: 1,
