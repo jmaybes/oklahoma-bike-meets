@@ -45,6 +45,18 @@ export default function ProfileScreen() {
           >
             <Text style={styles.registerButtonText}>Create Account</Text>
           </TouchableOpacity>
+
+          <View style={styles.guestMenuSection}>
+            <Text style={styles.guestMenuTitle}>Explore</Text>
+            <TouchableOpacity 
+              style={styles.guestMenuItem} 
+              onPress={() => router.push('/clubs')}
+            >
+              <Ionicons name="people-circle" size={24} color="#9C27B0" />
+              <Text style={styles.guestMenuText}>Oklahoma Car Clubs</Text>
+              <Ionicons name="chevron-forward" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -81,6 +93,14 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/(tabs)/home')}>
             <Ionicons name="calendar" size={24} color="#2196F3" />
             <Text style={styles.menuItemText}>My Events</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.menuSection}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/clubs')}>
+            <Ionicons name="people-circle" size={24} color="#9C27B0" />
+            <Text style={styles.menuItemText}>Oklahoma Car Clubs</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
         </View>
@@ -183,6 +203,31 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  guestMenuSection: {
+    width: '100%',
+    marginTop: 32,
+  },
+  guestMenuTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#888',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  guestMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    padding: 16,
+    borderRadius: 12,
+  },
+  guestMenuText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#fff',
+    marginLeft: 12,
   },
   profileHeader: {
     alignItems: 'center',

@@ -125,6 +125,18 @@ class CommentCreate(BaseModel):
     text: str
     rating: Optional[int] = None
 
+class ClubCreate(BaseModel):
+    name: str
+    description: str
+    location: str
+    city: str
+    carTypes: List[str] = []
+    contactInfo: str = ""
+    website: str = ""
+    facebookGroup: str = ""
+    meetingSchedule: str = ""
+    memberCount: str = ""
+
 # Event Routes
 @api_router.get("/")
 async def root():
@@ -339,6 +351,71 @@ async def get_event_comments(event_id: str):
         "rating": comment.get("rating"),
         "createdAt": comment["createdAt"]
     } for comment in comments]
+
+# Club Routes
+@api_router.post("/clubs")
+async def create_club(club: ClubCreate):
+    club_dict = club.dict()
+    club_dict["createdAt"] = datetime.utcnow().isoformat()
+    
+    result = await db.clubs.insert_one(club_dict)
+    created_club = await db.clubs.find_one({"_id": result.inserted_id})
+    
+    return {
+        "id": str(created_club["_id"]),
+        **club.dict(),
+        "createdAt": created_club["createdAt"]
+    }
+
+@api_router.get("/clubs")
+async def get_clubs(city: Optional[str] = Query(None), carType: Optional[str] = Query(None)):
+    query = {}
+    
+    if city:
+        query["city"] = {"$regex": city, "$options": "i"}
+    
+    if carType:
+        query["carTypes"] = {"$regex": carType, "$options": "i"}
+    
+    clubs = await db.clubs.find(query).sort("name", 1).to_list(1000)
+    return [{
+        "id": str(club["_id"]),
+        "name": club["name"],
+        "description": club["description"],
+        "location": club["location"],
+        "city": club["city"],
+        "carTypes": club.get("carTypes", []),
+        "contactInfo": club.get("contactInfo", ""),
+        "website": club.get("website", ""),
+        "facebookGroup": club.get("facebookGroup", ""),
+        "meetingSchedule": club.get("meetingSchedule", ""),
+        "memberCount": club.get("memberCount", ""),
+        "createdAt": club.get("createdAt")
+    } for club in clubs]
+
+@api_router.get("/clubs/{club_id}")
+async def get_club(club_id: str):
+    if not ObjectId.is_valid(club_id):
+        raise HTTPException(status_code=400, detail="Invalid club ID")
+    
+    club = await db.clubs.find_one({"_id": ObjectId(club_id)})
+    if not club:
+        raise HTTPException(status_code=404, detail="Club not found")
+    
+    return {
+        "id": str(club["_id"]),
+        "name": club["name"],
+        "description": club["description"],
+        "location": club["location"],
+        "city": club["city"],
+        "carTypes": club.get("carTypes", []),
+        "contactInfo": club.get("contactInfo", ""),
+        "website": club.get("website", ""),
+        "facebookGroup": club.get("facebookGroup", ""),
+        "meetingSchedule": club.get("meetingSchedule", ""),
+        "memberCount": club.get("memberCount", ""),
+        "createdAt": club.get("createdAt")
+    }
 
 # Admin Routes
 @api_router.get("/admin/events/pending")
