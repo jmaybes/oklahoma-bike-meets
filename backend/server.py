@@ -626,7 +626,7 @@ async def send_rsvp_reminders():
         # Check if user has notifications enabled
         user = await db.users.find_one({"_id": ObjectId(rsvp["userId"])})
         if user and user.get("notificationsEnabled", True):
-            # Create reminder notification
+            # Create reminder notification in DB
             notification = {
                 "userId": rsvp["userId"],
                 "type": "event_reminder",
@@ -637,6 +637,19 @@ async def send_rsvp_reminders():
                 "createdAt": datetime.utcnow().isoformat()
             }
             await db.notifications.insert_one(notification)
+            
+            # Send push notification if user has a push token
+            if user.get("pushToken"):
+                try:
+                    await send_push_notification(
+                        user["pushToken"],
+                        notification["title"],
+                        notification["message"],
+                        {"eventId": rsvp["eventId"], "type": "event_reminder"}
+                    )
+                except Exception as e:
+                    print(f"Failed to send push notification: {e}")
+            
             reminders_sent += 1
         
         # Mark reminder as sent
