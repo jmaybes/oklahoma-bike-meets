@@ -315,6 +315,12 @@ export default function ProfileScreen() {
 
         {/* Menu Sections */}
         <View style={styles.menuSection}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/messages')}>
+            <Ionicons name="chatbubbles" size={24} color="#2196F3" />
+            <Text style={styles.menuItemText}>Messages</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer/my-runs')}>
             <Ionicons name="speedometer" size={24} color="#FF6B35" />
             <Text style={styles.menuItemText}>My Performance Runs</Text>

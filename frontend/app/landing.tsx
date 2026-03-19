@@ -8,15 +8,21 @@ import {
   ScrollView,
   Dimensions,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFonts, BungeeInline_400Regular } from '@expo-google-fonts/bungee-inline';
 
 const { width, height } = Dimensions.get('window');
 
 export default function LandingScreen() {
+  const [fontsLoaded] = useFonts({
+    BungeeInline_400Regular,
+  });
+
   const markLandingSeen = async () => {
     try {
       await AsyncStorage.setItem('hasSeenLanding', 'true');
@@ -39,12 +45,19 @@ export default function LandingScreen() {
     await markLandingSeen();
     router.push('/auth/login');
   };
+
   const features = [
     {
       icon: 'car-sport',
       title: 'My Garage',
       description: 'Showcase your ride with photos and specs',
       color: '#FF6B35',
+    },
+    {
+      icon: 'trophy',
+      title: 'Leaderboards',
+      description: 'Compete with 0-60, 0-100 & 1/4 mile times',
+      color: '#FFD700',
     },
     {
       icon: 'notifications',
@@ -70,45 +83,47 @@ export default function LandingScreen() {
       description: 'Bookmark events and clubs you love',
       color: '#E91E63',
     },
-    {
-      icon: 'calendar',
-      title: 'RSVP & Track',
-      description: 'Never miss an event you committed to',
-      color: '#9C27B0',
-    },
   ];
+
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FF6B35" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       
       {/* Hero Section with McLaren */}
-      <ImageBackground
-        source={{ uri: 'https://images.unsplash.com/photo-1650980715009-e1b81ee825f6?w=1200&q=80' }}
-        style={styles.heroSection}
-        resizeMode="cover"
-      >
-        <LinearGradient
-          colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)']}
-          style={styles.heroOverlay}
+      <View style={styles.heroSection}>
+        <ImageBackground
+          source={{ uri: 'https://images.unsplash.com/photo-1650980715009-e1b81ee825f6?w=1200&q=80' }}
+          style={styles.heroBackground}
+          resizeMode="cover"
         >
-          <View style={styles.heroContent}>
-            <View style={styles.logoContainer}>
-              <Ionicons name="car-sport" size={60} color="#FF6B35" />
-            </View>
-            <Text style={styles.heroTitle}>Oklahoma Car Events</Text>
-            <Text style={styles.heroSubtitle}>
-              Your Ultimate Car Community Hub
-            </Text>
-            <View style={styles.taglineContainer}>
-              <Ionicons name="flame" size={20} color="#FF6B35" />
-              <Text style={styles.tagline}>
-                Meets • Shows • Cruises • Races
+          <View style={styles.heroOverlay}>
+            <View style={styles.heroContent}>
+              <View style={styles.logoContainer}>
+                <Ionicons name="car-sport" size={60} color="#FF6B35" />
+              </View>
+              <Text style={styles.heroTitle}>Oklahoma Car Events</Text>
+              <Text style={styles.heroTitleSub}>& Clubs</Text>
+              <Text style={styles.heroSubtitle}>
+                Your Ultimate Car Community Hub
               </Text>
+              <View style={styles.taglineContainer}>
+                <Ionicons name="flame" size={20} color="#FF6B35" />
+                <Text style={styles.tagline}>
+                  Meets • Shows • Cruises • Races
+                </Text>
+              </View>
             </View>
           </View>
-        </LinearGradient>
-      </ImageBackground>
+        </ImageBackground>
+      </View>
 
       <ScrollView 
         style={styles.scrollView}
@@ -234,12 +249,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0c0c0c',
   },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#0c0c0c',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   heroSection: {
-    height: height * 0.4,
+    height: height * 0.42,
     width: width,
+  },
+  heroBackground: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   heroOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.75)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -251,20 +278,33 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,107,53,0.2)',
     borderRadius: 30,
     padding: 20,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   heroTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontFamily: 'BungeeInline_400Regular',
     color: '#fff',
     textAlign: 'center',
+    marginBottom: 0,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 4,
+  },
+  heroTitleSub: {
+    fontSize: 24,
+    fontFamily: 'BungeeInline_400Regular',
+    color: '#FF6B35',
+    textAlign: 'center',
     marginBottom: 8,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 4,
   },
   heroSubtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#ddd',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   taglineContainer: {
     flexDirection: 'row',
@@ -298,8 +338,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   communityTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontFamily: 'BungeeInline_400Regular',
     color: '#fff',
     marginBottom: 4,
   },
@@ -312,8 +352,8 @@ const styles = StyleSheet.create({
     paddingTop: 32,
   },
   sectionTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontFamily: 'BungeeInline_400Regular',
     color: '#fff',
     textAlign: 'center',
     marginBottom: 8,
@@ -346,8 +386,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   featureTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontFamily: 'BungeeInline_400Regular',
     color: '#fff',
     textAlign: 'center',
     marginBottom: 4,
@@ -372,8 +412,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontFamily: 'BungeeInline_400Regular',
     color: '#FF6B35',
     marginBottom: 4,
   },
@@ -406,8 +446,8 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   ctaTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontFamily: 'BungeeInline_400Regular',
     color: '#fff',
     marginTop: 12,
     marginBottom: 8,
