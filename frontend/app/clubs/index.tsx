@@ -183,6 +183,14 @@ export default function ClubsScreen() {
         />
       </View>
 
+      <TouchableOpacity 
+        style={styles.submitClubButton}
+        onPress={() => router.push('/clubs/submit')}
+      >
+        <Ionicons name="add-circle" size={20} color="#fff" />
+        <Text style={styles.submitClubText}>Submit Your Club</Text>
+      </TouchableOpacity>
+
       <FlatList
         data={filteredClubs}
         keyExtractor={(item) => item.id}
@@ -252,6 +260,22 @@ const styles = StyleSheet.create({
     height: 48,
     color: '#fff',
     fontSize: 16,
+  },
+  submitClubButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#9C27B0',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  submitClubText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
   list: {
     padding: 16,

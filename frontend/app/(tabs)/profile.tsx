@@ -119,6 +119,14 @@ export default function ProfileScreen() {
               <Text style={styles.menuItemText}>Pending Events</Text>
               <Ionicons name="chevron-forward" size={24} color="#666" />
             </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.menuItem, styles.adminMenuItem]} 
+              onPress={() => router.push('/admin/pending-clubs')}
+            >
+              <Ionicons name="people" size={24} color="#9C27B0" />
+              <Text style={styles.menuItemText}>Pending Clubs</Text>
+              <Ionicons name="chevron-forward" size={24} color="#666" />
+            </TouchableOpacity>
           </View>
         )}
 

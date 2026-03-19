@@ -136,6 +136,7 @@ class ClubCreate(BaseModel):
     facebookGroup: str = ""
     meetingSchedule: str = ""
     memberCount: str = ""
+    userId: Optional[str] = None
 
 # Event Routes
 @api_router.get("/")
@@ -358,18 +359,36 @@ async def create_club(club: ClubCreate):
     club_dict = club.dict()
     club_dict["createdAt"] = datetime.utcnow().isoformat()
     
+    # If userId is provided, check if user is admin
+    if club_dict.get("userId"):
+        user = await db.users.find_one({"_id": ObjectId(club_dict["userId"])})
+        club_dict["isApproved"] = user.get("isAdmin", False) if user else False
+    else:
+        # Guest submissions require approval
+        club_dict["isApproved"] = False
+    
     result = await db.clubs.insert_one(club_dict)
     created_club = await db.clubs.find_one({"_id": result.inserted_id})
     
     return {
         "id": str(created_club["_id"]),
-        **club.dict(),
+        "name": created_club["name"],
+        "description": created_club["description"],
+        "location": created_club["location"],
+        "city": created_club["city"],
+        "carTypes": created_club.get("carTypes", []),
+        "contactInfo": created_club.get("contactInfo", ""),
+        "website": created_club.get("website", ""),
+        "facebookGroup": created_club.get("facebookGroup", ""),
+        "meetingSchedule": created_club.get("meetingSchedule", ""),
+        "memberCount": created_club.get("memberCount", ""),
+        "isApproved": created_club.get("isApproved", False),
         "createdAt": created_club["createdAt"]
     }
 
 @api_router.get("/clubs")
 async def get_clubs(city: Optional[str] = Query(None), carType: Optional[str] = Query(None)):
-    query = {}
+    query = {"isApproved": True}
     
     if city:
         query["city"] = {"$regex": city, "$options": "i"}
@@ -476,6 +495,93 @@ async def reject_event(event_id: str, admin_id: str):
         raise HTTPException(status_code=404, detail="Event not found")
     
     return {"message": "Event rejected and deleted"}
+
+# Admin Club Routes
+@api_router.get("/admin/clubs/pending")
+async def get_pending_clubs(admin_id: str):
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+    
+    pending_clubs = await db.clubs.find({"isApproved": False}).sort("createdAt", -1).to_list(1000)
+    return [{
+        "id": str(club["_id"]),
+        "name": club["name"],
+        "description": club["description"],
+        "location": club["location"],
+        "city": club["city"],
+        "carTypes": club.get("carTypes", []),
+        "contactInfo": club.get("contactInfo", ""),
+        "website": club.get("website", ""),
+        "facebookGroup": club.get("facebookGroup", ""),
+        "meetingSchedule": club.get("meetingSchedule", ""),
+        "memberCount": club.get("memberCount", ""),
+        "createdAt": club.get("createdAt")
+    } for club in pending_clubs]
+
+@api_router.put("/admin/clubs/{club_id}/approve")
+async def approve_club(club_id: str, admin_id: str):
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+    
+    # Approve club
+    if not ObjectId.is_valid(club_id):
+        raise HTTPException(status_code=400, detail="Invalid club ID")
+    
+    result = await db.clubs.update_one(
+        {"_id": ObjectId(club_id)},
+        {"$set": {"isApproved": True}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Club not found")
+    
+    updated_club = await db.clubs.find_one({"_id": ObjectId(club_id)})
+    return {
+        "id": str(updated_club["_id"]),
+        "name": updated_club["name"],
+        "description": updated_club["description"],
+        "location": updated_club["location"],
+        "city": updated_club["city"],
+        "carTypes": updated_club.get("carTypes", []),
+        "contactInfo": updated_club.get("contactInfo", ""),
+        "website": updated_club.get("website", ""),
+        "facebookGroup": updated_club.get("facebookGroup", ""),
+        "meetingSchedule": updated_club.get("meetingSchedule", ""),
+        "memberCount": updated_club.get("memberCount", ""),
+        "isApproved": updated_club.get("isApproved", False),
+        "createdAt": updated_club.get("createdAt")
+    }
+
+@api_router.delete("/admin/clubs/{club_id}/reject")
+async def reject_club(club_id: str, admin_id: str):
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+    
+    # Delete club
+    if not ObjectId.is_valid(club_id):
+        raise HTTPException(status_code=400, detail="Invalid club ID")
+    
+    result = await db.clubs.delete_one({"_id": ObjectId(club_id)})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Club not found")
+    
+    return {"message": "Club rejected and deleted"}
 
 # Include the router in the main app
 app.include_router(api_router)
