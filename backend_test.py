@@ -349,6 +349,243 @@ class APITester:
         except Exception as e:
             self.log_result("Delete Event", False, 0, {}, e)
 
+    # ==============================================
+    # GPS PERFORMANCE TIMER ENDPOINTS TESTS
+    # ==============================================
+
+    def test_create_performance_run(self):
+        """Test POST /api/performance-runs - Create performance run"""
+        if not self.test_user_id:
+            self.log_result("Create Performance Run", False, 0, {}, "Missing user ID")
+            return
+            
+        performance_data = {
+            "userId": self.test_user_id,
+            "carInfo": "2015 Ford Mustang GT 5.0L V8",
+            "zeroToSixty": 4.5,
+            "zeroToHundred": 9.2,
+            "quarterMile": 12.3,
+            "location": "Thunder Valley Raceway Park",
+            "latitude": 35.4676,
+            "longitude": -97.5164
+        }
+        
+        try:
+            response = requests.post(f"{self.base_url}/performance-runs", json=performance_data)
+            success = response.status_code == 200
+            data = response.json() if success else {}
+            
+            # Validate response structure
+            if success and data:
+                required_fields = ['id', 'userId', 'carInfo', 'createdAt']
+                missing_fields = [field for field in required_fields if field not in data]
+                if missing_fields:
+                    success = False
+                    error = f"Missing required fields: {missing_fields}"
+                    self.log_result("Create Performance Run", success, response.status_code, data, error)
+                else:
+                    # Validate performance data
+                    if (data.get('zeroToSixty') != 4.5 or 
+                        data.get('zeroToHundred') != 9.2 or 
+                        data.get('quarterMile') != 12.3):
+                        self.log_result("Create Performance Run", False, response.status_code, data, "Performance times not correctly stored")
+                    else:
+                        self.log_result("Create Performance Run", success, response.status_code, data)
+            else:
+                self.log_result("Create Performance Run", success, response.status_code, data)
+        except Exception as e:
+            self.log_result("Create Performance Run", False, 0, {}, e)
+
+    def test_create_additional_performance_runs(self):
+        """Create additional performance runs to populate leaderboards"""
+        if not self.test_user_id:
+            return
+            
+        additional_runs = [
+            {
+                "userId": self.test_user_id,
+                "carInfo": "2018 Dodge Challenger SRT Hellcat",
+                "zeroToSixty": 3.6,
+                "zeroToHundred": 7.9,
+                "quarterMile": 11.2,
+                "location": "Hallett Motor Racing Circuit"
+            },
+            {
+                "userId": self.test_user_id,
+                "carInfo": "2020 Chevrolet Camaro SS",
+                "zeroToSixty": 4.0,
+                "zeroToHundred": 8.5,
+                "quarterMile": 12.0,
+                "location": "Motorsport Park Hastings"
+            },
+            {
+                "userId": self.test_user_id,
+                "carInfo": "2017 BMW M3",
+                "zeroToSixty": 3.9,
+                "location": "Oklahoma City Street Test"
+            }
+        ]
+        
+        for i, run_data in enumerate(additional_runs):
+            try:
+                requests.post(f"{self.base_url}/performance-runs", json=run_data)
+            except:
+                pass  # Continue even if some fail
+
+    def test_get_zero_to_sixty_leaderboard(self):
+        """Test GET /api/leaderboard/0-60 - Get 0-60 MPH leaderboard"""
+        try:
+            response = requests.get(f"{self.base_url}/leaderboard/0-60")
+            success = response.status_code == 200
+            data = response.json() if success else {}
+            
+            if success and isinstance(data, list):
+                # Validate sorting (should be ascending - fastest times first)
+                if len(data) > 1:
+                    times = [entry.get('time') for entry in data if entry.get('time')]
+                    if times != sorted(times):
+                        success = False
+                        error = "Leaderboard not properly sorted by time (ascending)"
+                        self.log_result("0-60 Leaderboard", success, response.status_code, data, error)
+                        return
+                
+                # Validate response structure
+                if data:
+                    required_fields = ['id', 'userId', 'userName', 'carInfo', 'time', 'createdAt']
+                    first_entry = data[0]
+                    missing_fields = [field for field in required_fields if field not in first_entry]
+                    if missing_fields:
+                        success = False
+                        error = f"Missing required fields in leaderboard entry: {missing_fields}"
+                        self.log_result("0-60 Leaderboard", success, response.status_code, data, error)
+                        return
+                
+                self.log_result("0-60 Leaderboard", success, response.status_code, data)
+            else:
+                self.log_result("0-60 Leaderboard", success, response.status_code, data)
+        except Exception as e:
+            self.log_result("0-60 Leaderboard", False, 0, {}, e)
+
+    def test_get_zero_to_hundred_leaderboard(self):
+        """Test GET /api/leaderboard/0-100 - Get 0-100 MPH leaderboard"""
+        try:
+            response = requests.get(f"{self.base_url}/leaderboard/0-100")
+            success = response.status_code == 200
+            data = response.json() if success else {}
+            
+            if success and isinstance(data, list):
+                # Validate sorting (should be ascending - fastest times first)
+                if len(data) > 1:
+                    times = [entry.get('time') for entry in data if entry.get('time')]
+                    if times != sorted(times):
+                        success = False
+                        error = "Leaderboard not properly sorted by time (ascending)"
+                        self.log_result("0-100 Leaderboard", success, response.status_code, data, error)
+                        return
+                
+                # Validate response structure
+                if data:
+                    required_fields = ['id', 'userId', 'userName', 'carInfo', 'time', 'createdAt']
+                    first_entry = data[0]
+                    missing_fields = [field for field in required_fields if field not in first_entry]
+                    if missing_fields:
+                        success = False
+                        error = f"Missing required fields in leaderboard entry: {missing_fields}"
+                        self.log_result("0-100 Leaderboard", success, response.status_code, data, error)
+                        return
+                
+                self.log_result("0-100 Leaderboard", success, response.status_code, data)
+            else:
+                self.log_result("0-100 Leaderboard", success, response.status_code, data)
+        except Exception as e:
+            self.log_result("0-100 Leaderboard", False, 0, {}, e)
+
+    def test_get_quarter_mile_leaderboard(self):
+        """Test GET /api/leaderboard/quarter-mile - Get quarter mile leaderboard"""
+        try:
+            response = requests.get(f"{self.base_url}/leaderboard/quarter-mile")
+            success = response.status_code == 200
+            data = response.json() if success else {}
+            
+            if success and isinstance(data, list):
+                # Validate sorting (should be ascending - fastest times first)
+                if len(data) > 1:
+                    times = [entry.get('time') for entry in data if entry.get('time')]
+                    if times != sorted(times):
+                        success = False
+                        error = "Leaderboard not properly sorted by time (ascending)"
+                        self.log_result("Quarter Mile Leaderboard", success, response.status_code, data, error)
+                        return
+                
+                # Validate response structure
+                if data:
+                    required_fields = ['id', 'userId', 'userName', 'carInfo', 'time', 'createdAt']
+                    first_entry = data[0]
+                    missing_fields = [field for field in required_fields if field not in first_entry]
+                    if missing_fields:
+                        success = False
+                        error = f"Missing required fields in leaderboard entry: {missing_fields}"
+                        self.log_result("Quarter Mile Leaderboard", success, response.status_code, data, error)
+                        return
+                
+                self.log_result("Quarter Mile Leaderboard", success, response.status_code, data)
+            else:
+                self.log_result("Quarter Mile Leaderboard", success, response.status_code, data)
+        except Exception as e:
+            self.log_result("Quarter Mile Leaderboard", False, 0, {}, e)
+
+    def test_get_user_performance_runs(self):
+        """Test GET /api/performance-runs/user/{user_id} - Get user's run history"""
+        if not self.test_user_id:
+            self.log_result("User Performance Runs", False, 0, {}, "Missing user ID")
+            return
+            
+        try:
+            response = requests.get(f"{self.base_url}/performance-runs/user/{self.test_user_id}")
+            success = response.status_code == 200
+            data = response.json() if success else {}
+            
+            if success and isinstance(data, list):
+                # Should be sorted by createdAt descending (newest first)
+                if len(data) > 1:
+                    # Parse dates and check if sorted in descending order
+                    try:
+                        dates = [datetime.fromisoformat(entry['createdAt'].replace('Z', '+00:00')) 
+                                for entry in data if entry.get('createdAt')]
+                        if dates != sorted(dates, reverse=True):
+                            success = False
+                            error = "User runs not properly sorted by creation date (newest first)"
+                            self.log_result("User Performance Runs", success, response.status_code, data, error)
+                            return
+                    except:
+                        # If date parsing fails, continue with basic validation
+                        pass
+                
+                # Validate response structure
+                if data:
+                    required_fields = ['id', 'userId', 'carInfo', 'createdAt']
+                    first_entry = data[0]
+                    missing_fields = [field for field in required_fields if field not in first_entry]
+                    if missing_fields:
+                        success = False
+                        error = f"Missing required fields in user run entry: {missing_fields}"
+                        self.log_result("User Performance Runs", success, response.status_code, data, error)
+                        return
+                    
+                    # Verify all entries belong to the correct user
+                    wrong_user_entries = [entry for entry in data if entry.get('userId') != self.test_user_id]
+                    if wrong_user_entries:
+                        success = False
+                        error = "Response contains runs from other users"
+                        self.log_result("User Performance Runs", success, response.status_code, data, error)
+                        return
+                
+                self.log_result("User Performance Runs", success, response.status_code, data)
+            else:
+                self.log_result("User Performance Runs", success, response.status_code, data)
+        except Exception as e:
+            self.log_result("User Performance Runs", False, 0, {}, e)
+
     def run_all_tests(self):
         """Run all API tests in sequence"""
         print(f"🚀 Starting Oklahoma Car Events API Testing")
@@ -384,6 +621,26 @@ class APITester:
         # Comments tests
         self.test_create_comment()
         self.test_get_event_comments()
+        
+        # ===== GPS PERFORMANCE TIMER TESTS =====
+        print("🏁 Starting GPS Performance Timer Tests")
+        print("-" * 50)
+        
+        # Performance runs tests
+        self.test_create_performance_run()
+        self.test_create_additional_performance_runs()  # Create additional data for leaderboards
+        
+        # Leaderboard tests
+        self.test_get_zero_to_sixty_leaderboard()
+        self.test_get_zero_to_hundred_leaderboard()
+        self.test_get_quarter_mile_leaderboard()
+        
+        # User performance history
+        self.test_get_user_performance_runs()
+        
+        print("🏁 Completed GPS Performance Timer Tests")
+        print("-" * 50)
+        print()
         
         # Cleanup - delete test event
         self.test_delete_event()

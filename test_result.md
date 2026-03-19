@@ -345,8 +345,117 @@ backend:
           agent: "testing"
           comment: "Data persistence working correctly across all endpoints, MongoDB integration functioning properly"
 
+  - task: "Performance Run Creation"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "POST /api/performance-runs endpoint implemented for GPS performance timer feature. Accepts zeroToSixty, zeroToHundred, or quarterMile times."
+        - working: true
+          agent: "testing"
+          comment: "POST /api/performance-runs endpoint working correctly. Tested with comprehensive test data including 0-60 (4.5s), 0-100 (9.2s), and quarter mile (12.3s) times. Response includes all required fields (id, userId, carInfo, createdAt) and correctly stores performance data. Also tested with Tesla Model S Plaid (2.1s 0-60) which correctly appears at top of leaderboard."
+
+  - task: "0-60 Leaderboard"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/leaderboard/0-60 endpoint implemented to return sorted 0-60 mph times"
+        - working: true
+          agent: "testing"
+          comment: "GET /api/leaderboard/0-60 endpoint working correctly. Returns properly sorted leaderboard (fastest times first) with all required fields: id, userId, userName, nickname, carInfo, time, location, createdAt. Verified sorting with multiple entries: Tesla Model S Plaid (2.1s), Dodge Challenger Hellcat (3.6s), BMW M3 (3.9s), Camaro SS (4.0s)."
+
+  - task: "0-100 Leaderboard"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/leaderboard/0-100 endpoint implemented to return sorted 0-100 mph times"
+        - working: true
+          agent: "testing"
+          comment: "GET /api/leaderboard/0-100 endpoint working correctly. Returns properly sorted leaderboard (fastest times first) with all required fields. Verified sorting: Dodge Challenger Hellcat (7.9s), Camaro SS (8.5s), Ford Mustang GT (9.2s)."
+
+  - task: "Quarter Mile Leaderboard"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/leaderboard/quarter-mile endpoint implemented to return sorted quarter mile times"
+        - working: true
+          agent: "testing"
+          comment: "GET /api/leaderboard/quarter-mile endpoint working correctly. Returns properly sorted leaderboard (fastest times first) with all required fields. Verified sorting: Dodge Challenger Hellcat (11.2s), Camaro SS (12.0s), Ford Mustang GT (12.3s)."
+
+  - task: "User Performance Runs"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/performance-runs/user/{user_id} endpoint implemented to get user's personal run history"
+        - working: true
+          agent: "testing"
+          comment: "GET /api/performance-runs/user/{user_id} endpoint working correctly. Returns user's personal run history sorted by createdAt descending (newest first). Response includes all required fields and correctly filters to only show runs for the specified user. Verified with multiple runs including partial data (e.g., BMW M3 with only zeroToSixty time)."
+
 frontend:
-  # Frontend testing not performed as per system instructions
+  - task: "Performance Timer Screen"
+    implemented: true
+    working: true
+    file: "(tabs)/timer.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Timer screen with speedometer, mode selector (0-60, 0-100, 1/4 Mile), GPS tracking, and START/ABORT/TRY AGAIN buttons implemented and visually verified via screenshot"
+
+  - task: "Leaderboard Screen"
+    implemented: true
+    working: true
+    file: "timer/leaderboard.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Leaderboard screen with category tabs, rankings display, and empty state implemented and visually verified via screenshot"
+
+  - task: "My Runs Screen"
+    implemented: true
+    working: true
+    file: "timer/my-runs.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "My Runs screen with personal bests display, run history, and login-required state implemented and visually verified via screenshot"
 
 metadata:
   created_by: "testing_agent"
@@ -357,9 +466,13 @@ metadata:
 test_plan:
   current_focus: []
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
     - agent: "testing"
       message: "Comprehensive backend API testing completed successfully. All 18 core endpoints tested with 100% success rate. Additional edge case and error handling tests also passed. The API is fully functional with proper error handling, data validation, and persistence. Sample data includes 4 events across Oklahoma City, Norman, and Tulsa."
+    - agent: "main"
+      message: "Implemented GPS Performance Timer feature with frontend screens (timer, leaderboard, my-runs) and backend already has endpoints. Please test the new performance-related endpoints: POST /api/performance-runs, GET /api/leaderboard/0-60, GET /api/leaderboard/0-100, GET /api/leaderboard/quarter-mile, and GET /api/performance-runs/user/{user_id}"
+    - agent: "testing"
+      message: "GPS Performance Timer backend testing completed successfully. All 5 new endpoints working perfectly: ✅ POST /api/performance-runs (creates runs with flexible data), ✅ GET /api/leaderboard/0-60 (properly sorted, fastest first), ✅ GET /api/leaderboard/0-100 (properly sorted), ✅ GET /api/leaderboard/quarter-mile (properly sorted), ✅ GET /api/performance-runs/user/{user_id} (user-specific history, newest first). Data validation, sorting, filtering, and response structure all correct. Testing included realistic car data like Tesla Model S Plaid (2.1s 0-60), Dodge Challenger Hellcat, BMW M3, etc."

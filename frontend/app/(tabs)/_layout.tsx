@@ -27,18 +27,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="map"
+        name="timer"
         options={{
-          title: 'Map',
+          title: 'Timer',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="map" size={size} color={color} />
+            <Ionicons name="speedometer" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="add"
         options={{
-          title: 'Add Event',
+          title: 'Add',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="add-circle" size={size} color={color} />
           ),
@@ -47,7 +47,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'My Garage',
+          title: 'Garage',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="car" size={size} color={color} />
           ),
