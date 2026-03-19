@@ -420,6 +420,78 @@ backend:
           agent: "testing"
           comment: "GET /api/performance-runs/user/{user_id} endpoint working correctly. Returns user's personal run history sorted by createdAt descending (newest first). Response includes all required fields and correctly filters to only show runs for the specified user. Verified with multiple runs including partial data (e.g., BMW M3 with only zeroToSixty time)."
 
+  - task: "Create User Car"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/user-cars endpoint working correctly. Successfully created Ford Mustang 2024 with all specified fields: userId, make, model, year, color (Grabber Blue), modifications (Cold air intake, exhaust), description (My daily driver), photos (empty array). Response includes all required fields with auto-generated id and createdAt timestamp."
+
+  - task: "Get User Car"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/user-cars/user/{user_id} endpoint working correctly. Successfully retrieves user's car with all fields intact: id, userId, make, model, year, color, modifications, description, photos, createdAt. Returns None (null) when user has no car registered."
+
+  - task: "Update User Car"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "PUT /api/user-cars/{car_id} endpoint working correctly. Successfully updated car color from 'Grabber Blue' to 'Triple Yellow'. Update is partial (only specified fields changed) and verification GET request confirmed the color change persisted in database."
+
+  - task: "Send Message"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/messages endpoint working correctly. Successfully creates messages between users with required fields: senderId, recipientId, content. Response includes auto-generated id, isRead (false by default), and createdAt timestamp. Tested bidirectional messaging between two test users."
+
+  - task: "Get Message Thread"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/messages/thread/{user_id}/{partner_id} endpoint working correctly. Returns chronologically ordered conversation between two users (oldest first). Response includes all message fields: id, senderId, recipientId, content, isRead, createdAt. Successfully tested with bidirectional conversation."
+
+  - task: "Get User Conversations"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/messages/conversations/{user_id} endpoint working correctly. Returns list of all conversations for a user with partner details: partnerId, partnerName, partnerNickname, lastMessage, lastMessageTime, unreadCount. Successfully tested with conversation history showing proper partner information."
+
 frontend:
   - task: "Performance Timer Screen"
     implemented: true
@@ -478,3 +550,5 @@ agent_communication:
       message: "GPS Performance Timer backend testing completed successfully. All 5 new endpoints working perfectly: ✅ POST /api/performance-runs (creates runs with flexible data), ✅ GET /api/leaderboard/0-60 (properly sorted, fastest first), ✅ GET /api/leaderboard/0-100 (properly sorted), ✅ GET /api/leaderboard/quarter-mile (properly sorted), ✅ GET /api/performance-runs/user/{user_id} (user-specific history, newest first). Data validation, sorting, filtering, and response structure all correct. Testing included realistic car data like Tesla Model S Plaid (2.1s 0-60), Dodge Challenger Hellcat, BMW M3, etc."
     - agent: "testing"
       message: "GPS Performance Timer frontend testing completed successfully in mobile view (390x844). ✅ Landing screen navigation working (Continue as Guest), ✅ Timer screen fully functional with Performance Timer header, speedometer display (0 MPH), all mode selector buttons (0-60, 0-100, 1/4 Mile), START RUN button, Leaderboard/My Runs quick actions, safety warning. ✅ Mode selector color changes working correctly. ✅ Leaderboard screen navigation working with proper header, category tabs, empty state. ✅ My Runs screen correctly shows Login Required message when not authenticated. ✅ Bottom tab navigation (Events, Timer, Add, Garage) working properly. All UI elements are mobile-responsive and visually correct. The app works exactly as specified in the review request."
+    - agent: "testing"
+      message: "My Garage (User Cars) and Messaging endpoints testing completed successfully. ✅ User Cars: All 3 endpoints working perfectly - POST /api/user-cars (creates cars with all fields), GET /api/user-cars/user/{user_id} (retrieves user's car), PUT /api/user-cars/{car_id} (updates car fields). Successfully tested Ford Mustang 2024 creation and color update from Grabber Blue to Triple Yellow. ✅ Messaging: All working endpoints identified - POST /api/messages (creates messages), GET /api/messages/thread/{user1_id}/{user2_id} (gets conversation), GET /api/messages/conversations/{user_id} (gets all user conversations). Alternative endpoints /api/messages/conversation/{user1_id}/{user2_id} and /api/messages/user/{user_id} do not exist (404). All tested endpoints return proper data structure with required fields and handle bidirectional messaging correctly."
