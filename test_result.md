@@ -541,6 +541,78 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "New RSVP System - Create RSVP"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/rsvp endpoint working correctly. Creates RSVP with all required fields (userId, eventId, eventTitle, eventDate, eventTime, eventLocation, reminderSent, createdAt), increments attendee count, creates RSVP confirmation notification, and handles duplicate RSVP attempts properly with 400 error. Fixed ObjectId serialization issue in response."
+
+  - task: "New RSVP System - Check RSVP Status"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/rsvp/check/{user_id}/{event_id} endpoint working correctly. Returns {\"hasRsvp\": true/false} based on whether user has RSVP'd to the event. Tested with existing RSVPs (returns true) and after cancellation (returns false)."
+
+  - task: "New RSVP System - Get User RSVPs"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/rsvp/user/{user_id} endpoint working correctly. Returns array of user's RSVPs with all required fields: id, userId, eventId, eventTitle, eventDate, eventTime, eventLocation, reminderSent, createdAt. Sorted by eventDate ascending."
+
+  - task: "New RSVP System - Cancel RSVP"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "DELETE /api/rsvp/{user_id}/{event_id} endpoint working correctly. Successfully deletes RSVP, decrements attendee count, and returns success message. Returns 404 error for non-existent RSVPs. Verified cancellation by checking hasRsvp status."
+
+  - task: "New RSVP System - Send Reminders"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/rsvp/send-reminders endpoint working correctly. Finds RSVPs for events happening tomorrow, creates reminder notifications for users with notifications enabled, marks reminders as sent, and returns count of reminders sent. This endpoint is designed for cron job scheduling."
+
+  - task: "Notification System - Get User Notifications"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/notifications/{user_id} endpoint working correctly. Returns array of notifications sorted by createdAt descending (newest first) with all required fields: id, userId, type, title, message, eventId, isRead, createdAt. Successfully tested RSVP confirmation notifications with proper titles and messages."
+
 agent_communication:
     - agent: "testing"
       message: "Comprehensive backend API testing completed successfully. All 18 core endpoints tested with 100% success rate. Additional edge case and error handling tests also passed. The API is fully functional with proper error handling, data validation, and persistence. Sample data includes 4 events across Oklahoma City, Norman, and Tulsa."
@@ -552,3 +624,5 @@ agent_communication:
       message: "GPS Performance Timer frontend testing completed successfully in mobile view (390x844). ✅ Landing screen navigation working (Continue as Guest), ✅ Timer screen fully functional with Performance Timer header, speedometer display (0 MPH), all mode selector buttons (0-60, 0-100, 1/4 Mile), START RUN button, Leaderboard/My Runs quick actions, safety warning. ✅ Mode selector color changes working correctly. ✅ Leaderboard screen navigation working with proper header, category tabs, empty state. ✅ My Runs screen correctly shows Login Required message when not authenticated. ✅ Bottom tab navigation (Events, Timer, Add, Garage) working properly. All UI elements are mobile-responsive and visually correct. The app works exactly as specified in the review request."
     - agent: "testing"
       message: "My Garage (User Cars) and Messaging endpoints testing completed successfully. ✅ User Cars: All 3 endpoints working perfectly - POST /api/user-cars (creates cars with all fields), GET /api/user-cars/user/{user_id} (retrieves user's car), PUT /api/user-cars/{car_id} (updates car fields). Successfully tested Ford Mustang 2024 creation and color update from Grabber Blue to Triple Yellow. ✅ Messaging: All working endpoints identified - POST /api/messages (creates messages), GET /api/messages/thread/{user1_id}/{user2_id} (gets conversation), GET /api/messages/conversations/{user_id} (gets all user conversations). Alternative endpoints /api/messages/conversation/{user1_id}/{user2_id} and /api/messages/user/{user_id} do not exist (404). All tested endpoints return proper data structure with required fields and handle bidirectional messaging correctly."
+    - agent: "testing"
+      message: "New RSVP and Notification system testing completed successfully! ✅ All 6 requested endpoints working perfectly: POST /api/rsvp (creates RSVPs with full event details, prevents duplicates, creates confirmation notifications), GET /api/rsvp/check/{user_id}/{event_id} (returns hasRsvp status), GET /api/rsvp/user/{user_id} (returns user's RSVPs), GET /api/notifications/{user_id} (returns notifications including RSVP confirmations), DELETE /api/rsvp/{user_id}/{event_id} (cancels RSVPs, decrements attendee count), POST /api/rsvp/send-reminders (cron job endpoint for 24-hour reminders). Fixed ObjectId serialization issue during testing. The RSVP system includes proper attendee count management, notification creation for confirmations and reminders, and handles edge cases like duplicate RSVPs appropriately. All endpoints return proper JSON structures with required fields."

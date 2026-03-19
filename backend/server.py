@@ -158,6 +158,10 @@ class PerformanceRunCreate(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
 
+class RSVPCreate(BaseModel):
+    userId: str
+    eventId: str
+
 class UserLogin(BaseModel):
     email: str
     password: str
@@ -308,7 +312,195 @@ async def delete_event(event_id: str):
     
     return {"message": "Event deleted successfully"}
 
-# User Routes
+# RSVP Routes
+@api_router.post("/rsvp")
+async def create_rsvp(rsvp: RSVPCreate):
+    # Check if user exists
+    if not ObjectId.is_valid(rsvp.userId):
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    user = await db.users.find_one({"_id": ObjectId(rsvp.userId)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if event exists
+    if not ObjectId.is_valid(rsvp.eventId):
+        raise HTTPException(status_code=400, detail="Invalid event ID")
+    
+    event = await db.events.find_one({"_id": ObjectId(rsvp.eventId)})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    # Check if already RSVP'd
+    existing_rsvp = await db.rsvps.find_one({
+        "userId": rsvp.userId,
+        "eventId": rsvp.eventId
+    })
+    
+    if existing_rsvp:
+        raise HTTPException(status_code=400, detail="Already RSVP'd to this event")
+    
+    # Create RSVP
+    rsvp_data = {
+        "userId": rsvp.userId,
+        "eventId": rsvp.eventId,
+        "eventTitle": event["title"],
+        "eventDate": event["date"],
+        "eventTime": event["time"],
+        "eventLocation": event.get("location", ""),
+        "reminderSent": False,
+        "createdAt": datetime.utcnow().isoformat()
+    }
+    
+    result = await db.rsvps.insert_one(rsvp_data)
+    
+    # Increment attendee count on event
+    await db.events.update_one(
+        {"_id": ObjectId(rsvp.eventId)},
+        {"$inc": {"attendeeCount": 1}}
+    )
+    
+    # Create a notification for successful RSVP
+    notification = {
+        "userId": rsvp.userId,
+        "type": "rsvp_confirmation",
+        "title": f"RSVP Confirmed: {event['title']}",
+        "message": f"You're going to {event['title']} on {event['date']} at {event['time']}. We'll remind you 24 hours before!",
+        "eventId": rsvp.eventId,
+        "isRead": False,
+        "createdAt": datetime.utcnow().isoformat()
+    }
+    await db.notifications.insert_one(notification)
+    
+    return {
+        "id": str(result.inserted_id),
+        "message": "RSVP successful! You'll receive a reminder 24 hours before the event.",
+        "userId": rsvp_data["userId"],
+        "eventId": rsvp_data["eventId"],
+        "eventTitle": rsvp_data["eventTitle"],
+        "eventDate": rsvp_data["eventDate"],
+        "eventTime": rsvp_data["eventTime"],
+        "eventLocation": rsvp_data["eventLocation"],
+        "reminderSent": rsvp_data["reminderSent"],
+        "createdAt": rsvp_data["createdAt"]
+    }
+
+@api_router.delete("/rsvp/{user_id}/{event_id}")
+async def cancel_rsvp(user_id: str, event_id: str):
+    result = await db.rsvps.delete_one({
+        "userId": user_id,
+        "eventId": event_id
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="RSVP not found")
+    
+    # Decrement attendee count
+    await db.events.update_one(
+        {"_id": ObjectId(event_id)},
+        {"$inc": {"attendeeCount": -1}}
+    )
+    
+    return {"message": "RSVP cancelled successfully"}
+
+@api_router.get("/rsvp/user/{user_id}")
+async def get_user_rsvps(user_id: str):
+    rsvps = await db.rsvps.find({"userId": user_id}).sort("eventDate", 1).to_list(100)
+    return [{
+        "id": str(rsvp["_id"]),
+        "userId": rsvp["userId"],
+        "eventId": rsvp["eventId"],
+        "eventTitle": rsvp.get("eventTitle", ""),
+        "eventDate": rsvp.get("eventDate", ""),
+        "eventTime": rsvp.get("eventTime", ""),
+        "eventLocation": rsvp.get("eventLocation", ""),
+        "reminderSent": rsvp.get("reminderSent", False),
+        "createdAt": rsvp.get("createdAt")
+    } for rsvp in rsvps]
+
+@api_router.get("/rsvp/check/{user_id}/{event_id}")
+async def check_rsvp(user_id: str, event_id: str):
+    rsvp = await db.rsvps.find_one({
+        "userId": user_id,
+        "eventId": event_id
+    })
+    return {"hasRsvp": rsvp is not None}
+
+@api_router.get("/rsvp/event/{event_id}")
+async def get_event_rsvps(event_id: str):
+    rsvps = await db.rsvps.find({"eventId": event_id}).to_list(1000)
+    return [{
+        "id": str(rsvp["_id"]),
+        "userId": rsvp["userId"],
+        "createdAt": rsvp.get("createdAt")
+    } for rsvp in rsvps]
+
+# Send 24-hour reminder notifications (call this endpoint via cron or scheduler)
+@api_router.post("/rsvp/send-reminders")
+async def send_rsvp_reminders():
+    from datetime import timedelta
+    
+    # Get tomorrow's date
+    tomorrow = (datetime.utcnow() + timedelta(days=1)).strftime("%Y-%m-%d")
+    
+    # Find all RSVPs for events happening tomorrow that haven't been reminded
+    rsvps = await db.rsvps.find({
+        "eventDate": tomorrow,
+        "reminderSent": False
+    }).to_list(10000)
+    
+    reminders_sent = 0
+    
+    for rsvp in rsvps:
+        # Check if user has notifications enabled
+        user = await db.users.find_one({"_id": ObjectId(rsvp["userId"])})
+        if user and user.get("notificationsEnabled", True):
+            # Create reminder notification
+            notification = {
+                "userId": rsvp["userId"],
+                "type": "event_reminder",
+                "title": f"Reminder: {rsvp['eventTitle']} is Tomorrow!",
+                "message": f"Don't forget! {rsvp['eventTitle']} is happening tomorrow at {rsvp['eventTime']} at {rsvp['eventLocation']}",
+                "eventId": rsvp["eventId"],
+                "isRead": False,
+                "createdAt": datetime.utcnow().isoformat()
+            }
+            await db.notifications.insert_one(notification)
+            reminders_sent += 1
+        
+        # Mark reminder as sent
+        await db.rsvps.update_one(
+            {"_id": rsvp["_id"]},
+            {"$set": {"reminderSent": True}}
+        )
+    
+    return {"message": f"Sent {reminders_sent} reminder notifications"}
+
+# Get user notifications
+@api_router.get("/notifications/{user_id}")
+async def get_user_notifications(user_id: str):
+    notifications = await db.notifications.find({"userId": user_id}).sort("createdAt", -1).to_list(50)
+    return [{
+        "id": str(n["_id"]),
+        "userId": n["userId"],
+        "type": n.get("type", "general"),
+        "title": n["title"],
+        "message": n["message"],
+        "eventId": n.get("eventId"),
+        "isRead": n.get("isRead", False),
+        "createdAt": n.get("createdAt")
+    } for n in notifications]
+
+@api_router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str):
+    if not ObjectId.is_valid(notification_id):
+        raise HTTPException(status_code=400, detail="Invalid notification ID")
+    
+    await db.notifications.update_one(
+        {"_id": ObjectId(notification_id)},
+        {"$set": {"isRead": True}}
+    )
+    return {"message": "Notification marked as read"}
 @api_router.post("/auth/register")
 async def register_user(user: UserCreate):
     existing_user = await db.users.find_one({"email": user.email})

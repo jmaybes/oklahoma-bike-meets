@@ -52,12 +52,16 @@ export default function EventDetailScreen() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRSVPed, setIsRSVPed] = useState(false);
+  const [rsvpLoading, setRsvpLoading] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     fetchEventDetails();
     fetchComments();
-  }, [id]);
+    if (isAuthenticated && user) {
+      checkRSVPStatus();
+    }
+  }, [id, isAuthenticated, user]);
 
   const fetchEventDetails = async () => {
     try {
@@ -79,6 +83,15 @@ export default function EventDetailScreen() {
     }
   };
 
+  const checkRSVPStatus = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/rsvp/check/${user?.id}/${id}`);
+      setIsRSVPed(response.data.hasRsvp);
+    } catch (error) {
+      console.error('Error checking RSVP status:', error);
+    }
+  };
+
   const handleRSVP = async () => {
     if (!isAuthenticated) {
       Alert.alert('Login Required', 'Please login to RSVP to events', [
@@ -88,16 +101,38 @@ export default function EventDetailScreen() {
       return;
     }
 
+    setRsvpLoading(true);
     try {
-      await axios.post(`${API_URL}/api/rsvps`, {
-        userId: user?.id,
-        eventId: id,
-        status: 'going',
-      });
-      setIsRSVPed(true);
-      Alert.alert('Success', 'RSVP confirmed!');
-    } catch (error) {
+      if (isRSVPed) {
+        // Cancel RSVP
+        await axios.delete(`${API_URL}/api/rsvp/${user?.id}/${id}`);
+        setIsRSVPed(false);
+        if (event) {
+          setEvent({ ...event, attendeeCount: event.attendeeCount - 1 });
+        }
+        Alert.alert('RSVP Cancelled', 'You have cancelled your RSVP for this event.');
+      } else {
+        // Create RSVP
+        await axios.post(`${API_URL}/api/rsvp`, {
+          userId: user?.id,
+          eventId: id,
+        });
+        setIsRSVPed(true);
+        if (event) {
+          setEvent({ ...event, attendeeCount: event.attendeeCount + 1 });
+        }
+        Alert.alert(
+          'RSVP Confirmed!',
+          "You're going! We'll send you a reminder notification 24 hours before the event.",
+          [{ text: 'Great!' }]
+        );
+      }
+    } catch (error: any) {
       console.error('Error RSVP:', error);
+      const message = error.response?.data?.detail || 'Failed to process RSVP';
+      Alert.alert('Error', message);
+    } finally {
+      setRsvpLoading(false);
     }
   };
 
@@ -293,12 +328,29 @@ export default function EventDetailScreen() {
           />
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.actionButton, styles.rsvpButton]}
+          style={[
+            styles.actionButton,
+            styles.rsvpButton,
+            isRSVPed && styles.rsvpButtonActive
+          ]}
           onPress={handleRSVP}
+          disabled={rsvpLoading}
         >
-          <Text style={styles.rsvpButtonText}>
-            {isRSVPed ? "You're Going!" : 'RSVP'}
-          </Text>
+          {rsvpLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <>
+              <Ionicons
+                name={isRSVPed ? 'checkmark-circle' : 'calendar'}
+                size={20}
+                color="#fff"
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.rsvpButtonText}>
+                {isRSVPed ? "You're Going!" : 'RSVP'}
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -476,6 +528,10 @@ const styles = StyleSheet.create({
   rsvpButton: {
     backgroundColor: '#FF6B35',
     flex: 1,
+    flexDirection: 'row',
+  },
+  rsvpButtonActive: {
+    backgroundColor: '#4CAF50',
   },
   rsvpButtonText: {
     color: '#fff',
