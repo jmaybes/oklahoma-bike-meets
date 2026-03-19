@@ -1,0 +1,464 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+  StatusBar,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const { width, height } = Dimensions.get('window');
+
+export default function LandingScreen() {
+  const markLandingSeen = async () => {
+    try {
+      await AsyncStorage.setItem('hasSeenLanding', 'true');
+    } catch (error) {
+      console.error('Error marking landing as seen:', error);
+    }
+  };
+
+  const handleContinueAsGuest = async () => {
+    await markLandingSeen();
+    router.replace('/(tabs)/home');
+  };
+
+  const handleSignUp = async () => {
+    await markLandingSeen();
+    router.push('/auth/register');
+  };
+
+  const handleLogin = async () => {
+    await markLandingSeen();
+    router.push('/auth/login');
+  };
+  const features = [
+    {
+      icon: 'car-sport',
+      title: 'My Garage',
+      description: 'Showcase your ride with photos and specs',
+      color: '#FF6B35',
+    },
+    {
+      icon: 'notifications',
+      title: 'Pop Up Events',
+      description: 'Get instant alerts for last-minute meets',
+      color: '#FF3B30',
+    },
+    {
+      icon: 'people',
+      title: 'Messaging',
+      description: 'Connect with fellow car enthusiasts',
+      color: '#2196F3',
+    },
+    {
+      icon: 'location',
+      title: 'Location Sharing',
+      description: 'Find car meets and cruises near you',
+      color: '#4CAF50',
+    },
+    {
+      icon: 'heart',
+      title: 'Save Favorites',
+      description: 'Bookmark events and clubs you love',
+      color: '#E91E63',
+    },
+    {
+      icon: 'calendar',
+      title: 'RSVP & Track',
+      description: 'Never miss an event you committed to',
+      color: '#9C27B0',
+    },
+  ];
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      
+      {/* Hero Section with McLaren */}
+      <ImageBackground
+        source={{ uri: 'https://images.unsplash.com/photo-1650980715009-e1b81ee825f6?w=1200&q=80' }}
+        style={styles.heroSection}
+        resizeMode="cover"
+      >
+        <LinearGradient
+          colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)']}
+          style={styles.heroOverlay}
+        >
+          <View style={styles.heroContent}>
+            <View style={styles.logoContainer}>
+              <Ionicons name="car-sport" size={60} color="#FF6B35" />
+            </View>
+            <Text style={styles.heroTitle}>Oklahoma Car Events</Text>
+            <Text style={styles.heroSubtitle}>
+              Your Ultimate Car Community Hub
+            </Text>
+            <View style={styles.taglineContainer}>
+              <Ionicons name="flame" size={20} color="#FF6B35" />
+              <Text style={styles.tagline}>
+                Meets • Shows • Cruises • Races
+              </Text>
+            </View>
+          </View>
+        </LinearGradient>
+      </ImageBackground>
+
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
+        {/* Community Preview */}
+        <View style={styles.communitySection}>
+          <ImageBackground
+            source={{ uri: 'https://images.unsplash.com/photo-1593427934550-4742b652ac84?w=800&q=80' }}
+            style={styles.communityImage}
+            imageStyle={styles.communityImageStyle}
+          >
+            <LinearGradient
+              colors={['rgba(0,0,0,0.5)', 'rgba(0,0,0,0.8)']}
+              style={styles.communityOverlay}
+            >
+              <Text style={styles.communityTitle}>Join 1000+ Enthusiasts</Text>
+              <Text style={styles.communitySubtitle}>
+                Oklahoma's largest car community
+              </Text>
+            </LinearGradient>
+          </ImageBackground>
+        </View>
+
+        {/* Features Grid */}
+        <View style={styles.featuresSection}>
+          <Text style={styles.sectionTitle}>Unlock Premium Features</Text>
+          <Text style={styles.sectionSubtitle}>
+            Create a free account to access everything
+          </Text>
+
+          <View style={styles.featuresGrid}>
+            {features.map((feature, index) => (
+              <View key={index} style={styles.featureCard}>
+                <View style={[styles.featureIcon, { backgroundColor: `${feature.color}20` }]}>
+                  <Ionicons name={feature.icon as any} size={28} color={feature.color} />
+                </View>
+                <Text style={styles.featureTitle}>{feature.title}</Text>
+                <Text style={styles.featureDescription}>{feature.description}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Stats Section */}
+        <View style={styles.statsSection}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>22+</Text>
+            <Text style={styles.statLabel}>Events</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>20+</Text>
+            <Text style={styles.statLabel}>Car Clubs</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>24/7</Text>
+            <Text style={styles.statLabel}>Updates</Text>
+          </View>
+        </View>
+
+        {/* CTA Section */}
+        <View style={styles.ctaSection}>
+          <ImageBackground
+            source={{ uri: 'https://images.unsplash.com/photo-1654832171857-c5977ce7c7fb?w=800&q=80' }}
+            style={styles.ctaBackground}
+            imageStyle={styles.ctaImageStyle}
+          >
+            <LinearGradient
+              colors={['rgba(255,107,53,0.9)', 'rgba(233,30,99,0.9)']}
+              style={styles.ctaOverlay}
+            >
+              <Ionicons name="rocket" size={40} color="#fff" />
+              <Text style={styles.ctaTitle}>Ready to Rev Up?</Text>
+              <Text style={styles.ctaSubtitle}>
+                Join Oklahoma's most active car community
+              </Text>
+            </LinearGradient>
+          </ImageBackground>
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={styles.signUpButton}
+            onPress={handleSignUp}
+          >
+            <LinearGradient
+              colors={['#FF6B35', '#E91E63']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.signUpButtonText}>Create Account</Text>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={handleLogin}
+          >
+            <Text style={styles.loginButtonText}>Already have an account? Login</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={handleContinueAsGuest}
+          >
+            <Text style={styles.skipButtonText}>Continue as Guest</Text>
+            <Ionicons name="chevron-forward" size={16} color="#666" />
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0c0c0c',
+  },
+  heroSection: {
+    height: height * 0.4,
+    width: width,
+  },
+  heroOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  heroContent: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  logoContainer: {
+    backgroundColor: 'rgba(255,107,53,0.2)',
+    borderRadius: 30,
+    padding: 20,
+    marginBottom: 20,
+  },
+  heroTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    color: '#ddd',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  taglineContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  tagline: {
+    fontSize: 14,
+    color: '#FF6B35',
+    fontWeight: '600',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  communitySection: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  communityImage: {
+    height: 120,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  communityImageStyle: {
+    borderRadius: 16,
+  },
+  communityOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  communityTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  communitySubtitle: {
+    fontSize: 14,
+    color: '#ddd',
+  },
+  featuresSection: {
+    padding: 20,
+    paddingTop: 32,
+  },
+  sectionTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  featureCard: {
+    width: (width - 56) / 2,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  featureIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  featureTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  featureDescription: {
+    fontSize: 12,
+    color: '#888',
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  statsSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    marginHorizontal: 20,
+    marginBottom: 20,
+    padding: 24,
+    borderRadius: 16,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FF6B35',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#888',
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: '#333',
+  },
+  ctaSection: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 20,
+    overflow: 'hidden',
+    height: 180,
+  },
+  ctaBackground: {
+    flex: 1,
+  },
+  ctaImageStyle: {
+    borderRadius: 20,
+  },
+  ctaOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  ctaTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  ctaSubtitle: {
+    fontSize: 14,
+    color: '#fff',
+    textAlign: 'center',
+  },
+  actionButtons: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  signUpButton: {
+    marginBottom: 12,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  gradientButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 18,
+    gap: 8,
+  },
+  signUpButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  loginButton: {
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: '#1a1a1a',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  loginButtonText: {
+    fontSize: 15,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  skipButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    gap: 4,
+  },
+  skipButtonText: {
+    fontSize: 14,
+    color: '#666',
+  },
+});
