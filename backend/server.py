@@ -131,6 +131,18 @@ class UserCarUpdate(BaseModel):
     description: Optional[str] = None
     photos: Optional[List[str]] = None
 
+class MessageCreate(BaseModel):
+    senderId: str
+    recipientId: str
+    content: str
+
+class LocationUpdate(BaseModel):
+    userId: str
+    latitude: float
+    longitude: float
+    isSharing: bool = True
+    shareUntil: Optional[str] = None
+
 class UserLogin(BaseModel):
     email: str
     password: str
@@ -468,6 +480,158 @@ async def get_event_comments(event_id: str):
         "rating": comment.get("rating"),
         "createdAt": comment["createdAt"]
     } for comment in comments]
+
+# Messaging Routes
+@api_router.post("/messages")
+async def send_message(message: MessageCreate):
+    message_dict = message.dict()
+    message_dict["createdAt"] = datetime.utcnow().isoformat()
+    message_dict["isRead"] = False
+    
+    result = await db.messages.insert_one(message_dict)
+    created_message = await db.messages.find_one({"_id": result.inserted_id})
+    
+    return {
+        "id": str(created_message["_id"]),
+        "senderId": created_message["senderId"],
+        "recipientId": created_message["recipientId"],
+        "content": created_message["content"],
+        "isRead": created_message["isRead"],
+        "createdAt": created_message["createdAt"]
+    }
+
+@api_router.get("/messages/conversations/{user_id}")
+async def get_conversations(user_id: str):
+    # Get all messages where user is sender or recipient
+    messages = await db.messages.find({
+        "$or": [{"senderId": user_id}, {"recipientId": user_id}]
+    }).sort("createdAt", -1).to_list(1000)
+    
+    # Group by conversation partner
+    conversations = {}
+    for msg in messages:
+        partner_id = msg["recipientId"] if msg["senderId"] == user_id else msg["senderId"]
+        
+        if partner_id not in conversations:
+            # Get partner info
+            partner = await db.users.find_one({"_id": ObjectId(partner_id)})
+            if partner:
+                conversations[partner_id] = {
+                    "partnerId": partner_id,
+                    "partnerName": partner["name"],
+                    "partnerNickname": partner.get("nickname", ""),
+                    "lastMessage": msg["content"],
+                    "lastMessageTime": msg["createdAt"],
+                    "unreadCount": 0
+                }
+        
+        # Count unread messages from partner
+        if msg["recipientId"] == user_id and not msg.get("isRead", False):
+            conversations[partner_id]["unreadCount"] += 1
+    
+    return list(conversations.values())
+
+@api_router.get("/messages/thread/{user_id}/{partner_id}")
+async def get_message_thread(user_id: str, partner_id: str):
+    messages = await db.messages.find({
+        "$or": [
+            {"senderId": user_id, "recipientId": partner_id},
+            {"senderId": partner_id, "recipientId": user_id}
+        ]
+    }).sort("createdAt", 1).to_list(1000)
+    
+    # Mark messages as read
+    await db.messages.update_many(
+        {"senderId": partner_id, "recipientId": user_id, "isRead": False},
+        {"$set": {"isRead": True}}
+    )
+    
+    return [{
+        "id": str(msg["_id"]),
+        "senderId": msg["senderId"],
+        "recipientId": msg["recipientId"],
+        "content": msg["content"],
+        "isRead": msg.get("isRead", False),
+        "createdAt": msg["createdAt"]
+    } for msg in messages]
+
+# Location Sharing Routes
+@api_router.post("/locations")
+async def update_location(location: LocationUpdate):
+    location_dict = location.dict()
+    location_dict["updatedAt"] = datetime.utcnow().isoformat()
+    
+    # Update or insert location
+    await db.locations.update_one(
+        {"userId": location.userId},
+        {"$set": location_dict},
+        upsert=True
+    )
+    
+    return {"message": "Location updated successfully"}
+
+@api_router.get("/locations/nearby/{user_id}")
+async def get_nearby_users(user_id: str, radius: float = 50.0):
+    # Get user's location
+    user_location = await db.locations.find_one({"userId": user_id})
+    if not user_location:
+        return []
+    
+    user_lat = user_location["latitude"]
+    user_lon = user_location["longitude"]
+    
+    # Get all sharing locations
+    locations = await db.locations.find({
+        "isSharing": True,
+        "userId": {"$ne": user_id}
+    }).to_list(1000)
+    
+    nearby_users = []
+    for loc in locations:
+        # Simple distance calculation (approximate)
+        lat_diff = abs(loc["latitude"] - user_lat)
+        lon_diff = abs(loc["longitude"] - user_lon)
+        distance = ((lat_diff ** 2 + lon_diff ** 2) ** 0.5) * 69  # Rough miles
+        
+        if distance <= radius:
+            user = await db.users.find_one({"_id": ObjectId(loc["userId"])})
+            if user:
+                nearby_users.append({
+                    "userId": loc["userId"],
+                    "name": user["name"],
+                    "nickname": user.get("nickname", ""),
+                    "latitude": loc["latitude"],
+                    "longitude": loc["longitude"],
+                    "distance": round(distance, 2),
+                    "updatedAt": loc["updatedAt"]
+                })
+    
+    return sorted(nearby_users, key=lambda x: x["distance"])
+
+@api_router.get("/locations/{user_id}")
+async def get_user_location(user_id: str):
+    location = await db.locations.find_one({"userId": user_id, "isSharing": True})
+    if not location:
+        return None
+    
+    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    
+    return {
+        "userId": user_id,
+        "name": user["name"] if user else "Unknown",
+        "nickname": user.get("nickname", "") if user else "",
+        "latitude": location["latitude"],
+        "longitude": location["longitude"],
+        "updatedAt": location["updatedAt"]
+    }
+
+@api_router.delete("/locations/{user_id}")
+async def stop_sharing_location(user_id: str):
+    await db.locations.update_one(
+        {"userId": user_id},
+        {"$set": {"isSharing": False}}
+    )
+    return {"message": "Location sharing stopped"}
 
 # Club Routes
 @api_router.post("/clubs")
