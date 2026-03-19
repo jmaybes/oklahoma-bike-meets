@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -141,10 +142,20 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Oklahoma Car Events</Text>
-        <Text style={styles.headerSubtitle}>Discover car meets near you</Text>
-      </View>
+      <LinearGradient
+        colors={['#FF6B35', '#E91E63']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.headerGradient}
+      >
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.headerTitle}>Oklahoma Car Events</Text>
+            <Text style={styles.headerSubtitle}>Discover car meets near you</Text>
+          </View>
+          <Ionicons name="car-sport" size={32} color="#fff" />
+        </View>
+      </LinearGradient>
 
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
@@ -220,19 +231,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#0c0c0c',
   },
-  header: {
-    padding: 20,
+  headerGradient: {
     paddingTop: 10,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#888',
-    marginTop: 4,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: 2,
   },
   searchContainer: {
     flexDirection: 'row',
