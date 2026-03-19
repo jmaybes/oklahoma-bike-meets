@@ -55,6 +55,7 @@ def user_helper(user) -> dict:
         "id": str(user["_id"]),
         "email": user["email"],
         "name": user["name"],
+        "nickname": user.get("nickname", ""),
         "profilePic": user.get("profilePic", ""),
         "isAdmin": user.get("isAdmin", False),
         "createdAt": user["createdAt"],
@@ -102,8 +103,33 @@ class UserCreate(BaseModel):
     email: str
     name: str
     password: str
+    nickname: str = ""
     profilePic: str = ""
     isAdmin: bool = False
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    nickname: Optional[str] = None
+    profilePic: Optional[str] = None
+
+class UserCarCreate(BaseModel):
+    userId: str
+    make: str
+    model: str
+    year: str
+    color: str = ""
+    modifications: str = ""
+    description: str = ""
+    photos: List[str] = []
+
+class UserCarUpdate(BaseModel):
+    make: Optional[str] = None
+    model: Optional[str] = None
+    year: Optional[str] = None
+    color: Optional[str] = None
+    modifications: Optional[str] = None
+    description: Optional[str] = None
+    photos: Optional[List[str]] = None
 
 class UserLogin(BaseModel):
     email: str
@@ -252,6 +278,96 @@ async def login_user(credentials: UserLogin):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     return user_helper(user)
+
+@api_router.put("/users/{user_id}")
+async def update_user(user_id: str, user_update: UserUpdate):
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    update_data = {k: v for k, v in user_update.dict().items() if v is not None}
+    
+    if update_data:
+        await db.users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": update_data}
+        )
+    
+    updated_user = await db.users.find_one({"_id": ObjectId(user_id)})
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user_helper(updated_user)
+
+# User Car Routes
+@api_router.post("/user-cars")
+async def create_user_car(car: UserCarCreate):
+    car_dict = car.dict()
+    car_dict["createdAt"] = datetime.utcnow().isoformat()
+    
+    result = await db.user_cars.insert_one(car_dict)
+    created_car = await db.user_cars.find_one({"_id": result.inserted_id})
+    
+    return {
+        "id": str(created_car["_id"]),
+        "userId": created_car["userId"],
+        "make": created_car["make"],
+        "model": created_car["model"],
+        "year": created_car["year"],
+        "color": created_car.get("color", ""),
+        "modifications": created_car.get("modifications", ""),
+        "description": created_car.get("description", ""),
+        "photos": created_car.get("photos", []),
+        "createdAt": created_car["createdAt"]
+    }
+
+@api_router.get("/user-cars/user/{user_id}")
+async def get_user_car(user_id: str):
+    car = await db.user_cars.find_one({"userId": user_id})
+    if not car:
+        return None
+    
+    return {
+        "id": str(car["_id"]),
+        "userId": car["userId"],
+        "make": car["make"],
+        "model": car["model"],
+        "year": car["year"],
+        "color": car.get("color", ""),
+        "modifications": car.get("modifications", ""),
+        "description": car.get("description", ""),
+        "photos": car.get("photos", []),
+        "createdAt": car.get("createdAt")
+    }
+
+@api_router.put("/user-cars/{car_id}")
+async def update_user_car(car_id: str, car_update: UserCarUpdate):
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=400, detail="Invalid car ID")
+    
+    update_data = {k: v for k, v in car_update.dict().items() if v is not None}
+    
+    if update_data:
+        await db.user_cars.update_one(
+            {"_id": ObjectId(car_id)},
+            {"$set": update_data}
+        )
+    
+    updated_car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    if not updated_car:
+        raise HTTPException(status_code=404, detail="Car not found")
+    
+    return {
+        "id": str(updated_car["_id"]),
+        "userId": updated_car["userId"],
+        "make": updated_car["make"],
+        "model": updated_car["model"],
+        "year": updated_car["year"],
+        "color": updated_car.get("color", ""),
+        "modifications": updated_car.get("modifications", ""),
+        "description": updated_car.get("description", ""),
+        "photos": updated_car.get("photos", []),
+        "createdAt": updated_car.get("createdAt")
+    }
 
 # Favorites Routes
 @api_router.post("/favorites")

@@ -22,6 +22,7 @@ const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 export default function RegisterScreen() {
   const { login } = useAuth();
   const [name, setName] = useState('');
+  const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -47,6 +48,7 @@ export default function RegisterScreen() {
     try {
       const response = await axios.post(`${API_URL}/api/auth/register`, {
         name,
+        nickname,
         email,
         password,
       });
@@ -92,6 +94,17 @@ export default function RegisterScreen() {
                   placeholderTextColor="#666"
                   value={name}
                   onChangeText={setName}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Ionicons name="car" size={20} color="#888" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Nickname (optional)"
+                  placeholderTextColor="#666"
+                  value={nickname}
+                  onChangeText={setNickname}
                 />
               </View>
 

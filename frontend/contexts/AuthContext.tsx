@@ -5,6 +5,7 @@ interface User {
   id: string;
   email: string;
   name: string;
+  nickname?: string;
   profilePic?: string;
   isAdmin?: boolean;
 }
