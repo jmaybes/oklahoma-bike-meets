@@ -31,6 +31,7 @@ export default function AddEventScreen() {
   const [isPopUp, setIsPopUp] = useState(false);
   const [useMyLocation, setUseMyLocation] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [scanningFlyer, setScanningFlyer] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -49,6 +50,60 @@ export default function AddEventScreen() {
   });
 
   const eventTypes = ['Car Meet', 'Car Show', 'Cruise', 'Race', 'Pop Up Race', 'Other'];
+
+  const scanFlyer = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Please allow access to your photo library to scan flyers');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      setScanningFlyer(true);
+      try {
+        const response = await axios.post(`${API_URL}/api/ocr/scan-flyer`, {
+          image: `data:image/jpeg;base64,${result.assets[0].base64}`,
+        });
+
+        if (response.data.success) {
+          const parsed = response.data.parsedData;
+          
+          // Update form with extracted data
+          setFormData(prev => ({
+            ...prev,
+            title: parsed.title || prev.title,
+            description: parsed.description || prev.description,
+            date: parsed.date || prev.date,
+            time: parsed.time || prev.time,
+            address: parsed.address || prev.address,
+            location: parsed.address || prev.location,
+          }));
+
+          // Add the scanned image to photos
+          if (result.assets[0].uri) {
+            setPhotos(prev => [...prev, `data:image/jpeg;base64,${result.assets[0].base64}`]);
+          }
+
+          Alert.alert(
+            'Flyer Scanned!',
+            'We extracted the following information. Please review and edit as needed.',
+            [{ text: 'OK' }]
+          );
+        }
+      } catch (error: any) {
+        console.error('OCR error:', error);
+        Alert.alert('Scan Failed', 'Could not extract text from the image. Please enter details manually.');
+      } finally {
+        setScanningFlyer(false);
+      }
+    }
+  };
 
   const getMyLocation = async () => {
     setLoadingLocation(true);
@@ -228,6 +283,35 @@ export default function AddEventScreen() {
               </Text>
             </View>
           )}
+
+          {/* Scan Flyer Button */}
+          <TouchableOpacity
+            style={styles.scanFlyerButton}
+            onPress={scanFlyer}
+            disabled={scanningFlyer}
+          >
+            <LinearGradient
+              colors={['#9C27B0', '#E91E63']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.scanFlyerGradient}
+            >
+              {scanningFlyer ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Ionicons name="scan" size={24} color="#fff" />
+              )}
+              <View style={styles.scanFlyerTextContainer}>
+                <Text style={styles.scanFlyerTitle}>
+                  {scanningFlyer ? 'Scanning...' : 'Scan Event Flyer'}
+                </Text>
+                <Text style={styles.scanFlyerSubtitle}>
+                  Auto-fill form from an image
+                </Text>
+              </View>
+              <Ionicons name="camera" size={20} color="rgba(255,255,255,0.7)" />
+            </LinearGradient>
+          </TouchableOpacity>
 
           <View style={styles.form}>
             <Text style={styles.label}>Event Title *</Text>
@@ -491,6 +575,31 @@ const styles = StyleSheet.create({
     color: '#aaa',
     fontSize: 12,
     marginLeft: 8,
+  },
+  scanFlyerButton: {
+    marginHorizontal: 20,
+    marginTop: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  scanFlyerGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  scanFlyerTextContainer: {
+    flex: 1,
+  },
+  scanFlyerTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  scanFlyerSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
   },
   form: {
     padding: 20,

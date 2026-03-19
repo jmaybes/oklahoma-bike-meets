@@ -4,12 +4,16 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import re
+import base64
+import io
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 from bson import ObjectId
 import httpx
+from PIL import Image
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -24,6 +28,88 @@ app = FastAPI()
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
+
+# Initialize EasyOCR reader (lazy loading)
+ocr_reader = None
+
+def get_ocr_reader():
+    global ocr_reader
+    if ocr_reader is None:
+        import easyocr
+        ocr_reader = easyocr.Reader(['en'], gpu=False)
+    return ocr_reader
+
+def parse_event_details(text: str) -> dict:
+    """Parse extracted text to identify event details"""
+    lines = text.split('\n')
+    full_text = ' '.join(lines)
+    
+    result = {
+        "title": "",
+        "description": "",
+        "date": "",
+        "time": "",
+        "location": "",
+        "address": "",
+        "rawText": text
+    }
+    
+    # Try to find date patterns (various formats)
+    date_patterns = [
+        r'(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',  # 01/15/2025 or 1-15-25
+        r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2}(?:st|nd|rd|th)?,?\s*\d{4})',  # January 15, 2025
+        r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2}(?:st|nd|rd|th)?)',  # January 15
+        r'(\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*)',  # 15th of January
+    ]
+    
+    for pattern in date_patterns:
+        match = re.search(pattern, full_text, re.IGNORECASE)
+        if match:
+            result["date"] = match.group(1)
+            break
+    
+    # Try to find time patterns
+    time_patterns = [
+        r'(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)',  # 7:00 PM
+        r'(\d{1,2}\s*(?:AM|PM|am|pm))',  # 7 PM
+        r'(\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)',  # 7:00 - 9:00 PM
+    ]
+    
+    for pattern in time_patterns:
+        match = re.search(pattern, full_text, re.IGNORECASE)
+        if match:
+            result["time"] = match.group(1)
+            break
+    
+    # Try to find location/address patterns
+    address_patterns = [
+        r'(\d+\s+[A-Za-z\s]+(?:St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Road|Dr|Drive|Ln|Lane|Way|Pkwy|Parkway)[.,]?\s*(?:[A-Za-z\s]+,?\s*)?(?:OK|Oklahoma)?(?:\s*\d{5})?)',
+        r'((?:at|@|location:?)\s*[A-Za-z0-9\s\'\-]+)',
+    ]
+    
+    for pattern in address_patterns:
+        match = re.search(pattern, full_text, re.IGNORECASE)
+        if match:
+            result["address"] = match.group(1).strip()
+            break
+    
+    # Try to identify title (usually the largest/first prominent text)
+    # Use the first line that looks like a title (not a date/time/address)
+    for line in lines:
+        line = line.strip()
+        if len(line) > 3 and len(line) < 60:
+            # Skip if it looks like a date, time, or address
+            if not re.search(r'\d{1,2}[/-]\d{1,2}', line) and \
+               not re.search(r'\d{1,2}:\d{2}', line) and \
+               not re.search(r'(?:AM|PM)', line, re.IGNORECASE):
+                result["title"] = line
+                break
+    
+    # Rest of the text becomes description
+    desc_lines = [l.strip() for l in lines if l.strip() and l.strip() != result["title"]]
+    result["description"] = '\n'.join(desc_lines[:5])  # First 5 lines as description
+    
+    return result
 
 # Expo Push Notification helper
 async def send_push_notification(push_token: str, title: str, body: str, data: dict = None):
@@ -193,6 +279,9 @@ class PerformanceRunCreate(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
 
+class OCRRequest(BaseModel):
+    image: str  # Base64 encoded image
+
 class RSVPCreate(BaseModel):
     userId: str
     eventId: str
@@ -277,6 +366,53 @@ async def create_event(event: EventCreate):
             await db.notifications.insert_many(notifications)
     
     return event_helper(created_event)
+
+# OCR Endpoint for scanning flyers
+@api_router.post("/ocr/scan-flyer")
+async def scan_flyer(request: OCRRequest):
+    """
+    Scan an event flyer image and extract text to populate event fields.
+    Accepts a base64 encoded image.
+    """
+    try:
+        # Remove data URL prefix if present
+        image_data = request.image
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+        
+        # Decode base64 image
+        image_bytes = base64.b64decode(image_data)
+        image = Image.open(io.BytesIO(image_bytes))
+        
+        # Convert to RGB if necessary
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+        
+        # Get OCR reader and perform text extraction
+        reader = get_ocr_reader()
+        
+        # Save image temporarily for OCR
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
+            image.save(tmp.name, 'JPEG')
+            results = reader.readtext(tmp.name)
+            os.unlink(tmp.name)
+        
+        # Combine all detected text
+        extracted_text = '\n'.join([text for (bbox, text, confidence) in results])
+        
+        # Parse the extracted text to identify event details
+        parsed_data = parse_event_details(extracted_text)
+        
+        return {
+            "success": True,
+            "extractedText": extracted_text,
+            "parsedData": parsed_data
+        }
+        
+    except Exception as e:
+        logging.error(f"OCR error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process image: {str(e)}")
 
 @api_router.get("/events")
 async def get_events(
