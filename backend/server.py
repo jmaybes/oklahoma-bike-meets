@@ -60,6 +60,7 @@ def user_helper(user) -> dict:
         "profilePic": user.get("profilePic", ""),
         "isAdmin": user.get("isAdmin", False),
         "notificationsEnabled": user.get("notificationsEnabled", True),
+        "locationSharingEnabled": user.get("locationSharingEnabled", True),
         "createdAt": user["createdAt"],
     }
 
@@ -110,12 +111,14 @@ class UserCreate(BaseModel):
     profilePic: str = ""
     isAdmin: bool = False
     notificationsEnabled: bool = True
+    locationSharingEnabled: bool = True
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     nickname: Optional[str] = None
     profilePic: Optional[str] = None
     notificationsEnabled: Optional[bool] = None
+    locationSharingEnabled: Optional[bool] = None
 
 class UserCarCreate(BaseModel):
     userId: str

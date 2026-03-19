@@ -119,6 +119,45 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleLocationToggle = async (value: boolean) => {
+    if (!value) {
+      Alert.alert(
+        'Disable Location Sharing?',
+        'Others will not be able to see your location at events. Are you sure?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Disable',
+            style: 'destructive',
+            onPress: async () => {
+              await updateLocationPreference(value);
+            },
+          },
+        ]
+      );
+    } else {
+      await updateLocationPreference(value);
+    }
+  };
+
+  const updateLocationPreference = async (enabled: boolean) => {
+    try {
+      const response = await axios.put(`${API_URL}/api/users/${user?.id}`, {
+        locationSharingEnabled: enabled,
+      });
+      await login(response.data);
+      Alert.alert(
+        'Success',
+        enabled
+          ? 'Location sharing enabled! Others can see your location at events.'
+          : 'Location sharing disabled.'
+      );
+    } catch (error) {
+      console.error('Error updating location preference:', error);
+      Alert.alert('Error', 'Failed to update location settings');
+    }
+  };
+
   const pickCarPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -366,8 +405,9 @@ export default function ProfileScreen() {
         )}
 
         <View style={styles.menuSection}>
+          <Text style={styles.settingsSectionTitle}>Settings</Text>
           <View style={styles.menuItem}>
-            <Ionicons name="notifications" size={24} color="#888" />
+            <Ionicons name="notifications" size={24} color="#FF6B35" />
             <Text style={styles.menuItemText}>Notifications</Text>
             <Switch
               value={user?.notificationsEnabled !== false}
@@ -376,6 +416,19 @@ export default function ProfileScreen() {
               thumbColor={user?.notificationsEnabled !== false ? '#fff' : '#f4f3f4'}
             />
           </View>
+          <View style={styles.menuItem}>
+            <Ionicons name="location" size={24} color="#4CAF50" />
+            <Text style={styles.menuItemText}>Location Sharing</Text>
+            <Switch
+              value={user?.locationSharingEnabled !== false}
+              onValueChange={handleLocationToggle}
+              trackColor={{ false: '#3e3e3e', true: '#4CAF50' }}
+              thumbColor={user?.locationSharingEnabled !== false ? '#fff' : '#f4f3f4'}
+            />
+          </View>
+          <Text style={styles.settingsHint}>
+            Location sharing allows others to see your location at events
+          </Text>
         </View>
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -721,6 +774,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
     marginLeft: 12,
+  },
+  settingsSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#888',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  settingsHint: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+    marginLeft: 4,
   },
   logoutButton: {
     flexDirection: 'row',
