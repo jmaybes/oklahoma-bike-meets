@@ -59,6 +59,7 @@ def user_helper(user) -> dict:
         "nickname": user.get("nickname", ""),
         "profilePic": user.get("profilePic", ""),
         "isAdmin": user.get("isAdmin", False),
+        "notificationsEnabled": user.get("notificationsEnabled", True),
         "createdAt": user["createdAt"],
     }
 
@@ -108,11 +109,13 @@ class UserCreate(BaseModel):
     nickname: str = ""
     profilePic: str = ""
     isAdmin: bool = False
+    notificationsEnabled: bool = True
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     nickname: Optional[str] = None
     profilePic: Optional[str] = None
+    notificationsEnabled: Optional[bool] = None
 
 class UserCarCreate(BaseModel):
     userId: str
@@ -203,8 +206,8 @@ async def create_event(event: EventCreate):
     
     # If it's a Pop Up event and approved, create notifications for all users
     if event_dict.get("isPopUp") and event_dict.get("isApproved"):
-        # Get all users
-        users = await db.users.find({}).to_list(10000)
+        # Get all users with notifications enabled
+        users = await db.users.find({"notificationsEnabled": {"$ne": False}}).to_list(10000)
         
         # Create notifications
         notifications = []
@@ -820,7 +823,7 @@ async def approve_event(event_id: str, admin_id: str):
     
     # If it's a Pop Up event, send notifications to all users
     if updated_event.get("isPopUp"):
-        users = await db.users.find({}).to_list(10000)
+        users = await db.users.find({"notificationsEnabled": {"$ne": False}}).to_list(10000)
         
         notifications = []
         for user in users:

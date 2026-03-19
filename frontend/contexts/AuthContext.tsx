@@ -8,6 +8,7 @@ interface User {
   nickname?: string;
   profilePic?: string;
   isAdmin?: boolean;
+  notificationsEnabled?: boolean;
 }
 
 interface AuthContextType {

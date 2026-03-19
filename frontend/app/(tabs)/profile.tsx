@@ -6,13 +6,64 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
+  Switch,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
+import axios from 'axios';
+
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function ProfileScreen() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, login } = useAuth();
+
+  const handleNotificationToggle = async (value: boolean) => {
+    if (!value) {
+      // Warning when turning OFF notifications
+      Alert.alert(
+        '⚠️ Disable Notifications?',
+        'You will not receive notifications about Pop Up events and other important updates. Are you sure?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Disable',
+            style: 'destructive',
+            onPress: async () => {
+              await updateNotificationPreference(value);
+            },
+          },
+        ]
+      );
+    } else {
+      await updateNotificationPreference(value);
+    }
+  };
+
+  const updateNotificationPreference = async (enabled: boolean) => {
+    try {
+      const response = await axios.put(`${API_URL}/api/users/${user?.id}`, {
+        notificationsEnabled: enabled,
+      });
+      
+      // Update local user state
+      await login(response.data);
+      
+      Alert.alert(
+        'Success',
+        enabled
+          ? 'Notifications enabled! You\'ll receive Pop Up event alerts.'
+          : 'Notifications disabled.'
+      );
+    } catch (error) {
+      console.error('Error updating notification preference:', error);
+      Alert.alert('Error', 'Failed to update notification settings');
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -134,7 +185,12 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.menuItem}>
             <Ionicons name="notifications" size={24} color="#888" />
             <Text style={styles.menuItemText}>Notifications</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
+            <Switch
+              value={user?.notificationsEnabled !== false}
+              onValueChange={handleNotificationToggle}
+              trackColor={{ false: '#3e3e3e', true: '#FF6B35' }}
+              thumbColor={user?.notificationsEnabled !== false ? '#fff' : '#f4f3f4'}
+            />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem}>
