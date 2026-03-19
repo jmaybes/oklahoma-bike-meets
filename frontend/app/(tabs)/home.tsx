@@ -168,33 +168,32 @@ export default function HomeScreen() {
         />
       </View>
 
-      <View style={styles.filterContainer}>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={eventTypes}
-          keyExtractor={(item) => item}
-          contentContainerStyle={styles.filterContent}
-          renderItem={({ item }) => (
-            <TouchableOpacity
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterContainer}
+        contentContainerStyle={styles.filterContent}
+      >
+        {eventTypes.map((item) => (
+          <TouchableOpacity
+            key={item}
+            style={[
+              styles.filterChip,
+              selectedType === item && styles.filterChipActive,
+            ]}
+            onPress={() => setSelectedType(item)}
+          >
+            <Text
               style={[
-                styles.filterChip,
-                selectedType === item && styles.filterChipActive,
+                styles.filterChipText,
+                selectedType === item && styles.filterChipTextActive,
               ]}
-              onPress={() => setSelectedType(item)}
             >
-              <Text
-                style={[
-                  styles.filterChipText,
-                  selectedType === item && styles.filterChipTextActive,
-                ]}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
-        />
-      </View>
+              {item}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
 
       <FlatList
         data={filteredEvents}
@@ -273,16 +272,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   filterContent: {
-    paddingHorizontal: 20,
-    paddingRight: 60,
+    paddingLeft: 20,
+    paddingRight: 20,
   },
   filterChip: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     backgroundColor: '#1a1a1a',
     borderRadius: 20,
     marginRight: 10,
-    minWidth: 90,
     alignItems: 'center',
   },
   filterChipActive: {
