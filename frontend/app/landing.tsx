@@ -14,13 +14,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFonts, BungeeInline_400Regular } from '@expo-google-fonts/bungee-inline';
+import { useFonts, RobotoCondensed_700Bold } from '@expo-google-fonts/roboto-condensed';
 
 const { width, height } = Dimensions.get('window');
 
 export default function LandingScreen() {
   const [fontsLoaded] = useFonts({
-    BungeeInline_400Regular,
+    RobotoCondensed_700Bold,
   });
 
   const markLandingSeen = async () => {
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 28,
-    fontFamily: 'BungeeInline_400Regular',
+    fontFamily: 'RobotoCondensed_700Bold',
     color: '#fff',
     textAlign: 'center',
     marginBottom: 0,
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   },
   heroTitleSub: {
     fontSize: 24,
-    fontFamily: 'BungeeInline_400Regular',
+    fontFamily: 'RobotoCondensed_700Bold',
     color: '#FF6B35',
     textAlign: 'center',
     marginBottom: 8,
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   },
   communityTitle: {
     fontSize: 22,
-    fontFamily: 'BungeeInline_400Regular',
+    fontFamily: 'RobotoCondensed_700Bold',
     color: '#fff',
     marginBottom: 4,
   },
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 22,
-    fontFamily: 'BungeeInline_400Regular',
+    fontFamily: 'RobotoCondensed_700Bold',
     color: '#fff',
     textAlign: 'center',
     marginBottom: 8,
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   },
   featureTitle: {
     fontSize: 14,
-    fontFamily: 'BungeeInline_400Regular',
+    fontFamily: 'RobotoCondensed_700Bold',
     color: '#fff',
     textAlign: 'center',
     marginBottom: 4,
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
   },
   statNumber: {
     fontSize: 28,
-    fontFamily: 'BungeeInline_400Regular',
+    fontFamily: 'RobotoCondensed_700Bold',
     color: '#FF6B35',
     marginBottom: 4,
   },
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
   },
   ctaTitle: {
     fontSize: 24,
-    fontFamily: 'BungeeInline_400Regular',
+    fontFamily: 'RobotoCondensed_700Bold',
     color: '#fff',
     marginTop: 12,
     marginBottom: 8,
