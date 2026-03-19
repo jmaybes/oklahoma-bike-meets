@@ -169,32 +169,33 @@ export default function HomeScreen() {
         />
       </View>
 
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterContainer}
-        contentContainerStyle={styles.filterContent}
-      >
-        {eventTypes.map((item) => (
-          <TouchableOpacity
-            key={item}
-            style={[
-              styles.filterChip,
-              selectedType === item && styles.filterChipActive,
-            ]}
-            onPress={() => setSelectedType(item)}
-          >
-            <Text
+      <View style={styles.filterWrapper}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContent}
+        >
+          {eventTypes.map((item) => (
+            <TouchableOpacity
+              key={item}
               style={[
-                styles.filterChipText,
-                selectedType === item && styles.filterChipTextActive,
+                styles.filterChip,
+                selectedType === item && styles.filterChipActive,
               ]}
+              onPress={() => setSelectedType(item)}
             >
-              {item}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text
+                style={[
+                  styles.filterChipText,
+                  selectedType === item && styles.filterChipTextActive,
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       <FlatList
         data={filteredEvents}
@@ -269,22 +270,23 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  filterContainer: {
+  filterWrapper: {
     marginBottom: 16,
-    maxHeight: 50,
+    paddingVertical: 4,
   },
   filterContent: {
     paddingHorizontal: 20,
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
   filterChip: {
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#333333',
+    backgroundColor: '#404040',
     borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: '#555555',
+    borderWidth: 1,
+    borderColor: '#606060',
   },
   filterChipActive: {
     backgroundColor: '#FF6B35',
@@ -293,7 +295,7 @@ const styles = StyleSheet.create({
   filterChipText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   filterChipTextActive: {
     color: '#FFFFFF',
