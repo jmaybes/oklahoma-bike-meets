@@ -12,12 +12,14 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -25,6 +27,9 @@ export default function AddEventScreen() {
   const { user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [isPopUp, setIsPopUp] = useState(false);
+  const [useMyLocation, setUseMyLocation] = useState(false);
+  const [loadingLocation, setLoadingLocation] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -42,7 +47,44 @@ export default function AddEventScreen() {
     website: '',
   });
 
-  const eventTypes = ['Car Meet', 'Car Show', 'Cruise', 'Race', 'Other'];
+  const eventTypes = ['Car Meet', 'Car Show', 'Cruise', 'Race', 'Pop Up Race', 'Other'];
+
+  const getMyLocation = async () => {
+    setLoadingLocation(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Location permission is required to use this feature');
+        setUseMyLocation(false);
+        setLoadingLocation(false);
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+
+      // Reverse geocode to get address
+      const address = await Location.reverseGeocodeAsync({ latitude, longitude });
+      
+      if (address && address.length > 0) {
+        const addr = address[0];
+        setFormData({
+          ...formData,
+          location: addr.name || addr.street || 'Current Location',
+          address: `${addr.street || ''} ${addr.streetNumber || ''}`.trim(),
+          city: addr.city || addr.subregion || '',
+        });
+      }
+      
+      Alert.alert('Success', 'Location captured! Coordinates will be saved with your event.');
+    } catch (error) {
+      console.error('Error getting location:', error);
+      Alert.alert('Error', 'Failed to get your location. Please try again.');
+      setUseMyLocation(false);
+    } finally {
+      setLoadingLocation(false);
+    }
+  };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -88,18 +130,41 @@ export default function AddEventScreen() {
         ? formData.carTypes.split(',').map(type => type.trim())
         : [];
 
+      let latitude = null;
+      let longitude = null;
+
+      // Get current location coordinates if user selected "Use My Location"
+      if (useMyLocation) {
+        try {
+          const location = await Location.getCurrentPositionAsync({});
+          latitude = location.coords.latitude;
+          longitude = location.coords.longitude;
+        } catch (error) {
+          console.error('Error getting coordinates:', error);
+        }
+      }
+
       const eventData = {
         ...formData,
         carTypes: carTypesArray,
         userId: user?.id || null,
         photos: photos,
+        isPopUp: isPopUp,
+        latitude: latitude,
+        longitude: longitude,
       };
 
       await axios.post(`${API_URL}/api/events`, eventData);
       
-      const approvalMessage = user?.isAdmin 
+      let approvalMessage = user?.isAdmin 
         ? 'Event created and published successfully!' 
         : 'Event submitted successfully! It will be visible after admin approval.';
+      
+      if (isPopUp && user?.isAdmin) {
+        approvalMessage += '\n\n🚨 All users have been notified about this Pop Up event!';
+      } else if (isPopUp) {
+        approvalMessage += '\n\nOnce approved, all users will be notified about this Pop Up event!';
+      }
       
       Alert.alert('Success', approvalMessage, [
         { text: 'OK', onPress: () => {

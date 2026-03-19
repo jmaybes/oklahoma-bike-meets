@@ -45,6 +45,7 @@ def event_helper(event) -> dict:
         "attendeeCount": event.get("attendeeCount", 0),
         "userId": event.get("userId"),
         "isApproved": event.get("isApproved", True),
+        "isPopUp": event.get("isPopUp", False),
         "createdAt": event.get("createdAt"),
         "contactInfo": event.get("contactInfo", ""),
         "website": event.get("website", ""),
@@ -80,6 +81,7 @@ class EventCreate(BaseModel):
     userId: Optional[str] = None
     contactInfo: str = ""
     website: str = ""
+    isPopUp: bool = False
 
 class EventUpdate(BaseModel):
     title: Optional[str] = None
@@ -198,6 +200,30 @@ async def create_event(event: EventCreate):
     
     result = await db.events.insert_one(event_dict)
     created_event = await db.events.find_one({"_id": result.inserted_id})
+    
+    # If it's a Pop Up event and approved, create notifications for all users
+    if event_dict.get("isPopUp") and event_dict.get("isApproved"):
+        # Get all users
+        users = await db.users.find({}).to_list(10000)
+        
+        # Create notifications
+        notifications = []
+        for user in users:
+            if str(user["_id"]) != event_dict.get("userId"):  # Don't notify creator
+                notification = {
+                    "userId": str(user["_id"]),
+                    "eventId": str(created_event["_id"]),
+                    "type": "popup_event",
+                    "title": f"🚨 Pop Up Event: {created_event['title']}",
+                    "message": f"{created_event['eventType']} happening {created_event['date']} at {created_event['time']} in {created_event['city']}!",
+                    "isRead": False,
+                    "createdAt": datetime.utcnow().isoformat()
+                }
+                notifications.append(notification)
+        
+        if notifications:
+            await db.notifications.insert_many(notifications)
+    
     return event_helper(created_event)
 
 @api_router.get("/events")
@@ -633,6 +659,44 @@ async def stop_sharing_location(user_id: str):
     )
     return {"message": "Location sharing stopped"}
 
+# Notification Routes
+@api_router.get("/notifications/{user_id}")
+async def get_notifications(user_id: str, unread_only: bool = False):
+    query = {"userId": user_id}
+    if unread_only:
+        query["isRead"] = False
+    
+    notifications = await db.notifications.find(query).sort("createdAt", -1).limit(50).to_list(50)
+    return [{
+        "id": str(notif["_id"]),
+        "userId": notif["userId"],
+        "eventId": notif.get("eventId"),
+        "type": notif["type"],
+        "title": notif["title"],
+        "message": notif["message"],
+        "isRead": notif["isRead"],
+        "createdAt": notif["createdAt"]
+    } for notif in notifications]
+
+@api_router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str):
+    if not ObjectId.is_valid(notification_id):
+        raise HTTPException(status_code=400, detail="Invalid notification ID")
+    
+    await db.notifications.update_one(
+        {"_id": ObjectId(notification_id)},
+        {"$set": {"isRead": True}}
+    )
+    return {"message": "Notification marked as read"}
+
+@api_router.put("/notifications/user/{user_id}/read-all")
+async def mark_all_notifications_read(user_id: str):
+    await db.notifications.update_many(
+        {"userId": user_id, "isRead": False},
+        {"$set": {"isRead": True}}
+    )
+    return {"message": "All notifications marked as read"}
+
 # Club Routes
 @api_router.post("/clubs")
 async def create_club(club: ClubCreate):
@@ -753,6 +817,28 @@ async def approve_event(event_id: str, admin_id: str):
         raise HTTPException(status_code=404, detail="Event not found")
     
     updated_event = await db.events.find_one({"_id": ObjectId(event_id)})
+    
+    # If it's a Pop Up event, send notifications to all users
+    if updated_event.get("isPopUp"):
+        users = await db.users.find({}).to_list(10000)
+        
+        notifications = []
+        for user in users:
+            if str(user["_id"]) != updated_event.get("userId"):
+                notification = {
+                    "userId": str(user["_id"]),
+                    "eventId": event_id,
+                    "type": "popup_event",
+                    "title": f"🚨 Pop Up Event: {updated_event['title']}",
+                    "message": f"{updated_event['eventType']} happening {updated_event['date']} at {updated_event['time']} in {updated_event['city']}!",
+                    "isRead": False,
+                    "createdAt": datetime.utcnow().isoformat()
+                }
+                notifications.append(notification)
+        
+        if notifications:
+            await db.notifications.insert_many(notifications)
+    
     return event_helper(updated_event)
 
 @api_router.delete("/admin/events/{event_id}/reject")
