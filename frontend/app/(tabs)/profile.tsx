@@ -340,14 +340,6 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/clubs')}>
-            <Ionicons name="people-circle" size={24} color="#9C27B0" />
-            <Text style={styles.menuItemText}>Oklahoma Car Clubs</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
-        </View>
-
         {user?.isAdmin && (
           <View style={styles.menuSection}>
             <View style={styles.sectionHeader}>

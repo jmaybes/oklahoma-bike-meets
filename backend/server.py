@@ -858,15 +858,14 @@ async def get_clubs(city: Optional[str] = Query(None), carType: Optional[str] = 
     return [{
         "id": str(club["_id"]),
         "name": club["name"],
-        "description": club["description"],
-        "location": club["location"],
-        "city": club["city"],
-        "carTypes": club.get("carTypes", []),
-        "contactInfo": club.get("contactInfo", ""),
-        "website": club.get("website", ""),
-        "facebookGroup": club.get("facebookGroup", ""),
+        "description": club.get("description", ""),
+        "location": club.get("location", ""),
+        "focus": club.get("focus", ""),
         "meetingSchedule": club.get("meetingSchedule", ""),
-        "memberCount": club.get("memberCount", ""),
+        "contactEmail": club.get("contactEmail", ""),
+        "website": club.get("website", ""),
+        "memberCount": club.get("memberCount", 0),
+        "isApproved": club.get("isApproved", True),
         "createdAt": club.get("createdAt")
     } for club in clubs]
 

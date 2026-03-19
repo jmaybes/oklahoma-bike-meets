@@ -27,6 +27,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="clubs"
+        options={{
+          title: 'Clubs',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="timer"
         options={{
           title: 'Timer',
