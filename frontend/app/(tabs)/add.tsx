@@ -312,6 +312,41 @@ export default function AddEventScreen() {
               onChangeText={(text) => setFormData({ ...formData, city: text })}
             />
 
+            {/* Use My Location Button */}
+            <TouchableOpacity
+              style={styles.locationButton}
+              onPress={getMyLocation}
+              disabled={loadingLocation}
+            >
+              {loadingLocation ? (
+                <ActivityIndicator size="small" color="#4CAF50" />
+              ) : (
+                <Ionicons name="location" size={20} color="#4CAF50" />
+              )}
+              <Text style={styles.locationButtonText}>
+                {loadingLocation ? 'Getting Location...' : 'Use My Current Location'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Pop Up Event Toggle */}
+            <View style={styles.popupToggleContainer}>
+              <View style={styles.popupToggleInfo}>
+                <Ionicons name="flash" size={24} color="#FF3B30" />
+                <View style={styles.popupToggleText}>
+                  <Text style={styles.popupToggleTitle}>Pop Up Event</Text>
+                  <Text style={styles.popupToggleDescription}>
+                    Mark this as a last-minute event to send urgent notifications to all users
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={isPopUp}
+                onValueChange={setIsPopUp}
+                trackColor={{ false: '#3e3e3e', true: '#FF3B30' }}
+                thumbColor={isPopUp ? '#fff' : '#f4f3f4'}
+              />
+            </View>
+
             <Text style={styles.label}>Organizer</Text>
             <TextInput
               style={styles.input}
@@ -548,5 +583,54 @@ const styles = StyleSheet.create({
     right: -8,
     backgroundColor: '#0c0c0c',
     borderRadius: 12,
+  },
+  locationButton: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  locationButtonText: {
+    color: '#4CAF50',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  popupToggleContainer: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#FF3B30',
+  },
+  popupToggleInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  popupToggleText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  popupToggleTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  popupToggleDescription: {
+    color: '#888',
+    fontSize: 12,
+    marginTop: 4,
+    lineHeight: 16,
   },
 });
