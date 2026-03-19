@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 from bson import ObjectId
+import httpx
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -23,6 +24,35 @@ app = FastAPI()
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
+
+# Expo Push Notification helper
+async def send_push_notification(push_token: str, title: str, body: str, data: dict = None):
+    """Send push notification via Expo's push service"""
+    if not push_token or not push_token.startswith('ExponentPushToken'):
+        return False
+    
+    message = {
+        "to": push_token,
+        "sound": "default",
+        "title": title,
+        "body": body,
+        "data": data or {}
+    }
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://exp.host/--/api/v2/push/send",
+                json=message,
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                }
+            )
+            return response.status_code == 200
+    except Exception as e:
+        logging.error(f"Failed to send push notification: {e}")
+        return False
 
 # Helper function to convert ObjectId to string
 def event_helper(event) -> dict:
@@ -61,6 +91,7 @@ def user_helper(user) -> dict:
         "isAdmin": user.get("isAdmin", False),
         "notificationsEnabled": user.get("notificationsEnabled", True),
         "locationSharingEnabled": user.get("locationSharingEnabled", True),
+        "pushToken": user.get("pushToken", ""),
         "createdAt": user["createdAt"],
     }
 
@@ -119,6 +150,7 @@ class UserUpdate(BaseModel):
     profilePic: Optional[str] = None
     notificationsEnabled: Optional[bool] = None
     locationSharingEnabled: Optional[bool] = None
+    pushToken: Optional[str] = None
 
 class UserCarCreate(BaseModel):
     userId: str
@@ -544,6 +576,26 @@ async def update_user(user_id: str, user_update: UserUpdate):
     
     return user_helper(updated_user)
 
+# Register Push Token
+class PushTokenRegister(BaseModel):
+    userId: str
+    pushToken: str
+
+@api_router.post("/users/register-push-token")
+async def register_push_token(data: PushTokenRegister):
+    if not ObjectId.is_valid(data.userId):
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    result = await db.users.update_one(
+        {"_id": ObjectId(data.userId)},
+        {"$set": {"pushToken": data.pushToken}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "Push token registered successfully"}
+
 # User Car Routes
 @api_router.post("/user-cars")
 async def create_user_car(car: UserCarCreate):
@@ -724,6 +776,23 @@ async def send_message(message: MessageCreate):
     
     result = await db.messages.insert_one(message_dict)
     created_message = await db.messages.find_one({"_id": result.inserted_id})
+    
+    # Send push notification to recipient
+    recipient = await db.users.find_one({"_id": ObjectId(message.recipientId)})
+    sender = await db.users.find_one({"_id": ObjectId(message.senderId)})
+    
+    if recipient and recipient.get("pushToken") and recipient.get("notificationsEnabled", True):
+        sender_name = sender.get("nickname") or sender.get("name", "Someone") if sender else "Someone"
+        await send_push_notification(
+            push_token=recipient["pushToken"],
+            title=f"New message from {sender_name}",
+            body=message.content[:100] + ("..." if len(message.content) > 100 else ""),
+            data={
+                "type": "message",
+                "senderId": message.senderId,
+                "senderName": sender_name
+            }
+        )
     
     return {
         "id": str(created_message["_id"]),
