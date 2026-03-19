@@ -259,18 +259,6 @@ export default function ProfileScreen() {
           >
             <Text style={styles.registerButtonText}>Create Account</Text>
           </TouchableOpacity>
-
-          <View style={styles.guestMenuSection}>
-            <Text style={styles.guestMenuTitle}>Explore</Text>
-            <TouchableOpacity 
-              style={styles.guestMenuItem} 
-              onPress={() => router.push('/clubs')}
-            >
-              <Ionicons name="people-circle" size={24} color="#9C27B0" />
-              <Text style={styles.guestMenuText}>Oklahoma Car Clubs</Text>
-              <Ionicons name="chevron-forward" size={24} color="#666" />
-            </TouchableOpacity>
-          </View>
         </View>
       </SafeAreaView>
     );

@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -202,12 +203,22 @@ export default function AddEventScreen() {
         style={styles.keyboardView}
       >
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Add New Event</Text>
-            <Text style={styles.headerSubtitle}>
-              Share a car event with the community
-            </Text>
-          </View>
+          <LinearGradient
+            colors={['#FF6B35', '#E91E63']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.headerGradient}
+          >
+            <View style={styles.header}>
+              <View>
+                <Text style={styles.headerTitle}>Add New Event</Text>
+                <Text style={styles.headerSubtitle}>
+                  Share a car event with the community
+                </Text>
+              </View>
+              <Ionicons name="add-circle" size={32} color="#fff" />
+            </View>
+          </LinearGradient>
 
           {!isAuthenticated && (
             <View style={styles.authNotice}>
@@ -446,19 +457,25 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  header: {
-    padding: 20,
+  headerGradient: {
     paddingTop: 10,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#888',
-    marginTop: 4,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: 2,
   },
   authNotice: {
     flexDirection: 'row',
