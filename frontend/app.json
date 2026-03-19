@@ -11,7 +11,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Track your speed for performance timing",
+        "NSLocationWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
         "NSCameraUsageDescription": "Take photos of your car for your garage",
         "NSPhotoLibraryUsageDescription": "Select photos for events and your garage"
       }
@@ -49,6 +50,12 @@
         }
       ],
       "expo-font",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Find nearby car enthusiasts and share your location for meetups"
+        }
+      ],
       [
         "expo-notifications",
         {

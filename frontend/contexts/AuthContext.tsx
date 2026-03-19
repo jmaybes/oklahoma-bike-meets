@@ -25,6 +25,9 @@ interface User {
   isAdmin?: boolean;
   notificationsEnabled?: boolean;
   locationSharingEnabled?: boolean;
+  locationPrivate?: boolean;
+  latitude?: number;
+  longitude?: number;
   pushToken?: string;
 }
 
@@ -32,6 +35,7 @@ interface AuthContextType {
   user: User | null;
   login: (user: User) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (user: User) => Promise<void>;
   isAuthenticated: boolean;
   expoPushToken: string | null;
 }
@@ -160,8 +164,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUser = async (userData: User) => {
+    try {
+      await AsyncStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+    } catch (error) {
+      console.error('Error updating user:', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, expoPushToken }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, isAuthenticated: !!user, expoPushToken }}>
       {children}
     </AuthContext.Provider>
   );

@@ -27,20 +27,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="nearby"
+        options={{
+          title: 'Nearby',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="location" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="clubs"
         options={{
           title: 'Clubs',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="timer"
-        options={{
-          title: 'Timer',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="speedometer" size={size} color={color} />
           ),
         }}
       />
@@ -60,6 +60,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="car" size={size} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="timer"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

@@ -177,6 +177,9 @@ def user_helper(user) -> dict:
         "isAdmin": user.get("isAdmin", False),
         "notificationsEnabled": user.get("notificationsEnabled", True),
         "locationSharingEnabled": user.get("locationSharingEnabled", True),
+        "locationPrivate": user.get("locationPrivate", False),
+        "latitude": user.get("latitude"),
+        "longitude": user.get("longitude"),
         "pushToken": user.get("pushToken", ""),
         "createdAt": user["createdAt"],
     }
@@ -236,6 +239,9 @@ class UserUpdate(BaseModel):
     profilePic: Optional[str] = None
     notificationsEnabled: Optional[bool] = None
     locationSharingEnabled: Optional[bool] = None
+    locationPrivate: Optional[bool] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     pushToken: Optional[str] = None
 
 class UserCarCreate(BaseModel):
@@ -685,6 +691,175 @@ async def mark_notification_read(notification_id: str):
         {"$set": {"isRead": True}}
     )
     return {"message": "Notification marked as read"}
+
+# ==================== NEARBY USERS & MEETUP INVITES ====================
+
+import math
+
+def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate distance between two points in miles using Haversine formula"""
+    R = 3959  # Earth's radius in miles
+    
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
+    delta_lat = math.radians(lat2 - lat1)
+    delta_lon = math.radians(lon2 - lon1)
+    
+    a = math.sin(delta_lat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    
+    return R * c
+
+@api_router.get("/users/nearby/{user_id}")
+async def get_nearby_users(
+    user_id: str,
+    latitude: float = Query(...),
+    longitude: float = Query(...),
+    radius: float = Query(default=25, le=50)  # Max 50 miles
+):
+    """Get all users within specified radius who have location sharing enabled and are not private"""
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    # Update requesting user's location
+    await db.users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"latitude": latitude, "longitude": longitude}}
+    )
+    
+    # Find all users with location sharing enabled and not private
+    users = await db.users.find({
+        "locationSharingEnabled": {"$ne": False},
+        "locationPrivate": {"$ne": True},
+        "latitude": {"$exists": True, "$ne": None},
+        "longitude": {"$exists": True, "$ne": None},
+        "_id": {"$ne": ObjectId(user_id)}  # Exclude self
+    }).to_list(10000)
+    
+    nearby_users = []
+    for user in users:
+        distance = haversine_distance(
+            latitude, longitude,
+            user["latitude"], user["longitude"]
+        )
+        if distance <= radius:
+            nearby_users.append({
+                "id": str(user["_id"]),
+                "name": user.get("name", ""),
+                "nickname": user.get("nickname", ""),
+                "profilePic": user.get("profilePic", ""),
+                "latitude": user["latitude"],
+                "longitude": user["longitude"],
+                "distance": round(distance, 1)
+            })
+    
+    # Sort by distance
+    nearby_users.sort(key=lambda x: x["distance"])
+    
+    return {
+        "count": len(nearby_users),
+        "radius": radius,
+        "users": nearby_users
+    }
+
+class MeetupInviteRequest(BaseModel):
+    senderId: str
+    senderName: str
+    senderLatitude: float
+    senderLongitude: float
+    radius: float
+    message: str
+    isCustomMessage: bool = False
+
+# Prewritten invite messages
+PREWRITTEN_INVITES = [
+    "Hey car enthusiasts! I'm nearby and looking to meet up. Anyone want to cruise?",
+    "Pop-up meet happening now! Come check out some rides in the area!",
+    "Looking for fellow car lovers to hang out. Who's around?",
+    "Spontaneous car meet! Drop your location if you're interested!",
+    "Any gearheads nearby want to link up and talk cars?"
+]
+
+@api_router.get("/meetup/prewritten-messages")
+async def get_prewritten_messages():
+    """Get list of prewritten meetup invite messages"""
+    return {"messages": PREWRITTEN_INVITES}
+
+@api_router.post("/meetup/send-invite")
+async def send_meetup_invite(invite: MeetupInviteRequest):
+    """Send meetup invite to all users within specified radius"""
+    if not ObjectId.is_valid(invite.senderId):
+        raise HTTPException(status_code=400, detail="Invalid sender ID")
+    
+    # Get sender info
+    sender = await db.users.find_one({"_id": ObjectId(invite.senderId)})
+    if not sender:
+        raise HTTPException(status_code=404, detail="Sender not found")
+    
+    # Find all users within radius
+    users = await db.users.find({
+        "locationSharingEnabled": {"$ne": False},
+        "notificationsEnabled": {"$ne": False},
+        "latitude": {"$exists": True, "$ne": None},
+        "longitude": {"$exists": True, "$ne": None},
+        "_id": {"$ne": ObjectId(invite.senderId)}
+    }).to_list(10000)
+    
+    invites_sent = 0
+    notifications = []
+    
+    for user in users:
+        distance = haversine_distance(
+            invite.senderLatitude, invite.senderLongitude,
+            user["latitude"], user["longitude"]
+        )
+        
+        if distance <= invite.radius:
+            # Create notification
+            notification = {
+                "userId": str(user["_id"]),
+                "type": "meetup_invite",
+                "title": f"🚗 Meetup Invite from {invite.senderName}!",
+                "message": invite.message,
+                "senderId": invite.senderId,
+                "senderName": invite.senderName,
+                "senderLatitude": invite.senderLatitude,
+                "senderLongitude": invite.senderLongitude,
+                "distance": round(distance, 1),
+                "isRead": False,
+                "createdAt": datetime.utcnow().isoformat()
+            }
+            notifications.append(notification)
+            
+            # Send push notification if user has token
+            if user.get("pushToken"):
+                try:
+                    await send_push_notification(
+                        user["pushToken"],
+                        notification["title"],
+                        f"{invite.message} ({round(distance, 1)} miles away)",
+                        {
+                            "type": "meetup_invite",
+                            "senderId": invite.senderId,
+                            "senderLatitude": invite.senderLatitude,
+                            "senderLongitude": invite.senderLongitude
+                        }
+                    )
+                except Exception as e:
+                    print(f"Failed to send push notification: {e}")
+            
+            invites_sent += 1
+    
+    # Bulk insert notifications
+    if notifications:
+        await db.notifications.insert_many(notifications)
+    
+    return {
+        "message": f"Meetup invite sent to {invites_sent} nearby users",
+        "invitesSent": invites_sent,
+        "radius": invite.radius
+    }
+
 @api_router.post("/auth/register")
 async def register_user(user: UserCreate):
     existing_user = await db.users.find_one({"email": user.email})
