@@ -5,12 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "okccaremeets",
+    "scheme": "okccarmeets",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.velocityvisualcrew.okccaremeets",
+      "bundleIdentifier": "com.velocityvisualcrew.okccarmeets",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
@@ -19,7 +19,7 @@
       }
     },
     "android": {
-      "package": "com.velocityvisualcrew.okccaremeets",
+      "package": "com.velocityvisualcrew.okccarmeets",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000"
