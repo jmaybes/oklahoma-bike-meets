@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { AuthProvider } from '../contexts/AuthContext';
+import BetaNoticeModal from '../components/BetaNoticeModal';
 
 export default function RootLayout() {
   return (
@@ -10,6 +11,7 @@ export default function RootLayout() {
         <Stack.Screen name="auth/login" options={{ headerShown: false }} />
         <Stack.Screen name="auth/register" options={{ headerShown: false }} />
       </Stack>
+      <BetaNoticeModal />
     </AuthProvider>
   );
 }
