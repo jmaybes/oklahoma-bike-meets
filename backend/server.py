@@ -1042,30 +1042,33 @@ async def respond_to_feedback(feedback_id: str, response: str = Query(...), stat
     
     # Notify user about response
     feedback = await db.feedback.find_one({"_id": ObjectId(feedback_id)})
-    if feedback:
-        user = await db.users.find_one({"_id": ObjectId(feedback["userId"])})
-        if user:
-            notification = {
-                "userId": feedback["userId"],
-                "type": "feedback_response",
-                "title": "Response to your feedback",
-                "message": f"Admin responded: {response[:100]}...",
-                "feedbackId": feedback_id,
-                "isRead": False,
-                "createdAt": datetime.utcnow().isoformat()
-            }
-            await db.notifications.insert_one(notification)
-            
-            if user.get("pushToken"):
-                try:
-                    await send_push_notification(
-                        user["pushToken"],
-                        notification["title"],
-                        notification["message"],
-                        {"type": "feedback_response", "feedbackId": feedback_id}
-                    )
-                except Exception as e:
-                    print(f"Failed to send push notification: {e}")
+    if feedback and feedback.get("userId"):
+        # Only try to send notification if userId is a valid ObjectId
+        user_id = feedback["userId"]
+        if ObjectId.is_valid(user_id):
+            user = await db.users.find_one({"_id": ObjectId(user_id)})
+            if user:
+                notification = {
+                    "userId": user_id,
+                    "type": "feedback_response",
+                    "title": "Response to your feedback",
+                    "message": f"Admin responded: {response[:100]}...",
+                    "feedbackId": feedback_id,
+                    "isRead": False,
+                    "createdAt": datetime.utcnow().isoformat()
+                }
+                await db.notifications.insert_one(notification)
+                
+                if user.get("pushToken"):
+                    try:
+                        await send_push_notification(
+                            user["pushToken"],
+                            notification["title"],
+                            notification["message"],
+                            {"type": "feedback_response", "feedbackId": feedback_id}
+                        )
+                    except Exception as e:
+                        print(f"Failed to send push notification: {e}")
     
     updated_feedback = await db.feedback.find_one({"_id": ObjectId(feedback_id)})
     return feedback_helper(updated_feedback)
