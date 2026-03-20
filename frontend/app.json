@@ -1,15 +1,16 @@
 {
   "expo": {
-    "name": "Oklahoma Car Events",
-    "slug": "oklahoma-car-events",
+    "name": "Oklahoma City Car Meets",
+    "slug": "oklahoma-city-car-meets",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "okcarevents",
+    "scheme": "okccaremeets",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.velocityvisualcrew.okccaremeets",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
@@ -18,6 +19,7 @@
       }
     },
     "android": {
+      "package": "com.velocityvisualcrew.okccaremeets",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000"
@@ -63,7 +65,8 @@
           "color": "#FF6B35",
           "sounds": []
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
