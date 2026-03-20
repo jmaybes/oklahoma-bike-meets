@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -7,9 +7,10 @@ import logging
 import re
 import base64
 import io
+import json
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime
 from bson import ObjectId
 import httpx
@@ -2157,8 +2158,32 @@ async def reject_club(club_id: str, admin_id: str):
     
     return {"message": "Club rejected and deleted"}
 
-# Include the router in the main app
-app.include_router(api_router)
+# ==================== Event Import API ====================
+@api_router.post("/admin/events/import")
+async def import_events(admin_id: str):
+    """
+    Import events from external sources (Eventbrite, sample data).
+    Admin only endpoint.
+    """
+    from event_sources import import_events_from_sources
+    
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+    
+    try:
+        stats = await import_events_from_sources(db)
+        return {
+            "message": "Event import completed",
+            "stats": stats
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -2174,6 +2199,142 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# ==================== WebSocket Connection Manager ====================
+
+class ConnectionManager:
+    """Manages WebSocket connections for real-time messaging"""
+    
+    def __init__(self):
+        # Maps user_id to their WebSocket connection
+        self.active_connections: Dict[str, WebSocket] = {}
+    
+    async def connect(self, websocket: WebSocket, user_id: str):
+        await websocket.accept()
+        self.active_connections[user_id] = websocket
+        logger.info(f"WebSocket connected: {user_id}")
+    
+    def disconnect(self, user_id: str):
+        if user_id in self.active_connections:
+            del self.active_connections[user_id]
+            logger.info(f"WebSocket disconnected: {user_id}")
+    
+    async def send_personal_message(self, message: dict, user_id: str):
+        """Send message to a specific user"""
+        if user_id in self.active_connections:
+            try:
+                await self.active_connections[user_id].send_json(message)
+                return True
+            except Exception as e:
+                logger.error(f"Error sending message to {user_id}: {e}")
+                self.disconnect(user_id)
+        return False
+    
+    async def broadcast_to_users(self, message: dict, user_ids: List[str]):
+        """Send message to multiple users"""
+        for user_id in user_ids:
+            await self.send_personal_message(message, user_id)
+    
+    def is_online(self, user_id: str) -> bool:
+        return user_id in self.active_connections
+    
+    def get_online_users(self) -> List[str]:
+        return list(self.active_connections.keys())
+
+# Create global connection manager
+ws_manager = ConnectionManager()
+
+# WebSocket endpoint for real-time messaging
+@app.websocket("/ws/messages/{user_id}")
+async def websocket_messages(websocket: WebSocket, user_id: str):
+    """WebSocket endpoint for real-time message updates"""
+    await ws_manager.connect(websocket, user_id)
+    try:
+        while True:
+            # Receive messages from client
+            data = await websocket.receive_json()
+            
+            if data.get("type") == "message":
+                # Create and save message
+                message_dict = {
+                    "senderId": user_id,
+                    "recipientId": data["recipientId"],
+                    "content": data["content"],
+                    "createdAt": datetime.utcnow().isoformat(),
+                    "isRead": False,
+                }
+                
+                result = await db.messages.insert_one(message_dict)
+                created_message = await db.messages.find_one({"_id": result.inserted_id})
+                
+                # Get sender info
+                sender = await db.users.find_one({"_id": ObjectId(user_id)})
+                sender_name = sender.get("name", "Unknown") if sender else "Unknown"
+                
+                # Prepare message for sending
+                ws_message = {
+                    "type": "new_message",
+                    "message": {
+                        "id": str(created_message["_id"]),
+                        "senderId": created_message["senderId"],
+                        "senderName": sender_name,
+                        "recipientId": created_message["recipientId"],
+                        "content": created_message["content"],
+                        "createdAt": created_message["createdAt"],
+                        "isRead": created_message["isRead"],
+                    }
+                }
+                
+                # Send to recipient if online
+                await ws_manager.send_personal_message(ws_message, data["recipientId"])
+                
+                # Send confirmation back to sender
+                await websocket.send_json({
+                    "type": "message_sent",
+                    "message": ws_message["message"]
+                })
+            
+            elif data.get("type") == "typing":
+                # Notify recipient that user is typing
+                await ws_manager.send_personal_message({
+                    "type": "typing",
+                    "userId": user_id,
+                }, data["recipientId"])
+            
+            elif data.get("type") == "read":
+                # Mark messages as read
+                await db.messages.update_many(
+                    {"senderId": data["senderId"], "recipientId": user_id, "isRead": False},
+                    {"$set": {"isRead": True}}
+                )
+                # Notify sender that messages were read
+                await ws_manager.send_personal_message({
+                    "type": "messages_read",
+                    "readBy": user_id,
+                }, data["senderId"])
+            
+            elif data.get("type") == "ping":
+                await websocket.send_json({"type": "pong"})
+                
+    except WebSocketDisconnect:
+        ws_manager.disconnect(user_id)
+    except Exception as e:
+        logger.error(f"WebSocket error for {user_id}: {e}")
+        ws_manager.disconnect(user_id)
+
+# API endpoint to check online status
+@api_router.get("/messages/online/{user_id}")
+async def check_user_online(user_id: str):
+    """Check if a user is currently online (connected via WebSocket)"""
+    return {"online": ws_manager.is_online(user_id)}
+
+@api_router.get("/messages/online")
+async def get_online_users():
+    """Get list of all online users"""
+    return {"online_users": ws_manager.get_online_users()}
+
+# Include the router in the main app - MUST be after all route definitions
+app.include_router(api_router)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

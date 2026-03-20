@@ -685,6 +685,102 @@ test_plan:
           agent: "testing"
           comment: "GET /api/user-cars/{car_id} working perfectly. Returns all enhanced fields including performance specs, media, modifications, social links. Correctly increments views count on each request (0→1→2). Includes owner information (ownerName, ownerNickname) from user collection join. All enhanced fields properly serialized in response."
 
+  - task: "Admin Feedback Management - Get All Feedback"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/feedback/admin endpoint working correctly. Successfully retrieved feedback items with all required fields: id, userId, userName, userEmail, type, subject, message, status, adminResponse, createdAt, updatedAt."
+
+  - task: "Admin Feedback Management - Filter by Status"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/feedback/admin?status=new endpoint working correctly. Successfully filters feedback by status parameter and returns appropriate results."
+
+  - task: "Admin Feedback Management - Update Status"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "PUT /api/feedback/{feedback_id}/status?status=in_progress endpoint working correctly. Successfully updates feedback status with proper validation of status values."
+
+  - task: "Admin Feedback Management - Send Response"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "PUT /api/feedback/{feedback_id}/respond endpoint fails with 500 error. Root cause: existing test data contains invalid userId value 'test123' which cannot be converted to ObjectId. The endpoint code tries to validate ObjectId(feedback['userId']) but 'test123' is not a valid 24-character hex string. This is a data validation issue in the respond_to_feedback function at line 1046 in server.py."
+
+  - task: "WebSocket Online Status - Get Online Users"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/messages/online endpoint working correctly. Returns {online_users: []} array containing list of currently online user IDs. Tested with empty array as expected when no users are connected via WebSocket."
+
+  - task: "WebSocket Online Status - Check User Status"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/messages/online/{user_id} endpoint working correctly. Returns {online: false} boolean indicating whether specific user is currently connected via WebSocket. Tested with test user ID returning false as expected."
+
+  - task: "Event Import API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/admin/events/import?admin_id={admin_id} endpoint working correctly. Returns import statistics with total, new, duplicates, errors counts. Tested with admin user and received proper response: {total=0, new=0, duplicates=0, errors=0}. No events imported as expected since no external sources configured."
+
+  - task: "Events with Images - Photos Field"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/events endpoint verified for photos field. All 73 events have photos field populated with image URLs from Unsplash and Pexels. Each event contains exactly 1 photo URL in the photos array. Photos field is properly included in event_helper function and returns valid image URLs."
+
 agent_communication:
     - agent: "testing"
       message: "Comprehensive backend API testing completed successfully. All 18 core endpoints tested with 100% success rate. Additional edge case and error handling tests also passed. The API is fully functional with proper error handling, data validation, and persistence. Sample data includes 4 events across Oklahoma City, Norman, and Tulsa."
@@ -704,3 +800,5 @@ agent_communication:
       message: "Enhanced My Garage (User Cars) system testing completed successfully! ✅ All 5 requested enhanced endpoints working perfectly: (1) POST /api/user-cars with ALL new fields - performance specs (horsepower, torque, transmission, drivetrain), media (photos, videos), structured modifications with full object schema, social integration (Instagram, YouTube), privacy controls (isPublic). (2) PUT /api/user-cars/{car_id} with enhanced fields - successfully updated privacy, performance specs, modification notes. (3) GET /api/user-cars/public with owner info - includes ownerName/ownerNickname, respects privacy settings, supports make filtering. (4) POST /api/user-cars/{car_id}/like - increments likes count with user_id parameter. (5) GET /api/user-cars/{car_id} - returns all enhanced fields, increments views, includes owner info. Privacy controls work perfectly (public/private toggling), community features functional (likes/views), make filtering operational. All new field types properly validated and serialized."
     - agent: "testing"
       message: "Enhanced My Garage frontend testing completed successfully in mobile view (390x844)! ✅ Navigation to Garage/Profile Tab working at http://localhost:3000/(tabs)/profile. ✅ 'My Garage' header with 'Showcase your ride' subtitle visible. ✅ Tab bar shows correct 5 tabs (Events, Nearby, Clubs, Add, Garage) with NO Timer tab. ✅ Guest Mode view working with login/register buttons. ✅ Community Garages accessible at /garage with search functionality. ✅ All navigation elements working properly. Minor Issue: Beta Notice Modal has persistent display issues that require localStorage manipulation to bypass - this prevents smooth user experience on first app launch. The core My Garage functionality is fully implemented and working as specified, but the beta modal needs UX improvement for proper dismissal."
+    - agent: "testing"
+      message: "New feature testing completed for: ✅ Admin Feedback Management API - 3/4 endpoints working (GET admin feedback, status filtering, status updates). ❌ PUT /api/feedback/{id}/respond fails with 500 error due to invalid ObjectId validation in existing test data ('test123' not valid ObjectId). ✅ WebSocket Online Status API - Both endpoints working (GET /api/messages/online returns empty array, GET /api/messages/online/{user_id} returns false). ✅ Event Import API - Working (POST /api/admin/events/import returns stats: total=0, new=0, duplicates=0, errors=0). ✅ Events with Images - All 73 events have photos field populated with image URLs from Unsplash/Pexels. Root cause of feedback response failure is data validation issue in existing test data with non-ObjectId userId values."

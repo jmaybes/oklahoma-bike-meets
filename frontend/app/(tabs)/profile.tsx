@@ -567,6 +567,14 @@ export default function ProfileScreen() {
               <Text style={styles.menuItemText}>Pending Clubs</Text>
               <Ionicons name="chevron-forward" size={24} color="#666" />
             </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.menuItem, styles.adminMenuItem]} 
+              onPress={() => router.push('/admin/feedback')}
+            >
+              <Ionicons name="chatbubble-ellipses" size={24} color="#2196F3" />
+              <Text style={styles.menuItemText}>Manage Feedback</Text>
+              <Ionicons name="chevron-forward" size={24} color="#666" />
+            </TouchableOpacity>
           </View>
         )}
 
