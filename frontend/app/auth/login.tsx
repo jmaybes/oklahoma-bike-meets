@@ -10,12 +10,13 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
-  Switch,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import * as WebBrowser from 'expo-web-browser';
 import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -30,6 +31,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loadingCredentials, setLoadingCredentials] = useState(true);
@@ -72,6 +74,47 @@ export default function LoginScreen() {
       }
     } catch (error) {
       console.error('Error saving credentials:', error);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    try {
+      // Get the current URL for the callback
+      const currentUrl = Platform.OS === 'web' 
+        ? window.location.origin 
+        : 'okccarmeets://';
+      
+      // Construct the callback URL
+      const callbackUrl = `${currentUrl}/auth/google-callback`;
+      
+      // Emergent Auth URL
+      const authUrl = `https://demobackend.emergentagent.com/auth/v1/env/oauth/google?callback_url=${encodeURIComponent(callbackUrl)}`;
+      
+      if (Platform.OS === 'web') {
+        // On web, redirect directly
+        window.location.href = authUrl;
+      } else {
+        // On mobile, open in browser
+        const result = await WebBrowser.openAuthSessionAsync(authUrl, callbackUrl);
+        
+        if (result.type === 'success' && result.url) {
+          // Extract session_id from URL
+          const url = new URL(result.url);
+          const sessionId = url.searchParams.get('session_id') || 
+                           url.hash.match(/session_id=([^&]+)/)?.[1];
+          
+          if (sessionId) {
+            // Navigate to callback screen with session_id
+            router.push(`/auth/google-callback?session_id=${sessionId}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      Alert.alert('Error', 'Failed to initiate Google sign-in');
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -236,6 +279,22 @@ export default function LoginScreen() {
               <View style={styles.dividerLine} />
             </View>
 
+            {/* Google Sign-In Button */}
+            <TouchableOpacity
+              style={[styles.googleButton, googleLoading && styles.googleButtonDisabled]}
+              onPress={handleGoogleSignIn}
+              disabled={googleLoading}
+            >
+              {googleLoading ? (
+                <ActivityIndicator color="#333" />
+              ) : (
+                <>
+                  <Ionicons name="logo-google" size={20} color="#4285F4" />
+                  <Text style={styles.googleButtonText}>Continue with Google</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.registerLink}
               onPress={() => router.push('/auth/register')}
@@ -383,6 +442,7 @@ const styles = StyleSheet.create({
   },
   registerLink: {
     alignItems: 'center',
+    marginTop: 20,
   },
   registerLinkText: {
     color: '#888',
@@ -391,5 +451,22 @@ const styles = StyleSheet.create({
   registerLinkBold: {
     color: '#FF6B35',
     fontWeight: 'bold',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
+  },
+  googleButtonDisabled: {
+    opacity: 0.6,
+  },
+  googleButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

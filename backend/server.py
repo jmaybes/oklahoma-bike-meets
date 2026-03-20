@@ -1295,6 +1295,7 @@ async def register_user(user: UserCreate):
     
     user_dict = user.dict()
     user_dict["createdAt"] = datetime.utcnow().isoformat()
+    user_dict["authProvider"] = "email"  # Track auth provider
     
     result = await db.users.insert_one(user_dict)
     created_user = await db.users.find_one({"_id": result.inserted_id})
@@ -1303,10 +1304,122 @@ async def register_user(user: UserCreate):
 @api_router.post("/auth/login")
 async def login_user(credentials: UserLogin):
     user = await db.users.find_one({"email": credentials.email})
-    if not user or user["password"] != credentials.password:
+    if not user or user.get("password") != credentials.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     return user_helper(user)
+
+# ==================== Google OAuth Endpoints ====================
+
+class GoogleAuthRequest(BaseModel):
+    session_id: str
+
+class GoogleAuthComplete(BaseModel):
+    email: str
+    nickname: str
+    googleId: str
+    name: str
+    picture: str = ""
+
+@api_router.post("/auth/google/session")
+async def google_auth_session(request: GoogleAuthRequest):
+    """
+    Exchange Google OAuth session_id for user data from Emergent Auth.
+    Returns user info from Google - frontend should then call /auth/google/complete
+    """
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                headers={"X-Session-ID": request.session_id},
+                timeout=30.0
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=401, detail="Invalid session ID")
+            
+            google_data = response.json()
+            
+            # Check if user already exists with this email
+            existing_user = await db.users.find_one({"email": google_data["email"]})
+            
+            if existing_user:
+                # User exists - return user data (already has username)
+                return {
+                    "isNewUser": False,
+                    "user": user_helper(existing_user),
+                    "googleData": {
+                        "email": google_data["email"],
+                        "name": google_data["name"],
+                        "picture": google_data.get("picture", ""),
+                        "googleId": google_data["id"]
+                    }
+                }
+            else:
+                # New user - needs to set username
+                return {
+                    "isNewUser": True,
+                    "user": None,
+                    "googleData": {
+                        "email": google_data["email"],
+                        "name": google_data["name"],
+                        "picture": google_data.get("picture", ""),
+                        "googleId": google_data["id"]
+                    }
+                }
+                
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=500, detail=f"Failed to verify Google session: {str(e)}")
+
+@api_router.post("/auth/google/complete")
+async def google_auth_complete(data: GoogleAuthComplete):
+    """
+    Complete Google OAuth registration with custom username.
+    Called after user selects their username.
+    """
+    # Check if email already exists
+    existing_user = await db.users.find_one({"email": data.email})
+    if existing_user:
+        # User already exists - just return their data
+        return user_helper(existing_user)
+    
+    # Check if nickname is already taken
+    existing_nickname = await db.users.find_one({"nickname": data.nickname})
+    if existing_nickname:
+        raise HTTPException(status_code=400, detail="Username already taken")
+    
+    # Validate nickname
+    if len(data.nickname) < 3:
+        raise HTTPException(status_code=400, detail="Username must be at least 3 characters")
+    if len(data.nickname) > 20:
+        raise HTTPException(status_code=400, detail="Username must be 20 characters or less")
+    if not re.match(r'^[a-zA-Z0-9_]+$', data.nickname):
+        raise HTTPException(status_code=400, detail="Username can only contain letters, numbers, and underscores")
+    
+    # Create new user
+    new_user = {
+        "email": data.email,
+        "name": data.name,
+        "nickname": data.nickname,
+        "password": "",  # No password for Google users
+        "profilePic": data.picture,
+        "googleId": data.googleId,
+        "authProvider": "google",
+        "isAdmin": False,
+        "notificationsEnabled": True,
+        "locationSharingEnabled": True,
+        "createdAt": datetime.utcnow().isoformat()
+    }
+    
+    result = await db.users.insert_one(new_user)
+    created_user = await db.users.find_one({"_id": result.inserted_id})
+    return user_helper(created_user)
+
+@api_router.get("/auth/check-username/{nickname}")
+async def check_username_available(nickname: str):
+    """Check if a username is available"""
+    existing = await db.users.find_one({"nickname": nickname})
+    return {"available": existing is None}
 
 @api_router.put("/users/{user_id}")
 async def update_user(user_id: str, user_update: UserUpdate):
