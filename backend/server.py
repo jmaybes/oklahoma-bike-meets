@@ -244,24 +244,53 @@ class UserUpdate(BaseModel):
     longitude: Optional[float] = None
     pushToken: Optional[str] = None
 
+class Modification(BaseModel):
+    category: str  # e.g., "Engine", "Suspension", "Exterior", "Interior", "Wheels"
+    name: str
+    brand: Optional[str] = None
+    description: Optional[str] = None
+    cost: Optional[float] = None
+
 class UserCarCreate(BaseModel):
     userId: str
     make: str
     model: str
     year: str
     color: str = ""
-    modifications: str = ""
+    trim: str = ""
+    engine: str = ""
+    horsepower: Optional[int] = None
+    torque: Optional[int] = None
+    transmission: str = ""
+    drivetrain: str = ""  # FWD, RWD, AWD
     description: str = ""
     photos: List[str] = []
+    videos: List[str] = []  # Base64 encoded or URLs
+    modifications: List[Modification] = []
+    modificationNotes: str = ""  # Free-form text for additional notes
+    isPublic: bool = True  # Default to public/sharing mode
+    instagramHandle: str = ""
+    youtubeChannel: str = ""
 
 class UserCarUpdate(BaseModel):
     make: Optional[str] = None
     model: Optional[str] = None
     year: Optional[str] = None
     color: Optional[str] = None
-    modifications: Optional[str] = None
+    trim: Optional[str] = None
+    engine: Optional[str] = None
+    horsepower: Optional[int] = None
+    torque: Optional[int] = None
+    transmission: Optional[str] = None
+    drivetrain: Optional[str] = None
     description: Optional[str] = None
     photos: Optional[List[str]] = None
+    videos: Optional[List[str]] = None
+    modifications: Optional[List[Modification]] = None
+    modificationNotes: Optional[str] = None
+    isPublic: Optional[bool] = None
+    instagramHandle: Optional[str] = None
+    youtubeChannel: Optional[str] = None
 
 class MessageCreate(BaseModel):
     senderId: str
@@ -1314,34 +1343,8 @@ async def register_push_token(data: PushTokenRegister):
     
     return {"message": "Push token registered successfully"}
 
-# User Car Routes
-@api_router.post("/user-cars")
-async def create_user_car(car: UserCarCreate):
-    car_dict = car.dict()
-    car_dict["createdAt"] = datetime.utcnow().isoformat()
-    
-    result = await db.user_cars.insert_one(car_dict)
-    created_car = await db.user_cars.find_one({"_id": result.inserted_id})
-    
-    return {
-        "id": str(created_car["_id"]),
-        "userId": created_car["userId"],
-        "make": created_car["make"],
-        "model": created_car["model"],
-        "year": created_car["year"],
-        "color": created_car.get("color", ""),
-        "modifications": created_car.get("modifications", ""),
-        "description": created_car.get("description", ""),
-        "photos": created_car.get("photos", []),
-        "createdAt": created_car["createdAt"]
-    }
-
-@api_router.get("/user-cars/user/{user_id}")
-async def get_user_car(user_id: str):
-    car = await db.user_cars.find_one({"userId": user_id})
-    if not car:
-        return None
-    
+# User Car Helper
+def user_car_helper(car) -> dict:
     return {
         "id": str(car["_id"]),
         "userId": car["userId"],
@@ -1349,11 +1352,101 @@ async def get_user_car(user_id: str):
         "model": car["model"],
         "year": car["year"],
         "color": car.get("color", ""),
-        "modifications": car.get("modifications", ""),
+        "trim": car.get("trim", ""),
+        "engine": car.get("engine", ""),
+        "horsepower": car.get("horsepower"),
+        "torque": car.get("torque"),
+        "transmission": car.get("transmission", ""),
+        "drivetrain": car.get("drivetrain", ""),
         "description": car.get("description", ""),
         "photos": car.get("photos", []),
-        "createdAt": car.get("createdAt")
+        "videos": car.get("videos", []),
+        "modifications": car.get("modifications", []),
+        "modificationNotes": car.get("modificationNotes", ""),
+        "isPublic": car.get("isPublic", True),
+        "instagramHandle": car.get("instagramHandle", ""),
+        "youtubeChannel": car.get("youtubeChannel", ""),
+        "likes": car.get("likes", 0),
+        "views": car.get("views", 0),
+        "createdAt": car.get("createdAt"),
+        "updatedAt": car.get("updatedAt"),
     }
+
+# User Car Routes
+@api_router.post("/user-cars")
+async def create_user_car(car: UserCarCreate):
+    car_dict = car.dict()
+    car_dict["likes"] = 0
+    car_dict["views"] = 0
+    car_dict["createdAt"] = datetime.utcnow().isoformat()
+    
+    # Check if user already has a car, if so update instead
+    existing = await db.user_cars.find_one({"userId": car.userId})
+    if existing:
+        await db.user_cars.update_one(
+            {"_id": existing["_id"]},
+            {"$set": {**car_dict, "updatedAt": datetime.utcnow().isoformat()}}
+        )
+        updated_car = await db.user_cars.find_one({"_id": existing["_id"]})
+        return user_car_helper(updated_car)
+    
+    result = await db.user_cars.insert_one(car_dict)
+    created_car = await db.user_cars.find_one({"_id": result.inserted_id})
+    return user_car_helper(created_car)
+
+@api_router.get("/user-cars/user/{user_id}")
+async def get_user_car(user_id: str):
+    car = await db.user_cars.find_one({"userId": user_id})
+    if not car:
+        return None
+    return user_car_helper(car)
+
+@api_router.get("/user-cars/public")
+async def get_public_garages(
+    make: Optional[str] = None,
+    limit: int = Query(default=50, le=100)
+):
+    """Get all public garages to browse"""
+    query = {"isPublic": True}
+    if make:
+        query["make"] = {"$regex": make, "$options": "i"}
+    
+    cars = await db.user_cars.find(query).sort("createdAt", -1).limit(limit).to_list(limit)
+    
+    # Get user info for each car
+    result = []
+    for car in cars:
+        user = await db.users.find_one({"_id": ObjectId(car["userId"])}) if ObjectId.is_valid(car["userId"]) else None
+        car_data = user_car_helper(car)
+        car_data["ownerName"] = user.get("name", "Unknown") if user else "Unknown"
+        car_data["ownerNickname"] = user.get("nickname", "") if user else ""
+        result.append(car_data)
+    
+    return result
+
+@api_router.get("/user-cars/{car_id}")
+async def get_car_by_id(car_id: str):
+    """Get a specific car by ID"""
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=400, detail="Invalid car ID")
+    
+    car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+    
+    # Increment view count
+    await db.user_cars.update_one(
+        {"_id": ObjectId(car_id)},
+        {"$inc": {"views": 1}}
+    )
+    
+    # Get owner info
+    user = await db.users.find_one({"_id": ObjectId(car["userId"])}) if ObjectId.is_valid(car["userId"]) else None
+    car_data = user_car_helper(car)
+    car_data["ownerName"] = user.get("name", "Unknown") if user else "Unknown"
+    car_data["ownerNickname"] = user.get("nickname", "") if user else ""
+    
+    return car_data
 
 @api_router.put("/user-cars/{car_id}")
 async def update_user_car(car_id: str, car_update: UserCarUpdate):
@@ -1361,6 +1454,7 @@ async def update_user_car(car_id: str, car_update: UserCarUpdate):
         raise HTTPException(status_code=400, detail="Invalid car ID")
     
     update_data = {k: v for k, v in car_update.dict().items() if v is not None}
+    update_data["updatedAt"] = datetime.utcnow().isoformat()
     
     if update_data:
         await db.user_cars.update_one(
@@ -1372,18 +1466,37 @@ async def update_user_car(car_id: str, car_update: UserCarUpdate):
     if not updated_car:
         raise HTTPException(status_code=404, detail="Car not found")
     
-    return {
-        "id": str(updated_car["_id"]),
-        "userId": updated_car["userId"],
-        "make": updated_car["make"],
-        "model": updated_car["model"],
-        "year": updated_car["year"],
-        "color": updated_car.get("color", ""),
-        "modifications": updated_car.get("modifications", ""),
-        "description": updated_car.get("description", ""),
-        "photos": updated_car.get("photos", []),
-        "createdAt": updated_car.get("createdAt")
-    }
+    return user_car_helper(updated_car)
+
+@api_router.post("/user-cars/{car_id}/like")
+async def like_car(car_id: str, user_id: str = Query(...)):
+    """Like a car in someone's garage"""
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=400, detail="Invalid car ID")
+    
+    await db.user_cars.update_one(
+        {"_id": ObjectId(car_id)},
+        {"$inc": {"likes": 1}}
+    )
+    
+    updated_car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    return user_car_helper(updated_car)
+
+@api_router.delete("/user-cars/{car_id}")
+async def delete_user_car(car_id: str, user_id: str = Query(...)):
+    """Delete a car from garage"""
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=400, detail="Invalid car ID")
+    
+    car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+    
+    if car["userId"] != user_id:
+        raise HTTPException(status_code=403, detail="You can only delete your own cars")
+    
+    await db.user_cars.delete_one({"_id": ObjectId(car_id)})
+    return {"message": "Car deleted successfully"}
 
 # Favorites Routes
 @api_router.post("/favorites")

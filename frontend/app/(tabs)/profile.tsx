@@ -495,6 +495,41 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Community Garages Section */}
+        <View style={styles.menuSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="people" size={20} color="#FF6B35" />
+            <Text style={styles.sectionHeaderText}>Community Garages</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => router.push('/garage')}
+          >
+            <Ionicons name="car-sport" size={24} color="#4CAF50" />
+            <Text style={styles.menuItemText}>Browse All Garages</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <View style={styles.settingItem}>
+            <View style={styles.settingInfo}>
+              <Ionicons name={garagePublic ? "globe" : "lock-closed"} size={24} color={garagePublic ? "#4CAF50" : "#FFC107"} />
+              <View>
+                <Text style={styles.settingText}>
+                  {garagePublic ? 'Public Garage' : 'Private Garage'}
+                </Text>
+                <Text style={styles.settingHintSmall}>
+                  {garagePublic ? 'Others can see your build' : 'Only you can see your garage'}
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={garagePublic}
+              onValueChange={toggleGaragePublic}
+              trackColor={{ false: '#FFC107', true: '#4CAF50' }}
+              thumbColor="#fff"
+            />
+          </View>
+        </View>
+
         {/* Report Suggestions & Bugs Section */}
         <View style={styles.menuSection}>
           <View style={styles.sectionHeader}>
