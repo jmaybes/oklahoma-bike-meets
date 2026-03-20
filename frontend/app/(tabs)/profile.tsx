@@ -463,6 +463,38 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
+        {/* Route Planning Section */}
+        <View style={styles.menuSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="map" size={20} color="#FF6B35" />
+            <Text style={styles.sectionHeaderText}>Route Planning</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => router.push('/routes')}
+          >
+            <Ionicons name="navigate" size={24} color="#4CAF50" />
+            <Text style={styles.menuItemText}>My Scenic Routes</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => router.push('/routes/create')}
+          >
+            <Ionicons name="add-circle" size={24} color="#2196F3" />
+            <Text style={styles.menuItemText}>Create New Route</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => router.push('/routes?tab=discover')}
+          >
+            <Ionicons name="compass" size={24} color="#9C27B0" />
+            <Text style={styles.menuItemText}>Discover Routes</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+        </View>
+
         {/* Report Suggestions & Bugs Section */}
         <View style={styles.menuSection}>
           <View style={styles.sectionHeader}>
