@@ -529,6 +529,18 @@ frontend:
           agent: "main"
           comment: "My Runs screen with personal bests display, run history, and login-required state implemented and visually verified via screenshot"
 
+  - task: "Enhanced My Garage Feature"
+    implemented: true
+    working: true
+    file: "(tabs)/profile.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Enhanced My Garage frontend testing completed successfully in mobile view (390x844). ✅ Navigation to /garage/profile working. ✅ 'My Garage' header with subtitle visible. ✅ Tab structure correct (5 tabs: Events, Nearby, Clubs, Add, Garage - NO Timer tab). ✅ Guest Mode with login/register buttons working. ✅ Community Garages at /garage accessible with search. ✅ All navigation working. Minor Issue: Beta Notice Modal has persistent display requiring localStorage bypass - affects first-time user experience but core functionality intact."
+
 metadata:
   created_by: "testing_agent"
   version: "1.0"
@@ -690,3 +702,5 @@ agent_communication:
       message: "Enhanced 'My Garage' feature with: (1) Full form modal with videos, modification list, specs (engine, HP, torque, transmission, drivetrain), social links (Instagram, YouTube), and public/private toggle. (2) Created Community Garages browsing page at /garage with search and like functionality. (3) Created individual garage detail page at /garage/[id] with full specs, photos, modifications, and social links. (4) Fixed Timer tab issue by moving timer.tsx out of tabs directory to /timer-main/. Please test: POST/PUT /api/user-cars with new fields (videos, modifications, modificationNotes, isPublic, horsepower, torque, transmission, drivetrain, instagramHandle, youtubeChannel), GET /api/user-cars/public, POST /api/user-cars/{car_id}/like."
     - agent: "testing"
       message: "Enhanced My Garage (User Cars) system testing completed successfully! ✅ All 5 requested enhanced endpoints working perfectly: (1) POST /api/user-cars with ALL new fields - performance specs (horsepower, torque, transmission, drivetrain), media (photos, videos), structured modifications with full object schema, social integration (Instagram, YouTube), privacy controls (isPublic). (2) PUT /api/user-cars/{car_id} with enhanced fields - successfully updated privacy, performance specs, modification notes. (3) GET /api/user-cars/public with owner info - includes ownerName/ownerNickname, respects privacy settings, supports make filtering. (4) POST /api/user-cars/{car_id}/like - increments likes count with user_id parameter. (5) GET /api/user-cars/{car_id} - returns all enhanced fields, increments views, includes owner info. Privacy controls work perfectly (public/private toggling), community features functional (likes/views), make filtering operational. All new field types properly validated and serialized."
+    - agent: "testing"
+      message: "Enhanced My Garage frontend testing completed successfully in mobile view (390x844)! ✅ Navigation to Garage/Profile Tab working at http://localhost:3000/(tabs)/profile. ✅ 'My Garage' header with 'Showcase your ride' subtitle visible. ✅ Tab bar shows correct 5 tabs (Events, Nearby, Clubs, Add, Garage) with NO Timer tab. ✅ Guest Mode view working with login/register buttons. ✅ Community Garages accessible at /garage with search functionality. ✅ All navigation elements working properly. Minor Issue: Beta Notice Modal has persistent display issues that require localStorage manipulation to bypass - this prevents smooth user experience on first app launch. The core My Garage functionality is fully implemented and working as specified, but the beta modal needs UX improvement for proper dismissal."
