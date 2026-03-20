@@ -4,12 +4,12 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   FlatList,
   ActivityIndicator,
   RefreshControl,
   TextInput,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -30,6 +30,7 @@ interface Club {
 }
 
 export default function ClubsScreen() {
+  const insets = useSafeAreaInsets();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [filteredClubs, setFilteredClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,7 +140,7 @@ export default function ClubsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
         colors={['#9C27B0', '#E91E63']}
         start={{ x: 0, y: 0 }}
@@ -202,7 +203,7 @@ export default function ClubsScreen() {
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 

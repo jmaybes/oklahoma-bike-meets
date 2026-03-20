@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
   Modal,
@@ -14,6 +13,7 @@ import {
   Platform,
   FlatList,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
@@ -35,6 +35,7 @@ interface NearbyUser {
 
 export default function NearbyScreen() {
   const { user, updateUser } = useAuth();
+  const insets = useSafeAreaInsets();
   
   const [location, setLocation] = useState<{latitude: number; longitude: number} | null>(null);
   const [loading, setLoading] = useState(true);
@@ -192,7 +193,7 @@ export default function NearbyScreen() {
 
   if (!user) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <LinearGradient
           colors={['#FF6B35', '#E91E63']}
           start={{ x: 0, y: 0 }}
@@ -208,23 +209,23 @@ export default function NearbyScreen() {
           <Ionicons name="person-circle" size={80} color="#666" />
           <Text style={styles.loginPrompt}>Please log in to find nearby car enthusiasts</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color="#FF6B35" />
           <Text style={styles.loadingText}>Getting your location...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <LinearGradient
         colors={['#FF6B35', '#E91E63']}
         start={{ x: 0, y: 0 }}
@@ -437,7 +438,7 @@ export default function NearbyScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   Switch,
   Alert,
@@ -12,7 +11,9 @@ import {
   Image,
   ActivityIndicator,
   Modal,
+  SafeAreaView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
@@ -36,6 +37,7 @@ interface UserCar {
 
 export default function ProfileScreen() {
   const { user, isAuthenticated, logout, login } = useAuth();
+  const insets = useSafeAreaInsets();
   const [userCar, setUserCar] = useState<UserCar | null>(null);
   const [loadingCar, setLoadingCar] = useState(false);
   const [showCarModal, setShowCarModal] = useState(false);
@@ -270,7 +272,7 @@ export default function ProfileScreen() {
 
   if (!isAuthenticated) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <LinearGradient
           colors={['#FF6B35', '#E91E63']}
           start={{ x: 0, y: 0 }}
@@ -302,12 +304,12 @@ export default function ProfileScreen() {
             <Text style={styles.registerButtonText}>Create Account</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <LinearGradient
           colors={['#FF6B35', '#E91E63']}
@@ -763,7 +765,7 @@ export default function ProfileScreen() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
