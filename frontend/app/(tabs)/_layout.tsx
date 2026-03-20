@@ -62,12 +62,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="timer"
-        options={{
-          href: null,
-        }}
-      />
     </Tabs>
   );
 }

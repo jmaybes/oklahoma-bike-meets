@@ -12,6 +12,8 @@ import {
   ActivityIndicator,
   Modal,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +25,13 @@ import axios from 'axios';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
+interface Modification {
+  category: string;
+  name: string;
+  brand?: string;
+  description?: string;
+}
+
 interface UserCar {
   id: string;
   userId: string;
@@ -30,9 +39,20 @@ interface UserCar {
   model: string;
   year: string;
   color: string;
-  modifications: string;
+  trim: string;
+  engine: string;
+  horsepower?: number;
+  torque?: number;
+  transmission: string;
+  drivetrain: string;
   description: string;
   photos: string[];
+  videos: string[];
+  modifications: Modification[];
+  modificationNotes: string;
+  isPublic: boolean;
+  instagramHandle: string;
+  youtubeChannel: string;
 }
 
 export default function ProfileScreen() {
@@ -43,15 +63,27 @@ export default function ProfileScreen() {
   const [showCarModal, setShowCarModal] = useState(false);
   const [savingCar, setSavingCar] = useState(false);
   const [carPhotos, setCarPhotos] = useState<string[]>([]);
+  const [garagePublic, setGaragePublic] = useState(true);
   
   const [carForm, setCarForm] = useState({
     make: '',
     model: '',
     year: '',
     color: '',
-    modifications: '',
+    trim: '',
+    engine: '',
+    horsepower: '',
+    torque: '',
+    transmission: '',
+    drivetrain: '',
     description: '',
+    modificationNotes: '',
+    instagramHandle: '',
+    youtubeChannel: '',
   });
+  
+  const [videoUrls, setVideoUrls] = useState<string[]>([]);
+  const [newVideoUrl, setNewVideoUrl] = useState('');
 
   // Feedback states
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -79,15 +111,47 @@ export default function ProfileScreen() {
           model: response.data.model || '',
           year: response.data.year || '',
           color: response.data.color || '',
-          modifications: response.data.modifications || '',
+          trim: response.data.trim || '',
+          engine: response.data.engine || '',
+          horsepower: response.data.horsepower?.toString() || '',
+          torque: response.data.torque?.toString() || '',
+          transmission: response.data.transmission || '',
+          drivetrain: response.data.drivetrain || '',
           description: response.data.description || '',
+          modificationNotes: response.data.modificationNotes || '',
+          instagramHandle: response.data.instagramHandle || '',
+          youtubeChannel: response.data.youtubeChannel || '',
         });
         setCarPhotos(response.data.photos || []);
+        setVideoUrls(response.data.videos || []);
+        setGaragePublic(response.data.isPublic !== false);
       }
     } catch (error) {
       console.error('Error fetching user car:', error);
     } finally {
       setLoadingCar(false);
+    }
+  };
+
+  const toggleGaragePublic = async (value: boolean) => {
+    setGaragePublic(value);
+    
+    if (userCar?.id) {
+      try {
+        await axios.put(`${API_URL}/api/user-cars/${userCar.id}`, {
+          isPublic: value,
+        });
+        Alert.alert(
+          'Success',
+          value 
+            ? 'Your garage is now public! Others can see your build.' 
+            : 'Your garage is now private.'
+        );
+      } catch (error) {
+        console.error('Error updating garage privacy:', error);
+        setGaragePublic(!value); // Revert on error
+        Alert.alert('Error', 'Failed to update privacy setting');
+      }
     }
   };
 
@@ -188,8 +252,8 @@ export default function ProfileScreen() {
         .filter(asset => asset.base64)
         .map(asset => `data:image/jpeg;base64,${asset.base64}`);
       
-      if (carPhotos.length + base64Images.length > 5) {
-        Alert.alert('Limit Reached', 'You can upload a maximum of 5 images');
+      if (carPhotos.length + base64Images.length > 10) {
+        Alert.alert('Limit Reached', 'You can upload a maximum of 10 images');
         return;
       }
       
@@ -199,6 +263,31 @@ export default function ProfileScreen() {
 
   const removeCarPhoto = (index: number) => {
     setCarPhotos(carPhotos.filter((_, i) => i !== index));
+  };
+
+  const addVideoUrl = () => {
+    if (!newVideoUrl.trim()) {
+      Alert.alert('Error', 'Please enter a video URL');
+      return;
+    }
+    
+    // Basic URL validation
+    if (!newVideoUrl.match(/^https?:\/\/.+/i)) {
+      Alert.alert('Invalid URL', 'Please enter a valid URL starting with http:// or https://');
+      return;
+    }
+    
+    if (videoUrls.length >= 5) {
+      Alert.alert('Limit Reached', 'You can add up to 5 video links');
+      return;
+    }
+    
+    setVideoUrls([...videoUrls, newVideoUrl.trim()]);
+    setNewVideoUrl('');
+  };
+
+  const removeVideoUrl = (index: number) => {
+    setVideoUrls(videoUrls.filter((_, i) => i !== index));
   };
 
   const saveCar = async () => {
@@ -211,8 +300,24 @@ export default function ProfileScreen() {
     try {
       const carData = {
         userId: user?.id,
-        ...carForm,
+        make: carForm.make,
+        model: carForm.model,
+        year: carForm.year,
+        color: carForm.color,
+        trim: carForm.trim,
+        engine: carForm.engine,
+        horsepower: carForm.horsepower ? parseInt(carForm.horsepower) : null,
+        torque: carForm.torque ? parseInt(carForm.torque) : null,
+        transmission: carForm.transmission,
+        drivetrain: carForm.drivetrain,
+        description: carForm.description,
         photos: carPhotos,
+        videos: videoUrls,
+        modifications: [], // Will add structured mods later
+        modificationNotes: carForm.modificationNotes,
+        isPublic: garagePublic,
+        instagramHandle: carForm.instagramHandle,
+        youtubeChannel: carForm.youtubeChannel,
       };
 
       let response;
@@ -353,16 +458,39 @@ export default function ProfileScreen() {
                 <Text style={styles.carTitle}>
                   {userCar.year} {userCar.make} {userCar.model}
                 </Text>
-                {userCar.color && (
+                {userCar.trim && (
+                  <Text style={styles.carTrim}>{userCar.trim}</Text>
+                )}
+                <View style={styles.carStatsRow}>
+                  {userCar.color && (
+                    <View style={styles.carDetailRow}>
+                      <Ionicons name="color-palette" size={16} color="#888" />
+                      <Text style={styles.carDetailText}>{userCar.color}</Text>
+                    </View>
+                  )}
+                  {userCar.horsepower && (
+                    <View style={styles.carDetailRow}>
+                      <Ionicons name="flash" size={16} color="#FF6B35" />
+                      <Text style={styles.carDetailText}>{userCar.horsepower} HP</Text>
+                    </View>
+                  )}
+                </View>
+                {userCar.engine && (
                   <View style={styles.carDetailRow}>
-                    <Ionicons name="color-palette" size={16} color="#888" />
-                    <Text style={styles.carDetailText}>{userCar.color}</Text>
+                    <Ionicons name="speedometer" size={16} color="#2196F3" />
+                    <Text style={styles.carDetailText}>{userCar.engine}</Text>
                   </View>
                 )}
-                {userCar.modifications && (
+                {userCar.modificationNotes && (
                   <View style={styles.carDetailRow}>
-                    <Ionicons name="build" size={16} color="#FF6B35" />
-                    <Text style={styles.carDetailText}>{userCar.modifications}</Text>
+                    <Ionicons name="build" size={16} color="#4CAF50" />
+                    <Text style={styles.carDetailText} numberOfLines={2}>{userCar.modificationNotes}</Text>
+                  </View>
+                )}
+                {userCar.videos && userCar.videos.length > 0 && (
+                  <View style={styles.carDetailRow}>
+                    <Ionicons name="videocam" size={16} color="#9C27B0" />
+                    <Text style={styles.carDetailText}>{userCar.videos.length} video{userCar.videos.length !== 1 ? 's' : ''}</Text>
                   </View>
                 )}
                 {userCar.description && (
@@ -379,7 +507,7 @@ export default function ProfileScreen() {
             <TouchableOpacity style={styles.addCarCard} onPress={() => setShowCarModal(true)}>
               <Ionicons name="add-circle" size={60} color="#FF6B35" />
               <Text style={styles.addCarTitle}>Add Your Car</Text>
-              <Text style={styles.addCarSubtitle}>Showcase your ride with photos and specs</Text>
+              <Text style={styles.addCarSubtitle}>Showcase your ride with photos, specs, and mods</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -395,6 +523,12 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer/my-runs')}>
             <Ionicons name="speedometer" size={24} color="#FF6B35" />
             <Text style={styles.menuItemText}>My Performance Runs</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer-main')}>
+            <Ionicons name="timer" size={24} color="#E91E63" />
+            <Text style={styles.menuItemText}>Performance Timer</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
 
@@ -590,111 +724,284 @@ export default function ProfileScreen() {
         onRequestClose={() => setShowCarModal(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowCarModal(false)}>
-              <Ionicons name="close" size={28} color="#fff" />
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>{userCar ? 'Edit Your Car' : 'Add Your Car'}</Text>
-            <View style={{ width: 28 }} />
-          </View>
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+          >
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => setShowCarModal(false)}>
+                <Ionicons name="close" size={28} color="#fff" />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>{userCar ? 'Edit Your Car' : 'Add Your Car'}</Text>
+              <View style={{ width: 28 }} />
+            </View>
 
-          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-            <Text style={styles.modalLabel}>Make *</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="e.g., Ford, Chevrolet, Toyota"
-              placeholderTextColor="#666"
-              value={carForm.make}
-              onChangeText={(text) => setCarForm({ ...carForm, make: text })}
-            />
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+              {/* Basic Info */}
+              <Text style={styles.modalSectionTitle}>Basic Information</Text>
+              
+              <Text style={styles.modalLabel}>Make *</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g., Ford, Chevrolet, Toyota"
+                placeholderTextColor="#666"
+                value={carForm.make}
+                onChangeText={(text) => setCarForm({ ...carForm, make: text })}
+              />
 
-            <Text style={styles.modalLabel}>Model *</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="e.g., Mustang, Camaro, Supra"
-              placeholderTextColor="#666"
-              value={carForm.model}
-              onChangeText={(text) => setCarForm({ ...carForm, model: text })}
-            />
+              <Text style={styles.modalLabel}>Model *</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g., Mustang, Camaro, Supra"
+                placeholderTextColor="#666"
+                value={carForm.model}
+                onChangeText={(text) => setCarForm({ ...carForm, model: text })}
+              />
 
-            <Text style={styles.modalLabel}>Year *</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="e.g., 2024"
-              placeholderTextColor="#666"
-              keyboardType="numeric"
-              value={carForm.year}
-              onChangeText={(text) => setCarForm({ ...carForm, year: text })}
-            />
+              <Text style={styles.modalLabel}>Year *</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g., 2024"
+                placeholderTextColor="#666"
+                keyboardType="numeric"
+                value={carForm.year}
+                onChangeText={(text) => setCarForm({ ...carForm, year: text })}
+              />
 
-            <Text style={styles.modalLabel}>Color</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="e.g., Grabber Blue, Triple Yellow"
-              placeholderTextColor="#666"
-              value={carForm.color}
-              onChangeText={(text) => setCarForm({ ...carForm, color: text })}
-            />
+              <Text style={styles.modalLabel}>Trim</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g., GT, SS, TRD Pro"
+                placeholderTextColor="#666"
+                value={carForm.trim}
+                onChangeText={(text) => setCarForm({ ...carForm, trim: text })}
+              />
 
-            <Text style={styles.modalLabel}>Modifications</Text>
-            <TextInput
-              style={[styles.modalInput, styles.modalTextArea]}
-              placeholder="e.g., Cold air intake, exhaust, lowering springs..."
-              placeholderTextColor="#666"
-              multiline
-              numberOfLines={3}
-              value={carForm.modifications}
-              onChangeText={(text) => setCarForm({ ...carForm, modifications: text })}
-            />
+              <Text style={styles.modalLabel}>Color</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g., Grabber Blue, Triple Yellow"
+                placeholderTextColor="#666"
+                value={carForm.color}
+                onChangeText={(text) => setCarForm({ ...carForm, color: text })}
+              />
 
-            <Text style={styles.modalLabel}>Description</Text>
-            <TextInput
-              style={[styles.modalInput, styles.modalTextArea]}
-              placeholder="Tell us about your ride..."
-              placeholderTextColor="#666"
-              multiline
-              numberOfLines={3}
-              value={carForm.description}
-              onChangeText={(text) => setCarForm({ ...carForm, description: text })}
-            />
+              {/* Performance Specs */}
+              <Text style={[styles.modalSectionTitle, { marginTop: 24 }]}>Performance Specs</Text>
 
-            <Text style={styles.modalLabel}>Photos (Max 5)</Text>
-            <TouchableOpacity style={styles.uploadButton} onPress={pickCarPhoto}>
-              <Ionicons name="images" size={24} color="#FF6B35" />
-              <Text style={styles.uploadButtonText}>Upload Photos</Text>
-            </TouchableOpacity>
+              <Text style={styles.modalLabel}>Engine</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g., 5.0L V8, 2JZ-GTE, LS3"
+                placeholderTextColor="#666"
+                value={carForm.engine}
+                onChangeText={(text) => setCarForm({ ...carForm, engine: text })}
+              />
 
-            {carPhotos.length > 0 && (
-              <View style={styles.photosPreview}>
-                {carPhotos.map((photo, index) => (
-                  <View key={index} style={styles.photoContainer}>
-                    <Image source={{ uri: photo }} style={styles.photoPreview} />
-                    <TouchableOpacity
-                      style={styles.removePhotoButton}
-                      onPress={() => removeCarPhoto(index)}
-                    >
-                      <Ionicons name="close-circle" size={24} color="#FF3B30" />
-                    </TouchableOpacity>
-                  </View>
+              <View style={styles.rowInputs}>
+                <View style={styles.halfInput}>
+                  <Text style={styles.modalLabel}>Horsepower</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="e.g., 450"
+                    placeholderTextColor="#666"
+                    keyboardType="numeric"
+                    value={carForm.horsepower}
+                    onChangeText={(text) => setCarForm({ ...carForm, horsepower: text })}
+                  />
+                </View>
+                <View style={styles.halfInput}>
+                  <Text style={styles.modalLabel}>Torque (lb-ft)</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="e.g., 410"
+                    placeholderTextColor="#666"
+                    keyboardType="numeric"
+                    value={carForm.torque}
+                    onChangeText={(text) => setCarForm({ ...carForm, torque: text })}
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.modalLabel}>Transmission</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g., 6-Speed Manual, 10-Speed Auto"
+                placeholderTextColor="#666"
+                value={carForm.transmission}
+                onChangeText={(text) => setCarForm({ ...carForm, transmission: text })}
+              />
+
+              <Text style={styles.modalLabel}>Drivetrain</Text>
+              <View style={styles.drivetrainOptions}>
+                {['RWD', 'FWD', 'AWD', '4WD'].map((dt) => (
+                  <TouchableOpacity
+                    key={dt}
+                    style={[
+                      styles.drivetrainButton,
+                      carForm.drivetrain === dt && styles.drivetrainButtonActive
+                    ]}
+                    onPress={() => setCarForm({ ...carForm, drivetrain: dt })}
+                  >
+                    <Text style={[
+                      styles.drivetrainText,
+                      carForm.drivetrain === dt && styles.drivetrainTextActive
+                    ]}>{dt}</Text>
+                  </TouchableOpacity>
                 ))}
               </View>
-            )}
 
-            <TouchableOpacity
-              style={[styles.saveButton, savingCar && styles.saveButtonDisabled]}
-              onPress={saveCar}
-              disabled={savingCar}
-            >
-              {savingCar ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <>
-                  <Ionicons name="checkmark" size={20} color="#fff" />
-                  <Text style={styles.saveButtonText}>Save Car</Text>
-                </>
+              {/* Modifications */}
+              <Text style={[styles.modalSectionTitle, { marginTop: 24 }]}>Modifications</Text>
+
+              <Text style={styles.modalLabel}>Modification List</Text>
+              <TextInput
+                style={[styles.modalInput, styles.modalTextArea]}
+                placeholder="List your mods: cold air intake, exhaust, lowering springs, wheels, etc..."
+                placeholderTextColor="#666"
+                multiline
+                numberOfLines={5}
+                value={carForm.modificationNotes}
+                onChangeText={(text) => setCarForm({ ...carForm, modificationNotes: text })}
+                textAlignVertical="top"
+              />
+
+              {/* Photos */}
+              <Text style={[styles.modalSectionTitle, { marginTop: 24 }]}>Photos</Text>
+              
+              <Text style={styles.modalLabel}>Photos (Max 10)</Text>
+              <TouchableOpacity style={styles.uploadButton} onPress={pickCarPhoto}>
+                <Ionicons name="images" size={24} color="#FF6B35" />
+                <Text style={styles.uploadButtonText}>Upload Photos</Text>
+              </TouchableOpacity>
+
+              {carPhotos.length > 0 && (
+                <View style={styles.photosPreview}>
+                  {carPhotos.map((photo, index) => (
+                    <View key={index} style={styles.photoContainer}>
+                      <Image source={{ uri: photo }} style={styles.photoPreview} />
+                      <TouchableOpacity
+                        style={styles.removePhotoButton}
+                        onPress={() => removeCarPhoto(index)}
+                      >
+                        <Ionicons name="close-circle" size={24} color="#FF3B30" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
               )}
-            </TouchableOpacity>
-          </ScrollView>
+
+              {/* Videos */}
+              <Text style={[styles.modalSectionTitle, { marginTop: 24 }]}>Videos</Text>
+              
+              <Text style={styles.modalLabel}>Video Links (Max 5)</Text>
+              <Text style={styles.modalHint}>Add YouTube or other video links to show off your car</Text>
+              
+              <View style={styles.videoInputRow}>
+                <TextInput
+                  style={[styles.modalInput, { flex: 1 }]}
+                  placeholder="https://youtube.com/watch?v=..."
+                  placeholderTextColor="#666"
+                  value={newVideoUrl}
+                  onChangeText={setNewVideoUrl}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity style={styles.addVideoButton} onPress={addVideoUrl}>
+                  <Ionicons name="add" size={24} color="#fff" />
+                </TouchableOpacity>
+              </View>
+
+              {videoUrls.length > 0 && (
+                <View style={styles.videoList}>
+                  {videoUrls.map((url, index) => (
+                    <View key={index} style={styles.videoItem}>
+                      <Ionicons name="videocam" size={20} color="#9C27B0" />
+                      <Text style={styles.videoUrl} numberOfLines={1}>{url}</Text>
+                      <TouchableOpacity onPress={() => removeVideoUrl(index)}>
+                        <Ionicons name="close-circle" size={20} color="#FF3B30" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Social & Visibility */}
+              <Text style={[styles.modalSectionTitle, { marginTop: 24 }]}>Social & Visibility</Text>
+
+              <Text style={styles.modalLabel}>Description</Text>
+              <TextInput
+                style={[styles.modalInput, styles.modalTextArea]}
+                placeholder="Tell us about your ride, its story, future plans..."
+                placeholderTextColor="#666"
+                multiline
+                numberOfLines={4}
+                value={carForm.description}
+                onChangeText={(text) => setCarForm({ ...carForm, description: text })}
+                textAlignVertical="top"
+              />
+
+              <Text style={styles.modalLabel}>Instagram Handle</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="@yourusername"
+                placeholderTextColor="#666"
+                value={carForm.instagramHandle}
+                onChangeText={(text) => setCarForm({ ...carForm, instagramHandle: text })}
+                autoCapitalize="none"
+              />
+
+              <Text style={styles.modalLabel}>YouTube Channel URL</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="https://youtube.com/@yourchannel"
+                placeholderTextColor="#666"
+                value={carForm.youtubeChannel}
+                onChangeText={(text) => setCarForm({ ...carForm, youtubeChannel: text })}
+                autoCapitalize="none"
+              />
+
+              <View style={styles.publicToggleContainer}>
+                <View style={styles.publicToggleInfo}>
+                  <Ionicons 
+                    name={garagePublic ? "globe" : "lock-closed"} 
+                    size={24} 
+                    color={garagePublic ? "#4CAF50" : "#FFC107"} 
+                  />
+                  <View>
+                    <Text style={styles.publicToggleTitle}>
+                      {garagePublic ? 'Public Garage' : 'Private Garage'}
+                    </Text>
+                    <Text style={styles.publicToggleHint}>
+                      {garagePublic 
+                        ? 'Your car will be visible in Community Garages' 
+                        : 'Only you can see your garage'}
+                    </Text>
+                  </View>
+                </View>
+                <Switch
+                  value={garagePublic}
+                  onValueChange={setGaragePublic}
+                  trackColor={{ false: '#FFC107', true: '#4CAF50' }}
+                  thumbColor="#fff"
+                />
+              </View>
+
+              <TouchableOpacity
+                style={[styles.saveButton, savingCar && styles.saveButtonDisabled]}
+                onPress={saveCar}
+                disabled={savingCar}
+              >
+                {savingCar ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark" size={20} color="#fff" />
+                    <Text style={styles.saveButtonText}>Save Car</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+          </KeyboardAvoidingView>
         </SafeAreaView>
       </Modal>
 
@@ -906,31 +1213,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  guestMenuSection: {
-    width: '100%',
-    marginTop: 32,
-  },
-  guestMenuTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#888',
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  guestMenuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    padding: 16,
-    borderRadius: 12,
-  },
-  guestMenuText: {
-    flex: 1,
-    fontSize: 16,
-    color: '#fff',
-    marginLeft: 12,
-  },
   loadingContainer: {
     padding: 40,
     alignItems: 'center',
@@ -968,7 +1250,17 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
+    marginBottom: 4,
+  },
+  carTrim: {
+    fontSize: 14,
+    color: '#FF6B35',
     marginBottom: 12,
+  },
+  carStatsRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 8,
   },
   carDetailRow: {
     flexDirection: 'row',
@@ -979,6 +1271,7 @@ const styles = StyleSheet.create({
     color: '#aaa',
     marginLeft: 8,
     fontSize: 14,
+    flex: 1,
   },
   carDescription: {
     color: '#888',
@@ -1069,6 +1362,30 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginLeft: 4,
   },
+  settingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1a1a1a',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  settingInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  settingText: {
+    fontSize: 16,
+    color: '#fff',
+  },
+  settingHintSmall: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
+  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1106,12 +1423,25 @@ const styles = StyleSheet.create({
   modalContent: {
     padding: 20,
   },
+  modalSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FF6B35',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   modalLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
     marginBottom: 8,
     marginTop: 16,
+  },
+  modalHint: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 8,
   },
   modalInput: {
     backgroundColor: '#1a1a1a',
@@ -1121,8 +1451,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   modalTextArea: {
-    height: 80,
+    height: 120,
     textAlignVertical: 'top',
+    paddingTop: 12,
+  },
+  rowInputs: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  halfInput: {
+    flex: 1,
+  },
+  drivetrainOptions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  drivetrainButton: {
+    flex: 1,
+    backgroundColor: '#1a1a1a',
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  drivetrainButtonActive: {
+    backgroundColor: '#FF6B35',
+  },
+  drivetrainText: {
+    color: '#888',
+    fontWeight: '600',
+  },
+  drivetrainTextActive: {
+    color: '#fff',
   },
   uploadButton: {
     backgroundColor: '#1a1a1a',
@@ -1162,6 +1521,61 @@ const styles = StyleSheet.create({
     right: -8,
     backgroundColor: '#0c0c0c',
     borderRadius: 12,
+  },
+  videoInputRow: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
+  addVideoButton: {
+    backgroundColor: '#FF6B35',
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  videoList: {
+    marginTop: 12,
+    gap: 8,
+  },
+  videoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    padding: 12,
+    borderRadius: 10,
+    gap: 10,
+  },
+  videoUrl: {
+    flex: 1,
+    color: '#aaa',
+    fontSize: 13,
+  },
+  publicToggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1a1a1a',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 16,
+  },
+  publicToggleInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  publicToggleTitle: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  publicToggleHint: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
   },
   saveButton: {
     backgroundColor: '#FF6B35',

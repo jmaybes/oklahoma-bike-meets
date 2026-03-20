@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   Dimensions,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -30,6 +30,7 @@ interface RunResult {
 
 export default function TimerScreen() {
   const { user, isAuthenticated } = useAuth();
+  const insets = useSafeAreaInsets();
   const [selectedMode, setSelectedMode] = useState<RunType>('0-60');
   const [isRunning, setIsRunning] = useState(false);
   const [currentSpeed, setCurrentSpeed] = useState(0);
@@ -228,7 +229,7 @@ export default function TimerScreen() {
   const selectedModeColor = modes.find(m => m.type === selectedMode)?.color || '#FF6B35';
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <LinearGradient
@@ -238,7 +239,10 @@ export default function TimerScreen() {
           style={styles.headerGradient}
         >
           <View style={styles.header}>
-            <View>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={styles.headerTitle}>Performance Timer</Text>
               <Text style={styles.headerSubtitle}>Test your acceleration</Text>
             </View>
@@ -398,7 +402,7 @@ export default function TimerScreen() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -421,6 +425,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  backButton: {
+    padding: 4,
   },
   headerTitle: {
     fontSize: 24,
