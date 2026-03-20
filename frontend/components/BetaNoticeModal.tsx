@@ -53,14 +53,21 @@ export default function BetaNoticeModal() {
       statusBarTranslucent
     >
       <View style={styles.overlay}>
-        <View style={styles.container}>
-          {/* Header */}
-          <LinearGradient
-            colors={['#FF6B35', '#E91E63']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.header}
-          >
+        {/* Gradient Border Wrapper */}
+        <LinearGradient
+          colors={['#FF6B35', '#E91E63', '#9C27B0', '#FF6B35']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientBorder}
+        >
+          <View style={styles.container}>
+            {/* Header */}
+            <LinearGradient
+              colors={['#FF6B35', '#E91E63']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.header}
+            >
             <View style={styles.versionBadge}>
               <Text style={styles.versionText}>v1.0.0</Text>
             </View>
@@ -133,6 +140,7 @@ export default function BetaNoticeModal() {
             </TouchableOpacity>
           </View>
         </View>
+        </LinearGradient>
       </View>
     </Modal>
   );
@@ -144,14 +152,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
+  },
+  gradientBorder: {
+    borderRadius: 24,
+    padding: 3,
+    width: '100%',
+    maxWidth: 400,
   },
   container: {
     backgroundColor: '#1a1a1a',
-    borderRadius: 20,
+    borderRadius: 21,
     overflow: 'hidden',
     width: '100%',
-    maxWidth: 400,
   },
   header: {
     alignItems: 'center',
