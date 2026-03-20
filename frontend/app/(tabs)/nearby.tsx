@@ -10,8 +10,6 @@ import {
   TextInput,
   ScrollView,
   Switch,
-  Platform,
-  FlatList,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +18,7 @@ import * as Location from 'expo-location';
 import Slider from '@react-native-community/slider';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import NearbyMapView from '../../components/NearbyMapView';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -48,6 +47,7 @@ export default function NearbyScreen() {
   const [customMessage, setCustomMessage] = useState('');
   const [useCustomMessage, setUseCustomMessage] = useState(false);
   const [sendingInvite, setSendingInvite] = useState(false);
+  const [showMap, setShowMap] = useState(true);
 
   useEffect(() => {
     initializeLocation();
@@ -178,19 +178,6 @@ export default function NearbyScreen() {
     }
   };
 
-  const renderUserCard = ({ item }: { item: NearbyUser }) => (
-    <View style={styles.userCard}>
-      <View style={styles.userAvatar}>
-        <Ionicons name="person" size={24} color="#FF6B35" />
-      </View>
-      <View style={styles.userInfo}>
-        <Text style={styles.userName}>{item.nickname || item.name}</Text>
-        <Text style={styles.userDistance}>{item.distance} miles away</Text>
-      </View>
-      <Ionicons name="car-sport" size={24} color="#666" />
-    </View>
-  );
-
   if (!user) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
@@ -237,7 +224,9 @@ export default function NearbyScreen() {
             <Text style={styles.headerTitle}>Nearby Enthusiasts</Text>
             <Text style={styles.headerSubtitle}>{nearbyUsers.length} users within {radius} miles</Text>
           </View>
-          <Ionicons name="location" size={28} color="#fff" />
+          <TouchableOpacity onPress={() => setShowMap(!showMap)}>
+            <Ionicons name={showMap ? "list" : "map"} size={28} color="#fff" />
+          </TouchableOpacity>
         </View>
       </LinearGradient>
 
@@ -262,23 +251,16 @@ export default function NearbyScreen() {
           />
         </View>
 
-        {/* Location Info Card */}
-        <View style={styles.locationCard}>
-          <View style={styles.locationIcon}>
-            <Ionicons name="navigate" size={32} color="#FF6B35" />
-          </View>
-          <View style={styles.locationInfo}>
-            <Text style={styles.locationTitle}>Your Location</Text>
-            {location && (
-              <Text style={styles.locationCoords}>
-                {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
-              </Text>
-            )}
-          </View>
-          <TouchableOpacity style={styles.refreshButton} onPress={initializeLocation}>
-            <Ionicons name="refresh" size={20} color="#FF6B35" />
-          </TouchableOpacity>
-        </View>
+        {/* Live Map - Always shown when showMap is true */}
+        {showMap && (
+          <NearbyMapView
+            location={location}
+            radius={radius}
+            nearbyUsers={nearbyUsers}
+            onCenterOnUser={() => {}}
+            onRefresh={initializeLocation}
+          />
+        )}
 
         {/* Radius Slider */}
         <View style={styles.sliderContainer}>
@@ -305,23 +287,44 @@ export default function NearbyScreen() {
         </View>
 
         {/* Nearby Users List */}
-        <View style={styles.usersSection}>
-          <Text style={styles.sectionTitle}>
-            {nearbyUsers.length > 0 ? 'Nearby Car Enthusiasts' : 'No users found nearby'}
-          </Text>
-          
-          {nearbyUsers.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="car-sport-outline" size={48} color="#444" />
-              <Text style={styles.emptyText}>
-                No car enthusiasts found within {radius} miles.
-              </Text>
-              <Text style={styles.emptySubtext}>
-                Try increasing your search radius or check back later!
-              </Text>
-            </View>
-          ) : (
-            nearbyUsers.map((nearbyUser) => (
+        {!showMap && (
+          <View style={styles.usersSection}>
+            <Text style={styles.sectionTitle}>
+              {nearbyUsers.length > 0 ? 'Nearby Car Enthusiasts' : 'No users found nearby'}
+            </Text>
+            
+            {nearbyUsers.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="car-sport-outline" size={48} color="#444" />
+                <Text style={styles.emptyText}>
+                  No car enthusiasts found within {radius} miles.
+                </Text>
+                <Text style={styles.emptySubtext}>
+                  Try increasing your search radius or check back later!
+                </Text>
+              </View>
+            ) : (
+              nearbyUsers.map((nearbyUser) => (
+                <View key={nearbyUser.id} style={styles.userCard}>
+                  <View style={styles.userAvatar}>
+                    <Ionicons name="person" size={24} color="#FF6B35" />
+                  </View>
+                  <View style={styles.userInfo}>
+                    <Text style={styles.userName}>{nearbyUser.nickname || nearbyUser.name}</Text>
+                    <Text style={styles.userDistance}>{nearbyUser.distance} miles away</Text>
+                  </View>
+                  <Ionicons name="car-sport" size={24} color="#666" />
+                </View>
+              ))
+            )}
+          </View>
+        )}
+
+        {/* Show user list under map if map is visible */}
+        {showMap && nearbyUsers.length > 0 && (
+          <View style={styles.usersSection}>
+            <Text style={styles.sectionTitle}>Nearby Car Enthusiasts</Text>
+            {nearbyUsers.map((nearbyUser) => (
               <View key={nearbyUser.id} style={styles.userCard}>
                 <View style={styles.userAvatar}>
                   <Ionicons name="person" size={24} color="#FF6B35" />
@@ -332,9 +335,19 @@ export default function NearbyScreen() {
                 </View>
                 <Ionicons name="car-sport" size={24} color="#666" />
               </View>
-            ))
-          )}
-        </View>
+            ))}
+          </View>
+        )}
+
+        {/* Empty state when map is shown but no users */}
+        {showMap && nearbyUsers.length === 0 && (
+          <View style={styles.emptyStateCompact}>
+            <Ionicons name="people-outline" size={24} color="#666" />
+            <Text style={styles.emptyStateCompactText}>
+              No other enthusiasts found within {radius} miles
+            </Text>
+          </View>
+        )}
 
         {/* Spacer for button */}
         <View style={{ height: 100 }} />
@@ -507,39 +520,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
   },
-  locationCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  locationIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 107, 53, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  locationInfo: {
-    flex: 1,
-  },
-  locationTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  locationCoords: {
-    color: '#888',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  refreshButton: {
-    padding: 8,
-  },
   sliderContainer: {
     backgroundColor: '#1a1a1a',
     padding: 16,
@@ -601,6 +581,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginTop: 4,
+  },
+  emptyStateCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1a1a1a',
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 8,
+  },
+  emptyStateCompactText: {
+    color: '#666',
+    fontSize: 14,
   },
   userCard: {
     flexDirection: 'row',
