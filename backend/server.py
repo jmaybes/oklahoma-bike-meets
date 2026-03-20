@@ -318,6 +318,27 @@ class ClubCreate(BaseModel):
     location: str
     city: str
     carTypes: List[str] = []
+
+class FeedbackCreate(BaseModel):
+    userId: str
+    userName: str
+    userEmail: str
+    type: str  # "bug", "suggestion", "other"
+    subject: str
+    message: str
+
+class FeedbackResponse(BaseModel):
+    id: str
+    userId: str
+    userName: str
+    userEmail: str
+    type: str
+    subject: str
+    message: str
+    status: str  # "new", "in_progress", "resolved", "closed"
+    adminResponse: Optional[str] = None
+    createdAt: str
+    updatedAt: Optional[str] = None
     contactInfo: str = ""
     website: str = ""
     facebookGroup: str = ""
@@ -859,6 +880,157 @@ async def send_meetup_invite(invite: MeetupInviteRequest):
         "invitesSent": invites_sent,
         "radius": invite.radius
     }
+
+# ==================== FEEDBACK & BUG REPORTS ====================
+
+def feedback_helper(feedback) -> dict:
+    return {
+        "id": str(feedback["_id"]),
+        "userId": feedback["userId"],
+        "userName": feedback["userName"],
+        "userEmail": feedback["userEmail"],
+        "type": feedback["type"],
+        "subject": feedback["subject"],
+        "message": feedback["message"],
+        "status": feedback.get("status", "new"),
+        "adminResponse": feedback.get("adminResponse"),
+        "createdAt": feedback["createdAt"],
+        "updatedAt": feedback.get("updatedAt"),
+    }
+
+@api_router.post("/feedback")
+async def submit_feedback(feedback: FeedbackCreate):
+    """Submit a bug report, suggestion, or other feedback"""
+    feedback_dict = feedback.dict()
+    feedback_dict["status"] = "new"
+    feedback_dict["createdAt"] = datetime.utcnow().isoformat()
+    
+    result = await db.feedback.insert_one(feedback_dict)
+    created_feedback = await db.feedback.find_one({"_id": result.inserted_id})
+    
+    # Notify all admins about new feedback
+    admins = await db.users.find({"isAdmin": True}).to_list(100)
+    notifications = []
+    
+    type_label = {
+        "bug": "Bug Report",
+        "suggestion": "Suggestion",
+        "other": "Feedback"
+    }.get(feedback.type, "Feedback")
+    
+    for admin in admins:
+        notification = {
+            "userId": str(admin["_id"]),
+            "type": "admin_feedback",
+            "title": f"New {type_label} from {feedback.userName}",
+            "message": f"{feedback.subject}: {feedback.message[:100]}...",
+            "feedbackId": str(result.inserted_id),
+            "isRead": False,
+            "createdAt": datetime.utcnow().isoformat()
+        }
+        notifications.append(notification)
+        
+        # Send push notification to admin
+        if admin.get("pushToken"):
+            try:
+                await send_push_notification(
+                    admin["pushToken"],
+                    notification["title"],
+                    notification["message"],
+                    {"type": "admin_feedback", "feedbackId": str(result.inserted_id)}
+                )
+            except Exception as e:
+                print(f"Failed to send push notification to admin: {e}")
+    
+    if notifications:
+        await db.notifications.insert_many(notifications)
+    
+    return feedback_helper(created_feedback)
+
+@api_router.get("/feedback/user/{user_id}")
+async def get_user_feedback(user_id: str):
+    """Get all feedback submitted by a user"""
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    feedback_list = await db.feedback.find({"userId": user_id}).sort("createdAt", -1).to_list(100)
+    return [feedback_helper(f) for f in feedback_list]
+
+@api_router.get("/feedback/admin")
+async def get_all_feedback(status: Optional[str] = None):
+    """Get all feedback (admin only)"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    feedback_list = await db.feedback.find(query).sort("createdAt", -1).to_list(1000)
+    return [feedback_helper(f) for f in feedback_list]
+
+@api_router.put("/feedback/{feedback_id}/respond")
+async def respond_to_feedback(feedback_id: str, response: str = Query(...), status: str = Query("in_progress")):
+    """Admin response to feedback"""
+    if not ObjectId.is_valid(feedback_id):
+        raise HTTPException(status_code=400, detail="Invalid feedback ID")
+    
+    await db.feedback.update_one(
+        {"_id": ObjectId(feedback_id)},
+        {"$set": {
+            "adminResponse": response,
+            "status": status,
+            "updatedAt": datetime.utcnow().isoformat()
+        }}
+    )
+    
+    # Notify user about response
+    feedback = await db.feedback.find_one({"_id": ObjectId(feedback_id)})
+    if feedback:
+        user = await db.users.find_one({"_id": ObjectId(feedback["userId"])})
+        if user:
+            notification = {
+                "userId": feedback["userId"],
+                "type": "feedback_response",
+                "title": "Response to your feedback",
+                "message": f"Admin responded: {response[:100]}...",
+                "feedbackId": feedback_id,
+                "isRead": False,
+                "createdAt": datetime.utcnow().isoformat()
+            }
+            await db.notifications.insert_one(notification)
+            
+            if user.get("pushToken"):
+                try:
+                    await send_push_notification(
+                        user["pushToken"],
+                        notification["title"],
+                        notification["message"],
+                        {"type": "feedback_response", "feedbackId": feedback_id}
+                    )
+                except Exception as e:
+                    print(f"Failed to send push notification: {e}")
+    
+    updated_feedback = await db.feedback.find_one({"_id": ObjectId(feedback_id)})
+    return feedback_helper(updated_feedback)
+
+@api_router.put("/feedback/{feedback_id}/status")
+async def update_feedback_status(feedback_id: str, status: str = Query(...)):
+    """Update feedback status (new, in_progress, resolved, closed)"""
+    if not ObjectId.is_valid(feedback_id):
+        raise HTTPException(status_code=400, detail="Invalid feedback ID")
+    
+    valid_statuses = ["new", "in_progress", "resolved", "closed"]
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    await db.feedback.update_one(
+        {"_id": ObjectId(feedback_id)},
+        {"$set": {
+            "status": status,
+            "updatedAt": datetime.utcnow().isoformat()
+        }}
+    )
+    
+    updated_feedback = await db.feedback.find_one({"_id": ObjectId(feedback_id)})
+    return feedback_helper(updated_feedback)
 
 @api_router.post("/auth/register")
 async def register_user(user: UserCreate):

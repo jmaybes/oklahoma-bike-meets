@@ -51,6 +51,15 @@ export default function ProfileScreen() {
     description: '',
   });
 
+  // Feedback states
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [sendingFeedback, setSendingFeedback] = useState(false);
+  const [feedbackForm, setFeedbackForm] = useState({
+    type: 'bug',
+    subject: '',
+    message: '',
+  });
+
   useEffect(() => {
     if (isAuthenticated && user) {
       fetchUserCar();
@@ -219,6 +228,39 @@ export default function ProfileScreen() {
       Alert.alert('Error', 'Failed to save car. Please try again.');
     } finally {
       setSavingCar(false);
+    }
+  };
+
+  const submitFeedback = async () => {
+    if (!feedbackForm.subject.trim() || !feedbackForm.message.trim()) {
+      Alert.alert('Error', 'Please fill in both subject and message');
+      return;
+    }
+
+    setSendingFeedback(true);
+    try {
+      await axios.post(`${API_URL}/api/feedback`, {
+        userId: user?.id,
+        userName: user?.name,
+        userEmail: user?.email,
+        type: feedbackForm.type,
+        subject: feedbackForm.subject,
+        message: feedbackForm.message,
+      });
+
+      Alert.alert(
+        'Thank You!',
+        'Your feedback has been sent to the admin team. We appreciate your input!',
+        [{ text: 'OK', onPress: () => {
+          setShowFeedbackModal(false);
+          setFeedbackForm({ type: 'bug', subject: '', message: '' });
+        }}]
+      );
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      Alert.alert('Error', 'Failed to submit feedback. Please try again.');
+    } finally {
+      setSendingFeedback(false);
     }
   };
 
@@ -419,6 +461,52 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
+        {/* Report Suggestions & Bugs Section */}
+        <View style={styles.menuSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="chatbubble-ellipses" size={20} color="#FF6B35" />
+            <Text style={styles.sectionHeaderText}>Feedback</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => setShowFeedbackModal(true)}
+          >
+            <Ionicons name="bug" size={24} color="#F44336" />
+            <Text style={styles.menuItemText}>Report Bug</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => {
+              setFeedbackForm({ ...feedbackForm, type: 'suggestion' });
+              setShowFeedbackModal(true);
+            }}
+          >
+            <Ionicons name="bulb" size={24} color="#FFC107" />
+            <Text style={styles.menuItemText}>Suggest a Feature</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => {
+              setFeedbackForm({ ...feedbackForm, type: 'other' });
+              setShowFeedbackModal(true);
+            }}
+          >
+            <Ionicons name="mail" size={24} color="#2196F3" />
+            <Text style={styles.menuItemText}>Contact Admin</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => router.push('/feedback/history')}
+          >
+            <Ionicons name="time" size={24} color="#9C27B0" />
+            <Text style={styles.menuItemText}>My Feedback History</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+        </View>
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out" size={20} color="#fff" />
           <Text style={styles.logoutButtonText}>Logout</Text>
@@ -534,6 +622,141 @@ export default function ProfileScreen() {
                 <>
                   <Ionicons name="checkmark" size={20} color="#fff" />
                   <Text style={styles.saveButtonText}>Save Car</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Feedback Modal */}
+      <Modal
+        visible={showFeedbackModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowFeedbackModal(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowFeedbackModal(false)}>
+              <Ionicons name="close" size={28} color="#fff" />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>
+              {feedbackForm.type === 'bug' ? 'Report a Bug' : 
+               feedbackForm.type === 'suggestion' ? 'Suggest a Feature' : 'Contact Admin'}
+            </Text>
+            <View style={{ width: 28 }} />
+          </View>
+
+          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            <Text style={styles.feedbackDescription}>
+              {feedbackForm.type === 'bug' 
+                ? 'Found something not working? Let us know and we\'ll fix it!' 
+                : feedbackForm.type === 'suggestion'
+                ? 'Have an idea to make the app better? We\'d love to hear it!'
+                : 'Have a question or need help? Send us a message!'}
+            </Text>
+
+            <Text style={styles.modalLabel}>Type</Text>
+            <View style={styles.feedbackTypeContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.feedbackTypeButton,
+                  feedbackForm.type === 'bug' && styles.feedbackTypeButtonActive
+                ]}
+                onPress={() => setFeedbackForm({ ...feedbackForm, type: 'bug' })}
+              >
+                <Ionicons 
+                  name="bug" 
+                  size={20} 
+                  color={feedbackForm.type === 'bug' ? '#fff' : '#F44336'} 
+                />
+                <Text style={[
+                  styles.feedbackTypeText,
+                  feedbackForm.type === 'bug' && styles.feedbackTypeTextActive
+                ]}>Bug</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.feedbackTypeButton,
+                  feedbackForm.type === 'suggestion' && styles.feedbackTypeButtonActive
+                ]}
+                onPress={() => setFeedbackForm({ ...feedbackForm, type: 'suggestion' })}
+              >
+                <Ionicons 
+                  name="bulb" 
+                  size={20} 
+                  color={feedbackForm.type === 'suggestion' ? '#fff' : '#FFC107'} 
+                />
+                <Text style={[
+                  styles.feedbackTypeText,
+                  feedbackForm.type === 'suggestion' && styles.feedbackTypeTextActive
+                ]}>Suggestion</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.feedbackTypeButton,
+                  feedbackForm.type === 'other' && styles.feedbackTypeButtonActive
+                ]}
+                onPress={() => setFeedbackForm({ ...feedbackForm, type: 'other' })}
+              >
+                <Ionicons 
+                  name="mail" 
+                  size={20} 
+                  color={feedbackForm.type === 'other' ? '#fff' : '#2196F3'} 
+                />
+                <Text style={[
+                  styles.feedbackTypeText,
+                  feedbackForm.type === 'other' && styles.feedbackTypeTextActive
+                ]}>Other</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalLabel}>Subject *</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Brief summary of your feedback"
+              placeholderTextColor="#666"
+              value={feedbackForm.subject}
+              onChangeText={(text) => setFeedbackForm({ ...feedbackForm, subject: text })}
+            />
+
+            <Text style={styles.modalLabel}>Message *</Text>
+            <TextInput
+              style={[styles.modalInput, styles.feedbackTextArea]}
+              placeholder={
+                feedbackForm.type === 'bug' 
+                  ? "Please describe the bug, what you expected to happen, and steps to reproduce..."
+                  : feedbackForm.type === 'suggestion'
+                  ? "Describe your feature idea and how it would improve the app..."
+                  : "Write your message here..."
+              }
+              placeholderTextColor="#666"
+              multiline
+              numberOfLines={6}
+              value={feedbackForm.message}
+              onChangeText={(text) => setFeedbackForm({ ...feedbackForm, message: text })}
+              textAlignVertical="top"
+            />
+
+            <View style={styles.feedbackFromSection}>
+              <Ionicons name="person-circle" size={24} color="#666" />
+              <Text style={styles.feedbackFromText}>
+                Sending as: {user?.name} ({user?.email})
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.saveButton, sendingFeedback && styles.saveButtonDisabled]}
+              onPress={submitFeedback}
+              disabled={sendingFeedback}
+            >
+              {sendingFeedback ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="send" size={20} color="#fff" />
+                  <Text style={styles.saveButtonText}>Send Feedback</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -889,5 +1112,56 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 8,
+  },
+  feedbackDescription: {
+    color: '#888',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  feedbackTypeContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  feedbackTypeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2a2a2a',
+    padding: 12,
+    borderRadius: 8,
+    gap: 6,
+  },
+  feedbackTypeButtonActive: {
+    backgroundColor: '#FF6B35',
+  },
+  feedbackTypeText: {
+    color: '#888',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  feedbackTypeTextActive: {
+    color: '#fff',
+  },
+  feedbackTextArea: {
+    height: 150,
+    textAlignVertical: 'top',
+    paddingTop: 12,
+  },
+  feedbackFromSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#1a1a1a',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  feedbackFromText: {
+    color: '#888',
+    fontSize: 13,
   },
 });
