@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,19 +10,70 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+// Keys for secure storage
+const REMEMBER_ME_KEY = 'rememberMe';
+const SAVED_EMAIL_KEY = 'savedEmail';
+const SAVED_PASSWORD_KEY = 'savedPassword';
 
 export default function LoginScreen() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loadingCredentials, setLoadingCredentials] = useState(true);
+
+  useEffect(() => {
+    loadSavedCredentials();
+  }, []);
+
+  const loadSavedCredentials = async () => {
+    try {
+      const remembered = await SecureStore.getItemAsync(REMEMBER_ME_KEY);
+      
+      if (remembered === 'true') {
+        const savedEmail = await SecureStore.getItemAsync(SAVED_EMAIL_KEY);
+        const savedPassword = await SecureStore.getItemAsync(SAVED_PASSWORD_KEY);
+        
+        if (savedEmail && savedPassword) {
+          setEmail(savedEmail);
+          setPassword(savedPassword);
+          setRememberMe(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading saved credentials:', error);
+    } finally {
+      setLoadingCredentials(false);
+    }
+  };
+
+  const saveCredentials = async () => {
+    try {
+      if (rememberMe) {
+        await SecureStore.setItemAsync(REMEMBER_ME_KEY, 'true');
+        await SecureStore.setItemAsync(SAVED_EMAIL_KEY, email);
+        await SecureStore.setItemAsync(SAVED_PASSWORD_KEY, password);
+      } else {
+        await SecureStore.deleteItemAsync(REMEMBER_ME_KEY);
+        await SecureStore.deleteItemAsync(SAVED_EMAIL_KEY);
+        await SecureStore.deleteItemAsync(SAVED_PASSWORD_KEY);
+      }
+    } catch (error) {
+      console.error('Error saving credentials:', error);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -37,6 +88,9 @@ export default function LoginScreen() {
         password,
       });
       
+      // Save credentials if remember me is checked
+      await saveCredentials();
+      
       await login(response.data);
       Alert.alert('Success', 'Logged in successfully!');
       router.replace('/(tabs)/profile');
@@ -50,6 +104,31 @@ export default function LoginScreen() {
       setLoading(false);
     }
   };
+
+  const handleRememberMeChange = async (value: boolean) => {
+    setRememberMe(value);
+    
+    // If turning off, clear saved credentials
+    if (!value) {
+      try {
+        await SecureStore.deleteItemAsync(REMEMBER_ME_KEY);
+        await SecureStore.deleteItemAsync(SAVED_EMAIL_KEY);
+        await SecureStore.deleteItemAsync(SAVED_PASSWORD_KEY);
+      } catch (error) {
+        console.error('Error clearing credentials:', error);
+      }
+    }
+  };
+
+  if (loadingCredentials) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -79,7 +158,13 @@ export default function LoginScreen() {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoComplete="email"
               />
+              {email.length > 0 && (
+                <TouchableOpacity onPress={() => setEmail('')}>
+                  <Ionicons name="close-circle" size={20} color="#666" />
+                </TouchableOpacity>
+              )}
             </View>
 
             <View style={styles.inputContainer}>
@@ -90,8 +175,38 @@ export default function LoginScreen() {
                 placeholderTextColor="#666"
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
+                secureTextEntry={!showPassword}
+                autoComplete="password"
               />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons 
+                  name={showPassword ? "eye-off" : "eye"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Remember Me Toggle */}
+            <View style={styles.rememberMeContainer}>
+              <TouchableOpacity 
+                style={styles.rememberMeRow}
+                onPress={() => handleRememberMeChange(!rememberMe)}
+                activeOpacity={0.7}
+              >
+                <View style={[
+                  styles.checkbox,
+                  rememberMe && styles.checkboxChecked
+                ]}>
+                  {rememberMe && (
+                    <Ionicons name="checkmark" size={14} color="#fff" />
+                  )}
+                </View>
+                <Text style={styles.rememberMeText}>Remember me</Text>
+              </TouchableOpacity>
+              <Text style={styles.rememberMeHint}>
+                Save login info on this device
+              </Text>
             </View>
 
             <TouchableOpacity
@@ -105,6 +220,15 @@ export default function LoginScreen() {
                 <Text style={styles.loginButtonText}>Login</Text>
               )}
             </TouchableOpacity>
+
+            {rememberMe && email && password && (
+              <View style={styles.savedIndicator}>
+                <Ionicons name="shield-checkmark" size={16} color="#4CAF50" />
+                <Text style={styles.savedIndicatorText}>
+                  Credentials will be saved securely
+                </Text>
+              </View>
+            )}
 
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
@@ -131,6 +255,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0c0c0c',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   keyboardView: {
     flex: 1,
@@ -179,6 +308,39 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
+  rememberMeContainer: {
+    marginBottom: 20,
+    paddingHorizontal: 4,
+  },
+  rememberMeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#666',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  checkboxChecked: {
+    backgroundColor: '#FF6B35',
+    borderColor: '#FF6B35',
+  },
+  rememberMeText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  rememberMeHint: {
+    color: '#666',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 34,
+  },
   loginButton: {
     backgroundColor: '#FF6B35',
     borderRadius: 12,
@@ -193,6 +355,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  savedIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    gap: 6,
+  },
+  savedIndicatorText: {
+    color: '#4CAF50',
+    fontSize: 12,
   },
   divider: {
     flexDirection: 'row',

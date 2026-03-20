@@ -21,6 +21,7 @@ import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
+import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -602,6 +603,41 @@ export default function ProfileScreen() {
           </View>
           <Text style={styles.settingsHint}>
             Location sharing allows others to see your location at events
+          </Text>
+          
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={async () => {
+              Alert.alert(
+                'Clear Saved Login',
+                'This will remove your saved login credentials from this device. You will need to enter them again next time.',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Clear',
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        await SecureStore.deleteItemAsync('rememberMe');
+                        await SecureStore.deleteItemAsync('savedEmail');
+                        await SecureStore.deleteItemAsync('savedPassword');
+                        Alert.alert('Success', 'Saved login credentials have been cleared.');
+                      } catch (error) {
+                        console.error('Error clearing credentials:', error);
+                        Alert.alert('Error', 'Failed to clear saved credentials.');
+                      }
+                    },
+                  },
+                ]
+              );
+            }}
+          >
+            <Ionicons name="key" size={24} color="#FFC107" />
+            <Text style={styles.menuItemText}>Clear Saved Login</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <Text style={styles.settingsHint}>
+            Remove saved login credentials from this device
           </Text>
         </View>
 
