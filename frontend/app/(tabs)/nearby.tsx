@@ -231,22 +231,22 @@ export default function NearbyScreen() {
       </LinearGradient>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Privacy Toggle */}
+        {/* Visibility Toggle */}
         <View style={styles.privacyBar}>
           <View style={styles.privacyInfo}>
             <Ionicons 
               name={locationPrivate ? "eye-off" : "eye"} 
               size={20} 
-              color={locationPrivate ? "#FF6B35" : "#4CAF50"} 
+              color={locationPrivate ? "#888" : "#4CAF50"} 
             />
             <Text style={styles.privacyText}>
               {locationPrivate ? "Hidden from map" : "Visible to others"}
             </Text>
           </View>
           <Switch
-            value={locationPrivate}
-            onValueChange={togglePrivacy}
-            trackColor={{ false: '#4CAF50', true: '#FF6B35' }}
+            value={!locationPrivate}
+            onValueChange={(value) => togglePrivacy(!value)}
+            trackColor={{ false: '#444', true: '#4CAF50' }}
             thumbColor="#fff"
           />
         </View>
