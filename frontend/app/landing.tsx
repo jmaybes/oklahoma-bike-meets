@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,13 +15,36 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts, RobotoCondensed_700Bold } from '@expo-google-fonts/roboto-condensed';
+import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function LandingScreen() {
   const [fontsLoaded] = useFonts({
     RobotoCondensed_700Bold,
   });
+  
+  const [stats, setStats] = useState({ events: 0, clubs: 0 });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const [eventsRes, clubsRes] = await Promise.all([
+        axios.get(`${API_URL}/api/events`),
+        axios.get(`${API_URL}/api/clubs`),
+      ]);
+      setStats({
+        events: eventsRes.data?.length || 0,
+        clubs: clubsRes.data?.length || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
   const markLandingSeen = async () => {
     try {
@@ -172,12 +195,12 @@ export default function LandingScreen() {
         {/* Stats Section */}
         <View style={styles.statsSection}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>22+</Text>
+            <Text style={styles.statNumber}>{stats.events}</Text>
             <Text style={styles.statLabel}>Events</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>20+</Text>
+            <Text style={styles.statNumber}>{stats.clubs}</Text>
             <Text style={styles.statLabel}>Car Clubs</Text>
           </View>
           <View style={styles.statDivider} />
