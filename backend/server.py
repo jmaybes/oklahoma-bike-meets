@@ -2396,8 +2396,66 @@ async def get_club(club_id: str):
         "facebookGroup": club.get("facebookGroup", ""),
         "meetingSchedule": club.get("meetingSchedule", ""),
         "memberCount": club.get("memberCount", ""),
+        "photos": club.get("photos", []),
         "createdAt": club.get("createdAt")
     }
+
+class ClubUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    location: Optional[str] = None
+    city: Optional[str] = None
+    carTypes: Optional[List[str]] = None
+    contactInfo: Optional[str] = None
+    website: Optional[str] = None
+    facebookGroup: Optional[str] = None
+    meetingSchedule: Optional[str] = None
+    memberCount: Optional[str] = None
+    photos: Optional[List[str]] = None
+
+@api_router.put("/clubs/{club_id}")
+async def update_club(club_id: str, club_update: ClubUpdate):
+    if not ObjectId.is_valid(club_id):
+        raise HTTPException(status_code=400, detail="Invalid club ID")
+    
+    update_data = {k: v for k, v in club_update.dict().items() if v is not None}
+    
+    if update_data:
+        await db.clubs.update_one(
+            {"_id": ObjectId(club_id)},
+            {"$set": update_data}
+        )
+    
+    updated_club = await db.clubs.find_one({"_id": ObjectId(club_id)})
+    if not updated_club:
+        raise HTTPException(status_code=404, detail="Club not found")
+    
+    return {
+        "id": str(updated_club["_id"]),
+        "name": updated_club["name"],
+        "description": updated_club["description"],
+        "location": updated_club["location"],
+        "city": updated_club["city"],
+        "carTypes": updated_club.get("carTypes", []),
+        "contactInfo": updated_club.get("contactInfo", ""),
+        "website": updated_club.get("website", ""),
+        "facebookGroup": updated_club.get("facebookGroup", ""),
+        "meetingSchedule": updated_club.get("meetingSchedule", ""),
+        "memberCount": updated_club.get("memberCount", ""),
+        "photos": updated_club.get("photos", []),
+        "createdAt": updated_club.get("createdAt")
+    }
+
+@api_router.delete("/clubs/{club_id}")
+async def delete_club(club_id: str):
+    if not ObjectId.is_valid(club_id):
+        raise HTTPException(status_code=400, detail="Invalid club ID")
+    
+    result = await db.clubs.delete_one({"_id": ObjectId(club_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Club not found")
+    
+    return {"message": "Club deleted successfully"}
 
 # Admin Routes
 @api_router.get("/admin/events/pending")

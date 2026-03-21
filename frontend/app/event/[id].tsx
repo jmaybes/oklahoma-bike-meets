@@ -199,9 +199,19 @@ export default function EventDetailScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleShare}>
-          <Ionicons name="share-social" size={24} color="#fff" />
-        </TouchableOpacity>
+        <View style={styles.topBarRight}>
+          {user?.isAdmin && (
+            <TouchableOpacity 
+              onPress={() => router.push(`/admin/edit-event/${id}`)}
+              style={styles.editButton}
+            >
+              <Ionicons name="create-outline" size={24} color="#FF6B35" />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={handleShare}>
+            <Ionicons name="share-social" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -391,6 +401,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
+  },
+  topBarRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  editButton: {
+    padding: 4,
   },
   backButton: {
     padding: 4,

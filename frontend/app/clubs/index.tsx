@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
+import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -31,6 +32,7 @@ interface Club {
 }
 
 export default function ClubsScreen() {
+  const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [filteredClubs, setFilteredClubs] = useState<Club[]>([]);
@@ -91,6 +93,14 @@ export default function ClubsScreen() {
           <Text style={styles.clubName}>{item.name}</Text>
           <Text style={styles.clubLocation}>{item.city}</Text>
         </View>
+        {user?.isAdmin && (
+          <TouchableOpacity 
+            style={styles.adminEditButton}
+            onPress={() => router.push(`/admin/edit-club/${item.id}`)}
+          >
+            <Ionicons name="create-outline" size={20} color="#9C27B0" />
+          </TouchableOpacity>
+        )}
       </View>
 
       <Text style={styles.clubDescription}>{item.description}</Text>
@@ -297,6 +307,11 @@ const styles = StyleSheet.create({
   },
   clubHeaderInfo: {
     flex: 1,
+  },
+  adminEditButton: {
+    padding: 8,
+    backgroundColor: 'rgba(156, 39, 176, 0.1)',
+    borderRadius: 8,
   },
   clubName: {
     fontSize: 20,
