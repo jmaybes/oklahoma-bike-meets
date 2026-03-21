@@ -685,6 +685,90 @@ test_plan:
           agent: "testing"
           comment: "GET /api/user-cars/{car_id} working perfectly. Returns all enhanced fields including performance specs, media, modifications, social links. Correctly increments views count on each request (0→1→2). Includes owner information (ownerName, ownerNickname) from user collection join. All enhanced fields properly serialized in response."
 
+  - task: "Messaging API - User Search"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/users/search?q=admin endpoint working perfectly. Returns array of users matching search query with case-insensitive regex search across name, nickname, and email fields. Found 3 users matching 'admin' query. Response includes id, name, nickname, email fields as expected."
+
+  - task: "Messaging API - Get User by ID"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/users/{user_id} endpoint working perfectly. Returns user details with proper ObjectId validation. Response includes id, name, nickname, email fields. Handles invalid user IDs with 400 error and missing users with 404 error as expected."
+
+  - task: "Messaging API - Send Message"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/messages endpoint working perfectly. Successfully creates messages between users with senderId, recipientId, content fields. Auto-generates id, isRead (false), createdAt timestamp. Includes push notification functionality for recipients. Tested with realistic conversation data between admin and test users."
+
+  - task: "Messaging API - Get Message Thread"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/messages/thread/{user_id}/{partner_id} endpoint working perfectly. Returns chronologically ordered conversation between two users (oldest first). Successfully tested with 3-message conversation thread. Automatically marks messages as read when retrieved. Response includes all required fields: id, senderId, recipientId, content, isRead, createdAt."
+
+  - task: "Messaging API - Get Conversations"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/messages/conversations/{user_id} endpoint working perfectly. Returns list of all conversations for a user with partner details: partnerId, partnerName, partnerNickname, lastMessage, lastMessageTime, unreadCount. Successfully groups messages by conversation partner and includes proper metadata."
+
+  - task: "Messaging API - Get Online Users"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/messages/online endpoint working perfectly. Returns {online_users: []} array containing list of currently online user IDs from WebSocket connections. Tested with empty array as expected when no users are connected via WebSocket. Note: Review request mentioned /api/online-users but actual endpoint is /api/messages/online."
+
+  - task: "Messaging API - WebSocket Connection"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "WebSocket endpoint /ws/messages/{user_id} is properly defined in server.py and includes comprehensive real-time messaging functionality (message sending, typing indicators, read receipts, ping/pong). However, the endpoint returns 404 when accessed via external URL https://drive-okc.preview.emergentagent.com/ws/messages/{user_id}. This indicates an ingress/proxy configuration issue rather than a backend code problem. The WebSocket functionality is implemented correctly but not accessible externally."
+
   - task: "Admin Feedback Management - Get All Feedback"
     implemented: true
     working: true
@@ -802,3 +886,5 @@ agent_communication:
       message: "Enhanced My Garage frontend testing completed successfully in mobile view (390x844)! ✅ Navigation to Garage/Profile Tab working at http://localhost:3000/(tabs)/profile. ✅ 'My Garage' header with 'Showcase your ride' subtitle visible. ✅ Tab bar shows correct 5 tabs (Events, Nearby, Clubs, Add, Garage) with NO Timer tab. ✅ Guest Mode view working with login/register buttons. ✅ Community Garages accessible at /garage with search functionality. ✅ All navigation elements working properly. Minor Issue: Beta Notice Modal has persistent display issues that require localStorage manipulation to bypass - this prevents smooth user experience on first app launch. The core My Garage functionality is fully implemented and working as specified, but the beta modal needs UX improvement for proper dismissal."
     - agent: "testing"
       message: "New feature testing completed for: ✅ Admin Feedback Management API - 3/4 endpoints working (GET admin feedback, status filtering, status updates). ❌ PUT /api/feedback/{id}/respond fails with 500 error due to invalid ObjectId validation in existing test data ('test123' not valid ObjectId). ✅ WebSocket Online Status API - Both endpoints working (GET /api/messages/online returns empty array, GET /api/messages/online/{user_id} returns false). ✅ Event Import API - Working (POST /api/admin/events/import returns stats: total=0, new=0, duplicates=0, errors=0). ✅ Events with Images - All 73 events have photos field populated with image URLs from Unsplash/Pexels. Root cause of feedback response failure is data validation issue in existing test data with non-ObjectId userId values."
+    - agent: "testing"
+      message: "Messaging API endpoints testing completed successfully! ✅ All 5 core messaging endpoints working perfectly: (1) GET /api/users/search?q=admin - Returns users matching search query with case-insensitive regex across name/nickname/email. (2) GET /api/users/{user_id} - Returns user details with proper ObjectId validation and error handling. (3) POST /api/messages - Creates messages between users with auto-generated timestamps and push notifications. (4) GET /api/messages/thread/{user_id}/{partner_id} - Returns chronologically ordered conversation with read status updates. (5) GET /api/messages/conversations/{user_id} - Returns conversation list with partner details and unread counts. (6) GET /api/messages/online - Returns online users array from WebSocket connections. ❌ WebSocket endpoint /ws/messages/{user_id} is properly implemented in backend code but returns 404 via external URL - indicates ingress/proxy configuration issue, not backend problem. ❌ Review mentioned /api/online-users but actual endpoint is /api/messages/online. All REST messaging functionality working perfectly with realistic test data."

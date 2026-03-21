@@ -1460,6 +1460,47 @@ async def register_push_token(data: PushTokenRegister):
     
     return {"message": "Push token registered successfully"}
 
+@api_router.get("/users/search")
+async def search_users(q: str = Query(..., min_length=1)):
+    """Search for users by name, nickname, or email"""
+    # Create case-insensitive regex pattern
+    pattern = {"$regex": q, "$options": "i"}
+    
+    users = await db.users.find({
+        "$or": [
+            {"name": pattern},
+            {"nickname": pattern},
+            {"email": pattern}
+        ]
+    }).limit(20).to_list(20)
+    
+    return [
+        {
+            "id": str(user["_id"]),
+            "name": user.get("name", ""),
+            "nickname": user.get("nickname", ""),
+            "email": user.get("email", "")
+        }
+        for user in users
+    ]
+
+@api_router.get("/users/{user_id}")
+async def get_user(user_id: str):
+    """Get user details by ID"""
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        "id": str(user["_id"]),
+        "name": user.get("name", ""),
+        "nickname": user.get("nickname", ""),
+        "email": user.get("email", "")
+    }
+
 # User Car Helper
 def user_car_helper(car) -> dict:
     return {
