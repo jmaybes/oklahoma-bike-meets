@@ -252,7 +252,7 @@ export default function ChatScreen() {
   // Check if partner is online
   const checkPartnerOnline = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/users/${userId}/online`);
+      const response = await axios.get(`${API_URL}/api/messages/online/${userId}`);
       setIsPartnerOnline(response.data.online);
     } catch (error) {
       console.error('Error checking online status:', error);

@@ -191,7 +191,7 @@ export default function MessagesScreen() {
 
   const fetchOnlineUsers = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/online-users`);
+      const response = await axios.get(`${API_URL}/api/messages/online`);
       setOnlineUsers(response.data.online_users || []);
     } catch (error) {
       console.error('Error fetching online users:', error);
