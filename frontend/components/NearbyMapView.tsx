@@ -43,28 +43,59 @@ export default function NearbyMapView({
 
   // Convert radius in miles to meters for Circle component
   const radiusInMeters = radius * 1609.34;
+  
+  // Calculate appropriate zoom level based on radius
+  // Smaller radius = more zoomed in, larger radius = more zoomed out
+  const getLatitudeDelta = (r: number) => {
+    if (r <= 5) return 0.1;
+    if (r <= 10) return 0.2;
+    if (r <= 25) return 0.5;
+    return r / 50;
+  };
 
   useEffect(() => {
     if (location && mapRef.current) {
+      const delta = getLatitudeDelta(radius);
       mapRef.current.animateToRegion({
         latitude: location.latitude,
         longitude: location.longitude,
-        latitudeDelta: radius / 35,
-        longitudeDelta: radius / 35,
+        latitudeDelta: delta,
+        longitudeDelta: delta,
       }, 1000);
     }
   }, [location, radius]);
 
   const handleCenterOnUser = () => {
     if (location && mapRef.current) {
+      const delta = getLatitudeDelta(radius);
       mapRef.current.animateToRegion({
         latitude: location.latitude,
         longitude: location.longitude,
-        latitudeDelta: radius / 35,
-        longitudeDelta: radius / 35,
+        latitudeDelta: delta,
+        longitudeDelta: delta,
       }, 500);
     }
     if (onCenterOnUser) onCenterOnUser();
+  };
+  
+  const handleZoomIn = () => {
+    if (mapRef.current) {
+      mapRef.current.getCamera().then((camera) => {
+        if (camera.zoom) {
+          mapRef.current?.animateCamera({ zoom: camera.zoom + 1 }, { duration: 300 });
+        }
+      });
+    }
+  };
+  
+  const handleZoomOut = () => {
+    if (mapRef.current) {
+      mapRef.current.getCamera().then((camera) => {
+        if (camera.zoom) {
+          mapRef.current?.animateCamera({ zoom: camera.zoom - 1 }, { duration: 300 });
+        }
+      });
+    }
   };
 
   if (!location) {
@@ -85,12 +116,16 @@ export default function NearbyMapView({
         initialRegion={{
           latitude: location.latitude,
           longitude: location.longitude,
-          latitudeDelta: radius / 35,
-          longitudeDelta: radius / 35,
+          latitudeDelta: getLatitudeDelta(radius),
+          longitudeDelta: getLatitudeDelta(radius),
         }}
         showsUserLocation={true}
         showsMyLocationButton={false}
         showsCompass={true}
+        showsScale={true}
+        showsTraffic={false}
+        showsBuildings={true}
+        mapType="standard"
         customMapStyle={darkMapStyle}
       >
         {/* User's location marker */}
@@ -107,16 +142,16 @@ export default function NearbyMapView({
           </View>
         </Marker>
 
-        {/* Search radius circle */}
+        {/* Search radius circle - semi-transparent */}
         <Circle
           center={{
             latitude: location.latitude,
             longitude: location.longitude,
           }}
           radius={radiusInMeters}
-          fillColor="rgba(255, 107, 53, 0.1)"
-          strokeColor="rgba(255, 107, 53, 0.5)"
-          strokeWidth={2}
+          fillColor="rgba(255, 107, 53, 0.08)"
+          strokeColor="rgba(255, 107, 53, 0.3)"
+          strokeWidth={1}
         />
 
         {/* Nearby users markers */}
@@ -142,6 +177,12 @@ export default function NearbyMapView({
         <TouchableOpacity style={styles.mapControlButton} onPress={handleCenterOnUser}>
           <Ionicons name="locate" size={22} color="#FF6B35" />
         </TouchableOpacity>
+        <TouchableOpacity style={styles.mapControlButton} onPress={handleZoomIn}>
+          <Ionicons name="add" size={22} color="#FF6B35" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.mapControlButton} onPress={handleZoomOut}>
+          <Ionicons name="remove" size={22} color="#FF6B35" />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.mapControlButton} onPress={onRefresh}>
           <Ionicons name="refresh" size={22} color="#FF6B35" />
         </TouchableOpacity>
@@ -154,13 +195,19 @@ export default function NearbyMapView({
           {nearbyUsers.length} nearby
         </Text>
       </View>
+      
+      {/* Radius info */}
+      <View style={styles.radiusInfoBadge}>
+        <Ionicons name="radio-button-on" size={14} color="#4CAF50" />
+        <Text style={styles.radiusInfoText}>{radius} mi radius</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   mapContainer: {
-    height: 280,
+    height: 350,
     borderRadius: 16,
     overflow: 'hidden',
     marginBottom: 16,
@@ -170,7 +217,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mapPlaceholder: {
-    height: 280,
+    height: 350,
     borderRadius: 16,
     backgroundColor: '#1a1a1a',
     marginBottom: 16,
@@ -217,6 +264,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 13,
     fontWeight: '600',
+  },
+  radiusInfoBadge: {
+    position: 'absolute',
+    left: 12,
+    bottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    gap: 5,
+  },
+  radiusInfoText: {
+    color: '#fff',
+    fontSize: 12,
   },
   userMarker: {
     backgroundColor: '#FF6B35',
