@@ -533,6 +533,12 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer/leaderboard')}>
+            <Ionicons name="trophy" size={24} color="#FFC107" />
+            <Text style={styles.menuItemText}>Area Leaderboards</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/(tabs)/home')}>
             <Ionicons name="heart" size={24} color="#E91E63" />
             <Text style={styles.menuItemText}>My Favorites</Text>
