@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   FlatList,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -30,6 +30,7 @@ interface LeaderboardEntry {
 }
 
 export default function LeaderboardScreen() {
+  const insets = useSafeAreaInsets();
   const [selectedType, setSelectedType] = useState<LeaderboardType>('0-60');
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -146,7 +147,7 @@ export default function LeaderboardScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       {/* Header */}
       <LinearGradient
         colors={['#FFD700', '#FF6B35']}
@@ -235,7 +236,7 @@ export default function LeaderboardScreen() {
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 

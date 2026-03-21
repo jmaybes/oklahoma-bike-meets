@@ -3,11 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -42,6 +42,7 @@ const typeIcons: { [key: string]: string } = {
 
 export default function FeedbackHistoryScreen() {
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [feedbackList, setFeedbackList] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -72,7 +73,7 @@ export default function FeedbackHistoryScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <LinearGradient
         colors={['#FF6B35', '#E91E63']}
         start={{ x: 0, y: 0 }}
@@ -148,7 +149,7 @@ export default function FeedbackHistoryScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 

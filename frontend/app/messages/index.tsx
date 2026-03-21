@@ -4,12 +4,12 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   FlatList,
   ActivityIndicator,
   RefreshControl,
   Image,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,6 +29,7 @@ interface Conversation {
 
 export default function MessagesScreen() {
   const { user, isAuthenticated } = useAuth();
+  const insets = useSafeAreaInsets();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -103,7 +104,7 @@ export default function MessagesScreen() {
 
   if (!isAuthenticated) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <LinearGradient
           colors={['#2196F3', '#1976D2']}
           start={{ x: 0, y: 0 }}
@@ -132,12 +133,12 @@ export default function MessagesScreen() {
             <Text style={styles.loginButtonText}>Login</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <LinearGradient
         colors={['#2196F3', '#1976D2']}
         start={{ x: 0, y: 0 }}
@@ -182,7 +183,7 @@ export default function MessagesScreen() {
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 

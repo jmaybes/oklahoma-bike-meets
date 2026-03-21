@@ -5,11 +5,11 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
   Linking,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
@@ -31,6 +31,7 @@ interface PendingClub {
 
 export default function AdminPendingClubsScreen() {
   const { user, isAuthenticated } = useAuth();
+  const insets = useSafeAreaInsets();
   const [pendingClubs, setPendingClubs] = useState<PendingClub[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
@@ -205,7 +206,7 @@ export default function AdminPendingClubsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -231,7 +232,7 @@ export default function AdminPendingClubsScreen() {
           </View>
         }
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

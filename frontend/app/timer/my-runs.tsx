@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   FlatList,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -30,6 +30,7 @@ interface PerformanceRun {
 
 export default function MyRunsScreen() {
   const { user, isAuthenticated } = useAuth();
+  const insets = useSafeAreaInsets();
   const [runs, setRuns] = useState<PerformanceRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -105,7 +106,7 @@ export default function MyRunsScreen() {
 
   if (!isAuthenticated) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <LinearGradient
           colors={['#FF6B35', '#E91E63']}
           start={{ x: 0, y: 0 }}
@@ -134,14 +135,14 @@ export default function MyRunsScreen() {
             <Text style={styles.loginButtonText}>Login</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   const { best060, best0100, bestQuarter } = getBestTimes();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <LinearGradient
         colors={['#FF6B35', '#E91E63']}
         start={{ x: 0, y: 0 }}
@@ -234,7 +235,7 @@ export default function MyRunsScreen() {
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 

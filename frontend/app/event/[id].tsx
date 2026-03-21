@@ -6,11 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  SafeAreaView,
   Share,
   Linking,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import axios from 'axios';
@@ -48,6 +48,7 @@ interface Comment {
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams();
   const { user, isAuthenticated } = useAuth();
+  const insets = useSafeAreaInsets();
   const [event, setEvent] = useState<Event | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,7 +179,7 @@ export default function EventDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
+      <View style={[styles.centerContainer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <ActivityIndicator size="large" color="#FF6B35" />
       </View>
     );
@@ -186,14 +187,14 @@ export default function EventDetailScreen() {
 
   if (!event) {
     return (
-      <View style={styles.centerContainer}>
+      <View style={[styles.centerContainer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.errorText}>Event not found</Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -353,7 +354,7 @@ export default function EventDetailScreen() {
           )}
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
