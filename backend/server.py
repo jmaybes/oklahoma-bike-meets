@@ -2432,10 +2432,10 @@ async def update_club(club_id: str, club_update: ClubUpdate):
     
     return {
         "id": str(updated_club["_id"]),
-        "name": updated_club["name"],
-        "description": updated_club["description"],
-        "location": updated_club["location"],
-        "city": updated_club["city"],
+        "name": updated_club.get("name", ""),
+        "description": updated_club.get("description", ""),
+        "location": updated_club.get("location", ""),
+        "city": updated_club.get("city", ""),
         "carTypes": updated_club.get("carTypes", []),
         "contactInfo": updated_club.get("contactInfo", ""),
         "website": updated_club.get("website", ""),
