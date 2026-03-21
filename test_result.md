@@ -865,6 +865,78 @@ test_plan:
           agent: "testing"
           comment: "GET /api/events endpoint verified for photos field. All 73 events have photos field populated with image URLs from Unsplash and Pexels. Each event contains exactly 1 photo URL in the photos array. Photos field is properly included in event_helper function and returns valid image URLs."
 
+  - task: "Event Photo Gallery - Get Gallery"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/events/{event_id}/gallery endpoint working perfectly. Returns gallery with eventId, eventTitle, photoCount, and photos array. Properly validates event existence and ObjectId format. Successfully tested with existing event '13th Annual Trykes 'N Tread'."
+
+  - task: "Event Photo Gallery - Upload Photo"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/events/{event_id}/gallery/upload endpoint working perfectly. Successfully uploads photos with base64 data, validates event and uploader IDs, creates photo document with all required fields (eventId, uploaderId, uploaderName, photo, caption, tags, likes, likeCount, createdAt). Tested with realistic data including 2024 Mustang GT photo."
+
+  - task: "Event Photo Gallery - Tag Car in Photo"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/events/{event_id}/gallery/{photo_id}/tag endpoint working perfectly. Successfully tags user cars in photos, validates photo/user/car existence, prevents duplicate tags, builds car info string from car data. Tested with 2024 Ford Mustang GT tagging. Returns updated photo with tag information including userId, carId, carInfo, and taggedAt timestamp."
+
+  - task: "Event Photo Gallery - Get User Tagged Photos"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/users/{user_id}/tagged-photos endpoint working perfectly. Returns all photos where user's cars are tagged, includes event details (eventTitle, eventDate), user-specific tags (userTags), and all photo information. Successfully tested with tagged Mustang GT photo showing proper event association and tag details."
+
+  - task: "Event Photo Gallery - Like Photo"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/events/{event_id}/gallery/{photo_id}/like endpoint working perfectly. Implements toggle functionality - like if not liked, unlike if already liked. Properly manages likes array and likeCount field. Returns current like status (liked: true/false) and updated like count. Successfully tested both like (count 0→1) and unlike (count 1→0) operations."
+
+  - task: "Event Photo Gallery - Delete Photo"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "DELETE /api/events/{event_id}/gallery/{photo_id} endpoint working perfectly. Validates photo existence, checks authorization (uploader or admin), successfully deletes photo from database. Tested with uploader authorization and verified photo removal from gallery. Returns proper success message and handles authorization properly."
+
 agent_communication:
     - agent: "testing"
       message: "Comprehensive backend API testing completed successfully. All 18 core endpoints tested with 100% success rate. Additional edge case and error handling tests also passed. The API is fully functional with proper error handling, data validation, and persistence. Sample data includes 4 events across Oklahoma City, Norman, and Tulsa."
@@ -888,3 +960,5 @@ agent_communication:
       message: "New feature testing completed for: ✅ Admin Feedback Management API - 3/4 endpoints working (GET admin feedback, status filtering, status updates). ❌ PUT /api/feedback/{id}/respond fails with 500 error due to invalid ObjectId validation in existing test data ('test123' not valid ObjectId). ✅ WebSocket Online Status API - Both endpoints working (GET /api/messages/online returns empty array, GET /api/messages/online/{user_id} returns false). ✅ Event Import API - Working (POST /api/admin/events/import returns stats: total=0, new=0, duplicates=0, errors=0). ✅ Events with Images - All 73 events have photos field populated with image URLs from Unsplash/Pexels. Root cause of feedback response failure is data validation issue in existing test data with non-ObjectId userId values."
     - agent: "testing"
       message: "Messaging API endpoints testing completed successfully! ✅ All 5 core messaging endpoints working perfectly: (1) GET /api/users/search?q=admin - Returns users matching search query with case-insensitive regex across name/nickname/email. (2) GET /api/users/{user_id} - Returns user details with proper ObjectId validation and error handling. (3) POST /api/messages - Creates messages between users with auto-generated timestamps and push notifications. (4) GET /api/messages/thread/{user_id}/{partner_id} - Returns chronologically ordered conversation with read status updates. (5) GET /api/messages/conversations/{user_id} - Returns conversation list with partner details and unread counts. (6) GET /api/messages/online - Returns online users array from WebSocket connections. ❌ WebSocket endpoint /ws/messages/{user_id} is properly implemented in backend code but returns 404 via external URL - indicates ingress/proxy configuration issue, not backend problem. ❌ Review mentioned /api/online-users but actual endpoint is /api/messages/online. All REST messaging functionality working perfectly with realistic test data."
+    - agent: "testing"
+      message: "Event Photo Gallery API testing completed successfully! ✅ All 6 requested endpoints working perfectly: (1) GET /api/events/{event_id}/gallery - Returns gallery with event details and photo count. (2) POST /api/events/{event_id}/gallery/upload - Uploads photos with base64 data, validates all IDs, creates complete photo documents. (3) POST /api/events/{event_id}/gallery/{photo_id}/tag - Tags user cars in photos, prevents duplicates, includes car info and timestamps. (4) GET /api/users/{user_id}/tagged-photos - Returns all photos where user's cars are tagged with event details. (5) POST /api/events/{event_id}/gallery/{photo_id}/like - Toggle like/unlike functionality with proper count management. (6) DELETE /api/events/{event_id}/gallery/{photo_id} - Deletes photos with proper authorization (uploader or admin). All endpoints include comprehensive error handling (400 for invalid IDs, 404 for not found, 403 for unauthorized). Successfully tested complete workflow: upload photo → tag car → like/unlike → delete photo. Photo gallery system fully functional with proper data validation and persistence."

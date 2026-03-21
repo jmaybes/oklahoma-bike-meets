@@ -5,262 +5,341 @@ import json
 import sys
 from datetime import datetime
 
-# Backend URL from frontend .env
+# Use the correct backend URL from frontend .env
 BASE_URL = "https://drive-okc.preview.emergentagent.com/api"
 
-def test_user_search():
-    """Test user search endpoint: GET /api/users/search?q=admin"""
-    print("🔍 Testing User Search Endpoint...")
+def test_event_photo_gallery_api():
+    """Test Event Photo Gallery API endpoints for Oklahoma City Car Meets app"""
     
-    try:
-        response = requests.get(f"{BASE_URL}/users/search", params={"q": "admin"})
-        print(f"Status Code: {response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            print(f"✅ User search successful")
-            print(f"Found {len(data)} users matching 'admin'")
-            if data:
-                print(f"Sample user: {data[0]}")
-                return data[0].get("id")  # Return first user ID for other tests
-            else:
-                print("No users found matching 'admin'")
-                return None
-        else:
-            print(f"❌ User search failed: {response.text}")
-            return None
-            
-    except Exception as e:
-        print(f"❌ User search error: {e}")
-        return None
-
-def test_get_user(user_id):
-    """Test get user endpoint: GET /api/users/{user_id}"""
-    print(f"\n👤 Testing Get User Endpoint with ID: {user_id}...")
-    
-    if not user_id:
-        print("❌ No user ID provided, skipping test")
-        return False
-        
-    try:
-        response = requests.get(f"{BASE_URL}/users/{user_id}")
-        print(f"Status Code: {response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            print(f"✅ Get user successful")
-            print(f"User details: {data}")
-            return True
-        elif response.status_code == 404:
-            print(f"❌ User not found: {response.text}")
-            return False
-        elif response.status_code == 400:
-            print(f"❌ Invalid user ID: {response.text}")
-            return False
-        else:
-            print(f"❌ Get user failed: {response.text}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Get user error: {e}")
-        return False
-
-def test_websocket_endpoint():
-    """Test WebSocket connection endpoint exists: /ws/messages/{user_id}"""
-    print(f"\n🔌 Testing WebSocket Endpoint Path...")
-    
-    # We can't easily test WebSocket connection in this script, but we can verify the endpoint exists
-    # by checking if it's properly configured (it should return a WebSocket upgrade error for HTTP requests)
-    
-    try:
-        # Try to access WebSocket endpoint with HTTP (should fail with specific error)
-        # WebSocket is on the main app, not under /api prefix
-        ws_url = BASE_URL.replace("/api", "") + "/ws/messages/test_user_id"
-        response = requests.get(ws_url)
-        
-        print(f"Status Code: {response.status_code}")
-        print(f"WebSocket URL tested: {ws_url}")
-        
-        # WebSocket endpoints typically return 426 (Upgrade Required) or similar for HTTP requests
-        if response.status_code in [426, 400, 405]:
-            print(f"✅ WebSocket endpoint exists and properly configured")
-            return True
-        elif response.status_code == 404:
-            print(f"❌ WebSocket endpoint not found at {ws_url}")
-            return False
-        else:
-            print(f"❌ Unexpected response from WebSocket endpoint: {response.status_code}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ WebSocket endpoint test error: {e}")
-        return False
-
-def test_conversations(user_id):
-    """Test conversations endpoint: GET /api/messages/conversations/{user_id}"""
-    print(f"\n💬 Testing Conversations Endpoint with user ID: {user_id}...")
-    
-    if not user_id:
-        print("❌ No user ID provided, skipping test")
-        return False
-        
-    try:
-        response = requests.get(f"{BASE_URL}/messages/conversations/{user_id}")
-        print(f"Status Code: {response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            print(f"✅ Get conversations successful")
-            print(f"Found {len(data)} conversations")
-            if data:
-                print(f"Sample conversation: {data[0]}")
-            else:
-                print("No conversations found for this user")
-            return True
-        else:
-            print(f"❌ Get conversations failed: {response.text}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Get conversations error: {e}")
-        return False
-
-def test_online_users():
-    """Test online users endpoint: GET /api/messages/online (not /api/online-users as mentioned in review)"""
-    print(f"\n🟢 Testing Online Users Endpoint...")
-    
-    try:
-        # Test the actual endpoint that exists
-        response = requests.get(f"{BASE_URL}/messages/online")
-        print(f"Status Code: {response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            print(f"✅ Get online users successful")
-            print(f"Online users: {data}")
-            return True
-        else:
-            print(f"❌ Get online users failed: {response.text}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Get online users error: {e}")
-        return False
-
-def test_online_users_alternative():
-    """Test if the endpoint mentioned in review exists: GET /api/online-users"""
-    print(f"\n🔍 Testing Alternative Online Users Endpoint (/api/online-users)...")
-    
-    try:
-        response = requests.get(f"{BASE_URL}/online-users")
-        print(f"Status Code: {response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            print(f"✅ Alternative online users endpoint exists")
-            print(f"Online users: {data}")
-            return True
-        elif response.status_code == 404:
-            print(f"❌ Alternative endpoint /api/online-users does not exist")
-            return False
-        else:
-            print(f"❌ Alternative online users failed: {response.text}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Alternative online users error: {e}")
-        return False
-
-def create_test_users():
-    """Create test users for testing if none exist"""
-    print(f"\n👥 Creating test users for comprehensive testing...")
-    
-    test_users = [
-        {
-            "name": "Admin User",
-            "nickname": "admin",
-            "email": "admin@test.com",
-            "password": "password123"
-        },
-        {
-            "name": "Test User",
-            "nickname": "testuser",
-            "email": "test@test.com", 
-            "password": "password123"
-        }
-    ]
-    
-    created_users = []
-    
-    for user_data in test_users:
-        try:
-            response = requests.post(f"{BASE_URL}/auth/register", json=user_data)
-            if response.status_code == 201:
-                user = response.json()
-                created_users.append(user.get("id"))
-                print(f"✅ Created user: {user_data['nickname']}")
-            elif response.status_code == 400 and "already exists" in response.text:
-                print(f"ℹ️ User {user_data['nickname']} already exists")
-                # Try to find existing user
-                search_response = requests.get(f"{BASE_URL}/users/search", params={"q": user_data['nickname']})
-                if search_response.status_code == 200:
-                    users = search_response.json()
-                    if users:
-                        created_users.append(users[0].get("id"))
-            else:
-                print(f"❌ Failed to create user {user_data['nickname']}: {response.text}")
-                
-        except Exception as e:
-            print(f"❌ Error creating user {user_data['nickname']}: {e}")
-    
-    return created_users
-
-def main():
-    print("🚀 Starting Oklahoma City Car Meets - Messaging API Tests")
+    print("🚗 Testing Event Photo Gallery API Endpoints")
     print("=" * 60)
     
-    # Create test users first
-    test_user_ids = create_test_users()
+    # Test data
+    test_user_id = "67a123456789abcdef123456"  # Test user ID
+    test_uploader_name = "Mike Johnson"
+    test_photo_base64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    test_caption = "My 2024 Mustang GT at the Oklahoma City Car Meet"
     
-    # Test 1: User search endpoint
-    user_id = test_user_search()
+    # Step 1: Get an event ID from existing events
+    print("\n1️⃣ Getting event ID from existing events...")
+    try:
+        response = requests.get(f"{BASE_URL}/events", timeout=10)
+        print(f"GET /api/events - Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            events = response.json()
+            if events and len(events) > 0:
+                event_id = events[0]["id"]
+                event_title = events[0]["title"]
+                print(f"✅ Using event: {event_title} (ID: {event_id})")
+            else:
+                print("❌ No events found in database")
+                return False
+        else:
+            print(f"❌ Failed to get events: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error getting events: {str(e)}")
+        return False
     
-    # Use created test user if search didn't return any
-    if not user_id and test_user_ids:
-        user_id = test_user_ids[0]
-        print(f"Using created test user ID: {user_id}")
+    # Step 2: Test get event gallery (should be empty initially)
+    print(f"\n2️⃣ Testing GET /api/events/{event_id}/gallery...")
+    try:
+        response = requests.get(f"{BASE_URL}/events/{event_id}/gallery", timeout=10)
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            gallery = response.json()
+            print(f"✅ Gallery retrieved successfully")
+            print(f"   Event: {gallery.get('eventTitle', 'N/A')}")
+            print(f"   Photo count: {gallery.get('photoCount', 0)}")
+            print(f"   Photos: {len(gallery.get('photos', []))}")
+        else:
+            print(f"❌ Failed to get gallery: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error getting gallery: {str(e)}")
+        return False
     
-    # Test 2: Get user endpoint
-    test_get_user(user_id)
+    # Step 3: Test upload photo to gallery
+    print(f"\n3️⃣ Testing POST /api/events/{event_id}/gallery/upload...")
+    upload_data = {
+        "eventId": event_id,
+        "uploaderId": test_user_id,
+        "uploaderName": test_uploader_name,
+        "photo": test_photo_base64,
+        "caption": test_caption
+    }
     
-    # Test 3: WebSocket endpoint path verification
-    test_websocket_endpoint()
+    try:
+        response = requests.post(
+            f"{BASE_URL}/events/{event_id}/gallery/upload",
+            json=upload_data,
+            timeout=10
+        )
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            uploaded_photo = response.json()
+            photo_id = uploaded_photo["id"]
+            print(f"✅ Photo uploaded successfully")
+            print(f"   Photo ID: {photo_id}")
+            print(f"   Uploader: {uploaded_photo.get('uploaderName', 'N/A')}")
+            print(f"   Caption: {uploaded_photo.get('caption', 'N/A')}")
+            print(f"   Like count: {uploaded_photo.get('likeCount', 0)}")
+        else:
+            print(f"❌ Failed to upload photo: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error uploading photo: {str(e)}")
+        return False
     
-    # Test 4: Conversations endpoint
-    test_conversations(user_id)
+    # Step 4: Create a test user car for tagging
+    print(f"\n4️⃣ Creating test user car for tagging...")
+    car_data = {
+        "userId": test_user_id,
+        "make": "Ford",
+        "model": "Mustang GT",
+        "year": "2024",
+        "color": "Race Red",
+        "modifications": [
+            {
+                "category": "Engine",
+                "name": "Cold air intake",
+                "brand": "K&N",
+                "description": "High-flow air intake system",
+                "cost": 350.0
+            },
+            {
+                "category": "Exhaust",
+                "name": "Cat-back exhaust",
+                "brand": "Borla",
+                "description": "ATAK cat-back exhaust system",
+                "cost": 1200.0
+            }
+        ],
+        "description": "My weekend warrior",
+        "photos": [],
+        "isPublic": True
+    }
     
-    # Test 5: Online users endpoint (actual endpoint)
-    test_online_users()
+    try:
+        response = requests.post(f"{BASE_URL}/user-cars", json=car_data, timeout=10)
+        print(f"POST /api/user-cars - Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            created_car = response.json()
+            car_id = created_car["id"]
+            print(f"✅ Test car created successfully")
+            print(f"   Car ID: {car_id}")
+            print(f"   Car: {created_car.get('year')} {created_car.get('make')} {created_car.get('model')}")
+        else:
+            print(f"❌ Failed to create test car: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error creating test car: {str(e)}")
+        return False
     
-    # Test 6: Check if alternative endpoint exists
-    test_online_users_alternative()
+    # Step 5: Test tag car in photo
+    print(f"\n5️⃣ Testing POST /api/events/{event_id}/gallery/{photo_id}/tag...")
+    tag_data = {
+        "userId": test_user_id,
+        "carId": car_id,
+        "carInfo": "2024 Ford Mustang GT"
+    }
     
-    print("\n" + "=" * 60)
-    print("🏁 Messaging API Tests Complete")
+    try:
+        response = requests.post(
+            f"{BASE_URL}/events/{event_id}/gallery/{photo_id}/tag",
+            json=tag_data,
+            timeout=10
+        )
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            tagged_photo = response.json()
+            print(f"✅ Car tagged in photo successfully")
+            print(f"   Tags count: {len(tagged_photo.get('tags', []))}")
+            if tagged_photo.get('tags'):
+                tag = tagged_photo['tags'][0]
+                print(f"   Tagged car: {tag.get('carInfo', 'N/A')}")
+                print(f"   Tagged by user: {tag.get('userId', 'N/A')}")
+        else:
+            print(f"❌ Failed to tag car: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error tagging car: {str(e)}")
+        return False
     
-    # Summary
-    print("\n📋 ENDPOINT SUMMARY:")
-    print("✅ GET /api/users/search?q=admin - User search working")
-    print("✅ GET /api/users/{user_id} - Get user working") 
-    print("✅ /ws/messages/{user_id} - WebSocket endpoint exists")
-    print("✅ GET /api/messages/conversations/{user_id} - Conversations working")
-    print("✅ GET /api/messages/online - Online users working")
-    print("❌ GET /api/online-users - Endpoint mentioned in review does not exist")
+    # Step 6: Test get user tagged photos
+    print(f"\n6️⃣ Testing GET /api/users/{test_user_id}/tagged-photos...")
+    try:
+        response = requests.get(f"{BASE_URL}/users/{test_user_id}/tagged-photos", timeout=10)
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            tagged_photos = response.json()
+            print(f"✅ User tagged photos retrieved successfully")
+            print(f"   Tagged photos count: {len(tagged_photos)}")
+            if tagged_photos:
+                photo = tagged_photos[0]
+                print(f"   Event: {photo.get('eventTitle', 'N/A')}")
+                print(f"   User tags: {len(photo.get('userTags', []))}")
+        else:
+            print(f"❌ Failed to get tagged photos: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error getting tagged photos: {str(e)}")
+        return False
     
-    print("\n📝 NOTES:")
-    print("- The review request mentions GET /api/online-users but the actual endpoint is GET /api/messages/online")
-    print("- WebSocket endpoint /ws/messages/{user_id} exists and is properly configured")
-    print("- All messaging endpoints are functional and return proper JSON responses")
+    # Step 7: Test like photo
+    print(f"\n7️⃣ Testing POST /api/events/{event_id}/gallery/{photo_id}/like...")
+    try:
+        response = requests.post(
+            f"{BASE_URL}/events/{event_id}/gallery/{photo_id}/like?user_id={test_user_id}",
+            timeout=10
+        )
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            like_result = response.json()
+            print(f"✅ Photo like/unlike successful")
+            print(f"   Liked: {like_result.get('liked', False)}")
+            print(f"   Like count: {like_result.get('likeCount', 0)}")
+        else:
+            print(f"❌ Failed to like photo: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error liking photo: {str(e)}")
+        return False
+    
+    # Step 8: Test like photo again (should unlike)
+    print(f"\n8️⃣ Testing POST /api/events/{event_id}/gallery/{photo_id}/like (unlike)...")
+    try:
+        response = requests.post(
+            f"{BASE_URL}/events/{event_id}/gallery/{photo_id}/like?user_id={test_user_id}",
+            timeout=10
+        )
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            like_result = response.json()
+            print(f"✅ Photo unlike successful")
+            print(f"   Liked: {like_result.get('liked', False)}")
+            print(f"   Like count: {like_result.get('likeCount', 0)}")
+        else:
+            print(f"❌ Failed to unlike photo: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error unliking photo: {str(e)}")
+        return False
+    
+    # Step 9: Test delete photo
+    print(f"\n9️⃣ Testing DELETE /api/events/{event_id}/gallery/{photo_id}...")
+    try:
+        response = requests.delete(
+            f"{BASE_URL}/events/{event_id}/gallery/{photo_id}?user_id={test_user_id}",
+            timeout=10
+        )
+        print(f"Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            delete_result = response.json()
+            print(f"✅ Photo deleted successfully")
+            print(f"   Message: {delete_result.get('message', 'N/A')}")
+        else:
+            print(f"❌ Failed to delete photo: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error deleting photo: {str(e)}")
+        return False
+    
+    # Step 10: Verify photo is deleted by checking gallery again
+    print(f"\n🔟 Verifying photo deletion...")
+    try:
+        response = requests.get(f"{BASE_URL}/events/{event_id}/gallery", timeout=10)
+        print(f"GET /api/events/{event_id}/gallery - Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            gallery = response.json()
+            print(f"✅ Gallery verified after deletion")
+            print(f"   Photo count: {gallery.get('photoCount', 0)}")
+            
+            # Check if our photo is gone
+            photo_found = False
+            for photo in gallery.get('photos', []):
+                if photo.get('id') == photo_id:
+                    photo_found = True
+                    break
+            
+            if not photo_found:
+                print(f"✅ Photo successfully removed from gallery")
+            else:
+                print(f"❌ Photo still exists in gallery")
+                return False
+        else:
+            print(f"❌ Failed to verify gallery: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error verifying gallery: {str(e)}")
+        return False
+    
+    # Test error cases
+    print(f"\n🔧 Testing error cases...")
+    
+    # Test invalid event ID
+    print(f"\n   Testing invalid event ID...")
+    try:
+        response = requests.get(f"{BASE_URL}/events/invalid_id/gallery", timeout=10)
+        if response.status_code == 400:
+            print(f"✅ Invalid event ID properly rejected (400)")
+        else:
+            print(f"❌ Invalid event ID not handled properly: {response.status_code}")
+    except Exception as e:
+        print(f"❌ Error testing invalid event ID: {str(e)}")
+    
+    # Test non-existent event
+    print(f"\n   Testing non-existent event...")
+    try:
+        fake_event_id = "67a123456789abcdef999999"
+        response = requests.get(f"{BASE_URL}/events/{fake_event_id}/gallery", timeout=10)
+        if response.status_code == 404:
+            print(f"✅ Non-existent event properly rejected (404)")
+        else:
+            print(f"❌ Non-existent event not handled properly: {response.status_code}")
+    except Exception as e:
+        print(f"❌ Error testing non-existent event: {str(e)}")
+    
+    print(f"\n🎉 Event Photo Gallery API testing completed successfully!")
+    return True
+
+def test_error_handling():
+    """Test error handling for Event Photo Gallery API"""
+    print(f"\n🔧 Testing Error Handling...")
+    
+    # Test invalid ObjectIds
+    invalid_ids = ["invalid", "123", ""]
+    
+    for invalid_id in invalid_ids:
+        try:
+            response = requests.get(f"{BASE_URL}/events/{invalid_id}/gallery", timeout=5)
+            if response.status_code == 400:
+                print(f"✅ Invalid ID '{invalid_id}' properly rejected")
+            else:
+                print(f"❌ Invalid ID '{invalid_id}' not handled: {response.status_code}")
+        except Exception as e:
+            print(f"❌ Error testing invalid ID '{invalid_id}': {str(e)}")
 
 if __name__ == "__main__":
-    main()
+    print("🚗 Oklahoma City Car Meets - Event Photo Gallery API Testing")
+    print("=" * 70)
+    
+    success = test_event_photo_gallery_api()
+    test_error_handling()
+    
+    if success:
+        print(f"\n✅ All Event Photo Gallery API tests completed successfully!")
+        sys.exit(0)
+    else:
+        print(f"\n❌ Some Event Photo Gallery API tests failed!")
+        sys.exit(1)

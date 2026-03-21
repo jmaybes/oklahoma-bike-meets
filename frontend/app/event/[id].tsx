@@ -299,6 +299,23 @@ export default function EventDetailScreen() {
           </TouchableOpacity>
         )}
 
+        {/* Photo Gallery Link */}
+        <TouchableOpacity
+          style={styles.galleryButton}
+          onPress={() => router.push(`/event/${id}/gallery`)}
+        >
+          <View style={styles.galleryButtonContent}>
+            <View style={styles.galleryIconContainer}>
+              <Ionicons name="images" size={24} color="#fff" />
+            </View>
+            <View style={styles.galleryButtonText}>
+              <Text style={styles.galleryTitle}>Photo Gallery</Text>
+              <Text style={styles.gallerySubtitle}>View & share event photos</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </View>
+        </TouchableOpacity>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Comments ({comments.length})</Text>
           {comments.length === 0 ? (
@@ -481,6 +498,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  galleryButton: {
+    backgroundColor: '#1a1a1a',
+    marginHorizontal: 20,
+    borderRadius: 16,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  galleryButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  galleryIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#FF6B35',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  galleryButtonText: {
+    flex: 1,
+    marginLeft: 14,
+  },
+  galleryTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  gallerySubtitle: {
+    color: '#888',
+    fontSize: 13,
+    marginTop: 2,
   },
   comment: {
     backgroundColor: '#1a1a1a',

@@ -550,6 +550,15 @@ export default function ProfileScreen() {
             <Text style={styles.menuItemText}>My RSVPs</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/garage/tagged-photos')}>
+            <Ionicons name="images" size={24} color="#9C27B0" />
+            <Text style={styles.menuItemText}>Tagged Photos</Text>
+            <View style={styles.menuItemBadge}>
+              <Text style={styles.menuItemBadgeText}>NEW</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
         </View>
 
         {user?.isAdmin && (
@@ -1397,6 +1406,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
     marginLeft: 12,
+  },
+  menuItemBadge: {
+    backgroundColor: '#9C27B0',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    marginRight: 8,
+  },
+  menuItemBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   settingsSectionTitle: {
     fontSize: 14,
