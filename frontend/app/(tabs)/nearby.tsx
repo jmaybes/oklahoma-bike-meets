@@ -47,7 +47,8 @@ export default function NearbyScreen() {
   const [customMessage, setCustomMessage] = useState('');
   const [useCustomMessage, setUseCustomMessage] = useState(false);
   const [sendingInvite, setSendingInvite] = useState(false);
-  const [showMap, setShowMap] = useState(true);
+  const [showMap, setShowMap] = useState(false); // Default to list view to prevent crashes
+  const [mapError, setMapError] = useState(false);
 
   useEffect(() => {
     initializeLocation();
@@ -252,7 +253,7 @@ export default function NearbyScreen() {
         </View>
 
         {/* Live Map - Always shown when showMap is true */}
-        {showMap && (
+        {showMap && location && (
           <NearbyMapView
             location={location}
             radius={radius}

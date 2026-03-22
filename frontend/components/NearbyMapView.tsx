@@ -41,6 +41,16 @@ export default function NearbyMapView({
 }: NearbyMapViewProps) {
   const mapRef = useRef<MapView>(null);
 
+  // Guard against null location
+  if (!location) {
+    return (
+      <View style={styles.mapPlaceholder}>
+        <Ionicons name="location-outline" size={48} color="#666" />
+        <Text style={styles.mapPlaceholderText}>Getting your location...</Text>
+      </View>
+    );
+  }
+
   // Convert radius in miles to meters for Circle component
   const radiusInMeters = radius * 1609.34;
   
@@ -79,33 +89,39 @@ export default function NearbyMapView({
   };
   
   const handleZoomIn = () => {
-    if (mapRef.current) {
-      mapRef.current.getCamera().then((camera) => {
-        if (camera.zoom) {
-          mapRef.current?.animateCamera({ zoom: camera.zoom + 1 }, { duration: 300 });
-        }
-      });
+    if (mapRef.current && location) {
+      try {
+        // Use region-based zooming instead of camera API for better compatibility
+        const currentDelta = getLatitudeDelta(radius);
+        const newDelta = Math.max(0.01, currentDelta * 0.5);
+        mapRef.current.animateToRegion({
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: newDelta,
+          longitudeDelta: newDelta,
+        }, 300);
+      } catch (error) {
+        console.log('Zoom in error:', error);
+      }
     }
   };
   
   const handleZoomOut = () => {
-    if (mapRef.current) {
-      mapRef.current.getCamera().then((camera) => {
-        if (camera.zoom) {
-          mapRef.current?.animateCamera({ zoom: camera.zoom - 1 }, { duration: 300 });
-        }
-      });
+    if (mapRef.current && location) {
+      try {
+        const currentDelta = getLatitudeDelta(radius);
+        const newDelta = Math.min(10, currentDelta * 2);
+        mapRef.current.animateToRegion({
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: newDelta,
+          longitudeDelta: newDelta,
+        }, 300);
+      } catch (error) {
+        console.log('Zoom out error:', error);
+      }
     }
   };
-
-  if (!location) {
-    return (
-      <View style={styles.mapPlaceholder}>
-        <Ionicons name="map" size={48} color="#FF6B35" />
-        <Text style={styles.mapPlaceholderText}>Getting location...</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.mapContainer}>
