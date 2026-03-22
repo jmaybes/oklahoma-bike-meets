@@ -63,6 +63,7 @@ export default function HomeScreen() {
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
   const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null);
   const [locationError, setLocationError] = useState(false);
+  const [sortBy, setSortBy] = useState<'date' | 'distance' | 'name'>('date');
   
   const eventTypes = ['All', 'Car Meet', 'Car Show', 'Cruise', 'Race', 'Other'];
   const distanceOptions = [
@@ -72,6 +73,11 @@ export default function HomeScreen() {
     { label: '50 mi', value: 50 },
     { label: '100 mi', value: 100 },
   ];
+  const sortOptions = [
+    { label: 'Date', value: 'date', icon: 'calendar' },
+    { label: 'Distance', value: 'distance', icon: 'navigate' },
+    { label: 'Name', value: 'name', icon: 'text' },
+  ];
 
   useEffect(() => {
     fetchEvents();
@@ -80,7 +86,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     filterEvents();
-  }, [events, searchQuery, selectedType, freeOnly, maxDistance, userLocation]);
+  }, [events, searchQuery, selectedType, freeOnly, maxDistance, userLocation, sortBy]);
 
   const getUserLocation = async () => {
     try {
@@ -163,13 +169,31 @@ export default function HomeScreen() {
         // If no coordinates, don't filter out (include by default)
         return true;
       });
-      
-      // Sort by distance when distance filter is active
-      filtered = filtered.sort((a, b) => {
-        if (a.distance === undefined) return 1;
-        if (b.distance === undefined) return -1;
-        return a.distance - b.distance;
-      });
+    }
+
+    // Apply sorting based on sortBy option
+    switch (sortBy) {
+      case 'date':
+        filtered = filtered.sort((a, b) => {
+          const dateA = a.date || '';
+          const dateB = b.date || '';
+          return dateA.localeCompare(dateB);
+        });
+        break;
+      case 'distance':
+        if (userLocation) {
+          filtered = filtered.sort((a, b) => {
+            if (a.distance === undefined) return 1;
+            if (b.distance === undefined) return -1;
+            return a.distance - b.distance;
+          });
+        }
+        break;
+      case 'name':
+        filtered = filtered.sort((a, b) => {
+          return a.title.localeCompare(b.title);
+        });
+        break;
     }
 
     setFilteredEvents(filtered);
@@ -357,6 +381,37 @@ export default function HomeScreen() {
               </TouchableOpacity>
             ))}
           </ScrollView>
+        </View>
+      </View>
+
+      {/* Sort Row */}
+      <View style={styles.sortRow}>
+        <Text style={styles.sortLabel}>Sort by:</Text>
+        <View style={styles.sortOptions}>
+          {sortOptions.map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.sortChip,
+                sortBy === option.value && styles.sortChipActive,
+              ]}
+              onPress={() => setSortBy(option.value as 'date' | 'distance' | 'name')}
+            >
+              <Ionicons 
+                name={option.icon as any} 
+                size={14} 
+                color={sortBy === option.value ? "#fff" : "#FF6B35"} 
+              />
+              <Text
+                style={[
+                  styles.sortChipText,
+                  sortBy === option.value && styles.sortChipTextActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
 
@@ -655,5 +710,44 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 4,
+  },
+  sortRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    gap: 10,
+  },
+  sortLabel: {
+    color: '#888',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  sortOptions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  sortChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FF6B35',
+    gap: 4,
+  },
+  sortChipActive: {
+    backgroundColor: '#FF6B35',
+    borderColor: '#FF6B35',
+  },
+  sortChipText: {
+    color: '#FF6B35',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  sortChipTextActive: {
+    color: '#fff',
   },
 });
