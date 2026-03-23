@@ -91,86 +91,97 @@ export default function BetaNoticeModal() {
               end={{ x: 1, y: 0 }}
               style={styles.header}
             >
-            <View style={styles.versionBadge}>
-              <Text style={styles.versionText}>v1.0.0</Text>
-            </View>
-            <Ionicons name="rocket" size={48} color="#fff" />
-            <Text style={styles.headerTitle}>Welcome to OKC Car Events!</Text>
-            <Text style={styles.betaBadge}>BETA VERSION</Text>
-          </LinearGradient>
-
-          {/* Content */}
-          <View style={styles.content}>
-            <View style={styles.messageContainer}>
-              <Ionicons name="information-circle" size={24} color="#FF6B35" style={styles.infoIcon} />
-              <Text style={styles.messageText}>
-                Thank you for being an early user of our app! This is a <Text style={styles.highlight}>beta version</Text>, which means you may encounter bugs or incomplete features as we continue to improve.
-              </Text>
-            </View>
-
-            <View style={styles.featureBox}>
-              <View style={styles.featureHeader}>
-                <Ionicons name="chatbubble-ellipses" size={20} color="#FF6B35" />
-                <Text style={styles.featureTitle}>Your Feedback Matters!</Text>
+              <View style={styles.versionBadge}>
+                <Text style={styles.versionText}>v1.0.0</Text>
               </View>
-              <Text style={styles.featureText}>
-                Please use the <Text style={styles.highlight}>"Report Suggestions & Bugs"</Text> feature in your <Text style={styles.highlight}>My Garage</Text> to notify us of:
-              </Text>
-              <View style={styles.bulletList}>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="bug" size={16} color="#F44336" />
-                  <Text style={styles.bulletText}>Any bugs or issues you encounter</Text>
+              <Ionicons name="rocket" size={48} color="#fff" />
+              <Text style={styles.headerTitle}>Welcome to OKC Car Events!</Text>
+              <Text style={styles.betaBadge}>BETA VERSION</Text>
+            </LinearGradient>
+
+            {/* Content */}
+            <View style={styles.content}>
+              <View style={styles.messageContainer}>
+                <Ionicons name="information-circle" size={24} color="#FF6B35" style={styles.infoIcon} />
+                <Text style={styles.messageText}>
+                  Thank you for being an early user of our app! This is a <Text style={styles.highlight}>beta version</Text>, which means you may encounter bugs or incomplete features as we continue to improve.
+                </Text>
+              </View>
+
+              <View style={styles.featureBox}>
+                <View style={styles.featureHeader}>
+                  <Ionicons name="chatbubble-ellipses" size={20} color="#FF6B35" />
+                  <Text style={styles.featureTitle}>Your Feedback Matters!</Text>
                 </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="bulb" size={16} color="#FFC107" />
-                  <Text style={styles.bulletText}>Feature suggestions or improvements</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="car-sport" size={16} color="#2196F3" />
-                  <Text style={styles.bulletText}>Events or clubs we should add</Text>
+                <Text style={styles.featureText}>
+                  Please use the <Text style={styles.highlight}>"Report Suggestions & Bugs"</Text> feature in your <Text style={styles.highlight}>My Garage</Text> to notify us of:
+                </Text>
+                <View style={styles.bulletList}>
+                  <View style={styles.bulletItem}>
+                    <Ionicons name="bug" size={16} color="#F44336" />
+                    <Text style={styles.bulletText}>Any bugs or issues you encounter</Text>
+                  </View>
+                  <View style={styles.bulletItem}>
+                    <Ionicons name="bulb" size={16} color="#FFC107" />
+                    <Text style={styles.bulletText}>Feature suggestions or improvements</Text>
+                  </View>
+                  <View style={styles.bulletItem}>
+                    <Ionicons name="car-sport" size={16} color="#2196F3" />
+                    <Text style={styles.bulletText}>Events or clubs we should add</Text>
+                  </View>
                 </View>
               </View>
+
+              {/* Privacy Notice */}
+              <View style={styles.privacyBox}>
+                <View style={styles.privacyHeader}>
+                  <Ionicons name="shield-checkmark" size={20} color="#4CAF50" />
+                  <Text style={styles.privacyTitle}>Your Privacy Matters!</Text>
+                </View>
+                <Text style={styles.privacyText}>
+                  We do not share your information with anyone and tracking can be turned off at anytime within the app.
+                </Text>
+              </View>
+
+              {/* Checkbox */}
+              <TouchableOpacity 
+                style={styles.checkboxContainer}
+                onPress={() => setAcknowledged(!acknowledged)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.checkbox, acknowledged && styles.checkboxChecked]}>
+                  {acknowledged && <Ionicons name="checkmark" size={16} color="#fff" />}
+                </View>
+                <Text style={styles.checkboxLabel}>
+                  I understand this is a beta version and this notice will not appear again
+                </Text>
+              </TouchableOpacity>
+
+              {/* Continue Button */}
+              <TouchableOpacity
+                style={[styles.continueButton, !acknowledged && styles.continueButtonDisabled]}
+                onPress={handleDismiss}
+                disabled={!acknowledged}
+              >
+                <Text style={[styles.continueButtonText, !acknowledged && styles.continueButtonTextDisabled]}>
+                  Continue to App
+                </Text>
+                <Ionicons 
+                  name="arrow-forward" 
+                  size={20} 
+                  color={acknowledged ? "#fff" : "#666"} 
+                />
+              </TouchableOpacity>
+
+              {/* Skip link for accessibility */}
+              <TouchableOpacity
+                style={styles.skipLink}
+                onPress={forceDismiss}
+              >
+                <Text style={styles.skipLinkText}>Skip for now</Text>
+              </TouchableOpacity>
             </View>
-
-            {/* Checkbox */}
-            <TouchableOpacity 
-              style={styles.checkboxContainer}
-              onPress={() => setAcknowledged(!acknowledged)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.checkbox, acknowledged && styles.checkboxChecked]}>
-                {acknowledged && <Ionicons name="checkmark" size={16} color="#fff" />}
-              </View>
-              <Text style={styles.checkboxLabel}>
-                I understand this is a beta version and this notice will not appear again
-              </Text>
-            </TouchableOpacity>
-
-            {/* Continue Button */}
-            <TouchableOpacity
-              style={[styles.continueButton, !acknowledged && styles.continueButtonDisabled]}
-              onPress={handleDismiss}
-              disabled={!acknowledged}
-            >
-              <Text style={[styles.continueButtonText, !acknowledged && styles.continueButtonTextDisabled]}>
-                Continue to App
-              </Text>
-              <Ionicons 
-                name="arrow-forward" 
-                size={20} 
-                color={acknowledged ? "#fff" : "#666"} 
-              />
-            </TouchableOpacity>
-
-            {/* Skip link for accessibility */}
-            <TouchableOpacity
-              style={styles.skipLink}
-              onPress={forceDismiss}
-            >
-              <Text style={styles.skipLinkText}>Skip for now</Text>
-            </TouchableOpacity>
           </View>
-        </View>
         </LinearGradient>
       </View>
     </Modal>
@@ -294,6 +305,30 @@ const styles = StyleSheet.create({
   bulletText: {
     color: '#ccc',
     fontSize: 13,
+  },
+  privacyBox: {
+    backgroundColor: '#1a2e1a',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  privacyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  privacyTitle: {
+    color: '#4CAF50',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  privacyText: {
+    color: '#a5d6a7',
+    fontSize: 14,
+    lineHeight: 20,
   },
   checkboxContainer: {
     flexDirection: 'row',
