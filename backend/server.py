@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson import ObjectId
 import httpx
 from PIL import Image
@@ -163,6 +163,10 @@ def event_helper(event) -> dict:
         "userId": event.get("userId"),
         "isApproved": event.get("isApproved", True),
         "isPopUp": event.get("isPopUp", False),
+        "isRecurring": event.get("isRecurring", False),
+        "recurrenceDay": event.get("recurrenceDay"),
+        "recurrenceEndDate": event.get("recurrenceEndDate"),
+        "parentEventId": event.get("parentEventId"),  # For generated recurring instances
         "createdAt": event.get("createdAt"),
         "contactInfo": event.get("contactInfo", ""),
         "website": event.get("website", ""),
@@ -205,6 +209,9 @@ class EventCreate(BaseModel):
     contactInfo: str = ""
     website: str = ""
     isPopUp: bool = False
+    isRecurring: bool = False
+    recurrenceDay: Optional[int] = None  # 0=Sunday, 1=Monday, ..., 6=Saturday
+    recurrenceEndDate: Optional[str] = None  # End date for recurring events (YYYY-MM-DD)
 
 class EventUpdate(BaseModel):
     title: Optional[str] = None
@@ -223,6 +230,9 @@ class EventUpdate(BaseModel):
     photos: Optional[List[str]] = None
     contactInfo: Optional[str] = None
     website: Optional[str] = None
+    isRecurring: Optional[bool] = None
+    recurrenceDay: Optional[int] = None
+    recurrenceEndDate: Optional[str] = None
 
 class UserCreate(BaseModel):
     email: str
@@ -526,7 +536,45 @@ async def get_events(
         ]
     
     events = await db.events.find(query).sort("date", 1).to_list(1000)
-    return [event_helper(event) for event in events]
+    
+    # Generate recurring event instances
+    result = []
+    today = datetime.utcnow().date()
+    weeks_ahead = 12  # Generate events for next 12 weeks
+    
+    for event in events:
+        event_data = event_helper(event)
+        
+        if event.get("isRecurring") and event.get("recurrenceDay") is not None:
+            # This is a recurring event - generate instances
+            recurrence_day = event.get("recurrenceDay")  # 0=Sunday, 6=Saturday
+            end_date_str = event.get("recurrenceEndDate")
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date() if end_date_str else today + timedelta(weeks=weeks_ahead)
+            
+            # Find next occurrence of the recurring day
+            current_date = today
+            days_until_recurrence = (recurrence_day - current_date.weekday() + 7) % 7
+            if days_until_recurrence == 0:
+                next_occurrence = current_date  # Today is the day
+            else:
+                next_occurrence = current_date + timedelta(days=days_until_recurrence)
+            
+            # Generate instances for the next weeks_ahead weeks
+            while next_occurrence <= end_date:
+                instance = event_data.copy()
+                instance["date"] = next_occurrence.strftime("%Y-%m-%d")
+                instance["id"] = f"{event_data['id']}__{next_occurrence.strftime('%Y%m%d')}"
+                instance["parentEventId"] = event_data["id"]
+                result.append(instance)
+                next_occurrence += timedelta(weeks=1)
+        else:
+            # Regular non-recurring event
+            result.append(event_data)
+    
+    # Sort by date
+    result.sort(key=lambda x: x.get("date", ""))
+    
+    return result
 
 @api_router.get("/events/{event_id}")
 async def get_event(event_id: str):

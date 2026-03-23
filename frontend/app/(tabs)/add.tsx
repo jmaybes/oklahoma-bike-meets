@@ -33,6 +33,9 @@ export default function AddEventScreen() {
   const [useMyLocation, setUseMyLocation] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [scanningFlyer, setScanningFlyer] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrenceDay, setRecurrenceDay] = useState<number | null>(null);
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
   
   const [formData, setFormData] = useState({
     title: '',
@@ -51,6 +54,16 @@ export default function AddEventScreen() {
   });
 
   const eventTypes = ['Car Meet', 'Car Show', 'Cruise', 'Race', 'Pop Up Race', 'Other'];
+  
+  const daysOfWeek = [
+    { label: 'Sunday', value: 0 },
+    { label: 'Monday', value: 1 },
+    { label: 'Tuesday', value: 2 },
+    { label: 'Wednesday', value: 3 },
+    { label: 'Thursday', value: 4 },
+    { label: 'Friday', value: 5 },
+    { label: 'Saturday', value: 6 },
+  ];
 
   const scanFlyer = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -181,6 +194,12 @@ export default function AddEventScreen() {
       return;
     }
 
+    // Validate recurring event fields
+    if (isRecurring && recurrenceDay === null) {
+      Alert.alert('Error', 'Please select which day of the week this event repeats');
+      return;
+    }
+
     setLoading(true);
     try {
       const carTypesArray = formData.carTypes
@@ -209,6 +228,9 @@ export default function AddEventScreen() {
         isPopUp: isPopUp,
         latitude: latitude,
         longitude: longitude,
+        isRecurring: isRecurring,
+        recurrenceDay: isRecurring ? recurrenceDay : null,
+        recurrenceEndDate: isRecurring && recurrenceEndDate ? recurrenceEndDate : null,
       };
 
       await axios.post(`${API_URL}/api/events`, eventData);
@@ -216,6 +238,10 @@ export default function AddEventScreen() {
       let approvalMessage = user?.isAdmin 
         ? 'Event created and published successfully!' 
         : 'Event submitted successfully! It will be visible after admin approval.';
+      
+      if (isRecurring) {
+        approvalMessage += `\n\n🔄 This event will repeat every ${daysOfWeek.find(d => d.value === recurrenceDay)?.label || 'week'}.`;
+      }
       
       if (isPopUp && user?.isAdmin) {
         approvalMessage += '\n\n🚨 All users have been notified about this Pop Up event!';
@@ -241,6 +267,9 @@ export default function AddEventScreen() {
             website: '',
           });
           setPhotos([]);
+          setIsRecurring(false);
+          setRecurrenceDay(null);
+          setRecurrenceEndDate('');
           router.push('/(tabs)/home');
         }}
       ]);
