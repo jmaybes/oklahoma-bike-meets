@@ -1,306 +1,516 @@
 #!/usr/bin/env python3
 """
-Backend Test Suite for Oklahoma Car Events API - Recurring Events Feature
-Testing Agent - Comprehensive API Testing
+Comprehensive Backend API Testing for Oklahoma Car Events App
+Testing Automated Event Search API endpoints
 """
 
-import requests
+import asyncio
+import httpx
 import json
-from datetime import datetime, timedelta
 import sys
+from datetime import datetime
 
-# Configuration
-BASE_URL = "https://drive-okc.preview.emergentagent.com/api"
-HEADERS = {"Content-Type": "application/json"}
+# Backend URL from frontend environment
+BACKEND_URL = "https://drive-okc.preview.emergentagent.com/api"
 
-def log_test(test_name, status, details=""):
-    """Log test results with consistent formatting"""
-    status_symbol = "✅" if status == "PASS" else "❌"
-    print(f"{status_symbol} {test_name}")
+# Admin credentials from review request
+ADMIN_EMAIL = "admin@okcarevents.com"
+ADMIN_PASSWORD = "admin123"
+
+# Test results tracking
+test_results = []
+admin_id = None
+
+def log_test(test_name, success, details="", response_data=None):
+    """Log test results"""
+    result = {
+        "test": test_name,
+        "success": success,
+        "details": details,
+        "timestamp": datetime.now().isoformat()
+    }
+    if response_data:
+        result["response_data"] = response_data
+    test_results.append(result)
+    
+    status = "✅ PASS" if success else "❌ FAIL"
+    print(f"{status} {test_name}")
     if details:
-        print(f"   {details}")
+        print(f"    {details}")
+    if not success and response_data:
+        print(f"    Response: {response_data}")
     print()
 
-def test_recurring_events():
-    """Test the Recurring Events feature comprehensively"""
-    print("=" * 80)
-    print("TESTING: Recurring Events Feature")
-    print("=" * 80)
-    
-    # Test 1: Create a Recurring Event (Saturday)
-    print("Test 1: Create Recurring Event - Weekly Sunset Cruise (Saturday)")
-    recurring_event_data = {
-        "title": "Weekly Sunset Cruise",
-        "description": "Weekly cruise through OKC every Saturday evening",
-        "date": "2025-06-14",  # This is a Saturday
-        "time": "6:00 PM",
-        "location": "Route 66 Park",
-        "address": "3500 NW 36th St",
-        "city": "Oklahoma City",
-        "organizer": "OKC Cruisers",
-        "entryFee": "Free",
-        "eventType": "Cruise",
-        "carTypes": ["Classic", "Muscle"],
-        "isRecurring": True,
-        "recurrenceDay": 6,  # Saturday (0=Sunday, 6=Saturday)
-        "recurrenceEndDate": "2025-08-30"
-    }
+async def test_admin_login():
+    """Test 1: Get Admin User ID by logging in"""
+    global admin_id
     
     try:
-        response = requests.post(f"{BASE_URL}/events", json=recurring_event_data, headers=HEADERS)
-        if response.status_code == 200:
-            created_event = response.json()
-            event_id = created_event["id"]
-            log_test("Create Recurring Event (Saturday)", "PASS", 
-                    f"Event created with ID: {event_id}, isRecurring: {created_event.get('isRecurring')}")
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(f"{BACKEND_URL}/auth/login", json={
+                "email": ADMIN_EMAIL,
+                "password": ADMIN_PASSWORD
+            })
             
-            # Test 2: Approve the Event for testing
-            print("Test 2: Approve Recurring Event")
-            approve_data = {"isApproved": True}
-            approve_response = requests.put(f"{BASE_URL}/events/{event_id}", json=approve_data, headers=HEADERS)
-            if approve_response.status_code == 200:
-                log_test("Approve Recurring Event", "PASS", "Event approved successfully")
+            if response.status_code == 200:
+                data = response.json()
+                if "id" in data:
+                    admin_id = data["id"]
+                    is_admin = data.get("isAdmin", False)
+                    
+                    if is_admin:
+                        log_test("Admin Login", True, f"Successfully logged in as admin. Admin ID: {admin_id}")
+                        return True
+                    else:
+                        log_test("Admin Login", False, "User is not an admin", data)
+                        return False
+                else:
+                    log_test("Admin Login", False, "Invalid response structure", data)
+                    return False
             else:
-                log_test("Approve Recurring Event", "FAIL", f"Status: {approve_response.status_code}, Response: {approve_response.text}")
+                log_test("Admin Login", False, f"HTTP {response.status_code}", response.text)
+                return False
                 
-        else:
-            log_test("Create Recurring Event (Saturday)", "FAIL", 
-                    f"Status: {response.status_code}, Response: {response.text}")
-            return
-            
     except Exception as e:
-        log_test("Create Recurring Event (Saturday)", "FAIL", f"Exception: {str(e)}")
+        log_test("Admin Login", False, f"Exception: {str(e)}")
+        return False
+
+async def test_manual_event_search():
+    """Test 2: Manual Event Search Trigger"""
+    if not admin_id:
+        log_test("Manual Event Search", False, "Admin ID not available")
+        return False
+    
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:  # Longer timeout for search
+            response = await client.post(f"{BACKEND_URL}/admin/events/search?admin_id={admin_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and "stats" in data:
+                    stats = data["stats"]
+                    events_found = stats.get("events_found", 0)
+                    events_imported = stats.get("events_imported", 0)
+                    duplicates_skipped = stats.get("duplicates_skipped", 0)
+                    
+                    log_test("Manual Event Search", True, 
+                            f"Search completed. Found: {events_found}, Imported: {events_imported}, Duplicates: {duplicates_skipped}",
+                            data)
+                    return True
+                else:
+                    log_test("Manual Event Search", False, "Invalid response structure", data)
+                    return False
+            else:
+                log_test("Manual Event Search", False, f"HTTP {response.status_code}", response.text)
+                return False
+                
+    except Exception as e:
+        log_test("Manual Event Search", False, f"Exception: {str(e)}")
+        return False
+
+async def test_get_pending_events():
+    """Test 3: Get Pending Events"""
+    if not admin_id:
+        log_test("Get Pending Events", False, "Admin ID not available")
+        return []
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(f"{BACKEND_URL}/admin/events/pending?admin_id={admin_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    # Direct array response
+                    events = data
+                    count = len(events)
+                elif "events" in data and "count" in data:
+                    # Wrapped response
+                    events = data["events"]
+                    count = data["count"]
+                else:
+                    log_test("Get Pending Events", False, "Invalid response structure", data)
+                    return []
+                
+                # Verify event structure
+                if events and len(events) > 0:
+                    sample_event = events[0]
+                    required_fields = ["id", "title", "date", "time", "location", "city", "eventType", "photos"]
+                    missing_fields = [field for field in required_fields if field not in sample_event]
+                    
+                    if missing_fields:
+                        log_test("Get Pending Events", False, 
+                                f"Missing required fields: {missing_fields}", sample_event)
+                        return events
+                    
+                    # Check source and approval status (be flexible about source field)
+                    source = sample_event.get("source")
+                    if source is not None and source != "auto_search":
+                        log_test("Get Pending Events", False, 
+                                f"Expected source='auto_search' or None, got '{source}'")
+                        return events
+                    
+                    if sample_event.get("isApproved") != False:
+                        log_test("Get Pending Events", False, 
+                                f"Expected isApproved=false, got '{sample_event.get('isApproved')}'")
+                        return events
+                
+                log_test("Get Pending Events", True, 
+                        f"Retrieved {count} pending events. All have required fields and correct status.",
+                        {"count": count, "sample_fields": list(events[0].keys()) if events else []})
+                return events
+            else:
+                log_test("Get Pending Events", False, f"HTTP {response.status_code}", response.text)
+                return []
+                
+    except Exception as e:
+        log_test("Get Pending Events", False, f"Exception: {str(e)}")
+        return []
+
+async def test_approve_single_event(event_id):
+    """Test 4: Approve Single Event"""
+    if not admin_id or not event_id:
+        log_test("Approve Single Event", False, "Admin ID or Event ID not available")
+        return False
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(f"{BACKEND_URL}/admin/events/{event_id}/approve?admin_id={admin_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success"):
+                    log_test("Approve Single Event", True, f"Event {event_id} approved successfully", data)
+                    return True
+                else:
+                    log_test("Approve Single Event", False, "Success flag not set", data)
+                    return False
+            else:
+                log_test("Approve Single Event", False, f"HTTP {response.status_code}", response.text)
+                return False
+                
+    except Exception as e:
+        log_test("Approve Single Event", False, f"Exception: {str(e)}")
+        return False
+
+async def test_reject_event(event_id):
+    """Test 5: Reject Event"""
+    if not admin_id or not event_id:
+        log_test("Reject Event", False, "Admin ID or Event ID not available")
+        return False
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.delete(f"{BACKEND_URL}/admin/events/{event_id}/reject?admin_id={admin_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") or "message" in data:
+                    log_test("Reject Event", True, f"Event {event_id} rejected and deleted successfully", data)
+                    return True
+                else:
+                    log_test("Reject Event", False, "Invalid response structure", data)
+                    return False
+            else:
+                log_test("Reject Event", False, f"HTTP {response.status_code}", response.text)
+                return False
+                
+    except Exception as e:
+        log_test("Reject Event", False, f"Exception: {str(e)}")
+        return False
+
+async def test_approve_all_events():
+    """Test 6: Approve All Events"""
+    if not admin_id:
+        log_test("Approve All Events", False, "Admin ID not available")
+        return False
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(f"{BACKEND_URL}/admin/events/approve-all?admin_id={admin_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and "count" in data:
+                    count = data["count"]
+                    log_test("Approve All Events", True, f"Approved {count} events successfully", data)
+                    return True
+                else:
+                    log_test("Approve All Events", False, "Invalid response structure", data)
+                    return False
+            else:
+                log_test("Approve All Events", False, f"HTTP {response.status_code}", response.text)
+                return False
+                
+    except Exception as e:
+        log_test("Approve All Events", False, f"Exception: {str(e)}")
+        return False
+
+async def test_search_logs():
+    """Test 7: Search Logs"""
+    if not admin_id:
+        log_test("Search Logs", False, "Admin ID not available")
+        return False
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(f"{BACKEND_URL}/admin/events/search-logs?admin_id={admin_id}&limit=5")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "logs" in data:
+                    logs = data["logs"]
+                    
+                    # Verify log structure
+                    if logs and len(logs) > 0:
+                        sample_log = logs[0]
+                        required_fields = ["timestamp", "stats"]
+                        missing_fields = [field for field in required_fields if field not in sample_log]
+                        
+                        if missing_fields:
+                            log_test("Search Logs", False, 
+                                    f"Missing required fields in logs: {missing_fields}", sample_log)
+                            return False
+                    
+                    log_test("Search Logs", True, 
+                            f"Retrieved {len(logs)} search logs with proper structure",
+                            {"log_count": len(logs), "sample_fields": list(logs[0].keys()) if logs else []})
+                    return True
+                else:
+                    log_test("Search Logs", False, "Invalid response structure", data)
+                    return False
+            else:
+                log_test("Search Logs", False, f"HTTP {response.status_code}", response.text)
+                return False
+                
+    except Exception as e:
+        log_test("Search Logs", False, f"Exception: {str(e)}")
+        return False
+
+async def test_scheduled_search():
+    """Test 8: Scheduled Search Endpoint"""
+    secret_key = "okc-car-events-weekly-search-2025"
+    
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:  # Longer timeout for search
+            response = await client.post(f"{BACKEND_URL}/scheduler/weekly-event-search?secret_key={secret_key}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and "stats" in data:
+                    stats = data["stats"]
+                    log_test("Scheduled Search", True, 
+                            f"Weekly search completed successfully. Stats: {stats}", data)
+                    return True
+                else:
+                    log_test("Scheduled Search", False, "Invalid response structure", data)
+                    return False
+            else:
+                log_test("Scheduled Search", False, f"HTTP {response.status_code}", response.text)
+                return False
+                
+    except Exception as e:
+        log_test("Scheduled Search", False, f"Exception: {str(e)}")
+        return False
+
+async def test_access_control():
+    """Test 9: Access Control"""
+    
+    # Test 1: Access without admin_id
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(f"{BACKEND_URL}/admin/events/pending")
+            
+            if response.status_code == 422:  # FastAPI validation error for missing query param
+                log_test("Access Control - No Admin ID", True, "Correctly rejected request without admin_id")
+            else:
+                log_test("Access Control - No Admin ID", False, f"Expected 422, got {response.status_code}")
+    except Exception as e:
+        log_test("Access Control - No Admin ID", False, f"Exception: {str(e)}")
+    
+    # Test 2: Access with invalid admin_id
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(f"{BACKEND_URL}/admin/events/pending?admin_id=invalid_id")
+            
+            if response.status_code == 400:  # Invalid ObjectId
+                log_test("Access Control - Invalid Admin ID", True, "Correctly rejected invalid admin_id")
+            else:
+                log_test("Access Control - Invalid Admin ID", False, f"Expected 400, got {response.status_code}")
+    except Exception as e:
+        log_test("Access Control - Invalid Admin ID", False, f"Exception: {str(e)}")
+    
+    # Test 3: Access with non-admin user (create a regular user first)
+    try:
+        import random
+        random_suffix = random.randint(1000, 9999)
+        test_email = f"testuser{random_suffix}@example.com"
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            # Register a regular user
+            reg_response = await client.post(f"{BACKEND_URL}/auth/register", json={
+                "name": "Test User",
+                "nickname": f"testuser{random_suffix}",
+                "email": test_email,
+                "password": "testpass123"
+            })
+            
+            if reg_response.status_code == 200:
+                # Login as regular user
+                login_response = await client.post(f"{BACKEND_URL}/auth/login", json={
+                    "email": test_email,
+                    "password": "testpass123"
+                })
+                
+                if login_response.status_code == 200:
+                    user_data = login_response.json()
+                    regular_user_id = user_data["id"]
+                    
+                    # Try to access admin endpoint
+                    admin_response = await client.get(f"{BACKEND_URL}/admin/events/pending?admin_id={regular_user_id}")
+                    
+                    if admin_response.status_code == 403:  # Forbidden
+                        log_test("Access Control - Non-Admin User", True, "Correctly rejected non-admin user")
+                    else:
+                        log_test("Access Control - Non-Admin User", False, f"Expected 403, got {admin_response.status_code}")
+                else:
+                    log_test("Access Control - Non-Admin User", False, "Failed to login as regular user")
+            else:
+                log_test("Access Control - Non-Admin User", False, "Failed to register regular user")
+                
+    except Exception as e:
+        log_test("Access Control - Non-Admin User", False, f"Exception: {str(e)}")
+    
+    # Test 4: Scheduled endpoint with wrong secret key
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(f"{BACKEND_URL}/scheduler/weekly-event-search?secret_key=wrong_key")
+            
+            if response.status_code == 403:
+                log_test("Access Control - Wrong Secret Key", True, "Correctly rejected wrong secret key")
+            else:
+                log_test("Access Control - Wrong Secret Key", False, f"Expected 403, got {response.status_code}")
+    except Exception as e:
+        log_test("Access Control - Wrong Secret Key", False, f"Exception: {str(e)}")
+
+async def verify_pending_events_removed(event_id):
+    """Verify that approved/rejected events no longer appear in pending list"""
+    if not admin_id:
+        return False
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(f"{BACKEND_URL}/admin/events/pending?admin_id={admin_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    events = data
+                elif "events" in data:
+                    events = data["events"]
+                else:
+                    log_test("Verify Event Removal", False, f"Invalid response structure")
+                    return False
+                
+                # Check if the event is still in pending list
+                for event in events:
+                    if event.get("id") == event_id:
+                        log_test("Verify Event Removal", False, f"Event {event_id} still appears in pending list")
+                        return False
+                
+                log_test("Verify Event Removal", True, f"Event {event_id} correctly removed from pending list")
+                return True
+            else:
+                log_test("Verify Event Removal", False, f"Failed to get pending events: HTTP {response.status_code}")
+                return False
+                
+    except Exception as e:
+        log_test("Verify Event Removal", False, f"Exception: {str(e)}")
+        return False
+
+async def main():
+    """Main test execution"""
+    print("🚀 Starting Automated Event Search API Testing")
+    print("=" * 60)
+    print()
+    
+    # Test 1: Admin Login
+    if not await test_admin_login():
+        print("❌ Cannot proceed without admin access")
         return
     
-    # Test 3: Get Events and Verify Expansion
-    print("Test 3: Get Events and Verify Recurring Event Expansion")
-    try:
-        response = requests.get(f"{BASE_URL}/events", headers=HEADERS)
-        if response.status_code == 200:
-            events = response.json()
-            
-            # Find recurring event instances
-            recurring_instances = []
-            for event in events:
-                if event.get("parentEventId") == event_id:
-                    recurring_instances.append(event)
-            
-            if recurring_instances:
-                log_test("Recurring Event Expansion", "PASS", 
-                        f"Found {len(recurring_instances)} recurring instances")
-                
-                # Verify instance structure
-                first_instance = recurring_instances[0]
-                expected_fields = ["id", "parentEventId", "date", "title", "description"]
-                missing_fields = [field for field in expected_fields if field not in first_instance]
-                
-                if not missing_fields:
-                    log_test("Instance Structure Validation", "PASS", 
-                            f"All required fields present: {expected_fields}")
-                    
-                    # Verify ID format
-                    instance_id = first_instance["id"]
-                    if "__" in instance_id and len(instance_id.split("__")) == 2:
-                        original_id, date_suffix = instance_id.split("__")
-                        if original_id == event_id and len(date_suffix) == 8:
-                            log_test("Instance ID Format", "PASS", 
-                                    f"Correct format: {original_id}__{date_suffix}")
-                        else:
-                            log_test("Instance ID Format", "FAIL", 
-                                    f"Invalid format: {instance_id}")
-                    else:
-                        log_test("Instance ID Format", "FAIL", 
-                                f"Invalid format: {instance_id}")
-                    
-                    # Verify dates are Saturdays
-                    saturday_count = 0
-                    for instance in recurring_instances:
-                        event_date = datetime.strptime(instance["date"], "%Y-%m-%d")
-                        if event_date.weekday() == 5:  # Saturday in Python (0=Monday, 5=Saturday)
-                            saturday_count += 1
-                    
-                    if saturday_count == len(recurring_instances):
-                        log_test("Day Conversion Validation", "PASS", 
-                                f"All {saturday_count} instances are on Saturday")
-                    else:
-                        log_test("Day Conversion Validation", "FAIL", 
-                                f"Only {saturday_count}/{len(recurring_instances)} instances are on Saturday")
-                        
-                else:
-                    log_test("Instance Structure Validation", "FAIL", 
-                            f"Missing fields: {missing_fields}")
-            else:
-                log_test("Recurring Event Expansion", "FAIL", 
-                        "No recurring instances found")
-        else:
-            log_test("Get Events for Expansion Check", "FAIL", 
-                    f"Status: {response.status_code}, Response: {response.text}")
-            
-    except Exception as e:
-        log_test("Get Events and Verify Expansion", "FAIL", f"Exception: {str(e)}")
+    # Test 2: Manual Event Search Trigger
+    await test_manual_event_search()
     
-    # Test 4: Create Monday Recurring Event
-    print("Test 4: Create Recurring Event - Monday Car Meet")
-    monday_event_data = {
-        "title": "Monday Night Car Meet",
-        "description": "Weekly car meet every Monday night",
-        "date": "2025-06-16",  # This is a Monday
-        "time": "7:00 PM",
-        "location": "Walmart Parking Lot",
-        "address": "1000 W Memorial Rd",
-        "city": "Oklahoma City",
-        "organizer": "Monday Night Cruisers",
-        "entryFee": "Free",
-        "eventType": "Car Meet",
-        "carTypes": ["All"],
-        "isRecurring": True,
-        "recurrenceDay": 1,  # Monday (0=Sunday, 1=Monday)
-        "recurrenceEndDate": "2025-08-25"
-    }
+    # Test 3: Get Pending Events
+    pending_events = await test_get_pending_events()
     
-    try:
-        response = requests.post(f"{BASE_URL}/events", json=monday_event_data, headers=HEADERS)
-        if response.status_code == 200:
-            monday_event = response.json()
-            monday_event_id = monday_event["id"]
-            log_test("Create Monday Recurring Event", "PASS", 
-                    f"Event created with ID: {monday_event_id}")
-            
-            # Approve Monday event
-            approve_data = {"isApproved": True}
-            requests.put(f"{BASE_URL}/events/{monday_event_id}", json=approve_data, headers=HEADERS)
-            
-        else:
-            log_test("Create Monday Recurring Event", "FAIL", 
-                    f"Status: {response.status_code}, Response: {response.text}")
-            monday_event_id = None
-            
-    except Exception as e:
-        log_test("Create Monday Recurring Event", "FAIL", f"Exception: {str(e)}")
-        monday_event_id = None
+    # Test 4 & 5: Approve/Reject Events (if we have pending events)
+    if pending_events and len(pending_events) >= 2:
+        # Test approve on first event
+        first_event_id = pending_events[0]["id"]
+        if await test_approve_single_event(first_event_id):
+            await verify_pending_events_removed(first_event_id)
+        
+        # Test reject on second event
+        if len(pending_events) > 1:
+            second_event_id = pending_events[1]["id"]
+            if await test_reject_event(second_event_id):
+                await verify_pending_events_removed(second_event_id)
+    else:
+        log_test("Approve Single Event", False, "No pending events available for testing")
+        log_test("Reject Event", False, "No pending events available for testing")
     
-    # Test 5: Verify Monday instances
-    if monday_event_id:
-        print("Test 5: Verify Monday Recurring Event Expansion")
-        try:
-            response = requests.get(f"{BASE_URL}/events", headers=HEADERS)
-            if response.status_code == 200:
-                events = response.json()
-                
-                monday_instances = []
-                for event in events:
-                    if event.get("parentEventId") == monday_event_id:
-                        monday_instances.append(event)
-                
-                if monday_instances:
-                    # Verify dates are Mondays
-                    monday_count = 0
-                    for instance in monday_instances:
-                        event_date = datetime.strptime(instance["date"], "%Y-%m-%d")
-                        if event_date.weekday() == 0:  # Monday in Python (0=Monday)
-                            monday_count += 1
-                    
-                    if monday_count == len(monday_instances):
-                        log_test("Monday Day Conversion", "PASS", 
-                                f"All {monday_count} instances are on Monday")
-                    else:
-                        log_test("Monday Day Conversion", "FAIL", 
-                                f"Only {monday_count}/{len(monday_instances)} instances are on Monday")
-                else:
-                    log_test("Monday Recurring Event Expansion", "FAIL", 
-                            "No Monday recurring instances found")
-            else:
-                log_test("Get Events for Monday Check", "FAIL", 
-                        f"Status: {response.status_code}")
-                
-        except Exception as e:
-            log_test("Verify Monday Instances", "FAIL", f"Exception: {str(e)}")
+    # Test 6: Approve All Events
+    await test_approve_all_events()
     
-    # Test 6: Test Edge Case - No End Date (should default to 12 weeks)
-    print("Test 6: Create Recurring Event with No End Date (Sunday)")
-    sunday_event_data = {
-        "title": "Sunday Funday Cruise",
-        "description": "Weekly Sunday cruise with no end date",
-        "date": "2025-06-15",  # This is a Sunday
-        "time": "2:00 PM",
-        "location": "Bricktown",
-        "address": "1 E Sheridan Ave",
-        "city": "Oklahoma City",
-        "organizer": "Sunday Cruisers",
-        "entryFee": "Free",
-        "eventType": "Cruise",
-        "carTypes": ["All"],
-        "isRecurring": True,
-        "recurrenceDay": 0  # Sunday (0=Sunday)
-        # No recurrenceEndDate - should default to 12 weeks
-    }
+    # Test 7: Search Logs
+    await test_search_logs()
     
-    try:
-        response = requests.post(f"{BASE_URL}/events", json=sunday_event_data, headers=HEADERS)
-        if response.status_code == 200:
-            sunday_event = response.json()
-            sunday_event_id = sunday_event["id"]
-            log_test("Create Sunday Recurring Event (No End Date)", "PASS", 
-                    f"Event created with ID: {sunday_event_id}")
-            
-            # Approve Sunday event
-            approve_data = {"isApproved": True}
-            requests.put(f"{BASE_URL}/events/{sunday_event_id}", json=approve_data, headers=HEADERS)
-            
-            # Check expansion
-            response = requests.get(f"{BASE_URL}/events", headers=HEADERS)
-            if response.status_code == 200:
-                events = response.json()
-                sunday_instances = [e for e in events if e.get("parentEventId") == sunday_event_id]
-                
-                if sunday_instances:
-                    # Should have approximately 12 instances (12 weeks default)
-                    instance_count = len(sunday_instances)
-                    if 10 <= instance_count <= 14:  # Allow some flexibility
-                        log_test("Default 12-Week Generation", "PASS", 
-                                f"Generated {instance_count} instances (expected ~12)")
-                    else:
-                        log_test("Default 12-Week Generation", "FAIL", 
-                                f"Generated {instance_count} instances (expected ~12)")
-                    
-                    # Verify all are Sundays
-                    sunday_count = 0
-                    for instance in sunday_instances:
-                        event_date = datetime.strptime(instance["date"], "%Y-%m-%d")
-                        if event_date.weekday() == 6:  # Sunday in Python (6=Sunday)
-                            sunday_count += 1
-                    
-                    if sunday_count == len(sunday_instances):
-                        log_test("Sunday Day Conversion", "PASS", 
-                                f"All {sunday_count} instances are on Sunday")
-                    else:
-                        log_test("Sunday Day Conversion", "FAIL", 
-                                f"Only {sunday_count}/{len(sunday_instances)} instances are on Sunday")
-                else:
-                    log_test("Sunday Recurring Event Expansion", "FAIL", 
-                            "No Sunday recurring instances found")
-            
-        else:
-            log_test("Create Sunday Recurring Event (No End Date)", "FAIL", 
-                    f"Status: {response.status_code}, Response: {response.text}")
-            
-    except Exception as e:
-        log_test("Create Sunday Recurring Event (No End Date)", "FAIL", f"Exception: {str(e)}")
+    # Test 8: Scheduled Search
+    await test_scheduled_search()
     
-    print("=" * 80)
-    print("RECURRING EVENTS TESTING COMPLETED")
-    print("=" * 80)
-
-def main():
-    """Main test execution"""
-    print("Oklahoma Car Events API - Recurring Events Testing")
-    print("Testing Agent: Backend API Validation")
-    print(f"Backend URL: {BASE_URL}")
-    print(f"Test Time: {datetime.now().isoformat()}")
+    # Test 9: Access Control
+    await test_access_control()
+    
+    # Summary
+    print("=" * 60)
+    print("📊 TEST SUMMARY")
+    print("=" * 60)
+    
+    passed = sum(1 for result in test_results if result["success"])
+    total = len(test_results)
+    
+    print(f"Total Tests: {total}")
+    print(f"Passed: {passed}")
+    print(f"Failed: {total - passed}")
+    print(f"Success Rate: {(passed/total)*100:.1f}%")
     print()
     
-    # Test the recurring events feature
-    test_recurring_events()
+    # Show failed tests
+    failed_tests = [result for result in test_results if not result["success"]]
+    if failed_tests:
+        print("❌ FAILED TESTS:")
+        for test in failed_tests:
+            print(f"  - {test['test']}: {test['details']}")
+        print()
+    
+    # Show critical issues
+    critical_failures = [
+        result for result in test_results 
+        if not result["success"] and any(keyword in result["test"].lower() 
+        for keyword in ["login", "search", "pending", "approve"])
+    ]
+    
+    if critical_failures:
+        print("🚨 CRITICAL ISSUES:")
+        for test in critical_failures:
+            print(f"  - {test['test']}: {test['details']}")
+    else:
+        print("✅ All critical functionality working!")
+    
+    print()
+    print("🏁 Testing completed!")
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

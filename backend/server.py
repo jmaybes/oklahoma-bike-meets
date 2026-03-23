@@ -2855,6 +2855,188 @@ async def get_online_users():
     """Get list of all online users"""
     return {"online_users": ws_manager.get_online_users()}
 
+
+# ==================== Automated Event Search Endpoints ====================
+
+from event_search_service import (
+    run_automated_event_search,
+    get_pending_events,
+    approve_discovered_event,
+    reject_discovered_event,
+    get_search_logs
+)
+
+@api_router.post("/admin/events/search")
+async def trigger_event_search(admin_id: str = Query(...)):
+    """
+    Manually trigger the automated event search.
+    Admin only - discovers new events from multiple sources.
+    """
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Run the search
+    try:
+        stats = await run_automated_event_search(db)
+        return {
+            "success": True,
+            "message": f"Event search completed. Found {stats['events_found']} events, imported {stats['events_imported']} new events.",
+            "stats": stats
+        }
+    except Exception as e:
+        logging.error(f"Event search error: {e}")
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+
+@api_router.get("/admin/events/pending")
+async def get_pending_approval_events(admin_id: str = Query(...)):
+    """
+    Get events discovered by automated search pending admin approval.
+    """
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    events = await get_pending_events(db)
+    return {"events": events, "count": len(events)}
+
+
+@api_router.post("/admin/events/{event_id}/approve")
+async def approve_event(event_id: str, admin_id: str = Query(...)):
+    """
+    Approve a discovered event for public visibility.
+    """
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    if not ObjectId.is_valid(event_id):
+        raise HTTPException(status_code=400, detail="Invalid event ID")
+    
+    success = await approve_discovered_event(db, event_id)
+    if success:
+        return {"success": True, "message": "Event approved successfully"}
+    raise HTTPException(status_code=404, detail="Event not found")
+
+
+@api_router.delete("/admin/events/{event_id}/reject")
+async def reject_event(event_id: str, admin_id: str = Query(...)):
+    """
+    Reject and delete a discovered event.
+    """
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    if not ObjectId.is_valid(event_id):
+        raise HTTPException(status_code=400, detail="Invalid event ID")
+    
+    success = await reject_discovered_event(db, event_id)
+    if success:
+        return {"success": True, "message": "Event rejected and deleted"}
+    raise HTTPException(status_code=404, detail="Event not found")
+
+
+@api_router.post("/admin/events/approve-all")
+async def approve_all_pending_events(admin_id: str = Query(...)):
+    """
+    Approve all pending discovered events at once.
+    """
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.events.update_many(
+        {"isApproved": False, "source": "auto_search"},
+        {"$set": {"isApproved": True, "approvedAt": datetime.utcnow().isoformat()}}
+    )
+    
+    return {
+        "success": True,
+        "message": f"Approved {result.modified_count} events",
+        "count": result.modified_count
+    }
+
+
+@api_router.get("/admin/events/search-logs")
+async def get_event_search_logs(admin_id: str = Query(...), limit: int = Query(10)):
+    """
+    Get recent event search logs.
+    """
+    # Verify admin
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    logs = await get_search_logs(db, limit)
+    return {"logs": logs}
+
+
+# ==================== Weekly Scheduler Endpoint ====================
+# This endpoint can be called by a cron job or external scheduler
+
+@api_router.post("/scheduler/weekly-event-search")
+async def scheduled_weekly_search(secret_key: str = Query(...)):
+    """
+    Weekly scheduled event search - call this from a cron job.
+    Requires a secret key for authentication.
+    """
+    # Simple secret key authentication for scheduler
+    expected_key = os.getenv("SCHEDULER_SECRET_KEY", "okc-car-events-weekly-search-2025")
+    if secret_key != expected_key:
+        raise HTTPException(status_code=403, detail="Invalid scheduler key")
+    
+    try:
+        stats = await run_automated_event_search(db)
+        
+        # Notify admins about new events found
+        if stats.get("events_imported", 0) > 0:
+            admins = await db.users.find({"isAdmin": True}).to_list(100)
+            for admin in admins:
+                notification = {
+                    "userId": str(admin["_id"]),
+                    "type": "admin_alert",
+                    "title": "New Events Discovered",
+                    "message": f"Weekly search found {stats['events_imported']} new events pending your approval.",
+                    "isRead": False,
+                    "createdAt": datetime.utcnow().isoformat()
+                }
+                await db.notifications.insert_one(notification)
+        
+        return {
+            "success": True,
+            "message": "Weekly event search completed",
+            "stats": stats
+        }
+    except Exception as e:
+        logging.error(f"Scheduled search error: {e}")
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+
 # Include the router in the main app - MUST be after all route definitions
 app.include_router(api_router)
 

@@ -591,6 +591,14 @@ export default function ProfileScreen() {
               <Text style={styles.menuItemText}>Manage Feedback</Text>
               <Ionicons name="chevron-forward" size={24} color="#666" />
             </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.menuItem, styles.adminMenuItem]} 
+              onPress={() => router.push('/admin/event-search')}
+            >
+              <Ionicons name="search" size={24} color="#4CAF50" />
+              <Text style={styles.menuItemText}>Event Search</Text>
+              <Ionicons name="chevron-forward" size={24} color="#666" />
+            </TouchableOpacity>
           </View>
         )}
 
