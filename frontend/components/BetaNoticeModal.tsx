@@ -13,6 +13,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BETA_NOTICE_KEY = '@okc_car_events_beta_notice_v1';
 
+// For testing/development - set to true to auto-dismiss modal
+const DEV_AUTO_DISMISS = false;
+
 export default function BetaNoticeModal() {
   const [visible, setVisible] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
@@ -25,10 +28,18 @@ export default function BetaNoticeModal() {
     try {
       const hasSeenNotice = await AsyncStorage.getItem(BETA_NOTICE_KEY);
       if (!hasSeenNotice) {
-        setVisible(true);
+        if (DEV_AUTO_DISMISS) {
+          // Auto-dismiss for development/testing
+          await AsyncStorage.setItem(BETA_NOTICE_KEY, 'true');
+          setVisible(false);
+        } else {
+          setVisible(true);
+        }
       }
     } catch (error) {
       console.error('Error checking beta notice:', error);
+      // On error, don't show modal to prevent blocking
+      setVisible(false);
     }
   };
 
@@ -40,7 +51,19 @@ export default function BetaNoticeModal() {
       setVisible(false);
     } catch (error) {
       console.error('Error saving beta notice state:', error);
+      // Even on error, dismiss the modal to not block the user
+      setVisible(false);
     }
+  };
+
+  // Force dismiss function for edge cases
+  const forceDismiss = async () => {
+    try {
+      await AsyncStorage.setItem(BETA_NOTICE_KEY, 'true');
+    } catch (error) {
+      console.error('Error force dismissing:', error);
+    }
+    setVisible(false);
   };
 
   if (!visible) return null;
@@ -137,6 +160,14 @@ export default function BetaNoticeModal() {
                 size={20} 
                 color={acknowledged ? "#fff" : "#666"} 
               />
+            </TouchableOpacity>
+
+            {/* Skip link for accessibility */}
+            <TouchableOpacity
+              style={styles.skipLink}
+              onPress={forceDismiss}
+            >
+              <Text style={styles.skipLinkText}>Skip for now</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -311,5 +342,15 @@ const styles = StyleSheet.create({
   },
   continueButtonTextDisabled: {
     color: '#666',
+  },
+  skipLink: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginTop: 8,
+  },
+  skipLinkText: {
+    color: '#888',
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
 });
