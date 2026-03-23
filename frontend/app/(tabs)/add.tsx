@@ -472,6 +472,65 @@ export default function AddEventScreen() {
               />
             </View>
 
+            {/* Recurring Event Toggle */}
+            <View style={styles.recurringToggleContainer}>
+              <View style={styles.recurringToggleInfo}>
+                <Ionicons name="repeat" size={24} color="#4CAF50" />
+                <View style={styles.recurringToggleText}>
+                  <Text style={styles.recurringToggleTitle}>Recurring Event</Text>
+                  <Text style={styles.recurringToggleDescription}>
+                    This event repeats weekly on the same day
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={isRecurring}
+                onValueChange={setIsRecurring}
+                trackColor={{ false: '#3e3e3e', true: '#4CAF50' }}
+                thumbColor={isRecurring ? '#fff' : '#f4f3f4'}
+              />
+            </View>
+
+            {/* Recurring Event Options */}
+            {isRecurring && (
+              <View style={styles.recurringOptionsContainer}>
+                <Text style={styles.label}>Repeat Every Week On</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dayList}>
+                  {daysOfWeek.map((day) => (
+                    <TouchableOpacity
+                      key={day.value}
+                      style={[
+                        styles.dayChip,
+                        recurrenceDay === day.value && styles.dayChipActive,
+                      ]}
+                      onPress={() => setRecurrenceDay(day.value)}
+                    >
+                      <Text
+                        style={[
+                          styles.dayChipText,
+                          recurrenceDay === day.value && styles.dayChipTextActive,
+                        ]}
+                      >
+                        {day.label.slice(0, 3)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+
+                <Text style={[styles.label, { marginTop: 16 }]}>End Recurring On (YYYY-MM-DD)</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Leave empty for 1 year (default)"
+                  placeholderTextColor="#666"
+                  value={recurrenceEndDate}
+                  onChangeText={setRecurrenceEndDate}
+                />
+                <Text style={styles.helperText}>
+                  Events will be generated for each week until this date
+                </Text>
+              </View>
+            )}
+
             <Text style={styles.label}>Organizer</Text>
             <TextInput
               style={styles.input}
@@ -788,5 +847,73 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     lineHeight: 16,
+  },
+  recurringToggleContainer: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  recurringToggleInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  recurringToggleText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  recurringToggleTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  recurringToggleDescription: {
+    color: '#888',
+    fontSize: 12,
+    marginTop: 4,
+    lineHeight: 16,
+  },
+  recurringOptionsContainer: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  dayList: {
+    flexGrow: 0,
+    marginTop: 8,
+  },
+  dayChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#2a2a2a',
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  dayChipActive: {
+    backgroundColor: '#4CAF50',
+  },
+  dayChipText: {
+    color: '#888',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  dayChipTextActive: {
+    color: '#fff',
+  },
+  helperText: {
+    color: '#666',
+    fontSize: 12,
+    marginTop: 8,
+    fontStyle: 'italic',
   },
 });

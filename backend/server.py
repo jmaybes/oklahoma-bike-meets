@@ -230,6 +230,7 @@ class EventUpdate(BaseModel):
     photos: Optional[List[str]] = None
     contactInfo: Optional[str] = None
     website: Optional[str] = None
+    isApproved: Optional[bool] = None
     isRecurring: Optional[bool] = None
     recurrenceDay: Optional[int] = None
     recurrenceEndDate: Optional[str] = None
@@ -547,13 +548,18 @@ async def get_events(
         
         if event.get("isRecurring") and event.get("recurrenceDay") is not None:
             # This is a recurring event - generate instances
-            recurrence_day = event.get("recurrenceDay")  # 0=Sunday, 6=Saturday
+            # Frontend uses 0=Sunday, 6=Saturday
+            # Python weekday() uses 0=Monday, 6=Sunday
+            # Convert frontend day to Python day: (frontend_day + 6) % 7 maps Sun(0)->6, Mon(1)->0, etc.
+            frontend_day = event.get("recurrenceDay")
+            python_weekday = (frontend_day + 6) % 7  # Convert to Python convention
+            
             end_date_str = event.get("recurrenceEndDate")
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date() if end_date_str else today + timedelta(weeks=weeks_ahead)
             
             # Find next occurrence of the recurring day
             current_date = today
-            days_until_recurrence = (recurrence_day - current_date.weekday() + 7) % 7
+            days_until_recurrence = (python_weekday - current_date.weekday() + 7) % 7
             if days_until_recurrence == 0:
                 next_occurrence = current_date  # Today is the day
             else:
