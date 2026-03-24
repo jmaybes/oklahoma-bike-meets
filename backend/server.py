@@ -584,14 +584,34 @@ async def get_events(
 
 @api_router.get("/events/{event_id}")
 async def get_event(event_id: str):
-    if not ObjectId.is_valid(event_id):
+    # Handle recurring event instance IDs (format: {original_id}__{YYYYMMDD})
+    instance_date = None
+    original_id = event_id
+    if "__" in event_id:
+        parts = event_id.split("__")
+        original_id = parts[0]
+        instance_date = parts[1] if len(parts) > 1 else None
+    
+    if not ObjectId.is_valid(original_id):
         raise HTTPException(status_code=400, detail="Invalid event ID")
     
-    event = await db.events.find_one({"_id": ObjectId(event_id)})
+    event = await db.events.find_one({"_id": ObjectId(original_id)})
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    return event_helper(event)
+    result = event_helper(event)
+    
+    # If this is a recurring instance, override the date and add instance info
+    if instance_date:
+        try:
+            formatted_date = f"{instance_date[:4]}-{instance_date[4:6]}-{instance_date[6:]}"
+            result["date"] = formatted_date
+            result["id"] = event_id  # Keep the instance ID
+            result["parentEventId"] = original_id
+        except (IndexError, ValueError):
+            pass  # If date parsing fails, just return the original event
+    
+    return result
 
 @api_router.put("/events/{event_id}")
 async def update_event(event_id: str, event_update: EventUpdate):
@@ -654,16 +674,23 @@ def event_photo_helper(photo) -> dict:
 @api_router.get("/events/{event_id}/gallery")
 async def get_event_gallery(event_id: str):
     """Get all photos for an event gallery"""
-    if not ObjectId.is_valid(event_id):
+    # Handle recurring event instance IDs
+    original_event_id = event_id
+    if "__" in event_id:
+        original_event_id = event_id.split("__")[0]
+    
+    if not ObjectId.is_valid(original_event_id):
         raise HTTPException(status_code=400, detail="Invalid event ID")
     
     # Verify event exists
-    event = await db.events.find_one({"_id": ObjectId(event_id)})
+    event = await db.events.find_one({"_id": ObjectId(original_event_id)})
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    # Get all photos for this event
-    photos = await db.event_photos.find({"eventId": event_id}).sort("createdAt", -1).to_list(500)
+    # Get all photos for this event (check both original and instance IDs)
+    photos = await db.event_photos.find({
+        "eventId": {"$in": [event_id, original_event_id]}
+    }).sort("createdAt", -1).to_list(500)
     
     return {
         "eventId": event_id,
@@ -675,14 +702,19 @@ async def get_event_gallery(event_id: str):
 @api_router.post("/events/{event_id}/gallery/upload")
 async def upload_event_photo(event_id: str, data: EventPhotoUpload):
     """Upload a photo to an event gallery"""
-    if not ObjectId.is_valid(event_id):
+    # Handle recurring event instance IDs
+    original_event_id = event_id
+    if "__" in event_id:
+        original_event_id = event_id.split("__")[0]
+    
+    if not ObjectId.is_valid(original_event_id):
         raise HTTPException(status_code=400, detail="Invalid event ID")
     
     if not ObjectId.is_valid(data.uploaderId):
         raise HTTPException(status_code=400, detail="Invalid uploader ID")
     
     # Verify event exists
-    event = await db.events.find_one({"_id": ObjectId(event_id)})
+    event = await db.events.find_one({"_id": ObjectId(original_event_id)})
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
@@ -887,11 +919,19 @@ async def create_rsvp(rsvp: RSVPCreate):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Handle recurring event instance IDs (format: {original_id}__{YYYYMMDD})
+    original_event_id = rsvp.eventId
+    instance_date = None
+    if "__" in rsvp.eventId:
+        parts = rsvp.eventId.split("__")
+        original_event_id = parts[0]
+        instance_date = parts[1] if len(parts) > 1 else None
+    
     # Check if event exists
-    if not ObjectId.is_valid(rsvp.eventId):
+    if not ObjectId.is_valid(original_event_id):
         raise HTTPException(status_code=400, detail="Invalid event ID")
     
-    event = await db.events.find_one({"_id": ObjectId(rsvp.eventId)})
+    event = await db.events.find_one({"_id": ObjectId(original_event_id)})
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
@@ -904,12 +944,20 @@ async def create_rsvp(rsvp: RSVPCreate):
     if existing_rsvp:
         raise HTTPException(status_code=400, detail="Already RSVP'd to this event")
     
+    # Determine the event date for this instance
+    event_date = event["date"]
+    if instance_date:
+        try:
+            event_date = f"{instance_date[:4]}-{instance_date[4:6]}-{instance_date[6:]}"
+        except (IndexError, ValueError):
+            pass
+    
     # Create RSVP
     rsvp_data = {
         "userId": rsvp.userId,
         "eventId": rsvp.eventId,
         "eventTitle": event["title"],
-        "eventDate": event["date"],
+        "eventDate": event_date,
         "eventTime": event["time"],
         "eventLocation": event.get("location", ""),
         "reminderSent": False,
@@ -918,9 +966,9 @@ async def create_rsvp(rsvp: RSVPCreate):
     
     result = await db.rsvps.insert_one(rsvp_data)
     
-    # Increment attendee count on event
+    # Increment attendee count on parent event
     await db.events.update_one(
-        {"_id": ObjectId(rsvp.eventId)},
+        {"_id": ObjectId(original_event_id)},
         {"$inc": {"attendeeCount": 1}}
     )
     
@@ -929,7 +977,7 @@ async def create_rsvp(rsvp: RSVPCreate):
         "userId": rsvp.userId,
         "type": "rsvp_confirmation",
         "title": f"RSVP Confirmed: {event['title']}",
-        "message": f"You're going to {event['title']} on {event['date']} at {event['time']}. We'll remind you 24 hours before!",
+        "message": f"You're going to {event['title']} on {event_date} at {event['time']}. We'll remind you 24 hours before!",
         "eventId": rsvp.eventId,
         "isRead": False,
         "createdAt": datetime.utcnow().isoformat()
@@ -959,11 +1007,17 @@ async def cancel_rsvp(user_id: str, event_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="RSVP not found")
     
-    # Decrement attendee count
-    await db.events.update_one(
-        {"_id": ObjectId(event_id)},
-        {"$inc": {"attendeeCount": -1}}
-    )
+    # Handle recurring event instance IDs for attendee count
+    original_event_id = event_id
+    if "__" in event_id:
+        original_event_id = event_id.split("__")[0]
+    
+    # Decrement attendee count on parent event
+    if ObjectId.is_valid(original_event_id):
+        await db.events.update_one(
+            {"_id": ObjectId(original_event_id)},
+            {"$inc": {"attendeeCount": -1}}
+        )
     
     return {"message": "RSVP cancelled successfully"}
 

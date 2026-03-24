@@ -28,13 +28,15 @@ interface PendingEvent {
 }
 
 export default function AdminPendingScreen() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const insets = useSafeAreaInsets();
   const [pendingEvents, setPendingEvents] = useState<PendingEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
 
   useEffect(() => {
+    if (authLoading) return; // Wait for auth to hydrate
+    
     if (!isAuthenticated || !user?.isAdmin) {
       Alert.alert('Access Denied', 'You must be an admin to access this page', [
         { text: 'OK', onPress: () => router.back() }
@@ -42,7 +44,7 @@ export default function AdminPendingScreen() {
       return;
     }
     fetchPendingEvents();
-  }, []);
+  }, [authLoading, isAuthenticated, user]);
 
   const fetchPendingEvents = async () => {
     try {

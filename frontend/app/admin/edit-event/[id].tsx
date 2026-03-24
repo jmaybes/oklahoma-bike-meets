@@ -42,7 +42,7 @@ interface EventForm {
 
 export default function AdminEditEventScreen() {
   const { id: eventId } = useLocalSearchParams<{ id: string }>();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const insets = useSafeAreaInsets();
   
   const [loading, setLoading] = useState(true);
@@ -200,6 +200,14 @@ export default function AdminEditEventScreen() {
       ]
     );
   };
+
+  if (authLoading) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#FF6B35" />
+      </View>
+    );
+  }
 
   if (!isAuthenticated || !user?.isAdmin) {
     return (

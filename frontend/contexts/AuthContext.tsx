@@ -37,6 +37,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateUser: (user: User) => Promise<void>;
   isAuthenticated: boolean;
+  isLoading: boolean;
   expoPushToken: string | null;
 }
 
@@ -85,6 +86,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const notificationListener = useRef<Notifications.Subscription>();
   const responseListener = useRef<Notifications.Subscription>();
@@ -123,6 +125,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error('Error loading user:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -174,7 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser, isAuthenticated: !!user, expoPushToken }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, isAuthenticated: !!user, isLoading, expoPushToken }}>
       {children}
     </AuthContext.Provider>
   );

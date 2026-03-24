@@ -549,9 +549,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Full comprehensive backend API testing"
+    - "Comprehensive testing complete"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
   - task: "New RSVP System - Create RSVP"

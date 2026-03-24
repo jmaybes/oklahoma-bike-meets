@@ -48,7 +48,7 @@ const typeIcons: Record<string, { icon: string; color: string }> = {
 };
 
 export default function AdminFeedbackScreen() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const insets = useSafeAreaInsets();
   const [feedbackList, setFeedbackList] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
@@ -151,6 +151,14 @@ export default function AdminFeedbackScreen() {
     };
     return stats;
   };
+
+  if (authLoading) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#FF6B35" />
+      </View>
+    );
+  }
 
   if (!isAuthenticated || !user?.isAdmin) {
     return (

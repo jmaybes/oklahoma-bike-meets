@@ -48,7 +48,7 @@ interface SearchStats {
 }
 
 export default function EventSearchScreen() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const insets = useSafeAreaInsets();
   const [pendingEvents, setPendingEvents] = useState<DiscoveredEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -202,6 +202,14 @@ export default function EventSearchScreen() {
       return dateStr;
     }
   };
+
+  if (authLoading) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#FF6B35" />
+      </View>
+    );
+  }
 
   if (!user?.isAdmin) {
     return (
