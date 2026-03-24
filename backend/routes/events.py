@@ -9,7 +9,7 @@ import logging
 
 from database import db
 from models import EventCreate, EventUpdate, OCRRequest, FavoriteCreate, CommentCreate
-from helpers import event_helper, get_ocr_reader, parse_event_details
+from helpers import event_helper, get_ocr_reader, parse_event_details, send_push_notification
 from PIL import Image
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ async def create_event(event: EventCreate):
     result = await db.events.insert_one(event_dict)
     created_event = await db.events.find_one({"_id": result.inserted_id})
 
-    # If it's a Pop Up event and approved, create notifications for all users
+    # If it's a Pop Up event and approved, create notifications + push for all users
     if event_dict.get("isPopUp") and event_dict.get("isApproved"):
         users = await db.users.find({"notificationsEnabled": {"$ne": False}}).to_list(10000)
 
@@ -56,6 +56,18 @@ async def create_event(event: EventCreate):
                     "createdAt": datetime.utcnow().isoformat()
                 }
                 notifications.append(notification)
+
+                # Send device push notification immediately
+                if user.get("pushToken"):
+                    try:
+                        await send_push_notification(
+                            user["pushToken"],
+                            notification["title"],
+                            notification["message"],
+                            {"type": "popup_event", "eventId": str(created_event["_id"])}
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to send popup push: {e}")
 
         if notifications:
             await db.notifications.insert_many(notifications)

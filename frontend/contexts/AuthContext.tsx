@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
+import { router } from 'expo-router';
 import axios from 'axios';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -101,7 +102,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       console.log('Notification response:', response);
-      // Handle notification tap - could navigate to messages screen
+      // Navigate based on notification type when user taps
+      const data = response.notification.request.content.data;
+      if (data) {
+        try {
+          if (data.type === 'message' && data.senderId) {
+            router.push('/messages');
+          } else if (data.type === 'popup_event' && data.eventId) {
+            router.push(`/event/${data.eventId}`);
+          } else if (data.type === 'event_reminder' && data.eventId) {
+            router.push(`/event/${data.eventId}`);
+          } else if (data.type === 'meetup_invite') {
+            router.push('/(tabs)/nearby');
+          } else if (data.type === 'feedback_response' && data.feedbackId) {
+            router.push('/feedback/history');
+          }
+        } catch (e) {
+          console.log('Navigation from notification failed:', e);
+        }
+      }
     });
 
     return () => {

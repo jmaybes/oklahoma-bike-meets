@@ -5,6 +5,7 @@ from bson import ObjectId
 import logging
 
 from database import db
+from helpers import send_push_notification
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +92,25 @@ async def websocket_messages(websocket: WebSocket, user_id: str):
                 }
 
                 await ws_manager.send_personal_message(ws_message, data["recipientId"])
+
+                # If recipient is NOT connected via WebSocket, send a push notification
+                if not ws_manager.is_online(data["recipientId"]):
+                    recipient = await db.users.find_one({"_id": ObjectId(data["recipientId"])})
+                    if recipient and recipient.get("pushToken") and recipient.get("notificationsEnabled", True):
+                        sender_nickname = sender.get("nickname") or sender_name
+                        try:
+                            await send_push_notification(
+                                recipient["pushToken"],
+                                f"New message from {sender_nickname}",
+                                data["content"][:100] + ("..." if len(data["content"]) > 100 else ""),
+                                {
+                                    "type": "message",
+                                    "senderId": user_id,
+                                    "senderName": sender_nickname
+                                }
+                            )
+                        except Exception as e:
+                            logger.error(f"Failed to send WS push notification: {e}")
 
                 await websocket.send_json({
                     "type": "message_sent",

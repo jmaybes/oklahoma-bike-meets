@@ -22,7 +22,7 @@ export default function RootLayout() {
             }} 
           />
           <Stack.Screen 
-            name="event/[id]" 
+            name="event/[id]/index" 
             options={{ 
               headerShown: false,
               animation: 'slide_from_bottom',

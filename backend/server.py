@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter
 from starlette.middleware.cors import CORSMiddleware
+import asyncio
 import logging
 
 from database import client
@@ -62,6 +63,78 @@ app.include_router(api_router)
 
 # Include WebSocket router directly on app (no /api prefix)
 app.include_router(websocket_router)
+
+
+# ==================== Background Scheduler ====================
+
+async def rsvp_reminder_scheduler():
+    """Background task that checks for RSVP reminders every hour."""
+    from datetime import datetime, timedelta
+    from bson import ObjectId
+    from database import db
+    from helpers import send_push_notification
+
+    while True:
+        try:
+            # Check every hour
+            await asyncio.sleep(3600)
+
+            tomorrow = (datetime.utcnow() + timedelta(days=1)).strftime("%Y-%m-%d")
+
+            rsvps = await db.rsvps.find({
+                "eventDate": tomorrow,
+                "reminderSent": False
+            }).to_list(10000)
+
+            if not rsvps:
+                continue
+
+            reminders_sent = 0
+            for rsvp in rsvps:
+                user = await db.users.find_one({"_id": ObjectId(rsvp["userId"])})
+                if user and user.get("notificationsEnabled", True):
+                    notification = {
+                        "userId": rsvp["userId"],
+                        "type": "event_reminder",
+                        "title": f"Reminder: {rsvp['eventTitle']} is Tomorrow!",
+                        "message": f"Don't forget! {rsvp['eventTitle']} is happening tomorrow at {rsvp['eventTime']} at {rsvp['eventLocation']}",
+                        "eventId": rsvp["eventId"],
+                        "isRead": False,
+                        "createdAt": datetime.utcnow().isoformat()
+                    }
+                    await db.notifications.insert_one(notification)
+
+                    if user.get("pushToken"):
+                        try:
+                            await send_push_notification(
+                                user["pushToken"],
+                                notification["title"],
+                                notification["message"],
+                                {"eventId": rsvp["eventId"], "type": "event_reminder"}
+                            )
+                        except Exception as e:
+                            logger.error(f"Failed to send reminder push: {e}")
+
+                    reminders_sent += 1
+
+                await db.rsvps.update_one(
+                    {"_id": rsvp["_id"]},
+                    {"$set": {"reminderSent": True}}
+                )
+
+            if reminders_sent > 0:
+                logger.info(f"RSVP Scheduler: Sent {reminders_sent} reminder notifications")
+
+        except Exception as e:
+            logger.error(f"RSVP Scheduler error: {e}")
+            await asyncio.sleep(60)  # Wait a minute before retrying on error
+
+
+@app.on_event("startup")
+async def startup_scheduler():
+    """Start the background RSVP reminder scheduler on app startup."""
+    asyncio.create_task(rsvp_reminder_scheduler())
+    logger.info("RSVP reminder scheduler started (runs every hour)")
 
 
 @app.on_event("shutdown")

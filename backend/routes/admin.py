@@ -57,7 +57,7 @@ async def approve_event_general(event_id: str, admin_id: str = Query(...)):
 
     updated_event = await db.events.find_one({"_id": ObjectId(event_id)})
 
-    # If it's a Pop Up event, send notifications to all users
+    # If it's a Pop Up event, send in-app + push notifications to all users
     if updated_event.get("isPopUp"):
         users = await db.users.find({"notificationsEnabled": {"$ne": False}}).to_list(10000)
 
@@ -74,6 +74,18 @@ async def approve_event_general(event_id: str, admin_id: str = Query(...)):
                     "createdAt": datetime.utcnow().isoformat()
                 }
                 notifications.append(notification)
+
+                # Send device push notification immediately
+                if user.get("pushToken"):
+                    try:
+                        await send_push_notification(
+                            user["pushToken"],
+                            notification["title"],
+                            notification["message"],
+                            {"type": "popup_event", "eventId": event_id}
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to send popup push to {str(user['_id'])}: {e}")
 
         if notifications:
             await db.notifications.insert_many(notifications)
