@@ -5,13 +5,13 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  Pressable,
   ScrollView,
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -23,6 +23,7 @@ const DEV_AUTO_DISMISS = false;
 export default function BetaNoticeModal() {
   const [visible, setVisible] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     checkIfFirstLaunch();
@@ -33,7 +34,6 @@ export default function BetaNoticeModal() {
       const hasSeenNotice = await AsyncStorage.getItem(BETA_NOTICE_KEY);
       if (!hasSeenNotice) {
         if (DEV_AUTO_DISMISS) {
-          // Auto-dismiss for development/testing
           await AsyncStorage.setItem(BETA_NOTICE_KEY, 'true');
           setVisible(false);
         } else {
@@ -42,25 +42,21 @@ export default function BetaNoticeModal() {
       }
     } catch (error) {
       console.error('Error checking beta notice:', error);
-      // On error, don't show modal to prevent blocking
       setVisible(false);
     }
   };
 
   const handleDismiss = async () => {
     if (!acknowledged) return;
-    
     try {
       await AsyncStorage.setItem(BETA_NOTICE_KEY, 'true');
       setVisible(false);
     } catch (error) {
       console.error('Error saving beta notice state:', error);
-      // Even on error, dismiss the modal to not block the user
       setVisible(false);
     }
   };
 
-  // Force dismiss function for edge cases
   const forceDismiss = async () => {
     try {
       await AsyncStorage.setItem(BETA_NOTICE_KEY, 'true');
@@ -79,8 +75,7 @@ export default function BetaNoticeModal() {
       animationType="fade"
       statusBarTranslucent
     >
-      <View style={styles.overlay}>
-        {/* Gradient Border Wrapper */}
+      <View style={[styles.overlay, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
         <LinearGradient
           colors={['#FF6B35', '#E91E63', '#9C27B0', '#FF6B35']}
           start={{ x: 0, y: 0 }}
@@ -103,20 +98,22 @@ export default function BetaNoticeModal() {
                 <View style={styles.versionBadge}>
                   <Text style={styles.versionText}>v1.0.0</Text>
                 </View>
-                <Ionicons name="rocket" size={40} color="#fff" />
-                <Text style={styles.headerTitle}>Welcome to OKC Car Events!</Text>
+                <Ionicons name="rocket" size={36} color="#fff" />
+                <Text style={styles.headerTitle}>Welcome to Oklahoma Car Meets</Text>
+                <Text style={styles.headerSubtitle}>Meets, Cruises, Shows & More!</Text>
                 <Text style={styles.betaBadge}>BETA VERSION</Text>
               </LinearGradient>
 
               {/* Content */}
               <View style={styles.content}>
+                {/* Intro message - no icon, spread out */}
                 <View style={styles.messageContainer}>
-                  <Ionicons name="information-circle" size={22} color="#FF6B35" style={styles.infoIcon} />
                   <Text style={styles.messageText}>
-                    Thank you for being an early user of our app! This is a <Text style={styles.highlight}>beta version</Text>, which means you may encounter bugs or incomplete features as we continue to improve.
+                    Thank you for being an early user of our app!{'\n\n'}This is a <Text style={styles.highlight}>beta version</Text>, which means you may encounter bugs or incomplete features as we continue to improve.
                   </Text>
                 </View>
 
+                {/* Feedback Box */}
                 <View style={styles.featureBox}>
                   <View style={styles.featureHeader}>
                     <Ionicons name="chatbubble-ellipses" size={18} color="#FF6B35" />
@@ -144,7 +141,10 @@ export default function BetaNoticeModal() {
                     <Text style={styles.privacyTitle}>Your Privacy Matters!</Text>
                   </View>
                   <Text style={styles.privacyText}>
-                    We do not share your information with anyone and tracking can be turned off at anytime within the app. Please note: location and tracking is necessary to share your location with other users as well as see theirs, however, this information is never stored.
+                    We do not share your information with anyone and tracking can be turned off at anytime within the app.
+                  </Text>
+                  <Text style={[styles.privacyText, { marginTop: 8 }]}>
+                    Please note: location and tracking is necessary to share your location with other users as well as see theirs, however, this information is never stored.
                   </Text>
                 </View>
 
@@ -178,7 +178,7 @@ export default function BetaNoticeModal() {
                   />
                 </TouchableOpacity>
 
-                {/* Skip link for accessibility */}
+                {/* Skip link */}
                 <TouchableOpacity
                   style={styles.skipLink}
                   onPress={forceDismiss}
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
   },
   gradientBorder: {
     borderRadius: 24,
@@ -213,67 +213,69 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     overflow: 'hidden',
     width: '100%',
-    maxHeight: SCREEN_HEIGHT * 0.85,
+    maxHeight: SCREEN_HEIGHT * 0.82,
   },
   scrollContent: {
     flexGrow: 1,
   },
   header: {
     alignItems: 'center',
-    padding: 20,
-    paddingTop: 24,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 14,
   },
   versionBadge: {
     position: 'absolute',
-    top: 12,
-    right: 12,
+    top: 10,
+    right: 10,
     backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 12,
   },
   versionText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
-    marginTop: 12,
+    marginTop: 8,
     textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.85)',
+    marginTop: 4,
+    textAlign: 'center',
+    fontWeight: '500',
   },
   betaBadge: {
     backgroundColor: 'rgba(255,255,255,0.2)',
     color: '#fff',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 4,
-    marginTop: 8,
+    marginTop: 10,
     letterSpacing: 1,
   },
   content: {
-    padding: 16,
+    padding: 14,
   },
   messageContainer: {
-    flexDirection: 'row',
     backgroundColor: '#2a2a2a',
-    padding: 12,
+    padding: 14,
     borderRadius: 12,
-    marginBottom: 12,
-  },
-  infoIcon: {
-    marginRight: 12,
-    marginTop: 2,
+    marginBottom: 10,
   },
   messageText: {
-    flex: 1,
     color: '#ccc',
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   highlight: {
     color: '#FF6B35',
@@ -282,8 +284,8 @@ const styles = StyleSheet.create({
   featureBox: {
     backgroundColor: '#222',
     borderRadius: 12,
-    padding: 14,
-    marginBottom: 12,
+    padding: 12,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: '#333',
   },
@@ -291,21 +293,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   featureTitle: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
   },
   featureText: {
     color: '#aaa',
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 12,
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 10,
   },
   bulletList: {
-    gap: 8,
+    gap: 6,
   },
   bulletItem: {
     flexDirection: 'row',
@@ -319,8 +321,8 @@ const styles = StyleSheet.create({
   privacyBox: {
     backgroundColor: '#1a2e1a',
     borderRadius: 12,
-    padding: 14,
-    marginBottom: 14,
+    padding: 12,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#4CAF50',
   },
@@ -332,18 +334,18 @@ const styles = StyleSheet.create({
   },
   privacyTitle: {
     color: '#4CAF50',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
   },
   privacyText: {
     color: '#a5d6a7',
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 19,
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 14,
+    marginBottom: 12,
     paddingHorizontal: 4,
   },
   checkbox: {
@@ -371,7 +373,7 @@ const styles = StyleSheet.create({
   continueButton: {
     backgroundColor: '#FF6B35',
     borderRadius: 12,
-    padding: 16,
+    padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -390,8 +392,8 @@ const styles = StyleSheet.create({
   },
   skipLink: {
     alignItems: 'center',
-    paddingVertical: 12,
-    marginTop: 8,
+    paddingVertical: 10,
+    marginTop: 4,
   },
   skipLinkText: {
     color: '#888',

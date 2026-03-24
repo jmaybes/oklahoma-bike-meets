@@ -339,17 +339,6 @@ export default function HomeScreen() {
         </View>
       </LinearGradient>
 
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search events or cities..."
-          placeholderTextColor="#666"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View>
-
       {/* Filter Row 1: Event Types */}
       <View style={styles.filterWrapper}>
         <ScrollView 
@@ -471,6 +460,18 @@ export default function HomeScreen() {
           <Ionicons name="time" size={14} color="#fff" />
           <Text style={styles.pastButtonText}>Past</Text>
         </TouchableOpacity>
+      </View>
+
+      {/* Search Box - moved below sort/filter controls */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search events or cities..."
+          placeholderTextColor="#666"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
       </View>
 
       {/* Location Warning */}
