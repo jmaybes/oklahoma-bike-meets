@@ -547,7 +547,7 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/(tabs)/home')}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/my-rsvps')}>
             <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
             <Text style={styles.menuItemText}>My RSVPs</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />
