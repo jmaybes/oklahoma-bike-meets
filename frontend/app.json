@@ -11,6 +11,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.velocityvisualcrew.okccarmeets",
+      "config": {
+        "googleMapsApiKey": "AIzaSyDekipz2kW6nfOpd_c6Ku_NLwgc5N9AsUI"
+      },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
@@ -25,6 +28,11 @@
         "backgroundColor": "#000"
       },
       "edgeToEdgeEnabled": true,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDekipz2kW6nfOpd_c6Ku_NLwgc5N9AsUI"
+        }
+      },
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",

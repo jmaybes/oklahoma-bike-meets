@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import time
 
 # Backend URL from frontend .env
-BASE_URL = "https://cruise-tracker-2.preview.emergentagent.com/api"
+BASE_URL = "https://carfest-okc.preview.emergentagent.com/api"
 
 # Admin credentials
 ADMIN_EMAIL = "admin@okcarevents.com"

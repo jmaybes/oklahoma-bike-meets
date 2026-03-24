@@ -768,7 +768,7 @@ test_plan:
     status_history:
         - working: false
           agent: "testing"
-          comment: "WebSocket endpoint /ws/messages/{user_id} is properly defined in server.py and includes comprehensive real-time messaging functionality (message sending, typing indicators, read receipts, ping/pong). However, the endpoint returns 404 when accessed via external URL https://cruise-tracker-2.preview.emergentagent.com/ws/messages/{user_id}. This indicates an ingress/proxy configuration issue rather than a backend code problem. The WebSocket functionality is implemented correctly but not accessible externally."
+          comment: "WebSocket endpoint /ws/messages/{user_id} is properly defined in server.py and includes comprehensive real-time messaging functionality (message sending, typing indicators, read receipts, ping/pong). However, the endpoint returns 404 when accessed via external URL https://carfest-okc.preview.emergentagent.com/ws/messages/{user_id}. This indicates an ingress/proxy configuration issue rather than a backend code problem. The WebSocket functionality is implemented correctly but not accessible externally."
 
   - task: "Admin Feedback Management - Get All Feedback"
     implemented: true
