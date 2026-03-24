@@ -10,7 +10,7 @@ import json
 import sys
 
 # Backend URL from frontend environment
-BASE_URL = "https://carfest-okc.preview.emergentagent.com/api"
+BASE_URL = "https://event-hub-okc.preview.emergentagent.com/api"
 
 def print_result(test_name, success, details):
     """Print test result in a clear format"""
