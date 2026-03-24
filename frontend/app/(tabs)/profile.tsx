@@ -380,12 +380,12 @@ export default function ProfileScreen() {
 
   if (!isAuthenticated) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.container}>
         <LinearGradient
           colors={['#FF6B35', '#E91E63']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={styles.headerGradient}
+          style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
         >
           <Text style={styles.headerTitle}>My Garage</Text>
           <Text style={styles.headerSubtitle}>Showcase your ride</Text>
@@ -417,13 +417,13 @@ export default function ProfileScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <LinearGradient
           colors={['#FF6B35', '#E91E63']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={styles.headerGradient}
+          style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
         >
           <View style={styles.headerRow}>
             <View>
@@ -1320,7 +1320,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#0c0c0c',
   },
   headerGradient: {
-    paddingTop: 10,
     paddingBottom: 20,
     paddingHorizontal: 20,
   },

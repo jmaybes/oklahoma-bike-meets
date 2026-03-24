@@ -282,7 +282,7 @@ export default function AddEventScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -292,7 +292,7 @@ export default function AddEventScreen() {
             colors={['#FF6B35', '#E91E63']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={styles.headerGradient}
+            style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
           >
             <View style={styles.header}>
               <View>
@@ -631,7 +631,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerGradient: {
-    paddingTop: 10,
     paddingBottom: 16,
     paddingHorizontal: 20,
   },

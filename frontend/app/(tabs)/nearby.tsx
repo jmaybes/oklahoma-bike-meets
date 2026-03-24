@@ -10,6 +10,7 @@ import {
   TextInput,
   ScrollView,
   Switch,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +19,15 @@ import * as Location from 'expo-location';
 import Slider from '@react-native-community/slider';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
-import NearbyMapView from '../../components/NearbyMapView';
+import MapErrorBoundary from '../../components/MapErrorBoundary';
+
+// Lazy-load NearbyMapView to prevent crashes on import
+let NearbyMapView: React.ComponentType<any> | null = null;
+try {
+  NearbyMapView = require('../../components/NearbyMapView').default;
+} catch (error) {
+  console.log('NearbyMapView could not be loaded:', error);
+}
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -181,12 +190,12 @@ export default function NearbyScreen() {
 
   if (!user) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={styles.container}>
         <LinearGradient
           colors={['#FF6B35', '#E91E63']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={styles.headerGradient}
+          style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
         >
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Nearby Enthusiasts</Text>
@@ -203,8 +212,8 @@ export default function NearbyScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <View style={styles.centerContainer}>
+      <View style={styles.container}>
+        <View style={[styles.centerContainer, { paddingTop: insets.top }]}>
           <ActivityIndicator size="large" color="#FF6B35" />
           <Text style={styles.loadingText}>Getting your location...</Text>
         </View>
@@ -213,12 +222,12 @@ export default function NearbyScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+    <View style={styles.container}>
       <LinearGradient
         colors={['#FF6B35', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        style={styles.headerGradient}
+        style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
       >
         <View style={styles.header}>
           <View>
@@ -254,13 +263,25 @@ export default function NearbyScreen() {
 
         {/* Live Map - Always shown when showMap is true */}
         {showMap && location && (
-          <NearbyMapView
-            location={location}
-            radius={radius}
-            nearbyUsers={nearbyUsers}
-            onCenterOnUser={() => {}}
-            onRefresh={initializeLocation}
-          />
+          NearbyMapView ? (
+            <MapErrorBoundary fallbackMessage="The map could not be loaded on this device. Use the list view instead to see nearby car enthusiasts.">
+              <NearbyMapView
+                location={location}
+                radius={radius}
+                nearbyUsers={nearbyUsers}
+                onCenterOnUser={() => {}}
+                onRefresh={initializeLocation}
+              />
+            </MapErrorBoundary>
+          ) : (
+            <View style={styles.mapFallback}>
+              <Ionicons name="map-outline" size={48} color="#FF6B35" />
+              <Text style={styles.mapFallbackTitle}>Map Not Available</Text>
+              <Text style={styles.mapFallbackText}>
+                Switch to list view to browse nearby users
+              </Text>
+            </View>
+          )
         )}
 
         {/* Radius Slider */}
@@ -468,7 +489,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   headerGradient: {
-    paddingTop: 10,
     paddingBottom: 16,
     paddingHorizontal: 20,
   },
@@ -753,5 +773,28 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  mapFallback: {
+    height: 280,
+    borderRadius: 16,
+    backgroundColor: '#1a1a1a',
+    marginBottom: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  mapFallbackTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  mapFallbackText: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
   },
 });

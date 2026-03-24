@@ -6,7 +6,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from frontend .env
-BASE_URL = "https://drive-okc.preview.emergentagent.com/api"
+BASE_URL = "https://garage-okc.preview.emergentagent.com/api"
 
 def create_test_messages():
     """Create test messages between users to test messaging functionality"""
@@ -129,7 +129,7 @@ def test_websocket_endpoint_detailed():
     
     # Test different possible WebSocket URLs
     test_urls = [
-        "https://drive-okc.preview.emergentagent.com/ws/messages/test_user_id",
+        "https://garage-okc.preview.emergentagent.com/ws/messages/test_user_id",
         "wss://drive-okc.preview.emergentagent.com/ws/messages/test_user_id",
     ]
     

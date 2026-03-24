@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://drive-okc.preview.emergentagent.com/api"
+BACKEND_URL = "https://garage-okc.preview.emergentagent.com/api"
 
 # Admin credentials from review request
 ADMIN_EMAIL = "admin@okcarevents.com"

@@ -48,8 +48,8 @@ const AnimatedTabIcon = ({
     <Animated.View style={animatedStyle}>
       <Ionicons 
         name={name as any} 
-        size={size} 
-        color={focused ? '#FF6B35' : '#aaa'} 
+        size={size + 2} 
+        color={focused ? '#FF6B35' : '#ccc'} 
       />
     </Animated.View>
   );
@@ -58,33 +58,34 @@ const AnimatedTabIcon = ({
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   
-  // Calculate bottom padding - ensure tab bar is above system navigation
+  // Calculate bottom padding - ensure tab bar is well above system navigation
   const bottomPadding = Platform.OS === 'ios' 
-    ? Math.max(insets.bottom, 10) 
-    : Math.max(insets.bottom, 16);
+    ? Math.max(insets.bottom, 12) 
+    : Math.max(insets.bottom, 20);
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#FF6B35',
-        tabBarInactiveTintColor: '#aaa',
+        tabBarInactiveTintColor: '#ccc',
         tabBarStyle: {
           backgroundColor: '#1a1a1a',
-          borderTopColor: '#333',
+          borderTopColor: '#444',
           borderTopWidth: 1,
-          height: 60 + bottomPadding,
+          height: 64 + bottomPadding,
           paddingBottom: bottomPadding,
-          paddingTop: 8,
-          elevation: 8,
+          paddingTop: 10,
+          elevation: 12,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.4,
+          shadowRadius: 6,
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
+          fontWeight: '700',
+          letterSpacing: 0.3,
         },
         tabBarIconStyle: {
           marginBottom: -2,

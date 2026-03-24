@@ -1,7 +1,22 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
+
+// Conditionally import react-native-maps to prevent crashes
+let MapView: any = null;
+let Marker: any = null;
+let Circle: any = null;
+let PROVIDER_GOOGLE: any = null;
+
+try {
+  const Maps = require('react-native-maps');
+  MapView = Maps.default;
+  Marker = Maps.Marker;
+  Circle = Maps.Circle;
+  PROVIDER_GOOGLE = Maps.PROVIDER_GOOGLE;
+} catch (error) {
+  console.log('react-native-maps could not be loaded:', error);
+}
 
 interface NearbyUser {
   id: string;
@@ -39,7 +54,8 @@ export default function NearbyMapView({
   onCenterOnUser, 
   onRefresh 
 }: NearbyMapViewProps) {
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
+  const [mapLoadError, setMapLoadError] = useState(false);
 
   // Guard against null location
   if (!location) {
@@ -47,6 +63,29 @@ export default function NearbyMapView({
       <View style={styles.mapPlaceholder}>
         <Ionicons name="location-outline" size={48} color="#666" />
         <Text style={styles.mapPlaceholderText}>Getting your location...</Text>
+      </View>
+    );
+  }
+
+  // Guard against MapView not being available
+  if (!MapView || !Marker || !Circle || mapLoadError) {
+    return (
+      <View style={styles.mapPlaceholder}>
+        <Ionicons name="map-outline" size={48} color="#FF6B35" />
+        <Text style={styles.mapPlaceholderTitle}>Map Unavailable</Text>
+        <Text style={styles.mapPlaceholderText}>
+          {mapLoadError 
+            ? 'The map failed to load. Use list view instead.'
+            : 'Maps are not available on this device.'}
+        </Text>
+        {mapLoadError && (
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={() => setMapLoadError(false)}
+          >
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
@@ -243,6 +282,25 @@ const styles = StyleSheet.create({
   mapPlaceholderText: {
     color: '#888',
     marginTop: 12,
+  },
+  mapPlaceholderTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  retryButton: {
+    marginTop: 12,
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  retryText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   mapControls: {
     position: 'absolute',
