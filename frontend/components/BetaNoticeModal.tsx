@@ -125,10 +125,6 @@ export default function BetaNoticeModal() {
                     <Ionicons name="bulb" size={16} color="#FFC107" />
                     <Text style={styles.bulletText}>Feature suggestions or improvements</Text>
                   </View>
-                  <View style={styles.bulletItem}>
-                    <Ionicons name="car-sport" size={16} color="#2196F3" />
-                    <Text style={styles.bulletText}>Events or clubs we should add</Text>
-                  </View>
                 </View>
               </View>
 
@@ -139,7 +135,7 @@ export default function BetaNoticeModal() {
                   <Text style={styles.privacyTitle}>Your Privacy Matters!</Text>
                 </View>
                 <Text style={styles.privacyText}>
-                  We do not share your information with anyone and tracking can be turned off at anytime within the app.
+                  We do not share your information with anyone and tracking can be turned off at anytime within the app. Please note: location and tracking is necessary to share your location with other users as well as see theirs, however, this information is never stored.
                 </Text>
               </View>
 
