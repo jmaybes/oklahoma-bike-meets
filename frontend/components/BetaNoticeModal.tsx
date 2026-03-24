@@ -109,7 +109,7 @@ export default function BetaNoticeModal() {
                 {/* Intro message - no icon, spread out */}
                 <View style={styles.messageContainer}>
                   <Text style={styles.messageText}>
-                    Thank you for being an early user of our app!{'\n\n'}This is a <Text style={styles.highlight}>beta version</Text>, which means you may encounter bugs or incomplete features as we continue to improve.
+                    Thank you for being an early user of our app! This is a <Text style={styles.highlight}>beta version</Text>, which means you may encounter bugs or incomplete features as we continue to improve.
                   </Text>
                 </View>
 
@@ -239,18 +239,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: 'bold',
     color: '#fff',
     marginTop: 8,
     textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 15,
-    color: 'rgba(255,255,255,0.85)',
-    marginTop: 4,
+    fontSize: 18,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: 5,
     textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   betaBadge: {
     backgroundColor: 'rgba(255,255,255,0.2)',
