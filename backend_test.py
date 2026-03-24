@@ -1,516 +1,388 @@
 #!/usr/bin/env python3
 """
 Comprehensive Backend API Testing for Oklahoma Car Events App
-Testing Automated Event Search API endpoints
+Testing all endpoints that haven't been tested yet based on test_result.md
 """
 
-import asyncio
-import httpx
+import requests
 import json
-import sys
-from datetime import datetime
+import base64
+from datetime import datetime, timedelta
+import time
 
-# Backend URL from frontend environment
-BACKEND_URL = "https://garage-okc.preview.emergentagent.com/api"
+# Backend URL from frontend .env
+BASE_URL = "https://cruise-tracker-2.preview.emergentagent.com/api"
 
-# Admin credentials from review request
+# Admin credentials
 ADMIN_EMAIL = "admin@okcarevents.com"
 ADMIN_PASSWORD = "admin123"
 
-# Test results tracking
+# Test results storage
 test_results = []
-admin_id = None
 
-def log_test(test_name, success, details="", response_data=None):
+def log_test(endpoint, method, status, message, details=None):
     """Log test results"""
     result = {
-        "test": test_name,
-        "success": success,
-        "details": details,
+        "endpoint": endpoint,
+        "method": method,
+        "status": "✅ PASS" if status else "❌ FAIL",
+        "message": message,
+        "details": details or {},
         "timestamp": datetime.now().isoformat()
     }
-    if response_data:
-        result["response_data"] = response_data
     test_results.append(result)
-    
-    status = "✅ PASS" if success else "❌ FAIL"
-    print(f"{status} {test_name}")
+    print(f"{result['status']} {method} {endpoint}: {message}")
     if details:
-        print(f"    {details}")
-    if not success and response_data:
-        print(f"    Response: {response_data}")
-    print()
+        print(f"   Details: {details}")
 
-async def test_admin_login():
-    """Test 1: Get Admin User ID by logging in"""
-    global admin_id
+def test_clubs_endpoints():
+    """Test all Clubs endpoints"""
+    print("\n=== TESTING CLUBS ENDPOINTS ===")
     
+    # Test GET /api/clubs
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(f"{BACKEND_URL}/auth/login", json={
-                "email": ADMIN_EMAIL,
-                "password": ADMIN_PASSWORD
-            })
+        response = requests.get(f"{BASE_URL}/clubs")
+        if response.status_code == 200:
+            clubs = response.json()
+            log_test("/clubs", "GET", True, f"Retrieved {len(clubs)} clubs", {"count": len(clubs)})
+        else:
+            log_test("/clubs", "GET", False, f"Status {response.status_code}", {"response": response.text})
+    except Exception as e:
+        log_test("/clubs", "GET", False, f"Exception: {str(e)}")
+
+    # Test POST /api/clubs (Create club)
+    try:
+        club_data = {
+            "name": "Test Car Club",
+            "description": "A test car club for API testing",
+            "location": "Oklahoma City, OK",
+            "city": "Oklahoma City",
+            "carTypes": ["Classic Cars", "Muscle Cars"]
+        }
+        response = requests.post(f"{BASE_URL}/clubs", json=club_data)
+        if response.status_code in [200, 201]:
+            club = response.json()
+            club_id = club.get('id')
+            log_test("/clubs", "POST", True, "Club created successfully", {"club_id": club_id})
             
-            if response.status_code == 200:
-                data = response.json()
-                if "id" in data:
-                    admin_id = data["id"]
-                    is_admin = data.get("isAdmin", False)
-                    
-                    if is_admin:
-                        log_test("Admin Login", True, f"Successfully logged in as admin. Admin ID: {admin_id}")
-                        return True
+            # Test GET /api/clubs/{club_id}
+            if club_id:
+                try:
+                    response = requests.get(f"{BASE_URL}/clubs/{club_id}")
+                    if response.status_code == 200:
+                        log_test(f"/clubs/{club_id}", "GET", True, "Retrieved club by ID")
                     else:
-                        log_test("Admin Login", False, "User is not an admin", data)
-                        return False
-                else:
-                    log_test("Admin Login", False, "Invalid response structure", data)
-                    return False
-            else:
-                log_test("Admin Login", False, f"HTTP {response.status_code}", response.text)
-                return False
+                        log_test(f"/clubs/{club_id}", "GET", False, f"Status {response.status_code}")
+                except Exception as e:
+                    log_test(f"/clubs/{club_id}", "GET", False, f"Exception: {str(e)}")
                 
+                # Test PUT /api/clubs/{club_id}
+                try:
+                    update_data = {"description": "Updated test car club description"}
+                    response = requests.put(f"{BASE_URL}/clubs/{club_id}", json=update_data)
+                    if response.status_code == 200:
+                        log_test(f"/clubs/{club_id}", "PUT", True, "Club updated successfully")
+                    else:
+                        log_test(f"/clubs/{club_id}", "PUT", False, f"Status {response.status_code}")
+                except Exception as e:
+                    log_test(f"/clubs/{club_id}", "PUT", False, f"Exception: {str(e)}")
+                
+                # Test DELETE /api/clubs/{club_id}
+                try:
+                    response = requests.delete(f"{BASE_URL}/clubs/{club_id}")
+                    if response.status_code in [200, 204]:
+                        log_test(f"/clubs/{club_id}", "DELETE", True, "Club deleted successfully")
+                    else:
+                        log_test(f"/clubs/{club_id}", "DELETE", False, f"Status {response.status_code}")
+                except Exception as e:
+                    log_test(f"/clubs/{club_id}", "DELETE", False, f"Exception: {str(e)}")
+        else:
+            log_test("/clubs", "POST", False, f"Status {response.status_code}", {"response": response.text})
     except Exception as e:
-        log_test("Admin Login", False, f"Exception: {str(e)}")
-        return False
+        log_test("/clubs", "POST", False, f"Exception: {str(e)}")
 
-async def test_manual_event_search():
-    """Test 2: Manual Event Search Trigger"""
-    if not admin_id:
-        log_test("Manual Event Search", False, "Admin ID not available")
-        return False
+def test_route_planning_endpoints():
+    """Test all Route Planning endpoints"""
+    print("\n=== TESTING ROUTE PLANNING ENDPOINTS ===")
     
+    # First, login to get user credentials
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:  # Longer timeout for search
-            response = await client.post(f"{BACKEND_URL}/admin/events/search?admin_id={admin_id}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("success") and "stats" in data:
-                    stats = data["stats"]
-                    events_found = stats.get("events_found", 0)
-                    events_imported = stats.get("events_imported", 0)
-                    duplicates_skipped = stats.get("duplicates_skipped", 0)
-                    
-                    log_test("Manual Event Search", True, 
-                            f"Search completed. Found: {events_found}, Imported: {events_imported}, Duplicates: {duplicates_skipped}",
-                            data)
-                    return True
-                else:
-                    log_test("Manual Event Search", False, "Invalid response structure", data)
-                    return False
-            else:
-                log_test("Manual Event Search", False, f"HTTP {response.status_code}", response.text)
-                return False
-                
-    except Exception as e:
-        log_test("Manual Event Search", False, f"Exception: {str(e)}")
-        return False
-
-async def test_get_pending_events():
-    """Test 3: Get Pending Events"""
-    if not admin_id:
-        log_test("Get Pending Events", False, "Admin ID not available")
-        return []
-    
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(f"{BACKEND_URL}/admin/events/pending?admin_id={admin_id}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                if isinstance(data, list):
-                    # Direct array response
-                    events = data
-                    count = len(events)
-                elif "events" in data and "count" in data:
-                    # Wrapped response
-                    events = data["events"]
-                    count = data["count"]
-                else:
-                    log_test("Get Pending Events", False, "Invalid response structure", data)
-                    return []
-                
-                # Verify event structure
-                if events and len(events) > 0:
-                    sample_event = events[0]
-                    required_fields = ["id", "title", "date", "time", "location", "city", "eventType", "photos"]
-                    missing_fields = [field for field in required_fields if field not in sample_event]
-                    
-                    if missing_fields:
-                        log_test("Get Pending Events", False, 
-                                f"Missing required fields: {missing_fields}", sample_event)
-                        return events
-                    
-                    # Check source and approval status (be flexible about source field)
-                    source = sample_event.get("source")
-                    if source is not None and source != "auto_search":
-                        log_test("Get Pending Events", False, 
-                                f"Expected source='auto_search' or None, got '{source}'")
-                        return events
-                    
-                    if sample_event.get("isApproved") != False:
-                        log_test("Get Pending Events", False, 
-                                f"Expected isApproved=false, got '{sample_event.get('isApproved')}'")
-                        return events
-                
-                log_test("Get Pending Events", True, 
-                        f"Retrieved {count} pending events. All have required fields and correct status.",
-                        {"count": count, "sample_fields": list(events[0].keys()) if events else []})
-                return events
-            else:
-                log_test("Get Pending Events", False, f"HTTP {response.status_code}", response.text)
-                return []
-                
-    except Exception as e:
-        log_test("Get Pending Events", False, f"Exception: {str(e)}")
-        return []
-
-async def test_approve_single_event(event_id):
-    """Test 4: Approve Single Event"""
-    if not admin_id or not event_id:
-        log_test("Approve Single Event", False, "Admin ID or Event ID not available")
-        return False
-    
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(f"{BACKEND_URL}/admin/events/{event_id}/approve?admin_id={admin_id}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("success"):
-                    log_test("Approve Single Event", True, f"Event {event_id} approved successfully", data)
-                    return True
-                else:
-                    log_test("Approve Single Event", False, "Success flag not set", data)
-                    return False
-            else:
-                log_test("Approve Single Event", False, f"HTTP {response.status_code}", response.text)
-                return False
-                
-    except Exception as e:
-        log_test("Approve Single Event", False, f"Exception: {str(e)}")
-        return False
-
-async def test_reject_event(event_id):
-    """Test 5: Reject Event"""
-    if not admin_id or not event_id:
-        log_test("Reject Event", False, "Admin ID or Event ID not available")
-        return False
-    
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.delete(f"{BACKEND_URL}/admin/events/{event_id}/reject?admin_id={admin_id}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("success") or "message" in data:
-                    log_test("Reject Event", True, f"Event {event_id} rejected and deleted successfully", data)
-                    return True
-                else:
-                    log_test("Reject Event", False, "Invalid response structure", data)
-                    return False
-            else:
-                log_test("Reject Event", False, f"HTTP {response.status_code}", response.text)
-                return False
-                
-    except Exception as e:
-        log_test("Reject Event", False, f"Exception: {str(e)}")
-        return False
-
-async def test_approve_all_events():
-    """Test 6: Approve All Events"""
-    if not admin_id:
-        log_test("Approve All Events", False, "Admin ID not available")
-        return False
-    
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(f"{BACKEND_URL}/admin/events/approve-all?admin_id={admin_id}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("success") and "count" in data:
-                    count = data["count"]
-                    log_test("Approve All Events", True, f"Approved {count} events successfully", data)
-                    return True
-                else:
-                    log_test("Approve All Events", False, "Invalid response structure", data)
-                    return False
-            else:
-                log_test("Approve All Events", False, f"HTTP {response.status_code}", response.text)
-                return False
-                
-    except Exception as e:
-        log_test("Approve All Events", False, f"Exception: {str(e)}")
-        return False
-
-async def test_search_logs():
-    """Test 7: Search Logs"""
-    if not admin_id:
-        log_test("Search Logs", False, "Admin ID not available")
-        return False
-    
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(f"{BACKEND_URL}/admin/events/search-logs?admin_id={admin_id}&limit=5")
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "logs" in data:
-                    logs = data["logs"]
-                    
-                    # Verify log structure
-                    if logs and len(logs) > 0:
-                        sample_log = logs[0]
-                        required_fields = ["timestamp", "stats"]
-                        missing_fields = [field for field in required_fields if field not in sample_log]
-                        
-                        if missing_fields:
-                            log_test("Search Logs", False, 
-                                    f"Missing required fields in logs: {missing_fields}", sample_log)
-                            return False
-                    
-                    log_test("Search Logs", True, 
-                            f"Retrieved {len(logs)} search logs with proper structure",
-                            {"log_count": len(logs), "sample_fields": list(logs[0].keys()) if logs else []})
-                    return True
-                else:
-                    log_test("Search Logs", False, "Invalid response structure", data)
-                    return False
-            else:
-                log_test("Search Logs", False, f"HTTP {response.status_code}", response.text)
-                return False
-                
-    except Exception as e:
-        log_test("Search Logs", False, f"Exception: {str(e)}")
-        return False
-
-async def test_scheduled_search():
-    """Test 8: Scheduled Search Endpoint"""
-    secret_key = "okc-car-events-weekly-search-2025"
-    
-    try:
-        async with httpx.AsyncClient(timeout=60.0) as client:  # Longer timeout for search
-            response = await client.post(f"{BACKEND_URL}/scheduler/weekly-event-search?secret_key={secret_key}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("success") and "stats" in data:
-                    stats = data["stats"]
-                    log_test("Scheduled Search", True, 
-                            f"Weekly search completed successfully. Stats: {stats}", data)
-                    return True
-                else:
-                    log_test("Scheduled Search", False, "Invalid response structure", data)
-                    return False
-            else:
-                log_test("Scheduled Search", False, f"HTTP {response.status_code}", response.text)
-                return False
-                
-    except Exception as e:
-        log_test("Scheduled Search", False, f"Exception: {str(e)}")
-        return False
-
-async def test_access_control():
-    """Test 9: Access Control"""
-    
-    # Test 1: Access without admin_id
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(f"{BACKEND_URL}/admin/events/pending")
-            
-            if response.status_code == 422:  # FastAPI validation error for missing query param
-                log_test("Access Control - No Admin ID", True, "Correctly rejected request without admin_id")
-            else:
-                log_test("Access Control - No Admin ID", False, f"Expected 422, got {response.status_code}")
-    except Exception as e:
-        log_test("Access Control - No Admin ID", False, f"Exception: {str(e)}")
-    
-    # Test 2: Access with invalid admin_id
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(f"{BACKEND_URL}/admin/events/pending?admin_id=invalid_id")
-            
-            if response.status_code == 400:  # Invalid ObjectId
-                log_test("Access Control - Invalid Admin ID", True, "Correctly rejected invalid admin_id")
-            else:
-                log_test("Access Control - Invalid Admin ID", False, f"Expected 400, got {response.status_code}")
-    except Exception as e:
-        log_test("Access Control - Invalid Admin ID", False, f"Exception: {str(e)}")
-    
-    # Test 3: Access with non-admin user (create a regular user first)
-    try:
-        import random
-        random_suffix = random.randint(1000, 9999)
-        test_email = f"testuser{random_suffix}@example.com"
+        login_response = requests.post(f"{BASE_URL}/auth/login", json={
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        })
+        if login_response.status_code != 200:
+            log_test("Route Planning", "SETUP", False, "Failed to login for route testing")
+            return
         
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            # Register a regular user
-            reg_response = await client.post(f"{BACKEND_URL}/auth/register", json={
-                "name": "Test User",
-                "nickname": f"testuser{random_suffix}",
-                "email": test_email,
-                "password": "testpass123"
-            })
+        user_data = login_response.json()
+        user_id = user_data.get('id')
+        
+        if not user_id:
+            log_test("Route Planning", "SETUP", False, "No user ID in login response")
+            return
             
-            if reg_response.status_code == 200:
-                # Login as regular user
-                login_response = await client.post(f"{BACKEND_URL}/auth/login", json={
-                    "email": test_email,
-                    "password": "testpass123"
-                })
-                
-                if login_response.status_code == 200:
-                    user_data = login_response.json()
-                    regular_user_id = user_data["id"]
-                    
-                    # Try to access admin endpoint
-                    admin_response = await client.get(f"{BACKEND_URL}/admin/events/pending?admin_id={regular_user_id}")
-                    
-                    if admin_response.status_code == 403:  # Forbidden
-                        log_test("Access Control - Non-Admin User", True, "Correctly rejected non-admin user")
-                    else:
-                        log_test("Access Control - Non-Admin User", False, f"Expected 403, got {admin_response.status_code}")
-                else:
-                    log_test("Access Control - Non-Admin User", False, "Failed to login as regular user")
-            else:
-                log_test("Access Control - Non-Admin User", False, "Failed to register regular user")
-                
     except Exception as e:
-        log_test("Access Control - Non-Admin User", False, f"Exception: {str(e)}")
-    
-    # Test 4: Scheduled endpoint with wrong secret key
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(f"{BACKEND_URL}/scheduler/weekly-event-search?secret_key=wrong_key")
-            
-            if response.status_code == 403:
-                log_test("Access Control - Wrong Secret Key", True, "Correctly rejected wrong secret key")
-            else:
-                log_test("Access Control - Wrong Secret Key", False, f"Expected 403, got {response.status_code}")
-    except Exception as e:
-        log_test("Access Control - Wrong Secret Key", False, f"Exception: {str(e)}")
-
-async def verify_pending_events_removed(event_id):
-    """Verify that approved/rejected events no longer appear in pending list"""
-    if not admin_id:
-        return False
-    
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(f"{BACKEND_URL}/admin/events/pending?admin_id={admin_id}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                if isinstance(data, list):
-                    events = data
-                elif "events" in data:
-                    events = data["events"]
-                else:
-                    log_test("Verify Event Removal", False, f"Invalid response structure")
-                    return False
-                
-                # Check if the event is still in pending list
-                for event in events:
-                    if event.get("id") == event_id:
-                        log_test("Verify Event Removal", False, f"Event {event_id} still appears in pending list")
-                        return False
-                
-                log_test("Verify Event Removal", True, f"Event {event_id} correctly removed from pending list")
-                return True
-            else:
-                log_test("Verify Event Removal", False, f"Failed to get pending events: HTTP {response.status_code}")
-                return False
-                
-    except Exception as e:
-        log_test("Verify Event Removal", False, f"Exception: {str(e)}")
-        return False
-
-async def main():
-    """Main test execution"""
-    print("🚀 Starting Automated Event Search API Testing")
-    print("=" * 60)
-    print()
-    
-    # Test 1: Admin Login
-    if not await test_admin_login():
-        print("❌ Cannot proceed without admin access")
+        log_test("Route Planning", "SETUP", False, f"Login exception: {str(e)}")
         return
+
+    # Test POST /api/routes (Create route)
+    try:
+        route_data = {
+            "userId": user_id,
+            "userName": "Admin User",
+            "name": "Test Scenic Route",
+            "description": "A beautiful test route through Oklahoma",
+            "waypoints": [
+                {"latitude": 35.6528, "longitude": -97.4781, "name": "Edmond", "order": 1},
+                {"latitude": 35.8784, "longitude": -97.4253, "name": "Guthrie", "order": 2}
+            ],
+            "distance": 106.2,
+            "estimatedTime": "2h 0m",
+            "scenicHighlights": ["Historic Route", "Scenic Views"],
+            "difficulty": "easy",
+            "isPublic": True
+        }
+        response = requests.post(f"{BASE_URL}/routes", json=route_data)
+        if response.status_code in [200, 201]:
+            route = response.json()
+            route_id = route.get('id')
+            log_test("/routes", "POST", True, "Route created successfully", {"route_id": route_id})
+            
+            # Test GET /api/routes/{route_id}
+            if route_id:
+                try:
+                    response = requests.get(f"{BASE_URL}/routes/{route_id}")
+                    if response.status_code == 200:
+                        log_test(f"/routes/{route_id}", "GET", True, "Retrieved route by ID")
+                    else:
+                        log_test(f"/routes/{route_id}", "GET", False, f"Status {response.status_code}")
+                except Exception as e:
+                    log_test(f"/routes/{route_id}", "GET", False, f"Exception: {str(e)}")
+                
+                # Test PUT /api/routes/{route_id}
+                try:
+                    update_data = {"description": "Updated test route description"}
+                    response = requests.put(f"{BASE_URL}/routes/{route_id}", json=update_data)
+                    if response.status_code == 200:
+                        log_test(f"/routes/{route_id}", "PUT", True, "Route updated successfully")
+                    else:
+                        log_test(f"/routes/{route_id}", "PUT", False, f"Status {response.status_code}")
+                except Exception as e:
+                    log_test(f"/routes/{route_id}", "PUT", False, f"Exception: {str(e)}")
+                
+                # Test POST /api/routes/{route_id}/like
+                try:
+                    response = requests.post(f"{BASE_URL}/routes/{route_id}/like", params={"user_id": user_id})
+                    if response.status_code == 200:
+                        log_test(f"/routes/{route_id}/like", "POST", True, "Route liked successfully")
+                    else:
+                        log_test(f"/routes/{route_id}/like", "POST", False, f"Status {response.status_code}")
+                except Exception as e:
+                    log_test(f"/routes/{route_id}/like", "POST", False, f"Exception: {str(e)}")
+                
+                # Test POST /api/routes/{route_id}/save
+                try:
+                    response = requests.post(f"{BASE_URL}/routes/{route_id}/save", params={"user_id": user_id})
+                    if response.status_code == 200:
+                        log_test(f"/routes/{route_id}/save", "POST", True, "Route saved successfully")
+                    else:
+                        log_test(f"/routes/{route_id}/save", "POST", False, f"Status {response.status_code}")
+                except Exception as e:
+                    log_test(f"/routes/{route_id}/save", "POST", False, f"Exception: {str(e)}")
+                
+                # Test DELETE /api/routes/{route_id}
+                try:
+                    response = requests.delete(f"{BASE_URL}/routes/{route_id}", params={"user_id": user_id})
+                    if response.status_code in [200, 204]:
+                        log_test(f"/routes/{route_id}", "DELETE", True, "Route deleted successfully")
+                    else:
+                        log_test(f"/routes/{route_id}", "DELETE", False, f"Status {response.status_code}")
+                except Exception as e:
+                    log_test(f"/routes/{route_id}", "DELETE", False, f"Exception: {str(e)}")
+        else:
+            log_test("/routes", "POST", False, f"Status {response.status_code}", {"response": response.text})
+    except Exception as e:
+        log_test("/routes", "POST", False, f"Exception: {str(e)}")
+
+    # Test GET /api/routes (List all routes)
+    try:
+        response = requests.get(f"{BASE_URL}/routes")
+        if response.status_code == 200:
+            routes = response.json()
+            log_test("/routes", "GET", True, f"Retrieved {len(routes)} routes", {"count": len(routes)})
+        else:
+            log_test("/routes", "GET", False, f"Status {response.status_code}")
+    except Exception as e:
+        log_test("/routes", "GET", False, f"Exception: {str(e)}")
+
+    # Test GET /api/routes/user/{user_id}
+    try:
+        response = requests.get(f"{BASE_URL}/routes/user/{user_id}")
+        if response.status_code == 200:
+            user_routes = response.json()
+            log_test(f"/routes/user/{user_id}", "GET", True, f"Retrieved {len(user_routes)} user routes")
+        else:
+            log_test(f"/routes/user/{user_id}", "GET", False, f"Status {response.status_code}")
+    except Exception as e:
+        log_test(f"/routes/user/{user_id}", "GET", False, f"Exception: {str(e)}")
+
+def test_nearby_users_endpoint():
+    """Test Nearby Users endpoint"""
+    print("\n=== TESTING NEARBY USERS ENDPOINT ===")
     
-    # Test 2: Manual Event Search Trigger
-    await test_manual_event_search()
-    
-    # Test 3: Get Pending Events
-    pending_events = await test_get_pending_events()
-    
-    # Test 4 & 5: Approve/Reject Events (if we have pending events)
-    if pending_events and len(pending_events) >= 2:
-        # Test approve on first event
-        first_event_id = pending_events[0]["id"]
-        if await test_approve_single_event(first_event_id):
-            await verify_pending_events_removed(first_event_id)
+    # First, login to get user credentials
+    try:
+        login_response = requests.post(f"{BASE_URL}/auth/login", json={
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        })
+        if login_response.status_code != 200:
+            log_test("Nearby Users", "SETUP", False, "Failed to login")
+            return
         
-        # Test reject on second event
-        if len(pending_events) > 1:
-            second_event_id = pending_events[1]["id"]
-            if await test_reject_event(second_event_id):
-                await verify_pending_events_removed(second_event_id)
-    else:
-        log_test("Approve Single Event", False, "No pending events available for testing")
-        log_test("Reject Event", False, "No pending events available for testing")
+        user_data = login_response.json()
+        user_id = user_data.get('id')
+        
+        if not user_id:
+            log_test("Nearby Users", "SETUP", False, "No user ID in login response")
+            return
+            
+    except Exception as e:
+        log_test("Nearby Users", "SETUP", False, f"Login exception: {str(e)}")
+        return
+
+    # Test GET /api/users/nearby/{user_id}
+    try:
+        # Add required latitude and longitude parameters
+        params = {
+            "latitude": 35.4676,  # Oklahoma City coordinates
+            "longitude": -97.5164
+        }
+        response = requests.get(f"{BASE_URL}/users/nearby/{user_id}", params=params)
+        if response.status_code == 200:
+            nearby_users = response.json()
+            log_test(f"/users/nearby/{user_id}", "GET", True, f"Retrieved {len(nearby_users)} nearby users")
+        else:
+            log_test(f"/users/nearby/{user_id}", "GET", False, f"Status {response.status_code}", {"response": response.text})
+    except Exception as e:
+        log_test(f"/users/nearby/{user_id}", "GET", False, f"Exception: {str(e)}")
+
+def test_ocr_endpoint():
+    """Test OCR Scan Flyer endpoint"""
+    print("\n=== TESTING OCR SCAN FLYER ENDPOINT ===")
     
-    # Test 6: Approve All Events
-    await test_approve_all_events()
+    # Skip OCR test for now as it requires proper image processing setup
+    log_test("/ocr/scan-flyer", "POST", False, "Skipped - OCR requires proper image setup", {"note": "System limitation - OCR processing not available in test environment"})
+
+def test_feedback_response_fix():
+    """Test the feedback response endpoint that was failing"""
+    print("\n=== TESTING FEEDBACK RESPONSE FIX ===")
     
-    # Test 7: Search Logs
-    await test_search_logs()
+    # First, login as admin
+    try:
+        login_response = requests.post(f"{BASE_URL}/auth/login", json={
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        })
+        if login_response.status_code != 200:
+            log_test("Feedback Response", "SETUP", False, "Failed to login as admin")
+            return
+        
+        admin_data = login_response.json()
+        admin_id = admin_data.get('id')
+        
+        if not admin_id:
+            log_test("Feedback Response", "SETUP", False, "No admin ID in login response")
+            return
+            
+    except Exception as e:
+        log_test("Feedback Response", "SETUP", False, f"Login exception: {str(e)}")
+        return
+
+    # Get admin feedback to find a feedback item to respond to
+    try:
+        response = requests.get(f"{BASE_URL}/feedback/admin", params={"admin_id": admin_id})
+        if response.status_code == 200:
+            feedback_items = response.json()
+            if feedback_items:
+                feedback_id = feedback_items[0].get('id')
+                
+                # Test PUT /api/feedback/{feedback_id}/respond
+                try:
+                    params = {
+                        "response": "Thank you for your feedback. We will look into this issue.",
+                        "status": "in_progress"
+                    }
+                    response = requests.put(f"{BASE_URL}/feedback/{feedback_id}/respond", params=params)
+                    if response.status_code == 200:
+                        log_test(f"/feedback/{feedback_id}/respond", "PUT", True, "Feedback response sent successfully")
+                    else:
+                        log_test(f"/feedback/{feedback_id}/respond", "PUT", False, f"Status {response.status_code}", {"response": response.text})
+                except Exception as e:
+                    log_test(f"/feedback/{feedback_id}/respond", "PUT", False, f"Exception: {str(e)}")
+            else:
+                log_test("Feedback Response", "TEST", False, "No feedback items found to test response")
+        else:
+            log_test("Feedback Response", "SETUP", False, f"Failed to get admin feedback: {response.status_code}")
+    except Exception as e:
+        log_test("Feedback Response", "SETUP", False, f"Exception getting feedback: {str(e)}")
+
+def test_additional_endpoints():
+    """Test any additional endpoints that might have been missed"""
+    print("\n=== TESTING ADDITIONAL ENDPOINTS ===")
     
-    # Test 8: Scheduled Search
-    await test_scheduled_search()
+    # Test GET /api/ (welcome message) - should already be tested but let's verify
+    try:
+        response = requests.get(f"{BASE_URL}/")
+        if response.status_code == 200:
+            log_test("/", "GET", True, "Welcome endpoint working")
+        else:
+            log_test("/", "GET", False, f"Status {response.status_code}")
+    except Exception as e:
+        log_test("/", "GET", False, f"Exception: {str(e)}")
+
+def print_summary():
+    """Print test summary"""
+    print("\n" + "="*60)
+    print("COMPREHENSIVE BACKEND API TEST SUMMARY")
+    print("="*60)
     
-    # Test 9: Access Control
-    await test_access_control()
-    
-    # Summary
-    print("=" * 60)
-    print("📊 TEST SUMMARY")
-    print("=" * 60)
-    
-    passed = sum(1 for result in test_results if result["success"])
+    passed = sum(1 for result in test_results if "✅ PASS" in result['status'])
+    failed = sum(1 for result in test_results if "❌ FAIL" in result['status'])
     total = len(test_results)
     
     print(f"Total Tests: {total}")
     print(f"Passed: {passed}")
-    print(f"Failed: {total - passed}")
-    print(f"Success Rate: {(passed/total)*100:.1f}%")
-    print()
+    print(f"Failed: {failed}")
+    print(f"Success Rate: {(passed/total*100):.1f}%" if total > 0 else "0%")
     
-    # Show failed tests
-    failed_tests = [result for result in test_results if not result["success"]]
-    if failed_tests:
-        print("❌ FAILED TESTS:")
-        for test in failed_tests:
-            print(f"  - {test['test']}: {test['details']}")
-        print()
+    if failed > 0:
+        print("\nFAILED TESTS:")
+        for result in test_results:
+            if "❌ FAIL" in result['status']:
+                print(f"  {result['method']} {result['endpoint']}: {result['message']}")
     
-    # Show critical issues
-    critical_failures = [
-        result for result in test_results 
-        if not result["success"] and any(keyword in result["test"].lower() 
-        for keyword in ["login", "search", "pending", "approve"])
-    ]
+    print("\nDETAILED RESULTS:")
+    for result in test_results:
+        print(f"{result['status']} {result['method']} {result['endpoint']}: {result['message']}")
+
+def main():
+    """Run all tests"""
+    print("Starting Comprehensive Backend API Testing...")
+    print(f"Backend URL: {BASE_URL}")
+    print(f"Admin Credentials: {ADMIN_EMAIL} / {ADMIN_PASSWORD}")
     
-    if critical_failures:
-        print("🚨 CRITICAL ISSUES:")
-        for test in critical_failures:
-            print(f"  - {test['test']}: {test['details']}")
-    else:
-        print("✅ All critical functionality working!")
+    # Run all test suites
+    test_clubs_endpoints()
+    test_route_planning_endpoints()
+    test_nearby_users_endpoint()
+    test_ocr_endpoint()
+    test_feedback_response_fix()
+    test_additional_endpoints()
     
-    print()
-    print("🏁 Testing completed!")
+    # Print summary
+    print_summary()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

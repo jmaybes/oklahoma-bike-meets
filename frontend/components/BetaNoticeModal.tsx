@@ -6,10 +6,14 @@ import {
   Modal,
   TouchableOpacity,
   Pressable,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const BETA_NOTICE_KEY = '@okc_car_events_beta_notice_v1';
 
@@ -84,99 +88,105 @@ export default function BetaNoticeModal() {
           style={styles.gradientBorder}
         >
           <View style={styles.container}>
-            {/* Header */}
-            <LinearGradient
-              colors={['#FF6B35', '#E91E63']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.header}
+            <ScrollView 
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+              contentContainerStyle={styles.scrollContent}
             >
-              <View style={styles.versionBadge}>
-                <Text style={styles.versionText}>v1.0.0</Text>
-              </View>
-              <Ionicons name="rocket" size={48} color="#fff" />
-              <Text style={styles.headerTitle}>Welcome to OKC Car Events!</Text>
-              <Text style={styles.betaBadge}>BETA VERSION</Text>
-            </LinearGradient>
-
-            {/* Content */}
-            <View style={styles.content}>
-              <View style={styles.messageContainer}>
-                <Ionicons name="information-circle" size={24} color="#FF6B35" style={styles.infoIcon} />
-                <Text style={styles.messageText}>
-                  Thank you for being an early user of our app! This is a <Text style={styles.highlight}>beta version</Text>, which means you may encounter bugs or incomplete features as we continue to improve.
-                </Text>
-              </View>
-
-              <View style={styles.featureBox}>
-                <View style={styles.featureHeader}>
-                  <Ionicons name="chatbubble-ellipses" size={20} color="#FF6B35" />
-                  <Text style={styles.featureTitle}>Your Feedback Matters!</Text>
+              {/* Header */}
+              <LinearGradient
+                colors={['#FF6B35', '#E91E63']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.header}
+              >
+                <View style={styles.versionBadge}>
+                  <Text style={styles.versionText}>v1.0.0</Text>
                 </View>
-                <Text style={styles.featureText}>
-                  Please use the <Text style={styles.highlight}>"Report Suggestions & Bugs"</Text> feature in your <Text style={styles.highlight}>My Garage</Text> to notify us of:
-                </Text>
-                <View style={styles.bulletList}>
-                  <View style={styles.bulletItem}>
-                    <Ionicons name="bug" size={16} color="#F44336" />
-                    <Text style={styles.bulletText}>Any bugs or issues you encounter</Text>
+                <Ionicons name="rocket" size={40} color="#fff" />
+                <Text style={styles.headerTitle}>Welcome to OKC Car Events!</Text>
+                <Text style={styles.betaBadge}>BETA VERSION</Text>
+              </LinearGradient>
+
+              {/* Content */}
+              <View style={styles.content}>
+                <View style={styles.messageContainer}>
+                  <Ionicons name="information-circle" size={22} color="#FF6B35" style={styles.infoIcon} />
+                  <Text style={styles.messageText}>
+                    Thank you for being an early user of our app! This is a <Text style={styles.highlight}>beta version</Text>, which means you may encounter bugs or incomplete features as we continue to improve.
+                  </Text>
+                </View>
+
+                <View style={styles.featureBox}>
+                  <View style={styles.featureHeader}>
+                    <Ionicons name="chatbubble-ellipses" size={18} color="#FF6B35" />
+                    <Text style={styles.featureTitle}>Your Feedback Matters!</Text>
                   </View>
-                  <View style={styles.bulletItem}>
-                    <Ionicons name="bulb" size={16} color="#FFC107" />
-                    <Text style={styles.bulletText}>Feature suggestions or improvements</Text>
+                  <Text style={styles.featureText}>
+                    Please use the <Text style={styles.highlight}>"Report Suggestions & Bugs"</Text> feature in your <Text style={styles.highlight}>My Garage</Text> to notify us of:
+                  </Text>
+                  <View style={styles.bulletList}>
+                    <View style={styles.bulletItem}>
+                      <Ionicons name="bug" size={14} color="#F44336" />
+                      <Text style={styles.bulletText}>Any bugs or issues you encounter</Text>
+                    </View>
+                    <View style={styles.bulletItem}>
+                      <Ionicons name="bulb" size={14} color="#FFC107" />
+                      <Text style={styles.bulletText}>Feature suggestions or improvements</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
 
-              {/* Privacy Notice */}
-              <View style={styles.privacyBox}>
-                <View style={styles.privacyHeader}>
-                  <Ionicons name="shield-checkmark" size={20} color="#4CAF50" />
-                  <Text style={styles.privacyTitle}>Your Privacy Matters!</Text>
+                {/* Privacy Notice */}
+                <View style={styles.privacyBox}>
+                  <View style={styles.privacyHeader}>
+                    <Ionicons name="shield-checkmark" size={18} color="#4CAF50" />
+                    <Text style={styles.privacyTitle}>Your Privacy Matters!</Text>
+                  </View>
+                  <Text style={styles.privacyText}>
+                    We do not share your information with anyone and tracking can be turned off at anytime within the app. Please note: location and tracking is necessary to share your location with other users as well as see theirs, however, this information is never stored.
+                  </Text>
                 </View>
-                <Text style={styles.privacyText}>
-                  We do not share your information with anyone and tracking can be turned off at anytime within the app. Please note: location and tracking is necessary to share your location with other users as well as see theirs, however, this information is never stored.
-                </Text>
+
+                {/* Checkbox */}
+                <TouchableOpacity 
+                  style={styles.checkboxContainer}
+                  onPress={() => setAcknowledged(!acknowledged)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.checkbox, acknowledged && styles.checkboxChecked]}>
+                    {acknowledged && <Ionicons name="checkmark" size={16} color="#fff" />}
+                  </View>
+                  <Text style={styles.checkboxLabel}>
+                    I understand this is a beta version and this notice will not appear again
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Continue Button */}
+                <TouchableOpacity
+                  style={[styles.continueButton, !acknowledged && styles.continueButtonDisabled]}
+                  onPress={handleDismiss}
+                  disabled={!acknowledged}
+                >
+                  <Text style={[styles.continueButtonText, !acknowledged && styles.continueButtonTextDisabled]}>
+                    Continue to App
+                  </Text>
+                  <Ionicons 
+                    name="arrow-forward" 
+                    size={20} 
+                    color={acknowledged ? "#fff" : "#666"} 
+                  />
+                </TouchableOpacity>
+
+                {/* Skip link for accessibility */}
+                <TouchableOpacity
+                  style={styles.skipLink}
+                  onPress={forceDismiss}
+                >
+                  <Text style={styles.skipLinkText}>Skip for now</Text>
+                </TouchableOpacity>
               </View>
-
-              {/* Checkbox */}
-              <TouchableOpacity 
-                style={styles.checkboxContainer}
-                onPress={() => setAcknowledged(!acknowledged)}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.checkbox, acknowledged && styles.checkboxChecked]}>
-                  {acknowledged && <Ionicons name="checkmark" size={16} color="#fff" />}
-                </View>
-                <Text style={styles.checkboxLabel}>
-                  I understand this is a beta version and this notice will not appear again
-                </Text>
-              </TouchableOpacity>
-
-              {/* Continue Button */}
-              <TouchableOpacity
-                style={[styles.continueButton, !acknowledged && styles.continueButtonDisabled]}
-                onPress={handleDismiss}
-                disabled={!acknowledged}
-              >
-                <Text style={[styles.continueButtonText, !acknowledged && styles.continueButtonTextDisabled]}>
-                  Continue to App
-                </Text>
-                <Ionicons 
-                  name="arrow-forward" 
-                  size={20} 
-                  color={acknowledged ? "#fff" : "#666"} 
-                />
-              </TouchableOpacity>
-
-              {/* Skip link for accessibility */}
-              <TouchableOpacity
-                style={styles.skipLink}
-                onPress={forceDismiss}
-              >
-                <Text style={styles.skipLinkText}>Skip for now</Text>
-              </TouchableOpacity>
-            </View>
+            </ScrollView>
           </View>
         </LinearGradient>
       </View>
@@ -203,11 +213,15 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     overflow: 'hidden',
     width: '100%',
+    maxHeight: SCREEN_HEIGHT * 0.85,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   header: {
     alignItems: 'center',
-    padding: 24,
-    paddingTop: 32,
+    padding: 20,
+    paddingTop: 24,
   },
   versionBadge: {
     position: 'absolute',
@@ -242,14 +256,14 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   content: {
-    padding: 20,
+    padding: 16,
   },
   messageContainer: {
     flexDirection: 'row',
     backgroundColor: '#2a2a2a',
-    padding: 16,
+    padding: 12,
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   infoIcon: {
     marginRight: 12,
@@ -268,8 +282,8 @@ const styles = StyleSheet.create({
   featureBox: {
     backgroundColor: '#222',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    padding: 14,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#333',
   },
@@ -305,8 +319,8 @@ const styles = StyleSheet.create({
   privacyBox: {
     backgroundColor: '#1a2e1a',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    padding: 14,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: '#4CAF50',
   },
@@ -329,7 +343,7 @@ const styles = StyleSheet.create({
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 20,
+    marginBottom: 14,
     paddingHorizontal: 4,
   },
   checkbox: {
