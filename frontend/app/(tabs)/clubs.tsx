@@ -8,7 +8,15 @@ import {
   ActivityIndicator,
   RefreshControl,
   TextInput,
+  Pressable,
 } from 'react-native';
+import Animated, { 
+  FadeInRight, 
+  FadeIn,
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -86,58 +94,85 @@ export default function ClubsScreen() {
     return '#FF6B35';
   };
 
-  const renderClubCard = ({ item }: { item: Club }) => {
+  // Animated Club Card Component
+  const AnimatedClubCard = ({ item, index }: { item: Club; index: number }) => {
     const focusColor = getFocusColor(item.focus);
+    const scale = useSharedValue(1);
+    
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }],
+    }));
+
+    const handlePressIn = () => {
+      scale.value = withSpring(0.97, { damping: 15, stiffness: 200 });
+    };
+
+    const handlePressOut = () => {
+      scale.value = withSpring(1, { damping: 15, stiffness: 200 });
+    };
     
     return (
-      <TouchableOpacity style={styles.clubCard}>
-        <View style={[styles.clubColorBar, { backgroundColor: focusColor }]} />
-        <View style={styles.clubContent}>
-          <View style={styles.clubHeader}>
-            <Text style={styles.clubName}>{item.name}</Text>
-            <View style={[styles.memberBadge, { backgroundColor: `${focusColor}20` }]}>
-              <Ionicons name="people" size={14} color={focusColor} />
-              <Text style={[styles.memberCount, { color: focusColor }]}>{item.memberCount}</Text>
+      <Animated.View 
+        entering={FadeInRight.delay(index * 80).springify().damping(14)}
+      >
+        <Pressable
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+        >
+          <Animated.View style={[styles.clubCard, animatedStyle]}>
+            <View style={[styles.clubColorBar, { backgroundColor: focusColor }]} />
+            <View style={styles.clubContent}>
+              <View style={styles.clubHeader}>
+                <Text style={styles.clubName}>{item.name}</Text>
+                <View style={[styles.memberBadge, { backgroundColor: `${focusColor}20` }]}>
+                  <Ionicons name="people" size={14} color={focusColor} />
+                  <Text style={[styles.memberCount, { color: focusColor }]}>{item.memberCount}</Text>
+                </View>
+              </View>
+              
+              <View style={[styles.focusBadge, { backgroundColor: `${focusColor}20` }]}>
+                <Text style={[styles.focusText, { color: focusColor }]}>{item.focus}</Text>
+              </View>
+              
+              <Text style={styles.clubDescription} numberOfLines={2}>
+                {item.description}
+              </Text>
+              
+              <View style={styles.clubDetails}>
+                <View style={styles.detailRow}>
+                  <Ionicons name="location-outline" size={14} color="#888" />
+                  <Text style={styles.detailText}>{item.location}</Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <Ionicons name="calendar-outline" size={14} color="#888" />
+                  <Text style={styles.detailText}>{item.meetingSchedule}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.clubActions}>
+                {item.contactEmail && (
+                  <TouchableOpacity style={styles.actionButton}>
+                    <Ionicons name="mail-outline" size={18} color="#FF6B35" />
+                    <Text style={styles.actionText}>Contact</Text>
+                  </TouchableOpacity>
+                )}
+                {item.website && (
+                  <TouchableOpacity style={styles.actionButton}>
+                    <Ionicons name="globe-outline" size={18} color="#2196F3" />
+                    <Text style={[styles.actionText, { color: '#2196F3' }]}>Website</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
-          </View>
-          
-          <View style={[styles.focusBadge, { backgroundColor: `${focusColor}20` }]}>
-            <Text style={[styles.focusText, { color: focusColor }]}>{item.focus}</Text>
-          </View>
-          
-          <Text style={styles.clubDescription} numberOfLines={2}>
-            {item.description}
-          </Text>
-          
-          <View style={styles.clubDetails}>
-            <View style={styles.detailRow}>
-              <Ionicons name="location-outline" size={14} color="#888" />
-              <Text style={styles.detailText}>{item.location}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Ionicons name="calendar-outline" size={14} color="#888" />
-              <Text style={styles.detailText}>{item.meetingSchedule}</Text>
-            </View>
-          </View>
-          
-          <View style={styles.clubActions}>
-            {item.contactEmail && (
-              <TouchableOpacity style={styles.actionButton}>
-                <Ionicons name="mail-outline" size={18} color="#FF6B35" />
-                <Text style={styles.actionText}>Contact</Text>
-              </TouchableOpacity>
-            )}
-            {item.website && (
-              <TouchableOpacity style={styles.actionButton}>
-                <Ionicons name="globe-outline" size={18} color="#2196F3" />
-                <Text style={[styles.actionText, { color: '#2196F3' }]}>Website</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </TouchableOpacity>
+          </Animated.View>
+        </Pressable>
+      </Animated.View>
     );
   };
+
+  const renderClubCard = ({ item, index }: { item: Club; index: number }) => (
+    <AnimatedClubCard item={item} index={index} />
+  );
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

@@ -9,7 +9,18 @@ import {
   Share,
   Linking,
   Alert,
+  Pressable,
 } from 'react-native';
+import Animated, { 
+  FadeInDown, 
+  FadeIn,
+  FadeInLeft,
+  FadeInRight,
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring,
+  SlideInUp,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -215,15 +226,21 @@ export default function EventDetailScreen() {
       </View>
 
       <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
+        <Animated.View 
+          entering={FadeInDown.delay(100).springify()}
+          style={styles.header}
+        >
           <View style={styles.typeTag}>
             <Ionicons name="car-sport" size={16} color="#FF6B35" />
             <Text style={styles.typeText}>{event.eventType}</Text>
           </View>
           <Text style={styles.title}>{event.title}</Text>
-        </View>
+        </Animated.View>
 
-        <View style={styles.infoSection}>
+        <Animated.View 
+          entering={FadeInDown.delay(200).springify()}
+          style={styles.infoSection}
+        >
           <View style={styles.infoRow}>
             <Ionicons name="calendar" size={24} color="#FF6B35" />
             <View style={styles.infoContent}>
@@ -270,26 +287,36 @@ export default function EventDetailScreen() {
               <Text style={styles.infoText}>{event.attendeeCount} going</Text>
             </View>
           </View>
-        </View>
+        </Animated.View>
 
         {event.description && (
-          <View style={styles.section}>
+          <Animated.View 
+            entering={FadeInDown.delay(300).springify()}
+            style={styles.section}
+          >
             <Text style={styles.sectionTitle}>About</Text>
             <Text style={styles.description}>{event.description}</Text>
-          </View>
+          </Animated.View>
         )}
 
         {event.carTypes.length > 0 && (
-          <View style={styles.section}>
+          <Animated.View 
+            entering={FadeInDown.delay(400).springify()}
+            style={styles.section}
+          >
             <Text style={styles.sectionTitle}>Car Types Expected</Text>
             <View style={styles.tagContainer}>
               {event.carTypes.map((type, index) => (
-                <View key={index} style={styles.tag}>
+                <Animated.View 
+                  key={index} 
+                  entering={FadeInRight.delay(400 + index * 50).springify()}
+                  style={styles.tag}
+                >
                   <Text style={styles.tagText}>{type}</Text>
-                </View>
+                </Animated.View>
               ))}
             </View>
-          </View>
+          </Animated.View>
         )}
 
         {event.contactInfo && (

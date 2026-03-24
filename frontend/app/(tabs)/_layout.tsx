@@ -1,7 +1,59 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring,
+  withSequence,
+} from 'react-native-reanimated';
+import { useEffect } from 'react';
+
+// Animated Tab Icon Component
+const AnimatedTabIcon = ({ 
+  name, 
+  focused, 
+  size 
+}: { 
+  name: string; 
+  focused: boolean; 
+  size: number;
+}) => {
+  const scale = useSharedValue(1);
+  const translateY = useSharedValue(0);
+
+  useEffect(() => {
+    if (focused) {
+      // Bouncy pop animation when selected
+      scale.value = withSequence(
+        withSpring(1.3, { damping: 8, stiffness: 300 }),
+        withSpring(1.15, { damping: 10, stiffness: 200 })
+      );
+      translateY.value = withSpring(-3, { damping: 10, stiffness: 200 });
+    } else {
+      scale.value = withSpring(1, { damping: 15, stiffness: 200 });
+      translateY.value = withSpring(0, { damping: 15, stiffness: 200 });
+    }
+  }, [focused]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: scale.value },
+      { translateY: translateY.value },
+    ],
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <Ionicons 
+        name={name as any} 
+        size={size} 
+        color={focused ? '#FF6B35' : '#aaa'} 
+      />
+    </Animated.View>
+  );
+};
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -43,11 +95,11 @@ export default function TabLayout() {
         name="home"
         options={{
           title: 'Events',
-          tabBarIcon: ({ color, focused, size }) => (
-            <Ionicons 
+          tabBarIcon: ({ focused, size }) => (
+            <AnimatedTabIcon 
               name={focused ? "car-sport" : "car-sport-outline"} 
+              focused={focused}
               size={size} 
-              color={focused ? '#FF6B35' : '#aaa'} 
             />
           ),
         }}
@@ -56,11 +108,11 @@ export default function TabLayout() {
         name="nearby"
         options={{
           title: 'Nearby',
-          tabBarIcon: ({ color, focused, size }) => (
-            <Ionicons 
+          tabBarIcon: ({ focused, size }) => (
+            <AnimatedTabIcon 
               name={focused ? "location" : "location-outline"} 
+              focused={focused}
               size={size} 
-              color={focused ? '#FF6B35' : '#aaa'} 
             />
           ),
         }}
@@ -69,11 +121,11 @@ export default function TabLayout() {
         name="clubs"
         options={{
           title: 'Clubs',
-          tabBarIcon: ({ color, focused, size }) => (
-            <Ionicons 
+          tabBarIcon: ({ focused, size }) => (
+            <AnimatedTabIcon 
               name={focused ? "people" : "people-outline"} 
+              focused={focused}
               size={size} 
-              color={focused ? '#FF6B35' : '#aaa'} 
             />
           ),
         }}
@@ -82,11 +134,11 @@ export default function TabLayout() {
         name="add"
         options={{
           title: 'Add',
-          tabBarIcon: ({ color, focused, size }) => (
-            <Ionicons 
+          tabBarIcon: ({ focused, size }) => (
+            <AnimatedTabIcon 
               name={focused ? "add-circle" : "add-circle-outline"} 
+              focused={focused}
               size={size} 
-              color={focused ? '#FF6B35' : '#aaa'} 
             />
           ),
         }}
@@ -95,11 +147,11 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Garage',
-          tabBarIcon: ({ color, focused, size }) => (
-            <Ionicons 
+          tabBarIcon: ({ focused, size }) => (
+            <AnimatedTabIcon 
               name={focused ? "car" : "car-outline"} 
+              focused={focused}
               size={size} 
-              color={focused ? '#FF6B35' : '#aaa'} 
             />
           ),
         }}

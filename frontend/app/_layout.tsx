@@ -7,11 +7,43 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="event/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-          <Stack.Screen name="auth/register" options={{ headerShown: false }} />
+        <Stack 
+          screenOptions={{ 
+            headerShown: false,
+            animation: 'slide_from_right',
+            animationDuration: 250,
+          }}
+        >
+          <Stack.Screen 
+            name="(tabs)" 
+            options={{ 
+              headerShown: false,
+              animation: 'fade',
+            }} 
+          />
+          <Stack.Screen 
+            name="event/[id]" 
+            options={{ 
+              headerShown: false,
+              animation: 'slide_from_bottom',
+              animationDuration: 300,
+            }} 
+          />
+          <Stack.Screen 
+            name="auth/login" 
+            options={{ 
+              headerShown: false,
+              animation: 'fade_from_bottom',
+              animationDuration: 300,
+            }} 
+          />
+          <Stack.Screen 
+            name="auth/register" 
+            options={{ 
+              headerShown: false,
+              animation: 'slide_from_right',
+            }} 
+          />
         </Stack>
         <BetaNoticeModal />
       </AuthProvider>

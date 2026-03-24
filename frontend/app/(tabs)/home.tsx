@@ -11,7 +11,16 @@ import {
   Image,
   ScrollView,
   Platform,
+  Pressable,
 } from 'react-native';
+import Animated, { 
+  FadeInDown, 
+  FadeIn,
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -204,63 +213,92 @@ export default function HomeScreen() {
     fetchEvents();
   };
 
-  const renderEventCard = ({ item }: { item: Event }) => (
-    <TouchableOpacity
-      style={styles.eventCard}
-      onPress={() => router.push(`/event/${item.id}`)}
-    >
-      {item.photos && item.photos.length > 0 && (
-        <Image 
-          source={{ uri: item.photos[0] }} 
-          style={styles.eventImage}
-          resizeMode="cover"
-        />
-      )}
-      <View style={styles.eventContent}>
-        <View style={styles.eventHeader}>
-          <View style={styles.eventTypeContainer}>
-            <Ionicons name="car-sport" size={16} color="#FF6B35" />
-            <Text style={styles.eventType}>{item.eventType}</Text>
-          </View>
-          <View style={styles.eventBadges}>
-            {item.distance !== undefined && (
-              <View style={styles.distanceBadge}>
-                <Ionicons name="navigate" size={12} color="#4CAF50" />
-                <Text style={styles.distanceText}>{item.distance.toFixed(1)} mi</Text>
+  // Animated Event Card Component
+  const AnimatedEventCard = ({ item, index }: { item: Event; index: number }) => {
+    const scale = useSharedValue(1);
+    
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }],
+    }));
+
+    const handlePressIn = () => {
+      scale.value = withSpring(0.97, { damping: 15, stiffness: 200 });
+    };
+
+    const handlePressOut = () => {
+      scale.value = withSpring(1, { damping: 15, stiffness: 200 });
+    };
+
+    return (
+      <Animated.View 
+        entering={FadeInDown.delay(index * 60).springify().damping(14)}
+      >
+        <Pressable
+          onPress={() => router.push(`/event/${item.id}`)}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+        >
+          <Animated.View style={[styles.eventCard, animatedStyle]}>
+            {item.photos && item.photos.length > 0 && (
+              <Animated.Image 
+                source={{ uri: item.photos[0] }} 
+                style={styles.eventImage}
+                resizeMode="cover"
+                entering={FadeIn.delay(index * 60 + 100).duration(400)}
+              />
+            )}
+            <View style={styles.eventContent}>
+              <View style={styles.eventHeader}>
+                <View style={styles.eventTypeContainer}>
+                  <Ionicons name="car-sport" size={16} color="#FF6B35" />
+                  <Text style={styles.eventType}>{item.eventType}</Text>
+                </View>
+                <View style={styles.eventBadges}>
+                  {item.distance !== undefined && (
+                    <View style={styles.distanceBadge}>
+                      <Ionicons name="navigate" size={12} color="#4CAF50" />
+                      <Text style={styles.distanceText}>{item.distance.toFixed(1)} mi</Text>
+                    </View>
+                  )}
+                  {item.entryFee && (
+                    <Text style={[
+                      styles.entryFee,
+                      (item.entryFee.toLowerCase() === 'free' || item.entryFee === '$0') && styles.freeBadge
+                    ]}>
+                      {item.entryFee}
+                    </Text>
+                  )}
+                </View>
               </View>
-            )}
-            {item.entryFee && (
-              <Text style={[
-                styles.entryFee,
-                (item.entryFee.toLowerCase() === 'free' || item.entryFee === '$0') && styles.freeBadge
-              ]}>
-                {item.entryFee}
+              
+              <Text style={styles.eventTitle}>{item.title}</Text>
+              <Text style={styles.eventDescription} numberOfLines={2}>
+                {item.description}
               </Text>
-            )}
-          </View>
-        </View>
-        
-        <Text style={styles.eventTitle}>{item.title}</Text>
-        <Text style={styles.eventDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-        
-        <View style={styles.eventDetails}>
-          <View style={styles.detailRow}>
-            <Ionicons name="calendar" size={16} color="#888" />
-            <Text style={styles.detailText}>{item.date} at {item.time}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Ionicons name="location" size={16} color="#888" />
-            <Text style={styles.detailText}>{item.city}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Ionicons name="people" size={16} color="#888" />
-            <Text style={styles.detailText}>{item.attendeeCount} attending</Text>
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
+              
+              <View style={styles.eventDetails}>
+                <View style={styles.detailRow}>
+                  <Ionicons name="calendar" size={16} color="#888" />
+                  <Text style={styles.detailText}>{item.date} at {item.time}</Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <Ionicons name="location" size={16} color="#888" />
+                  <Text style={styles.detailText}>{item.city}</Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <Ionicons name="people" size={16} color="#888" />
+                  <Text style={styles.detailText}>{item.attendeeCount} attending</Text>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+        </Pressable>
+      </Animated.View>
+    );
+  };
+
+  const renderEventCard = ({ item, index }: { item: Event; index: number }) => (
+    <AnimatedEventCard item={item} index={index} />
   );
 
   if (loading) {

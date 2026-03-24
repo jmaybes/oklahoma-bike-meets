@@ -10,7 +10,19 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
+  Pressable,
 } from 'react-native';
+import Animated, { 
+  FadeInDown, 
+  FadeIn,
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring,
+  withSequence,
+  withTiming,
+  withRepeat,
+  Easing,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -187,11 +199,26 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.content}>
-          <Ionicons name="car-sport" size={64} color="#FF6B35" />
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Login to access all features</Text>
+          <Animated.View entering={FadeInDown.delay(100).springify()}>
+            <Ionicons name="car-sport" size={64} color="#FF6B35" />
+          </Animated.View>
+          <Animated.Text 
+            entering={FadeInDown.delay(200).springify()}
+            style={styles.title}
+          >
+            Welcome Back
+          </Animated.Text>
+          <Animated.Text 
+            entering={FadeInDown.delay(300).springify()}
+            style={styles.subtitle}
+          >
+            Login to access all features
+          </Animated.Text>
 
-          <View style={styles.form}>
+          <Animated.View 
+            entering={FadeInDown.delay(400).springify()}
+            style={styles.form}
+          >
             <View style={styles.inputContainer}>
               <Ionicons name="mail" size={20} color="#888" style={styles.inputIcon} />
               <TextInput
@@ -257,6 +284,7 @@ export default function LoginScreen() {
               style={[styles.loginButton, loading && styles.loginButtonDisabled]}
               onPress={handleLogin}
               disabled={loading}
+              activeOpacity={0.8}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
@@ -304,7 +332,7 @@ export default function LoginScreen() {
                 Don't have an account? <Text style={styles.registerLinkBold}>Sign Up</Text>
               </Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         </View>
       </KeyboardAvoidingView>
     </View>
