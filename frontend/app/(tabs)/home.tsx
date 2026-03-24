@@ -146,6 +146,19 @@ export default function HomeScreen() {
   const filterEvents = () => {
     let filtered = events;
 
+    // Filter out past events - only show upcoming events
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    filtered = filtered.filter(event => {
+      if (!event.date) return true;
+      try {
+        const eventDate = new Date(event.date);
+        return eventDate >= today;
+      } catch {
+        return true;
+      }
+    });
+
     // Filter by event type
     if (selectedType !== 'All') {
       filtered = filtered.filter(event => event.eventType === selectedType);
@@ -422,9 +435,9 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Sort Row */}
+      {/* Sort Row with Past Button */}
       <View style={styles.sortRow}>
-        <Text style={styles.sortLabel}>Sort by:</Text>
+        <Text style={styles.sortLabel}>Sort:</Text>
         <View style={styles.sortOptions}>
           {sortOptions.map((option) => (
             <TouchableOpacity
@@ -451,6 +464,13 @@ export default function HomeScreen() {
             </TouchableOpacity>
           ))}
         </View>
+        <TouchableOpacity
+          style={styles.pastButton}
+          onPress={() => router.push('/events/past')}
+        >
+          <Ionicons name="time" size={14} color="#fff" />
+          <Text style={styles.pastButtonText}>Past</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Location Warning */}
@@ -787,5 +807,20 @@ const styles = StyleSheet.create({
   },
   sortChipTextActive: {
     color: '#fff',
+  },
+  pastButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    backgroundColor: '#D32F2F',
+    borderRadius: 16,
+    gap: 4,
+    marginLeft: 'auto',
+  },
+  pastButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
