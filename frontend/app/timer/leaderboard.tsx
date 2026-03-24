@@ -7,6 +7,7 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -178,11 +179,11 @@ export default function LeaderboardScreen() {
             ]}
             onPress={() => setSelectedType(type.type)}
           >
-            <Ionicons
-              name={type.icon as any}
-              size={18}
-              color={selectedType === type.type ? '#fff' : '#888'}
-            />
+            {type.icon === 'rocket' ? (
+              <Image source={require('../../assets/images/okc-logo.png')} style={{ width: 18, height: 18 }} resizeMode="contain" />
+            ) : (
+              <Ionicons name={type.icon as any} size={18} color={selectedType === type.type ? '#fff' : '#888'} />
+            )}
             <Text
               style={[
                 styles.typeButtonText,

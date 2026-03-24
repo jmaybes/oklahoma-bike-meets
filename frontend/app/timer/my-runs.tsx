@@ -7,6 +7,7 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -84,12 +85,17 @@ export default function MyRunsScreen() {
     const runType = item.zeroToSixty ? '0-60' : item.zeroToHundred ? '0-100' : '1/4 Mile';
     const time = item.zeroToSixty || item.zeroToHundred || item.quarterMile || 0;
     const color = item.zeroToSixty ? '#FF6B35' : item.zeroToHundred ? '#E91E63' : '#9C27B0';
-    const icon = item.zeroToSixty ? 'speedometer' : item.zeroToHundred ? 'rocket' : 'flag';
+    const isHundred = item.zeroToHundred && !item.zeroToSixty;
+    const icon = item.zeroToSixty ? 'speedometer' : item.zeroToHundred ? null : 'flag';
 
     return (
       <View style={styles.runItem}>
         <View style={[styles.runTypeIcon, { backgroundColor: `${color}20` }]}>
-          <Ionicons name={icon as any} size={24} color={color} />
+          {isHundred ? (
+            <Image source={require('../../assets/images/okc-logo.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+          ) : (
+            <Ionicons name={icon as any} size={24} color={color} />
+          )}
         </View>
         <View style={styles.runDetails}>
           <Text style={styles.runType}>{runType} MPH</Text>
@@ -171,7 +177,7 @@ export default function MyRunsScreen() {
               </Text>
             </View>
             <View style={styles.bestItem}>
-              <Ionicons name="rocket" size={20} color="#E91E63" />
+              <Image source={require('../../assets/images/okc-logo.png')} style={{ width: 20, height: 20 }} resizeMode="contain" />
               <Text style={styles.bestLabel}>0-100</Text>
               <Text style={[styles.bestValue, { color: '#E91E63' }]}>
                 {best0100?.zeroToHundred?.toFixed(2) || '--'}s

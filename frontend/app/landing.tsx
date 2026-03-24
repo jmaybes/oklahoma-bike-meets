@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   ImageBackground,
+  Image,
   TouchableOpacity,
   ScrollView,
   Dimensions,
@@ -221,7 +222,11 @@ export default function LandingScreen() {
               colors={['rgba(255,107,53,0.9)', 'rgba(233,30,99,0.9)']}
               style={styles.ctaOverlay}
             >
-              <Ionicons name="rocket" size={40} color="#fff" />
+              <Image 
+                source={require('../assets/images/okc-logo.png')} 
+                style={styles.ctaLogo}
+                resizeMode="contain"
+              />
               <Text style={styles.ctaTitle}>Ready to Rev Up?</Text>
               <Text style={styles.ctaSubtitle}>
                 Join Oklahoma's most active car community
@@ -467,6 +472,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
+  },
+  ctaLogo: {
+    width: 80,
+    height: 80,
+    marginBottom: 4,
   },
   ctaTitle: {
     fontSize: 32,

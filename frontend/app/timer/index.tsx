@@ -9,6 +9,7 @@ import {
   Alert,
   Animated,
   Platform,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -316,11 +317,11 @@ export default function TimerScreen() {
               onPress={() => !isRunning && !waitingForStart && setSelectedMode(mode.type)}
               disabled={isRunning || waitingForStart}
             >
-              <Ionicons
-                name={mode.icon as any}
-                size={20}
-                color={selectedMode === mode.type ? '#fff' : '#888'}
-              />
+              {mode.icon === 'rocket' ? (
+                <Image source={require('../../assets/images/okc-logo.png')} style={{ width: 20, height: 20 }} resizeMode="contain" />
+              ) : (
+                <Ionicons name={mode.icon as any} size={20} color={selectedMode === mode.type ? '#fff' : '#888'} />
+              )}
               <Text
                 style={[
                   styles.modeButtonText,

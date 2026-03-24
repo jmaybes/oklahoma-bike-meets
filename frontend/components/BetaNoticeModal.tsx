@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -98,7 +99,11 @@ export default function BetaNoticeModal() {
                 <View style={styles.versionBadge}>
                   <Text style={styles.versionText}>v1.0.0</Text>
                 </View>
-                <Ionicons name="rocket" size={36} color="#fff" />
+                <Image 
+                  source={require('../assets/images/okc-logo.png')} 
+                  style={styles.logoIcon}
+                  resizeMode="contain"
+                />
                 <Text style={styles.headerTitle}>Welcome to Oklahoma Car Meets</Text>
                 <Text style={styles.headerSubtitle}>Meets, Cruises, Shows & More!</Text>
                 <Text style={styles.betaBadge}>BETA VERSION</Text>
@@ -223,6 +228,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 14,
+  },
+  logoIcon: {
+    width: 70,
+    height: 70,
+    marginBottom: 4,
   },
   versionBadge: {
     position: 'absolute',
