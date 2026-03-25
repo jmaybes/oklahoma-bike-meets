@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,23 @@ import {
   ScrollView,
   Dimensions,
   Image,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  withDelay,
+  Easing,
+  FadeOut,
+} from 'react-native-reanimated';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -24,7 +36,35 @@ const DEV_AUTO_DISMISS = false;
 export default function BetaNoticeModal() {
   const [visible, setVisible] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
+  const [showScrollHint, setShowScrollHint] = useState(true);
   const insets = useSafeAreaInsets();
+
+  // Bounce animation for scroll indicator
+  const bounceY = useSharedValue(0);
+
+  useEffect(() => {
+    bounceY.value = withRepeat(
+      withSequence(
+        withTiming(8, { duration: 600, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 600, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1,
+      false
+    );
+  }, []);
+
+  const bounceStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: bounceY.value }],
+  }));
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    // Hide the hint once user scrolls past 30% of the hidden content
+    const scrollableHeight = contentSize.height - layoutMeasurement.height;
+    if (scrollableHeight > 0 && contentOffset.y > scrollableHeight * 0.3) {
+      setShowScrollHint(false);
+    }
+  };
 
   useEffect(() => {
     checkIfFirstLaunch();
@@ -88,6 +128,8 @@ export default function BetaNoticeModal() {
               showsVerticalScrollIndicator={false}
               bounces={false}
               contentContainerStyle={styles.scrollContent}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
             >
               {/* Header */}
               <LinearGradient
@@ -192,6 +234,26 @@ export default function BetaNoticeModal() {
                 </TouchableOpacity>
               </View>
             </ScrollView>
+
+            {/* Scroll Down Indicator */}
+            {showScrollHint && (
+              <Animated.View 
+                style={styles.scrollHintOverlay}
+                exiting={FadeOut.duration(300)}
+                pointerEvents="none"
+              >
+                <LinearGradient
+                  colors={['transparent', 'rgba(26, 26, 26, 0.95)', '#1a1a1a']}
+                  style={styles.scrollHintGradient}
+                >
+                  <Animated.View style={[styles.scrollHintContent, bounceStyle]}>
+                    <Ionicons name="chevron-down" size={20} color="#FF6B35" />
+                    <Text style={styles.scrollHintText}>Scroll down for more</Text>
+                    <Ionicons name="chevron-down" size={20} color="#FF6B35" />
+                  </Animated.View>
+                </LinearGradient>
+              </Animated.View>
+            )}
           </View>
         </LinearGradient>
       </View>
@@ -409,5 +471,33 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 14,
     textDecorationLine: 'underline',
+  },
+  scrollHintOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderBottomLeftRadius: 21,
+    borderBottomRightRadius: 21,
+    overflow: 'hidden',
+  },
+  scrollHintGradient: {
+    paddingTop: 40,
+    paddingBottom: 12,
+    alignItems: 'center',
+  },
+  scrollHintContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(255, 107, 53, 0.15)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  scrollHintText: {
+    color: '#FF6B35',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
