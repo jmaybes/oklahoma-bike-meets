@@ -196,8 +196,12 @@ ocr_reader = None
 def get_ocr_reader():
     global ocr_reader
     if ocr_reader is None:
-        import easyocr
-        ocr_reader = easyocr.Reader(['en'], gpu=False)
+        try:
+            import easyocr
+            ocr_reader = easyocr.Reader(['en'], gpu=False)
+        except ImportError:
+            print("WARNING: easyocr not available. OCR functionality disabled.")
+            return None
     return ocr_reader
 
 
