@@ -18,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 import Slider from '@react-native-community/slider';
 import axios from 'axios';
+import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import MapErrorBoundary from '../../components/MapErrorBoundary';
 
@@ -335,7 +336,13 @@ export default function NearbyScreen() {
                     <Text style={styles.userName}>{nearbyUser.nickname || nearbyUser.name}</Text>
                     <Text style={styles.userDistance}>{nearbyUser.distance} miles away</Text>
                   </View>
-                  <Ionicons name="car-sport" size={24} color="#666" />
+                  <TouchableOpacity
+                    style={styles.messageButton}
+                    onPress={() => router.push(`/messages/${nearbyUser.id}`)}
+                  >
+                    <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
+                    <Text style={styles.messageButtonText}>Message</Text>
+                  </TouchableOpacity>
                 </View>
               ))
             )}
@@ -355,7 +362,13 @@ export default function NearbyScreen() {
                   <Text style={styles.userName}>{nearbyUser.nickname || nearbyUser.name}</Text>
                   <Text style={styles.userDistance}>{nearbyUser.distance} miles away</Text>
                 </View>
-                <Ionicons name="car-sport" size={24} color="#666" />
+                <TouchableOpacity
+                  style={styles.messageButton}
+                  onPress={() => router.push(`/messages/${nearbyUser.id}`)}
+                >
+                  <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
+                  <Text style={styles.messageButtonText}>Message</Text>
+                </TouchableOpacity>
               </View>
             ))}
           </View>
@@ -646,6 +659,20 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 13,
     marginTop: 2,
+  },
+  messageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 6,
+  },
+  messageButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
   },
   buttonContainer: {
     position: 'absolute',

@@ -1,11 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 // Conditionally import react-native-maps to prevent crashes
 let MapView: any = null;
 let Marker: any = null;
 let Circle: any = null;
+let Callout: any = null;
 let PROVIDER_GOOGLE: any = null;
 
 try {
@@ -13,6 +15,7 @@ try {
   MapView = Maps.default;
   Marker = Maps.Marker;
   Circle = Maps.Circle;
+  Callout = Maps.Callout;
   PROVIDER_GOOGLE = Maps.PROVIDER_GOOGLE;
 } catch (error) {
   console.log('react-native-maps could not be loaded:', error);
@@ -217,12 +220,22 @@ export default function NearbyMapView({
               latitude: nearbyUser.latitude,
               longitude: nearbyUser.longitude,
             }}
-            title={nearbyUser.nickname || nearbyUser.name}
-            description={`${nearbyUser.distance} miles away`}
           >
             <View style={styles.nearbyUserMarker}>
               <Ionicons name="person" size={16} color="#fff" />
             </View>
+            {Callout && (
+              <Callout tooltip onPress={() => router.push(`/messages/${nearbyUser.id}`)}>
+                <View style={styles.calloutContainer}>
+                  <Text style={styles.calloutName}>{nearbyUser.nickname || nearbyUser.name}</Text>
+                  <Text style={styles.calloutDistance}>{nearbyUser.distance} mi away</Text>
+                  <View style={styles.calloutMessageBtn}>
+                    <Ionicons name="chatbubble-ellipses" size={14} color="#fff" />
+                    <Text style={styles.calloutMessageText}>Message</Text>
+                  </View>
+                </View>
+              </Callout>
+            )}
           </Marker>
         ))}
       </MapView>
@@ -379,5 +392,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#fff',
+  },
+  calloutContainer: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 12,
+    minWidth: 160,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  calloutName: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  calloutDistance: {
+    color: '#888',
+    fontSize: 12,
+    marginBottom: 10,
+  },
+  calloutMessageBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    gap: 6,
+  },
+  calloutMessageText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
