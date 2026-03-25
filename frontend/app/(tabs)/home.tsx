@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
@@ -12,14 +11,17 @@ import {
   ScrollView,
   Platform,
   Pressable,
+  Dimensions,
 } from 'react-native';
-import Animated, { 
-  FadeInDown, 
+import Animated, {
+  FadeInDown,
   FadeIn,
-  useSharedValue, 
-  useAnimatedStyle, 
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedScrollHandler,
   withSpring,
-  withTiming,
+  interpolate,
+  Extrapolation,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,6 +31,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const HERO_HEIGHT = 300;
+const COLLAPSED_HEADER_HEIGHT = 60;
+
+// Hero background images
+const HERO_IMAGES = [
+  'https://images.unsplash.com/photo-1635555508296-80ce66c4d16a?w=800&q=80',
+  'https://images.unsplash.com/photo-1559669334-b6a5cee989ae?w=800&q=80',
+];
 
 interface Event {
   id: string;
@@ -49,14 +61,14 @@ interface Event {
 
 // Calculate distance between two coordinates in miles
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-  const R = 3959; // Earth's radius in miles
+  const R = 3959;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
 
@@ -70,10 +82,13 @@ export default function HomeScreen() {
   const [selectedType, setSelectedType] = useState('All');
   const [freeOnly, setFreeOnly] = useState(false);
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
-  const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
   const [sortBy, setSortBy] = useState<'date' | 'distance' | 'name'>('date');
-  
+  const [heroImageLoaded, setHeroImageLoaded] = useState(false);
+
+  const scrollY = useSharedValue(0);
+
   const eventTypes = ['All', 'Car Meet', 'Car Show', 'Cruise', 'Race', 'Other'];
   const distanceOptions = [
     { label: 'Any', value: null },
@@ -87,6 +102,12 @@ export default function HomeScreen() {
     { label: 'Distance', value: 'distance', icon: 'navigate' },
     { label: 'Name', value: 'name', icon: 'text' },
   ];
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
 
   useEffect(() => {
     fetchEvents();
@@ -104,11 +125,10 @@ export default function HomeScreen() {
         setLocationError(true);
         return;
       }
-      
       const location = await Location.getCurrentPositionAsync({});
       setUserLocation({
         lat: location.coords.latitude,
-        lon: location.coords.longitude
+        lon: location.coords.longitude,
       });
     } catch (error) {
       console.error('Error getting location:', error);
@@ -119,7 +139,6 @@ export default function HomeScreen() {
   const fetchEvents = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/events`);
-      // Calculate distance for each event if user location is available
       const eventsWithDistance = response.data.map((event: Event) => {
         if (userLocation && event.latitude && event.longitude) {
           return {
@@ -129,7 +148,7 @@ export default function HomeScreen() {
               userLocation.lon,
               event.latitude,
               event.longitude
-            )
+            ),
           };
         }
         return event;
@@ -146,10 +165,9 @@ export default function HomeScreen() {
   const filterEvents = () => {
     let filtered = events;
 
-    // Filter out past events - only show upcoming events
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    filtered = filtered.filter(event => {
+    filtered = filtered.filter((event) => {
       if (!event.date) return true;
       try {
         const eventDate = new Date(event.date);
@@ -159,41 +177,35 @@ export default function HomeScreen() {
       }
     });
 
-    // Filter by event type
     if (selectedType !== 'All') {
-      filtered = filtered.filter(event => event.eventType === selectedType);
+      filtered = filtered.filter((event) => event.eventType === selectedType);
     }
 
-    // Filter by search query
     if (searchQuery) {
       filtered = filtered.filter(
-        event =>
+        (event) =>
           event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           event.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
           event.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Filter by free events only
     if (freeOnly) {
-      filtered = filtered.filter(event => {
+      filtered = filtered.filter((event) => {
         const fee = event.entryFee?.toLowerCase() || '';
         return fee === '' || fee === 'free' || fee === '$0' || fee === '0';
       });
     }
 
-    // Filter by distance
     if (maxDistance !== null && userLocation) {
-      filtered = filtered.filter(event => {
+      filtered = filtered.filter((event) => {
         if (event.distance !== undefined) {
           return event.distance <= maxDistance;
         }
-        // If no coordinates, don't filter out (include by default)
         return true;
       });
     }
 
-    // Apply sorting based on sortBy option
     switch (sortBy) {
       case 'date':
         filtered = filtered.sort((a, b) => {
@@ -226,10 +238,82 @@ export default function HomeScreen() {
     fetchEvents();
   };
 
-  // Animated Event Card Component
+  // ===== PARALLAX ANIMATED STYLES =====
+
+  // Hero image parallax: moves at 50% scroll speed
+  const heroImageStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [-100, 0, HERO_HEIGHT],
+      [-50, 0, HERO_HEIGHT * 0.5],
+      Extrapolation.CLAMP
+    );
+    const scale = interpolate(
+      scrollY.value,
+      [-200, 0],
+      [1.5, 1],
+      Extrapolation.CLAMP
+    );
+    return {
+      transform: [{ translateY }, { scale }],
+    };
+  });
+
+  // Hero overlay fades in as user scrolls
+  const heroOverlayStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [0, HERO_HEIGHT * 0.6],
+      [0.3, 0.9],
+      Extrapolation.CLAMP
+    );
+    return { opacity };
+  });
+
+  // Hero text content fades out and translates up
+  const heroContentStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [0, HERO_HEIGHT * 0.4],
+      [1, 0],
+      Extrapolation.CLAMP
+    );
+    const translateY = interpolate(
+      scrollY.value,
+      [0, HERO_HEIGHT * 0.4],
+      [0, -40],
+      Extrapolation.CLAMP
+    );
+    return {
+      opacity,
+      transform: [{ translateY }],
+    };
+  });
+
+  // Sticky compact header appears as hero scrolls away
+  const stickyHeaderStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [HERO_HEIGHT * 0.5, HERO_HEIGHT * 0.8],
+      [0, 1],
+      Extrapolation.CLAMP
+    );
+    const translateY = interpolate(
+      scrollY.value,
+      [HERO_HEIGHT * 0.5, HERO_HEIGHT * 0.8],
+      [-10, 0],
+      Extrapolation.CLAMP
+    );
+    return {
+      opacity,
+      transform: [{ translateY }],
+    };
+  });
+
+  // ===== EVENT CARD COMPONENT =====
   const AnimatedEventCard = ({ item, index }: { item: Event; index: number }) => {
     const scale = useSharedValue(1);
-    
+
     const animatedStyle = useAnimatedStyle(() => ({
       transform: [{ scale: scale.value }],
     }));
@@ -243,9 +327,7 @@ export default function HomeScreen() {
     };
 
     return (
-      <Animated.View 
-        entering={FadeInDown.delay(index * 60).springify().damping(14)}
-      >
+      <Animated.View entering={FadeInDown.delay(index * 60).springify().damping(14)}>
         <Pressable
           onPress={() => router.push(`/event/${item.id}`)}
           onPressIn={handlePressIn}
@@ -253,8 +335,8 @@ export default function HomeScreen() {
         >
           <Animated.View style={[styles.eventCard, animatedStyle]}>
             {item.photos && item.photos.length > 0 && (
-              <Animated.Image 
-                source={{ uri: item.photos[0] }} 
+              <Animated.Image
+                source={{ uri: item.photos[0] }}
                 style={styles.eventImage}
                 resizeMode="cover"
                 entering={FadeIn.delay(index * 60 + 100).duration(400)}
@@ -274,25 +356,29 @@ export default function HomeScreen() {
                     </View>
                   )}
                   {item.entryFee && (
-                    <Text style={[
-                      styles.entryFee,
-                      (item.entryFee.toLowerCase() === 'free' || item.entryFee === '$0') && styles.freeBadge
-                    ]}>
+                    <Text
+                      style={[
+                        styles.entryFee,
+                        (item.entryFee.toLowerCase() === 'free' || item.entryFee === '$0') && styles.freeBadge,
+                      ]}
+                    >
                       {item.entryFee}
                     </Text>
                   )}
                 </View>
               </View>
-              
+
               <Text style={styles.eventTitle}>{item.title}</Text>
               <Text style={styles.eventDescription} numberOfLines={2}>
                 {item.description}
               </Text>
-              
+
               <View style={styles.eventDetails}>
                 <View style={styles.detailRow}>
                   <Ionicons name="calendar" size={16} color="#888" />
-                  <Text style={styles.detailText}>{item.date} at {item.time}</Text>
+                  <Text style={styles.detailText}>
+                    {item.date} at {item.time}
+                  </Text>
                 </View>
                 <View style={styles.detailRow}>
                   <Ionicons name="location" size={16} color="#888" />
@@ -314,52 +400,73 @@ export default function HomeScreen() {
     <AnimatedEventCard item={item} index={index} />
   );
 
-  if (loading) {
-    return (
-      <View style={[styles.centerContainer, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color="#FF6B35" />
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['#FF6B35', '#E91E63']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
-      >
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.headerTitle}>Oklahoma Car Events</Text>
-            <Text style={styles.headerSubtitle}>Discover car meets near you</Text>
+  // ===== LIST HEADER with parallax hero + filters =====
+  const ListHeaderComponent = useCallback(() => (
+    <View>
+      {/* Parallax Hero Section */}
+      <View style={styles.heroContainer}>
+        <Animated.Image
+          source={{ uri: HERO_IMAGES[0] }}
+          style={[styles.heroImage, heroImageStyle]}
+          resizeMode="cover"
+          onLoad={() => setHeroImageLoaded(true)}
+        />
+        {/* Dark gradient overlay */}
+        <Animated.View style={[styles.heroOverlay, heroOverlayStyle]}>
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.4)', 'rgba(12,12,12,1)']}
+            locations={[0, 0.5, 1]}
+            style={StyleSheet.absoluteFillObject}
+          />
+        </Animated.View>
+        {/* Always-visible bottom gradient for readability */}
+        <LinearGradient
+          colors={['transparent', 'rgba(12,12,12,0.8)', 'rgba(12,12,12,1)']}
+          locations={[0.3, 0.7, 1]}
+          style={styles.heroBottomGradient}
+        />
+        {/* Hero text content with parallax */}
+        <Animated.View style={[styles.heroContent, heroContentStyle, { paddingTop: insets.top + 16 }]}>
+          <View style={styles.heroBadge}>
+            <Ionicons name="flame" size={14} color="#FF6B35" />
+            <Text style={styles.heroBadgeText}>OKC's #1 Car Community</Text>
           </View>
-          <Ionicons name="car-sport" size={32} color="#fff" />
-        </View>
-      </LinearGradient>
+          <Text style={styles.heroTitle}>Oklahoma{'\n'}Car Events</Text>
+          <Text style={styles.heroSubtitle}>Discover meets, shows & cruises near you</Text>
+          <View style={styles.heroStats}>
+            <View style={styles.heroStatItem}>
+              <Text style={styles.heroStatNumber}>{events.length}</Text>
+              <Text style={styles.heroStatLabel}>Events</Text>
+            </View>
+            <View style={styles.heroStatDivider} />
+            <View style={styles.heroStatItem}>
+              <Text style={styles.heroStatNumber}>{filteredEvents.length}</Text>
+              <Text style={styles.heroStatLabel}>Upcoming</Text>
+            </View>
+            <View style={styles.heroStatDivider} />
+            <View style={styles.heroStatItem}>
+              <Ionicons name="car-sport" size={20} color="#FF6B35" />
+              <Text style={styles.heroStatLabel}>& Clubs</Text>
+            </View>
+          </View>
+        </Animated.View>
+      </View>
 
       {/* Filter Row 1: Event Types */}
       <View style={styles.filterWrapper}>
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterContent}
         >
           {eventTypes.map((item) => (
             <TouchableOpacity
               key={item}
-              style={[
-                styles.filterChip,
-                selectedType === item && styles.filterChipActive,
-              ]}
+              style={[styles.filterChip, selectedType === item && styles.filterChipActive]}
               onPress={() => setSelectedType(item)}
             >
               <Text
-                style={[
-                  styles.filterChipText,
-                  selectedType === item && styles.filterChipTextActive,
-                ]}
+                style={[styles.filterChipText, selectedType === item && styles.filterChipTextActive]}
               >
                 {item}
               </Text>
@@ -370,44 +477,31 @@ export default function HomeScreen() {
 
       {/* Filter Row 2: Free & Distance */}
       <View style={styles.filterRow2}>
-        {/* Free Toggle */}
         <TouchableOpacity
-          style={[
-            styles.toggleFilterChip,
-            freeOnly && styles.toggleFilterChipActive,
-          ]}
+          style={[styles.toggleFilterChip, freeOnly && styles.toggleFilterChipActive]}
           onPress={() => setFreeOnly(!freeOnly)}
         >
-          <Ionicons 
-            name={freeOnly ? "checkmark-circle" : "pricetag-outline"} 
-            size={16} 
-            color={freeOnly ? "#fff" : "#4CAF50"} 
+          <Ionicons
+            name={freeOnly ? 'checkmark-circle' : 'pricetag-outline'}
+            size={16}
+            color={freeOnly ? '#fff' : '#4CAF50'}
           />
-          <Text
-            style={[
-              styles.toggleFilterText,
-              freeOnly && styles.toggleFilterTextActive,
-            ]}
-          >
+          <Text style={[styles.toggleFilterText, freeOnly && styles.toggleFilterTextActive]}>
             Free Only
           </Text>
         </TouchableOpacity>
 
-        {/* Distance Filter */}
         <View style={styles.distanceFilterContainer}>
           <Ionicons name="navigate-outline" size={16} color="#2196F3" />
-          <ScrollView 
-            horizontal 
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.distanceOptions}
           >
             {distanceOptions.map((option) => (
               <TouchableOpacity
                 key={option.label}
-                style={[
-                  styles.distanceChip,
-                  maxDistance === option.value && styles.distanceChipActive,
-                ]}
+                style={[styles.distanceChip, maxDistance === option.value && styles.distanceChipActive]}
                 onPress={() => setMaxDistance(option.value)}
               >
                 <Text
@@ -431,38 +525,27 @@ export default function HomeScreen() {
           {sortOptions.map((option) => (
             <TouchableOpacity
               key={option.value}
-              style={[
-                styles.sortChip,
-                sortBy === option.value && styles.sortChipActive,
-              ]}
+              style={[styles.sortChip, sortBy === option.value && styles.sortChipActive]}
               onPress={() => setSortBy(option.value as 'date' | 'distance' | 'name')}
             >
-              <Ionicons 
-                name={option.icon as any} 
-                size={14} 
-                color={sortBy === option.value ? "#fff" : "#FF6B35"} 
+              <Ionicons
+                name={option.icon as any}
+                size={14}
+                color={sortBy === option.value ? '#fff' : '#FF6B35'}
               />
-              <Text
-                style={[
-                  styles.sortChipText,
-                  sortBy === option.value && styles.sortChipTextActive,
-                ]}
-              >
+              <Text style={[styles.sortChipText, sortBy === option.value && styles.sortChipTextActive]}>
                 {option.label}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
-        <TouchableOpacity
-          style={styles.pastButton}
-          onPress={() => router.push('/events/past')}
-        >
+        <TouchableOpacity style={styles.pastButton} onPress={() => router.push('/events/past')}>
           <Ionicons name="time" size={14} color="#fff" />
           <Text style={styles.pastButtonText}>Past</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Search Box - moved below sort/filter controls */}
+      {/* Search Box */}
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
         <TextInput
@@ -472,29 +555,65 @@ export default function HomeScreen() {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Ionicons name="close-circle" size={20} color="#666" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Location Warning */}
       {maxDistance !== null && !userLocation && (
         <View style={styles.locationWarning}>
           <Ionicons name="warning" size={14} color="#FFC107" />
-          <Text style={styles.locationWarningText}>
-            Enable location to filter by distance
-          </Text>
+          <Text style={styles.locationWarningText}>Enable location to filter by distance</Text>
         </View>
       )}
 
-      <FlatList
+      {/* Results count */}
+      <View style={styles.resultsRow}>
+        <Text style={styles.resultsText}>
+          {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''} found
+        </Text>
+      </View>
+    </View>
+  ), [events, filteredEvents, selectedType, freeOnly, maxDistance, sortBy, searchQuery, userLocation, insets.top, heroImageLoaded, heroImageStyle, heroOverlayStyle, heroContentStyle]);
+
+  if (loading) {
+    return (
+      <View style={[styles.centerContainer, { paddingTop: insets.top }]}>
+        <ActivityIndicator size="large" color="#FF6B35" />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {/* Sticky compact header that appears on scroll */}
+      <Animated.View style={[styles.stickyHeader, { paddingTop: insets.top }, stickyHeaderStyle]}>
+        <LinearGradient
+          colors={['rgba(12,12,12,0.98)', 'rgba(12,12,12,0.95)']}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <View style={styles.stickyHeaderContent}>
+          <Ionicons name="car-sport" size={22} color="#FF6B35" />
+          <Text style={styles.stickyHeaderTitle}>Oklahoma Car Events</Text>
+          <View style={styles.stickyHeaderBadge}>
+            <Text style={styles.stickyHeaderCount}>{filteredEvents.length}</Text>
+          </View>
+        </View>
+      </Animated.View>
+
+      <Animated.FlatList
         data={filteredEvents}
         keyExtractor={(item) => item.id}
         renderItem={renderEventCard}
         contentContainerStyle={styles.eventsList}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        ListHeaderComponent={ListHeaderComponent}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#FF6B35"
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -519,25 +638,140 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#0c0c0c',
   },
-  headerGradient: {
-    paddingBottom: 16,
-    paddingHorizontal: 20,
+
+  // ===== HERO / PARALLAX =====
+  heroContainer: {
+    height: HERO_HEIGHT,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  header: {
+  heroImage: {
+    width: SCREEN_WIDTH,
+    height: HERO_HEIGHT + 100,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+  },
+  heroBottomGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: HERO_HEIGHT * 0.6,
+    zIndex: 2,
+  },
+  heroContent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 3,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+  },
+  heroBadge: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: 'rgba(255,107,53,0.2)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,107,53,0.4)',
+    marginBottom: 12,
+    gap: 6,
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  heroBadgeText: {
+    color: '#FF6B35',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  heroTitle: {
+    fontSize: 38,
+    fontWeight: '900',
+    color: '#fff',
+    lineHeight: 42,
+    letterSpacing: -0.5,
+  },
+  heroSubtitle: {
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 8,
+    letterSpacing: 0.3,
+  },
+  heroStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    padding: 12,
+    alignSelf: 'flex-start',
+    gap: 16,
+  },
+  heroStatItem: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  heroStatNumber: {
+    color: '#FF6B35',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  heroStatLabel: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  heroStatDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+
+  // ===== STICKY HEADER =====
+  stickyHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
+  },
+  stickyHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  stickyHeaderTitle: {
+    flex: 1,
+    fontSize: 17,
+    fontWeight: '700',
     color: '#fff',
   },
-  headerSubtitle: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.9)',
-    marginTop: 2,
+  stickyHeaderBadge: {
+    backgroundColor: '#FF6B35',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
+  stickyHeaderCount: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  // ===== SEARCH =====
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -545,7 +779,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     paddingHorizontal: 16,
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
   },
   searchIcon: {
     marginRight: 8,
@@ -556,9 +792,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
+
+  // ===== FILTERS =====
   filterWrapper: {
-    marginBottom: 16,
+    marginBottom: 12,
     paddingVertical: 4,
+    marginTop: 8,
   },
   filterContent: {
     paddingHorizontal: 20,
@@ -569,10 +808,10 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#404040',
+    backgroundColor: '#1a1a1a',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#606060',
+    borderColor: '#333',
   },
   filterChipActive: {
     backgroundColor: '#FF6B35',
@@ -586,72 +825,6 @@ const styles = StyleSheet.create({
   filterChipTextActive: {
     color: '#FFFFFF',
     fontWeight: '700',
-  },
-  eventsList: {
-    padding: 20,
-    paddingTop: 0,
-  },
-  eventCard: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 16,
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
-  eventImage: {
-    width: '100%',
-    height: 180,
-    backgroundColor: '#2a2a2a',
-  },
-  eventContent: {
-    padding: 16,
-  },
-  eventHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  eventTypeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  eventType: {
-    color: '#FF6B35',
-    fontSize: 12,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  entryFee: {
-    color: '#4CAF50',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  freeBadge: {
-    backgroundColor: '#4CAF50',
-    color: '#fff',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  eventBadges: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  distanceBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(76, 175, 80, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    gap: 4,
-  },
-  distanceText: {
-    color: '#4CAF50',
-    fontSize: 11,
-    fontWeight: '600',
   },
   filterRow2: {
     flexDirection: 'row',
@@ -717,58 +890,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
-  locationWarning: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    gap: 6,
-    marginBottom: 8,
-  },
-  locationWarningText: {
-    color: '#FFC107',
-    fontSize: 12,
-  },
-  eventTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  eventDescription: {
-    fontSize: 14,
-    color: '#aaa',
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  eventDetails: {
-    gap: 8,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  detailText: {
-    fontSize: 13,
-    color: '#888',
-    marginLeft: 8,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
-    marginTop: 16,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
+
+  // ===== SORT =====
   sortRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -822,5 +945,140 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: '600',
+  },
+
+  // ===== LOCATION WARNING =====
+  locationWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    gap: 6,
+    marginBottom: 8,
+  },
+  locationWarningText: {
+    color: '#FFC107',
+    fontSize: 12,
+  },
+
+  // ===== RESULTS ROW =====
+  resultsRow: {
+    paddingHorizontal: 20,
+    marginBottom: 8,
+  },
+  resultsText: {
+    color: '#666',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+
+  // ===== EVENT CARDS =====
+  eventsList: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  eventCard: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 16,
+    marginBottom: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#222',
+  },
+  eventImage: {
+    width: '100%',
+    height: 180,
+    backgroundColor: '#2a2a2a',
+  },
+  eventContent: {
+    padding: 16,
+  },
+  eventHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  eventTypeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  eventType: {
+    color: '#FF6B35',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  entryFee: {
+    color: '#4CAF50',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  freeBadge: {
+    backgroundColor: '#4CAF50',
+    color: '#fff',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  eventBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  distanceBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    gap: 4,
+  },
+  distanceText: {
+    color: '#4CAF50',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  eventTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  eventDescription: {
+    fontSize: 14,
+    color: '#aaa',
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  eventDetails: {
+    gap: 8,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  detailText: {
+    fontSize: 13,
+    color: '#888',
+    marginLeft: 8,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
   },
 });
