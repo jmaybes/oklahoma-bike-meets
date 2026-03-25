@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timedelta
 
 # Use the external URL from frontend/.env
-BASE_URL = "https://event-hub-okc.preview.emergentagent.com/api"
+BASE_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
 
 class TestPushNotificationFlows:
     def __init__(self):

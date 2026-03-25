@@ -607,23 +607,23 @@ export default function ProfileScreen() {
         <View style={styles.menuSection}>
           <Text style={styles.settingsSectionTitle}>Settings</Text>
           <View style={styles.menuItem}>
-            <Ionicons name="notifications" size={24} color="#FF6B35" />
+            <Ionicons name="notifications" size={24} color={user?.notificationsEnabled !== false ? '#4CAF50' : '#F44336'} />
             <Text style={styles.menuItemText}>Notifications</Text>
             <Switch
               value={user?.notificationsEnabled !== false}
               onValueChange={handleNotificationToggle}
-              trackColor={{ false: '#3e3e3e', true: '#FF6B35' }}
-              thumbColor={user?.notificationsEnabled !== false ? '#fff' : '#f4f3f4'}
+              trackColor={{ false: '#F44336', true: '#4CAF50' }}
+              thumbColor="#fff"
             />
           </View>
           <View style={styles.menuItem}>
-            <Ionicons name="location" size={24} color="#4CAF50" />
+            <Ionicons name="location" size={24} color={user?.locationSharingEnabled !== false ? '#4CAF50' : '#F44336'} />
             <Text style={styles.menuItemText}>Location Sharing</Text>
             <Switch
               value={user?.locationSharingEnabled !== false}
               onValueChange={handleLocationToggle}
-              trackColor={{ false: '#3e3e3e', true: '#4CAF50' }}
-              thumbColor={user?.locationSharingEnabled !== false ? '#fff' : '#f4f3f4'}
+              trackColor={{ false: '#F44336', true: '#4CAF50' }}
+              thumbColor="#fff"
             />
           </View>
           <Text style={styles.settingsHint}>
