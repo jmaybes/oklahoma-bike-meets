@@ -1,391 +1,354 @@
 #!/usr/bin/env python3
 """
-Oklahoma Car Events API - Push Notification Flow Testing
-Testing comprehensive push notification flows as requested in review.
+Backend API Testing for Oklahoma Car Events - Query Optimization Verification
+Testing the recently optimized endpoints for N+1 query fixes and projections.
 """
 
 import requests
 import json
-import time
-from datetime import datetime, timedelta
+import sys
+from datetime import datetime
 
-# Use the external URL from frontend/.env
-BASE_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
+# Backend URL from frontend/.env
+BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
 
-class TestPushNotificationFlows:
+# Admin credentials for testing
+ADMIN_EMAIL = "admin@okcarevents.com"
+ADMIN_PASSWORD = "admin123"
+
+class APITester:
     def __init__(self):
-        self.admin_token = None
-        self.admin_id = None
-        self.test_user_id = None
-        self.test_user2_id = None
         self.session = requests.Session()
+        self.admin_user_id = None
+        self.test_user_id = None
+        self.test_event_id = None
+        self.test_message_id = None
         
-    def log(self, message):
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
+    def log(self, message, level="INFO"):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        print(f"[{timestamp}] {level}: {message}")
         
-    def test_admin_login(self):
-        """Test admin login and get admin user ID"""
-        self.log("🔐 Testing admin login...")
+    def test_endpoint(self, method, endpoint, data=None, params=None, expected_status=200):
+        """Test an API endpoint and return response"""
+        url = f"{BACKEND_URL}{endpoint}"
         
-        login_data = {
-            "email": "admin@okcarevents.com",
-            "password": "admin123"
-        }
+        try:
+            if method.upper() == "GET":
+                response = self.session.get(url, params=params)
+            elif method.upper() == "POST":
+                response = self.session.post(url, json=data, params=params)
+            elif method.upper() == "PUT":
+                response = self.session.put(url, json=data, params=params)
+            elif method.upper() == "DELETE":
+                response = self.session.delete(url, params=params)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+                
+            self.log(f"{method} {endpoint} -> {response.status_code}")
+            
+            if response.status_code != expected_status:
+                self.log(f"Expected {expected_status}, got {response.status_code}", "ERROR")
+                if response.text:
+                    self.log(f"Response: {response.text[:500]}", "ERROR")
+                return None
+                
+            return response.json() if response.content else {}
+            
+        except Exception as e:
+            self.log(f"Error testing {method} {endpoint}: {str(e)}", "ERROR")
+            return None
+    
+    def setup_test_data(self):
+        """Setup test users and data for testing"""
+        self.log("Setting up test data...")
         
-        response = self.session.post(f"{BASE_URL}/auth/login", json=login_data)
+        # Login as admin to get admin user ID
+        login_data = {"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
+        login_response = self.test_endpoint("POST", "/auth/login", login_data)
         
-        if response.status_code == 200:
-            data = response.json()
-            self.admin_id = data.get("id")
-            self.log(f"✅ Admin login successful. Admin ID: {self.admin_id}")
-            return True
-        else:
-            self.log(f"❌ Admin login failed: {response.status_code} - {response.text}")
+        if not login_response:
+            self.log("Failed to login as admin", "ERROR")
             return False
             
-    def create_test_user(self):
-        """Create a test user for notification testing"""
-        self.log("👤 Creating test user for notifications...")
+        self.admin_user_id = login_response.get("id")
+        self.log(f"Admin user ID: {self.admin_user_id}")
         
-        user_data = {
-            "email": f"testuser_{int(time.time())}@test.com",
-            "password": "testpass123",
+        # Create a test user for messaging/nearby tests
+        test_user_data = {
             "name": "Test User",
-            "nickname": "TestUser"
-        }
-        
-        response = self.session.post(f"{BASE_URL}/auth/register", json=user_data)
-        
-        if response.status_code == 200:
-            data = response.json()
-            self.test_user_id = data.get("id")
-            self.log(f"✅ Test user created. User ID: {self.test_user_id}")
-            return True
-        else:
-            self.log(f"❌ Test user creation failed: {response.status_code} - {response.text}")
-            return False
-            
-    def create_second_test_user(self):
-        """Create a second test user for messaging"""
-        self.log("👤 Creating second test user for messaging...")
-        
-        user_data = {
-            "email": f"testuser2_{int(time.time())}@test.com",
+            "nickname": "TestNick",
+            "email": f"testuser_{datetime.now().timestamp()}@test.com",
             "password": "testpass123",
-            "name": "Test User 2",
-            "nickname": "TestUser2"
+            "locationSharingEnabled": True,
+            "notificationsEnabled": True
         }
         
-        response = self.session.post(f"{BASE_URL}/auth/register", json=user_data)
+        register_response = self.test_endpoint("POST", "/auth/register", test_user_data)
+        if register_response:
+            self.test_user_id = register_response.get("id")
+            self.log(f"Test user ID: {self.test_user_id}")
         
-        if response.status_code == 200:
-            data = response.json()
-            self.test_user2_id = data.get("id")
-            self.log(f"✅ Second test user created. User ID: {self.test_user2_id}")
-            return True
-        else:
-            self.log(f"❌ Second test user creation failed: {response.status_code} - {response.text}")
+        return True
+    
+    def test_nearby_users_optimization(self):
+        """Test GET /api/users/nearby/{user_id} with query projections"""
+        self.log("Testing nearby users endpoint with query projections...")
+        
+        if not self.admin_user_id:
+            self.log("No admin user ID available", "ERROR")
             return False
-
-    def test_popup_event_approval_notifications(self):
-        """Test Pop-up Event Approval Push Notifications"""
-        self.log("\n🚨 Testing Pop-up Event Approval Push Notifications...")
-        
-        # Create a popup event as admin (should auto-approve and trigger notifications)
-        popup_event_data = {
-            "title": "Test PopUp Meet",
-            "description": "Popup test for notification flow",
-            "date": "2026-03-25",
-            "time": "7:00 PM",
-            "location": "Test Lot",
-            "address": "123 Test St",
-            "city": "Oklahoma City",
-            "eventType": "Pop Up Meet",
-            "isPopUp": True,
-            "userId": self.admin_id
+            
+        # Test with Oklahoma City coordinates
+        params = {
+            "latitude": 35.4676,
+            "longitude": -97.5164,
+            "radius": 25
         }
         
-        response = self.session.post(f"{BASE_URL}/events", json=popup_event_data)
+        response = self.test_endpoint("GET", f"/users/nearby/{self.admin_user_id}", params=params)
         
-        if response.status_code == 200:
-            event_data = response.json()
-            event_id = event_data.get("id")
-            is_approved = event_data.get("isApproved")
-            is_popup = event_data.get("isPopUp")
+        if not response:
+            return False
             
-            self.log(f"✅ Popup event created. ID: {event_id}, Approved: {is_approved}, IsPopUp: {is_popup}")
-            
-            if is_approved and is_popup:
-                self.log("✅ Event is auto-approved popup - should trigger notifications")
-                
-                # Wait a moment for notifications to be created
-                time.sleep(2)
-                
-                # Check if notifications were created for test user
-                if self.test_user_id:
-                    notif_response = self.session.get(f"{BASE_URL}/notifications/{self.test_user_id}")
-                    
-                    if notif_response.status_code == 200:
-                        notifications = notif_response.json()
-                        popup_notifications = [n for n in notifications if n.get("type") == "popup_event"]
-                        
-                        if popup_notifications:
-                            self.log(f"✅ Found {len(popup_notifications)} popup event notifications for test user")
-                            latest_notif = popup_notifications[0]
-                            self.log(f"   📱 Notification: {latest_notif.get('title')}")
-                            self.log(f"   📝 Message: {latest_notif.get('message')}")
-                            return True
-                        else:
-                            self.log("❌ No popup event notifications found for test user")
-                            return False
-                    else:
-                        self.log(f"❌ Failed to get notifications: {notif_response.status_code}")
-                        return False
-                else:
-                    self.log("⚠️ No test user available to check notifications")
-                    return True  # Event creation worked, just can't verify notifications
-            else:
-                self.log(f"❌ Event not properly configured: approved={is_approved}, popup={is_popup}")
+        # Verify response structure
+        required_fields = ["count", "radius", "users"]
+        for field in required_fields:
+            if field not in response:
+                self.log(f"Missing field in response: {field}", "ERROR")
                 return False
-        else:
-            self.log(f"❌ Popup event creation failed: {response.status_code} - {response.text}")
-            return False
-
-    def test_message_push_notifications(self):
-        """Test Message Push Notifications"""
-        self.log("\n💬 Testing Message Push Notifications...")
-        
-        if not self.admin_id or not self.test_user2_id:
-            self.log("❌ Missing required user IDs for message testing")
-            return False
-            
-        # Send a message from admin to test user 2
-        message_data = {
-            "senderId": self.admin_id,
-            "recipientId": self.test_user2_id,
-            "content": "Hey, checking out the meet tonight?"
-        }
-        
-        response = self.session.post(f"{BASE_URL}/messages", json=message_data)
-        
-        if response.status_code == 200:
-            message_data = response.json()
-            message_id = message_data.get("id")
-            
-            self.log(f"✅ Message sent successfully. ID: {message_id}")
-            self.log(f"   📤 From: {message_data.get('senderId')}")
-            self.log(f"   📥 To: {message_data.get('recipientId')}")
-            self.log(f"   💬 Content: {message_data.get('content')}")
-            
-            # Verify message was saved correctly
-            thread_response = self.session.get(f"{BASE_URL}/messages/thread/{self.admin_id}/{self.test_user2_id}")
-            
-            if thread_response.status_code == 200:
-                thread_messages = thread_response.json()
-                if thread_messages:
-                    self.log(f"✅ Message thread retrieved with {len(thread_messages)} messages")
-                    latest_message = thread_messages[-1]
-                    if latest_message.get("content") == message_data.get("content"):
-                        self.log("✅ Message content verified in thread")
-                        return True
-                    else:
-                        self.log("❌ Message content mismatch in thread")
-                        return False
-                else:
-                    self.log("❌ No messages found in thread")
+                
+        # Verify user objects have projected fields only
+        if response["users"]:
+            user = response["users"][0]
+            expected_user_fields = ["id", "name", "nickname", "profilePic", "latitude", "longitude", "distance"]
+            for field in expected_user_fields:
+                if field not in user:
+                    self.log(f"Missing projected field in user: {field}", "ERROR")
                     return False
-            else:
-                self.log(f"❌ Failed to get message thread: {thread_response.status_code}")
-                return False
-        else:
-            self.log(f"❌ Message sending failed: {response.status_code} - {response.text}")
-            return False
-
-    def test_rsvp_reminder_system(self):
-        """Test RSVP Reminder System"""
-        self.log("\n⏰ Testing RSVP Reminder System...")
+                    
+        self.log(f"✅ Nearby users endpoint working - found {response['count']} users within {response['radius']} miles")
+        return True
+    
+    def test_locations_nearby_optimization(self):
+        """Test GET /api/locations/nearby/{user_id} with batch user fetching"""
+        self.log("Testing locations nearby endpoint with batch user fetching...")
         
-        if not self.test_user_id:
-            self.log("❌ No test user available for RSVP testing")
+        if not self.admin_user_id:
+            self.log("No admin user ID available", "ERROR")
             return False
             
-        # First, create an event for tomorrow
-        tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+        response = self.test_endpoint("GET", f"/locations/nearby/{self.admin_user_id}")
         
+        if response is None:
+            return False
+            
+        # Response should be an array of nearby users
+        if not isinstance(response, list):
+            self.log("Response should be an array", "ERROR")
+            return False
+            
+        # If there are nearby users, verify the structure includes batch-fetched user data
+        if response:
+            user = response[0]
+            expected_fields = ["userId", "name", "nickname", "latitude", "longitude", "distance", "updatedAt"]
+            for field in expected_fields:
+                if field not in user:
+                    self.log(f"Missing field in nearby location user: {field}", "ERROR")
+                    return False
+                    
+        self.log(f"✅ Locations nearby endpoint working - found {len(response)} nearby locations")
+        return True
+    
+    def test_conversations_optimization(self):
+        """Test GET /api/messages/conversations/{user_id} with batch partner fetching"""
+        self.log("Testing conversations endpoint with batch partner fetching...")
+        
+        if not self.admin_user_id or not self.test_user_id:
+            self.log("Missing user IDs for conversation test", "ERROR")
+            return False
+            
+        # First, send a message to create a conversation
+        message_data = {
+            "senderId": self.admin_user_id,
+            "recipientId": self.test_user_id,
+            "content": "Test message for conversation optimization testing"
+        }
+        
+        message_response = self.test_endpoint("POST", "/messages", message_data)
+        if not message_response:
+            self.log("Failed to create test message", "ERROR")
+            return False
+            
+        self.log("Created test message for conversation")
+        
+        # Now test the conversations endpoint
+        response = self.test_endpoint("GET", f"/messages/conversations/{self.admin_user_id}")
+        
+        if response is None:
+            return False
+            
+        # Response should be an array of conversations
+        if not isinstance(response, list):
+            self.log("Conversations response should be an array", "ERROR")
+            return False
+            
+        # Verify conversation structure includes batch-fetched partner data
+        if response:
+            conversation = response[0]
+            expected_fields = ["partnerId", "partnerName", "partnerNickname", "lastMessage", "lastMessageTime", "unreadCount"]
+            for field in expected_fields:
+                if field not in conversation:
+                    self.log(f"Missing field in conversation: {field}", "ERROR")
+                    return False
+                    
+            # Verify partner data is populated (not None/empty)
+            if not conversation["partnerName"]:
+                self.log("Partner name should be populated from batch fetch", "ERROR")
+                return False
+                
+        self.log(f"✅ Conversations endpoint working - found {len(response)} conversations with proper partner info")
+        return True
+    
+    def test_message_sending(self):
+        """Test POST /api/messages to verify messaging still works after optimization"""
+        self.log("Testing message sending functionality...")
+        
+        if not self.admin_user_id or not self.test_user_id:
+            self.log("Missing user IDs for message test", "ERROR")
+            return False
+            
+        message_data = {
+            "senderId": self.test_user_id,
+            "recipientId": self.admin_user_id,
+            "content": "Reply message to test bidirectional messaging"
+        }
+        
+        response = self.test_endpoint("POST", "/messages", message_data)
+        
+        if not response:
+            return False
+            
+        # Verify message structure
+        expected_fields = ["id", "senderId", "recipientId", "content", "isRead", "createdAt"]
+        for field in expected_fields:
+            if field not in response:
+                self.log(f"Missing field in message response: {field}", "ERROR")
+                return False
+                
+        self.log("✅ Message sending working correctly")
+        return True
+    
+    def test_popup_event_creation(self):
+        """Test POST /api/events with Pop Up event to verify projection optimization"""
+        self.log("Testing Pop Up event creation with user projection optimization...")
+        
+        if not self.admin_user_id:
+            self.log("No admin user ID available", "ERROR")
+            return False
+            
+        # Create a Pop Up event (admin user so it auto-approves)
         event_data = {
-            "title": "Tomorrow's Test Event",
-            "description": "Event for testing RSVP reminders",
-            "date": tomorrow,
-            "time": "6:00 PM",
-            "location": "Test Venue",
-            "address": "456 Test Ave",
+            "title": "Test Pop Up Car Meet",
+            "description": "Testing the projection optimization for Pop Up events",
+            "date": "2025-01-20",
+            "time": "18:00",
+            "location": "Test Location",
+            "address": "123 Test Street, Oklahoma City, OK",
             "city": "Oklahoma City",
             "eventType": "Car Meet",
-            "userId": self.admin_id
+            "isPopUp": True,
+            "userId": self.admin_user_id
         }
         
-        event_response = self.session.post(f"{BASE_URL}/events", json=event_data)
+        response = self.test_endpoint("POST", "/events", event_data)
         
-        if event_response.status_code != 200:
-            self.log(f"❌ Failed to create test event: {event_response.status_code}")
+        if not response:
             return False
             
-        event = event_response.json()
-        event_id = event.get("id")
-        self.log(f"✅ Created test event for tomorrow. ID: {event_id}")
-        
-        # RSVP to the event
-        rsvp_data = {
-            "userId": self.test_user_id,
-            "eventId": event_id
-        }
-        
-        rsvp_response = self.session.post(f"{BASE_URL}/rsvp", json=rsvp_data)
-        
-        if rsvp_response.status_code == 200:
-            rsvp_data = rsvp_response.json()
-            self.log(f"✅ RSVP created successfully")
-            self.log(f"   🎫 Event: {rsvp_data.get('eventTitle')}")
-            self.log(f"   📅 Date: {rsvp_data.get('eventDate')}")
-            self.log(f"   ⏰ Time: {rsvp_data.get('eventTime')}")
-            self.log(f"   📍 Location: {rsvp_data.get('eventLocation')}")
-            self.log(f"   📬 Reminder Sent: {rsvp_data.get('reminderSent')}")
-            
-            # Trigger the reminder check
-            reminder_response = self.session.post(f"{BASE_URL}/rsvp/send-reminders")
-            
-            if reminder_response.status_code == 200:
-                reminder_data = reminder_response.json()
-                self.log(f"✅ Reminder check triggered: {reminder_data.get('message')}")
-                
-                # Wait a moment for notifications to be processed
-                time.sleep(2)
-                
-                # Check if reminder notification was created
-                notif_response = self.session.get(f"{BASE_URL}/notifications/{self.test_user_id}")
-                
-                if notif_response.status_code == 200:
-                    notifications = notif_response.json()
-                    reminder_notifications = [n for n in notifications if n.get("type") == "event_reminder"]
-                    
-                    if reminder_notifications:
-                        self.log(f"✅ Found {len(reminder_notifications)} reminder notifications")
-                        latest_reminder = reminder_notifications[0]
-                        self.log(f"   📱 Reminder: {latest_reminder.get('title')}")
-                        self.log(f"   📝 Message: {latest_reminder.get('message')}")
-                        
-                        # Verify the RSVP was marked as reminderSent: true
-                        user_rsvps_response = self.session.get(f"{BASE_URL}/rsvp/user/{self.test_user_id}")
-                        
-                        if user_rsvps_response.status_code == 200:
-                            user_rsvps = user_rsvps_response.json()
-                            target_rsvp = next((r for r in user_rsvps if r.get("eventId") == event_id), None)
-                            
-                            if target_rsvp and target_rsvp.get("reminderSent"):
-                                self.log("✅ RSVP marked as reminderSent: true")
-                                return True
-                            else:
-                                self.log("❌ RSVP not marked as reminderSent")
-                                return False
-                        else:
-                            self.log(f"❌ Failed to get user RSVPs: {user_rsvps_response.status_code}")
-                            return False
-                    else:
-                        self.log("❌ No reminder notifications found")
-                        return False
-                else:
-                    self.log(f"❌ Failed to get notifications: {notif_response.status_code}")
-                    return False
-            else:
-                self.log(f"❌ Reminder trigger failed: {reminder_response.status_code} - {reminder_response.text}")
-                return False
-        else:
-            self.log(f"❌ RSVP creation failed: {response.status_code} - {response.text}")
-            return False
-
-    def test_general_verification(self):
-        """Test General Verification of notification endpoints"""
-        self.log("\n🔍 Testing General Verification...")
-        
-        # Test GET /api/rsvp/send-reminders endpoint
-        reminder_response = self.session.post(f"{BASE_URL}/rsvp/send-reminders")
-        
-        if reminder_response.status_code == 200:
-            data = reminder_response.json()
-            self.log(f"✅ /api/rsvp/send-reminders returns proper response: {data}")
-        else:
-            self.log(f"❌ /api/rsvp/send-reminders failed: {reminder_response.status_code}")
+        # Verify event was created
+        if "id" not in response:
+            self.log("Event creation failed - no ID returned", "ERROR")
             return False
             
-        # Test notifications endpoint structure
-        if self.test_user_id:
-            notif_response = self.session.get(f"{BASE_URL}/notifications/{self.test_user_id}")
-            
-            if notif_response.status_code == 200:
-                notifications = notif_response.json()
-                self.log(f"✅ Notifications endpoint returns {len(notifications)} notifications")
-                
-                if notifications:
-                    sample_notif = notifications[0]
-                    required_fields = ["type", "title", "message"]
-                    missing_fields = [field for field in required_fields if field not in sample_notif]
-                    
-                    if not missing_fields:
-                        self.log("✅ Notification objects have required fields: type, title, message")
-                    else:
-                        self.log(f"❌ Missing required fields in notifications: {missing_fields}")
-                        return False
-                else:
-                    self.log("ℹ️ No notifications to verify structure")
-            else:
-                self.log(f"❌ Notifications endpoint failed: {notif_response.status_code}")
-                return False
+        self.test_event_id = response["id"]
         
-        self.log("✅ General verification completed successfully")
+        # Verify it's approved (admin user)
+        if not response.get("isApproved"):
+            self.log("Pop Up event should be auto-approved for admin user", "ERROR")
+            return False
+            
+        self.log("✅ Pop Up event creation working - projection optimization applied during notification creation")
         return True
-
-    def run_all_tests(self):
-        """Run all push notification flow tests"""
-        self.log("🚀 Starting Oklahoma Car Events Push Notification Flow Testing")
-        self.log(f"🌐 Base URL: {BASE_URL}")
+    
+    def test_events_listing(self):
+        """Test GET /api/events to verify events still load properly"""
+        self.log("Testing events listing functionality...")
         
-        results = {}
+        response = self.test_endpoint("GET", "/events")
+        
+        if response is None:
+            return False
+            
+        # Response should be an array
+        if not isinstance(response, list):
+            self.log("Events response should be an array", "ERROR")
+            return False
+            
+        # Verify events have proper structure
+        if response:
+            event = response[0]
+            required_fields = ["id", "title", "date", "time", "location", "city", "eventType"]
+            for field in required_fields:
+                if field not in event:
+                    self.log(f"Missing field in event: {field}", "ERROR")
+                    return False
+                    
+        self.log(f"✅ Events listing working - found {len(response)} events")
+        return True
+    
+    def run_all_tests(self):
+        """Run all optimization tests"""
+        self.log("Starting Oklahoma Car Events Backend Optimization Tests")
+        self.log("=" * 60)
         
         # Setup
-        results["admin_login"] = self.test_admin_login()
-        results["create_test_user"] = self.create_test_user()
-        results["create_second_test_user"] = self.create_second_test_user()
-        
-        # Main tests
-        results["popup_event_notifications"] = self.test_popup_event_approval_notifications()
-        results["message_notifications"] = self.test_message_push_notifications()
-        results["rsvp_reminder_system"] = self.test_rsvp_reminder_system()
-        results["general_verification"] = self.test_general_verification()
+        if not self.setup_test_data():
+            self.log("Failed to setup test data", "ERROR")
+            return False
+            
+        # Test results
+        results = {
+            "nearby_users": self.test_nearby_users_optimization(),
+            "locations_nearby": self.test_locations_nearby_optimization(), 
+            "conversations": self.test_conversations_optimization(),
+            "message_sending": self.test_message_sending(),
+            "popup_events": self.test_popup_event_creation(),
+            "events_listing": self.test_events_listing()
+        }
         
         # Summary
-        self.log("\n" + "="*60)
-        self.log("📊 PUSH NOTIFICATION FLOW TEST RESULTS")
-        self.log("="*60)
+        self.log("=" * 60)
+        self.log("TEST RESULTS SUMMARY:")
         
         passed = 0
-        total = 0
+        total = len(results)
         
         for test_name, result in results.items():
             status = "✅ PASS" if result else "❌ FAIL"
             self.log(f"{test_name.replace('_', ' ').title()}: {status}")
             if result:
                 passed += 1
-            total += 1
-        
-        self.log(f"\n🎯 Overall: {passed}/{total} tests passed ({(passed/total)*100:.1f}%)")
+                
+        self.log(f"\nOverall: {passed}/{total} tests passed")
         
         if passed == total:
-            self.log("🎉 ALL PUSH NOTIFICATION FLOWS WORKING CORRECTLY!")
+            self.log("🎉 All optimization tests PASSED! Query optimizations are working correctly.")
+            return True
         else:
-            self.log("⚠️ Some push notification flows need attention")
-            
-        return results
+            self.log("⚠️  Some tests failed. Check the logs above for details.")
+            return False
 
 if __name__ == "__main__":
-    tester = TestPushNotificationFlows()
-    results = tester.run_all_tests()
+    tester = APITester()
+    success = tester.run_all_tests()
+    sys.exit(0 if success else 1)

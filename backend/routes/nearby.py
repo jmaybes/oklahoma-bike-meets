@@ -42,6 +42,9 @@ async def get_nearby_users(
         "latitude": {"$exists": True, "$ne": None},
         "longitude": {"$exists": True, "$ne": None},
         "_id": {"$ne": ObjectId(user_id)}
+    }, {
+        "_id": 1, "name": 1, "nickname": 1, "profilePic": 1,
+        "latitude": 1, "longitude": 1
     }).to_list(10000)
 
     nearby_users = []
@@ -94,6 +97,9 @@ async def send_meetup_invite(invite: MeetupInviteRequest):
         "latitude": {"$exists": True, "$ne": None},
         "longitude": {"$exists": True, "$ne": None},
         "_id": {"$ne": ObjectId(invite.senderId)}
+    }, {
+        "_id": 1, "latitude": 1, "longitude": 1,
+        "pushToken": 1, "notificationsEnabled": 1
     }).to_list(10000)
 
     invites_sent = 0
@@ -179,24 +185,39 @@ async def get_nearby_users_by_location(user_id: str, radius: float = 50.0):
         "userId": {"$ne": user_id}
     }).to_list(1000)
 
-    nearby_users = []
+    nearby_locs = []
     for loc in locations:
         lat_diff = abs(loc["latitude"] - user_lat)
         lon_diff = abs(loc["longitude"] - user_lon)
         distance = ((lat_diff ** 2 + lon_diff ** 2) ** 0.5) * 69
 
         if distance <= radius:
-            user = await db.users.find_one({"_id": ObjectId(loc["userId"])})
-            if user:
-                nearby_users.append({
-                    "userId": loc["userId"],
-                    "name": user["name"],
-                    "nickname": user.get("nickname", ""),
-                    "latitude": loc["latitude"],
-                    "longitude": loc["longitude"],
-                    "distance": round(distance, 2),
-                    "updatedAt": loc["updatedAt"]
-                })
+            nearby_locs.append((loc, distance))
+
+    # Batch fetch all nearby users in one query instead of N+1
+    if nearby_locs:
+        user_ids = [ObjectId(loc["userId"]) for loc, _ in nearby_locs]
+        users_list = await db.users.find(
+            {"_id": {"$in": user_ids}},
+            {"_id": 1, "name": 1, "nickname": 1}
+        ).to_list(len(user_ids))
+        users_map = {str(u["_id"]): u for u in users_list}
+    else:
+        users_map = {}
+
+    nearby_users = []
+    for loc, distance in nearby_locs:
+        user = users_map.get(loc["userId"])
+        if user:
+            nearby_users.append({
+                "userId": loc["userId"],
+                "name": user["name"],
+                "nickname": user.get("nickname", ""),
+                "latitude": loc["latitude"],
+                "longitude": loc["longitude"],
+                "distance": round(distance, 2),
+                "updatedAt": loc["updatedAt"]
+            })
 
     return sorted(nearby_users, key=lambda x: x["distance"])
 

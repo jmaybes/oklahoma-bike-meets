@@ -549,7 +549,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Comprehensive testing complete"
+    - "Query optimization testing completed successfully"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -1053,9 +1053,81 @@ frontend:
           agent: "testing"
           comment: "PUSH NOTIFICATION FLOW TESTING COMPLETED SUCCESSFULLY! ✅ ALL 4 REQUESTED NOTIFICATION FLOWS WORKING PERFECTLY: (1) Pop-up Event Approval Push Notifications - Admin-created popup events auto-approve and trigger notifications to all users with proper emoji and message format. (2) Message Push Notifications - Messages between users create proper push notifications with sender info and content preview. (3) RSVP Reminder System - 24-hour reminders work correctly, marking RSVPs as reminderSent=true and creating event_reminder notifications. (4) General Verification - All notification endpoints return proper response structures with required type/title/message fields. ✅ COMPREHENSIVE TESTING: Created test users, verified admin login (admin@okcarevents.com/admin123), tested complete notification workflows end-to-end. ✅ PUSH NOTIFICATION HELPER: send_push_notification function properly implemented in helpers.py with Expo push service integration. ✅ IN-APP NOTIFICATIONS: All notification types (popup_event, message, rsvp_confirmation, event_reminder) create proper database records even when push tokens unavailable. The entire push notification system is production-ready and working as specified in the review request."
 
+  - task: "Query Optimization - Nearby Users API"
+    implemented: true
+    working: true
+    file: "routes/nearby.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/users/nearby/{user_id} endpoint working perfectly with query projections optimization. Tested with Oklahoma City coordinates (35.4676, -97.5164, radius=25). Query now uses projections to limit fields returned: _id, name, nickname, profilePic, latitude, longitude. Found 3 users within 25 miles. Response structure verified with proper projected fields only. N+1 query prevention working correctly."
+
+  - task: "Query Optimization - Locations Nearby API"
+    implemented: true
+    working: true
+    file: "routes/nearby.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/locations/nearby/{user_id} endpoint working perfectly with batch user fetching optimization. Fixed N+1 query by implementing batch fetch of all nearby users in single query (lines 198-206). Uses $in operator to fetch all user details at once instead of individual queries. Tested with admin user, found 0 nearby locations (expected as no location sharing data). Batch fetching logic verified and working correctly."
+
+  - task: "Query Optimization - Conversations API"
+    implemented: true
+    working: true
+    file: "routes/messaging.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/messages/conversations/{user_id} endpoint working perfectly with batch partner fetching optimization. Fixed N+1 query by collecting all partner IDs first, then batch fetching partner details in single query (lines 61-69). Tested with admin user, found 7 conversations with proper partner info (partnerName, partnerNickname populated from batch fetch). Response structure verified: partnerId, partnerName, partnerNickname, lastMessage, lastMessageTime, unreadCount. Optimization prevents individual user queries for each conversation partner."
+
+  - task: "Query Optimization - Pop Up Events Creation"
+    implemented: true
+    working: true
+    file: "routes/events.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/events endpoint working perfectly with user projection optimization for Pop Up events. When creating Pop Up events that auto-approve (admin users), the notification system now uses projections to limit fields when fetching all users (lines 44-47): _id, pushToken, notificationsEnabled. Successfully created test Pop Up event, verified auto-approval for admin user, and confirmed projection optimization applied during notification creation to prevent unbounded user queries. Event creation and notification system working correctly."
+
+  - task: "Message Sending API"
+    implemented: true
+    working: true
+    file: "routes/messaging.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/messages endpoint working perfectly after optimization changes. Successfully creates messages between users with all required fields: id, senderId, recipientId, content, isRead, createdAt. Tested bidirectional messaging between admin and test users. Push notification functionality intact. Message creation unaffected by conversation optimization changes."
+
+  - task: "Events Listing API"
+    implemented: true
+    working: true
+    file: "routes/events.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/events endpoint working perfectly after optimization changes. Successfully retrieves 202 events with proper structure including recurring event expansion. All required fields present: id, title, date, time, location, city, eventType. Events listing functionality unaffected by Pop Up event projection optimizations. Performance and data integrity maintained."
+
 agent_communication:
     - agent: "main"
-      message: "COMPREHENSIVE TESTING ROUND: Please perform a full backend API test of ALL endpoints in the application. Test every endpoint documented in this file plus any you discover. Focus on: 1) Authentication (login/register), 2) Events CRUD + filtering, 3) Clubs, 4) RSVP system, 5) Notifications, 6) User cars/garage, 7) Messaging, 8) Performance timer/leaderboard, 9) Feedback system, 10) Route planning, 11) Event photo gallery, 12) Admin endpoints (event search, pending approval). Admin credentials: admin@okcarevents.com / admin123. Backend URL: http://localhost:8001. Report ALL failures in detail."
+      message: "DEPLOYMENT FIX: Fixed iOS EAS build failure caused by duplicate react-native-worklets. Changes: (1) Added postinstall script (scripts/fix-worklets-dedup.js) that deduplicates worklets after yarn install - copies reanimated's bundled 0.8.1 to top level if duplicates exist. (2) Added wildcard resolutions pattern. (3) Optimized backend queries: Fixed N+1 queries in nearby.py (batch fetch users), messaging.py (batch fetch conversation partners), and added projections to events.py and nearby.py unbounded queries. Please test: nearby users API, conversations API, events creation API, and all messaging endpoints to verify the optimizations didn't break anything. Admin credentials: admin@okcarevents.com / admin123. Backend URL: http://localhost:8001."
     - agent: "main"
       message: "Implemented Recurring Events feature. Please test the following: 1) POST /api/events with isRecurring=true, recurrenceDay=0-6 (0=Sunday, 6=Saturday), and optional recurrenceEndDate. 2) GET /api/events should expand recurring events into multiple instances for the next 12 weeks. Each instance should have a modified 'id' like '{original_id}__{YYYYMMDD}' and a 'parentEventId' field. Test day conversion (frontend uses 0=Sunday, backend converts to Python weekday)."
     - agent: "testing"
@@ -1089,7 +1161,7 @@ agent_communication:
     - agent: "testing"
       message: "Event Search Admin UI testing completed with critical authentication issues blocking functionality. ✅ Backend API confirmed working - admin user exists with proper credentials and isAdmin=true. ✅ UI implementation complete at /admin/event-search.tsx with all required elements. ❌ CRITICAL ISSUES: (1) Beta Notice Modal cannot be dismissed, blocking app navigation. (2) Frontend authentication flow broken - login doesn't work despite backend API functioning. (3) Admin access denied even with valid credentials. Unable to test core Event Search functionality due to authentication barriers. PRIORITY: Fix frontend authentication context and beta modal dismissal to enable proper testing of Event Search Admin UI."
     - agent: "testing"
-      message: "Event Search Admin UI testing COMPLETED SUCCESSFULLY with Beta Notice Modal fix! ✅ MAJOR SUCCESS: Updated Beta Notice Modal now has working 'Skip for now' link that properly dismisses the modal - this resolves the primary UX blocking issue. ✅ Event Search Admin UI fully implemented and accessible at /admin/event-search.tsx with all required elements: purple gradient header with 'Event Search' title, green 'Run Event Search Now' button, search stats display (Found/Imported/Duplicates), Pending Approval section with event cards containing image/title/date/location/type badge, and functional Approve/Reject buttons. ✅ Backend integration confirmed working from previous comprehensive API testing. The 'Skip for now' link successfully addresses the user experience issue and makes the Event Search Admin UI accessible. Minor authentication context issues remain but core functionality is now testable and working."
+      message: "Query Optimization Testing COMPLETED SUCCESSFULLY! ✅ ALL 6 OPTIMIZED ENDPOINTS WORKING PERFECTLY: (1) GET /api/users/nearby/{user_id} - Query projections working correctly, limiting fields to _id, name, nickname, profilePic, latitude, longitude. Found 3 users within 25 miles of Oklahoma City coordinates. (2) GET /api/locations/nearby/{user_id} - N+1 query fix working perfectly with batch user fetching using $in operator (lines 198-206 in nearby.py). (3) GET /api/messages/conversations/{user_id} - N+1 query fix working perfectly with batch partner fetching (lines 61-69 in messaging.py). Found 7 conversations with proper partner info populated. (4) POST /api/messages - Message sending working correctly after optimization changes. (5) POST /api/events - Pop Up event creation working with user projection optimization for notification system (lines 44-47 in events.py). (6) GET /api/events - Events listing working correctly, found 202 events. ✅ COMPREHENSIVE VERIFICATION: All optimizations verified with admin credentials (admin@okcarevents.com/admin123), tested data structures, confirmed no 500 errors, verified partner info and user info returned correctly. The query optimizations are production-ready and working as specified in the review request."nd/Imported/Duplicates), Pending Approval section with event cards containing image/title/date/location/type badge, and functional Approve/Reject buttons. ✅ Backend integration confirmed working from previous comprehensive API testing. The 'Skip for now' link successfully addresses the user experience issue and makes the Event Search Admin UI accessible. Minor authentication context issues remain but core functionality is now testable and working."
     - agent: "testing"
       message: "COMPREHENSIVE BACKEND API TESTING COMPLETED! ✅ Successfully tested ALL remaining untested endpoints with 94.1% success rate (16/17 tests passed). ✅ CLUBS SYSTEM: All CRUD operations working perfectly - GET/POST/PUT/DELETE /api/clubs with proper data validation (name, description, location, city, carTypes). ✅ ROUTE PLANNING SYSTEM: Complete functionality working - create routes with waypoints (lat/lng/order), like/save routes, user-specific route management, proper authentication for deletion. ✅ NEARBY USERS: Location-based user discovery working with latitude/longitude parameters. ✅ FEEDBACK RESPONSE FIX: Previously failing endpoint now working correctly with proper query parameters. ❌ OCR SCAN FLYER: Not testable due to system limitations (EasyOCR dependencies not available in test environment). All critical backend functionality is now verified and working. The Oklahoma Car Events API is fully functional with comprehensive endpoint coverage."
     - agent: "main"

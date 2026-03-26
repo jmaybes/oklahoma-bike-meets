@@ -52,11 +52,27 @@ async def get_conversations(user_id: str):
     }).sort("createdAt", -1).to_list(1000)
 
     conversations = {}
+    # Collect all unique partner IDs first
+    partner_ids_set = set()
+    for msg in messages:
+        partner_id = msg["recipientId"] if msg["senderId"] == user_id else msg["senderId"]
+        partner_ids_set.add(partner_id)
+
+    # Batch fetch all partners in one query (fixes N+1)
+    if partner_ids_set:
+        partners_list = await db.users.find(
+            {"_id": {"$in": [ObjectId(pid) for pid in partner_ids_set]}},
+            {"_id": 1, "name": 1, "nickname": 1}
+        ).to_list(len(partner_ids_set))
+        partners_map = {str(p["_id"]): p for p in partners_list}
+    else:
+        partners_map = {}
+
     for msg in messages:
         partner_id = msg["recipientId"] if msg["senderId"] == user_id else msg["senderId"]
 
         if partner_id not in conversations:
-            partner = await db.users.find_one({"_id": ObjectId(partner_id)})
+            partner = partners_map.get(partner_id)
             if partner:
                 conversations[partner_id] = {
                     "partnerId": partner_id,

@@ -41,7 +41,10 @@ async def create_event(event: EventCreate):
 
     # If it's a Pop Up event and approved, create notifications + push for all users
     if event_dict.get("isPopUp") and event_dict.get("isApproved"):
-        users = await db.users.find({"notificationsEnabled": {"$ne": False}}).to_list(10000)
+        users = await db.users.find(
+            {"notificationsEnabled": {"$ne": False}},
+            {"_id": 1, "pushToken": 1, "notificationsEnabled": 1}
+        ).to_list(10000)
 
         notifications = []
         for user in users:
