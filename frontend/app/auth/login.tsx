@@ -9,7 +9,6 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
-  Linking,
   Pressable,
 } from 'react-native';
 import Animated, { 
@@ -29,6 +28,7 @@ import { router } from 'expo-router';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
+import * as ExpoLinking from 'expo-linking';
 import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -93,13 +93,15 @@ export default function LoginScreen() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
-      // Get the current URL for the callback
+      // Get the current URL for the callback - use expo-linking for proper scheme resolution
       const currentUrl = Platform.OS === 'web' 
         ? window.location.origin 
-        : 'okccarmeets://';
+        : ExpoLinking.createURL('');
       
       // Construct the callback URL
-      const callbackUrl = `${currentUrl}/auth/google-callback`;
+      const callbackUrl = Platform.OS === 'web'
+        ? `${currentUrl}/auth/google-callback`
+        : ExpoLinking.createURL('auth/google-callback');
       
       // Emergent Auth URL
       const authUrl = `https://demobackend.emergentagent.com/auth/v1/env/oauth/google?callback_url=${encodeURIComponent(callbackUrl)}`;
