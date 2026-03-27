@@ -18,7 +18,8 @@
         "NSLocationWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
         "NSCameraUsageDescription": "Take photos of your car for your garage",
-        "NSPhotoLibraryUsageDescription": "Select photos for events and your garage"
+        "NSPhotoLibraryUsageDescription": "Select photos for events and your garage",
+        "CFBundleAllowMixedLocalizations": true
       }
     },
     "android": {
@@ -50,6 +51,7 @@
     },
     "plugins": [
       "expo-router",
+      "./plugins/withNoRoutingApp",
       [
         "expo-splash-screen",
         {
