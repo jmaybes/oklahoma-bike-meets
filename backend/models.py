@@ -107,6 +107,19 @@ class GoogleAuthComplete(BaseModel):
     picture: str = ""
 
 
+class AppleAuthRequest(BaseModel):
+    identityToken: str
+    fullName: Optional[str] = None
+    email: Optional[str] = None
+
+
+class AppleAuthComplete(BaseModel):
+    email: str
+    nickname: str
+    appleId: str
+    name: str
+
+
 class PushTokenRegister(BaseModel):
     userId: str
     pushToken: str

@@ -26,6 +26,12 @@ interface GoogleData {
   googleId: string;
 }
 
+interface AppleData {
+  email: string;
+  name: string;
+  appleId: string;
+}
+
 export default function GoogleCallbackScreen() {
   const { login } = useAuth();
   const params = useLocalSearchParams();
@@ -33,6 +39,8 @@ export default function GoogleCallbackScreen() {
   
   const [loading, setLoading] = useState(true);
   const [googleData, setGoogleData] = useState<GoogleData | null>(null);
+  const [appleData, setAppleData] = useState<AppleData | null>(null);
+  const [authProvider, setAuthProvider] = useState<'google' | 'apple'>('google');
   const [nickname, setNickname] = useState('');
   const [nicknameError, setNicknameError] = useState('');
   const [checkingNickname, setCheckingNickname] = useState(false);
@@ -43,8 +51,38 @@ export default function GoogleCallbackScreen() {
     if (hasProcessed.current) return;
     hasProcessed.current = true;
     
-    processGoogleAuth();
+    // Check if this is an Apple sign-in flow (has appleId param)
+    if (params.authProvider === 'apple' && params.appleId) {
+      processAppleAuth();
+    } else {
+      processGoogleAuth();
+    }
   }, []);
+
+  const processAppleAuth = async () => {
+    try {
+      const data: AppleData = {
+        email: params.email as string,
+        name: (params.name as string) || 'Apple User',
+        appleId: params.appleId as string,
+      };
+      
+      setAppleData(data);
+      setAuthProvider('apple');
+      
+      // Suggest a username based on their name
+      const suggestedNickname = data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .slice(0, 15);
+      setNickname(suggestedNickname || 'user');
+      setLoading(false);
+    } catch (error: any) {
+      console.error('Apple auth callback error:', error);
+      Alert.alert('Authentication Failed', 'Failed to process Apple sign-in');
+      router.replace('/auth/login');
+    }
+  };
 
   const processGoogleAuth = async () => {
     try {
@@ -140,7 +178,7 @@ export default function GoogleCallbackScreen() {
   };
 
   const completeRegistration = async () => {
-    if (!googleData || !nickname) return;
+    if ((!googleData && !appleData) || !nickname) return;
     
     if (nicknameError) {
       Alert.alert('Invalid Username', nicknameError);
@@ -154,13 +192,26 @@ export default function GoogleCallbackScreen() {
 
     setCompleting(true);
     try {
-      const response = await axios.post(`${API_URL}/api/auth/google/complete`, {
-        email: googleData.email,
-        name: googleData.name,
-        nickname: nickname,
-        picture: googleData.picture,
-        googleId: googleData.googleId,
-      });
+      let response;
+      
+      if (authProvider === 'apple' && appleData) {
+        response = await axios.post(`${API_URL}/api/auth/apple/complete`, {
+          email: appleData.email,
+          name: appleData.name,
+          nickname: nickname,
+          appleId: appleData.appleId,
+        });
+      } else if (googleData) {
+        response = await axios.post(`${API_URL}/api/auth/google/complete`, {
+          email: googleData.email,
+          name: googleData.name,
+          nickname: nickname,
+          picture: googleData.picture,
+          googleId: googleData.googleId,
+        });
+      } else {
+        throw new Error('No auth data available');
+      }
 
       await login(response.data);
       Alert.alert('Welcome!', `Your account has been created as @${nickname}`);
@@ -181,7 +232,9 @@ export default function GoogleCallbackScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF6B35" />
-          <Text style={styles.loadingText}>Signing in with Google...</Text>
+          <Text style={styles.loadingText}>
+            {authProvider === 'apple' ? 'Signing in with Apple...' : 'Signing in with Google...'}
+          </Text>
         </View>
       </SafeAreaView>
     );

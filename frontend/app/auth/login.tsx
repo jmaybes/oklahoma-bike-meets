@@ -29,6 +29,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
 import * as ExpoLinking from 'expo-linking';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -45,6 +46,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loadingCredentials, setLoadingCredentials] = useState(true);
@@ -130,6 +132,72 @@ export default function LoginScreen() {
       Alert.alert('Error', 'Failed to initiate Google sign-in');
     } finally {
       setGoogleLoading(false);
+    }
+  };
+
+  // ==================== Apple Sign In ====================
+  const handleAppleSignIn = async () => {
+    setAppleLoading(true);
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        Alert.alert('Error', 'Failed to get Apple identity token');
+        return;
+      }
+
+      // Build the full name from Apple's response (only available on first sign-in)
+      const fullName = credential.fullName
+        ? [credential.fullName.givenName, credential.fullName.familyName]
+            .filter(Boolean)
+            .join(' ')
+        : '';
+
+      // Send to backend for verification
+      const response = await axios.post(`${API_URL}/api/auth/apple/session`, {
+        identityToken: credential.identityToken,
+        fullName: fullName || undefined,
+        email: credential.email || undefined,
+      });
+
+      const { isNewUser, user, appleData } = response.data;
+
+      if (isNewUser) {
+        // Navigate to username picker (reuse the google-callback flow)
+        router.push({
+          pathname: '/auth/google-callback',
+          params: {
+            email: appleData.email,
+            name: appleData.name || 'Apple User',
+            picture: '',
+            googleId: '',
+            appleId: appleData.appleId,
+            authProvider: 'apple',
+          },
+        });
+      } else {
+        // Existing user — log them in directly
+        await login(user);
+        Alert.alert('Welcome back!', `Signed in as ${user.nickname || user.email}`);
+        router.replace('/(tabs)/profile');
+      }
+    } catch (error: any) {
+      if (error.code === 'ERR_REQUEST_CANCELED') {
+        // User cancelled — do nothing
+        return;
+      }
+      console.error('Apple sign-in error:', error);
+      Alert.alert(
+        'Apple Sign In Failed',
+        error.response?.data?.detail || error.message || 'Something went wrong'
+      );
+    } finally {
+      setAppleLoading(false);
     }
   };
 
@@ -326,6 +394,24 @@ export default function LoginScreen() {
               )}
             </TouchableOpacity>
 
+            {/* Apple Sign-In Button (iOS only) */}
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity
+                style={[styles.appleButton, appleLoading && styles.appleButtonDisabled]}
+                onPress={handleAppleSignIn}
+                disabled={appleLoading}
+              >
+                {appleLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="logo-apple" size={22} color="#fff" />
+                    <Text style={styles.appleButtonText}>Continue with Apple</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity
               style={styles.registerLink}
               onPress={() => router.push('/auth/register')}
@@ -497,6 +583,24 @@ const styles = StyleSheet.create({
   },
   googleButtonText: {
     color: '#333',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  appleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000',
+    borderRadius: 12,
+    paddingVertical: 14,
+    gap: 10,
+    marginTop: 10,
+  },
+  appleButtonDisabled: {
+    opacity: 0.6,
+  },
+  appleButtonText: {
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

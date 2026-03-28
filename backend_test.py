@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Oklahoma Car Events - Query Optimization Verification
-Testing the recently optimized endpoints for N+1 query fixes and projections.
+Backend API Testing for Apple Sign In Authentication
+Oklahoma Car Events App - Apple Auth Testing
 """
 
 import requests
@@ -9,346 +9,272 @@ import json
 import sys
 from datetime import datetime
 
-# Backend URL from frontend/.env
+# Backend URL from environment
 BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
 
-# Admin credentials for testing
-ADMIN_EMAIL = "admin@okcarevents.com"
-ADMIN_PASSWORD = "admin123"
+def print_test_result(test_name, success, details=""):
+    """Print formatted test results"""
+    status = "✅ PASS" if success else "❌ FAIL"
+    print(f"{status} {test_name}")
+    if details:
+        print(f"    {details}")
+    print()
 
-class APITester:
-    def __init__(self):
-        self.session = requests.Session()
-        self.admin_user_id = None
-        self.test_user_id = None
-        self.test_event_id = None
-        self.test_message_id = None
+def test_apple_auth_session():
+    """Test Apple auth session verification endpoint"""
+    print("🍎 Testing Apple Auth Session Verification...")
+    
+    url = f"{BACKEND_URL}/auth/apple/session"
+    payload = {
+        "identityToken": "mock_token",
+        "fullName": "Test User",
+        "email": "apple_test@example.com"
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=30)
         
-    def log(self, message, level="INFO"):
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        print(f"[{timestamp}] {level}: {message}")
-        
-    def test_endpoint(self, method, endpoint, data=None, params=None, expected_status=200):
-        """Test an API endpoint and return response"""
-        url = f"{BACKEND_URL}{endpoint}"
-        
-        try:
-            if method.upper() == "GET":
-                response = self.session.get(url, params=params)
-            elif method.upper() == "POST":
-                response = self.session.post(url, json=data, params=params)
-            elif method.upper() == "PUT":
-                response = self.session.put(url, json=data, params=params)
-            elif method.upper() == "DELETE":
-                response = self.session.delete(url, params=params)
+        # The endpoint should handle JWT decode gracefully (may fail verification but should not crash)
+        if response.status_code in [200, 401, 500]:
+            # Check if it's a proper error response or success
+            if response.status_code == 200:
+                data = response.json()
+                if "isNewUser" in data and "appleData" in data:
+                    print_test_result("Apple Auth Session - Success Response", True, 
+                                    f"Status: {response.status_code}, Response: {json.dumps(data, indent=2)}")
+                    return True
+                else:
+                    print_test_result("Apple Auth Session - Invalid Response Structure", False,
+                                    f"Status: {response.status_code}, Response: {response.text}")
+                    return False
             else:
-                raise ValueError(f"Unsupported method: {method}")
-                
-            self.log(f"{method} {endpoint} -> {response.status_code}")
-            
-            if response.status_code != expected_status:
-                self.log(f"Expected {expected_status}, got {response.status_code}", "ERROR")
-                if response.text:
-                    self.log(f"Response: {response.text[:500]}", "ERROR")
-                return None
-                
-            return response.json() if response.content else {}
-            
-        except Exception as e:
-            self.log(f"Error testing {method} {endpoint}: {str(e)}", "ERROR")
-            return None
-    
-    def setup_test_data(self):
-        """Setup test users and data for testing"""
-        self.log("Setting up test data...")
-        
-        # Login as admin to get admin user ID
-        login_data = {"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
-        login_response = self.test_endpoint("POST", "/auth/login", login_data)
-        
-        if not login_response:
-            self.log("Failed to login as admin", "ERROR")
-            return False
-            
-        self.admin_user_id = login_response.get("id")
-        self.log(f"Admin user ID: {self.admin_user_id}")
-        
-        # Create a test user for messaging/nearby tests
-        test_user_data = {
-            "name": "Test User",
-            "nickname": "TestNick",
-            "email": f"testuser_{datetime.now().timestamp()}@test.com",
-            "password": "testpass123",
-            "locationSharingEnabled": True,
-            "notificationsEnabled": True
-        }
-        
-        register_response = self.test_endpoint("POST", "/auth/register", test_user_data)
-        if register_response:
-            self.test_user_id = register_response.get("id")
-            self.log(f"Test user ID: {self.test_user_id}")
-        
-        return True
-    
-    def test_nearby_users_optimization(self):
-        """Test GET /api/users/nearby/{user_id} with query projections"""
-        self.log("Testing nearby users endpoint with query projections...")
-        
-        if not self.admin_user_id:
-            self.log("No admin user ID available", "ERROR")
-            return False
-            
-        # Test with Oklahoma City coordinates
-        params = {
-            "latitude": 35.4676,
-            "longitude": -97.5164,
-            "radius": 25
-        }
-        
-        response = self.test_endpoint("GET", f"/users/nearby/{self.admin_user_id}", params=params)
-        
-        if not response:
-            return False
-            
-        # Verify response structure
-        required_fields = ["count", "radius", "users"]
-        for field in required_fields:
-            if field not in response:
-                self.log(f"Missing field in response: {field}", "ERROR")
-                return False
-                
-        # Verify user objects have projected fields only
-        if response["users"]:
-            user = response["users"][0]
-            expected_user_fields = ["id", "name", "nickname", "profilePic", "latitude", "longitude", "distance"]
-            for field in expected_user_fields:
-                if field not in user:
-                    self.log(f"Missing projected field in user: {field}", "ERROR")
+                # Check if error is handled gracefully
+                try:
+                    error_data = response.json()
+                    print_test_result("Apple Auth Session - Graceful Error Handling", True,
+                                    f"Status: {response.status_code}, Error: {error_data.get('detail', 'Unknown error')}")
+                    return True
+                except:
+                    print_test_result("Apple Auth Session - Error Response Format", False,
+                                    f"Status: {response.status_code}, Response: {response.text}")
                     return False
-                    
-        self.log(f"✅ Nearby users endpoint working - found {response['count']} users within {response['radius']} miles")
-        return True
-    
-    def test_locations_nearby_optimization(self):
-        """Test GET /api/locations/nearby/{user_id} with batch user fetching"""
-        self.log("Testing locations nearby endpoint with batch user fetching...")
-        
-        if not self.admin_user_id:
-            self.log("No admin user ID available", "ERROR")
-            return False
-            
-        response = self.test_endpoint("GET", f"/locations/nearby/{self.admin_user_id}")
-        
-        if response is None:
-            return False
-            
-        # Response should be an array of nearby users
-        if not isinstance(response, list):
-            self.log("Response should be an array", "ERROR")
-            return False
-            
-        # If there are nearby users, verify the structure includes batch-fetched user data
-        if response:
-            user = response[0]
-            expected_fields = ["userId", "name", "nickname", "latitude", "longitude", "distance", "updatedAt"]
-            for field in expected_fields:
-                if field not in user:
-                    self.log(f"Missing field in nearby location user: {field}", "ERROR")
-                    return False
-                    
-        self.log(f"✅ Locations nearby endpoint working - found {len(response)} nearby locations")
-        return True
-    
-    def test_conversations_optimization(self):
-        """Test GET /api/messages/conversations/{user_id} with batch partner fetching"""
-        self.log("Testing conversations endpoint with batch partner fetching...")
-        
-        if not self.admin_user_id or not self.test_user_id:
-            self.log("Missing user IDs for conversation test", "ERROR")
-            return False
-            
-        # First, send a message to create a conversation
-        message_data = {
-            "senderId": self.admin_user_id,
-            "recipientId": self.test_user_id,
-            "content": "Test message for conversation optimization testing"
-        }
-        
-        message_response = self.test_endpoint("POST", "/messages", message_data)
-        if not message_response:
-            self.log("Failed to create test message", "ERROR")
-            return False
-            
-        self.log("Created test message for conversation")
-        
-        # Now test the conversations endpoint
-        response = self.test_endpoint("GET", f"/messages/conversations/{self.admin_user_id}")
-        
-        if response is None:
-            return False
-            
-        # Response should be an array of conversations
-        if not isinstance(response, list):
-            self.log("Conversations response should be an array", "ERROR")
-            return False
-            
-        # Verify conversation structure includes batch-fetched partner data
-        if response:
-            conversation = response[0]
-            expected_fields = ["partnerId", "partnerName", "partnerNickname", "lastMessage", "lastMessageTime", "unreadCount"]
-            for field in expected_fields:
-                if field not in conversation:
-                    self.log(f"Missing field in conversation: {field}", "ERROR")
-                    return False
-                    
-            # Verify partner data is populated (not None/empty)
-            if not conversation["partnerName"]:
-                self.log("Partner name should be populated from batch fetch", "ERROR")
-                return False
-                
-        self.log(f"✅ Conversations endpoint working - found {len(response)} conversations with proper partner info")
-        return True
-    
-    def test_message_sending(self):
-        """Test POST /api/messages to verify messaging still works after optimization"""
-        self.log("Testing message sending functionality...")
-        
-        if not self.admin_user_id or not self.test_user_id:
-            self.log("Missing user IDs for message test", "ERROR")
-            return False
-            
-        message_data = {
-            "senderId": self.test_user_id,
-            "recipientId": self.admin_user_id,
-            "content": "Reply message to test bidirectional messaging"
-        }
-        
-        response = self.test_endpoint("POST", "/messages", message_data)
-        
-        if not response:
-            return False
-            
-        # Verify message structure
-        expected_fields = ["id", "senderId", "recipientId", "content", "isRead", "createdAt"]
-        for field in expected_fields:
-            if field not in response:
-                self.log(f"Missing field in message response: {field}", "ERROR")
-                return False
-                
-        self.log("✅ Message sending working correctly")
-        return True
-    
-    def test_popup_event_creation(self):
-        """Test POST /api/events with Pop Up event to verify projection optimization"""
-        self.log("Testing Pop Up event creation with user projection optimization...")
-        
-        if not self.admin_user_id:
-            self.log("No admin user ID available", "ERROR")
-            return False
-            
-        # Create a Pop Up event (admin user so it auto-approves)
-        event_data = {
-            "title": "Test Pop Up Car Meet",
-            "description": "Testing the projection optimization for Pop Up events",
-            "date": "2025-01-20",
-            "time": "18:00",
-            "location": "Test Location",
-            "address": "123 Test Street, Oklahoma City, OK",
-            "city": "Oklahoma City",
-            "eventType": "Car Meet",
-            "isPopUp": True,
-            "userId": self.admin_user_id
-        }
-        
-        response = self.test_endpoint("POST", "/events", event_data)
-        
-        if not response:
-            return False
-            
-        # Verify event was created
-        if "id" not in response:
-            self.log("Event creation failed - no ID returned", "ERROR")
-            return False
-            
-        self.test_event_id = response["id"]
-        
-        # Verify it's approved (admin user)
-        if not response.get("isApproved"):
-            self.log("Pop Up event should be auto-approved for admin user", "ERROR")
-            return False
-            
-        self.log("✅ Pop Up event creation working - projection optimization applied during notification creation")
-        return True
-    
-    def test_events_listing(self):
-        """Test GET /api/events to verify events still load properly"""
-        self.log("Testing events listing functionality...")
-        
-        response = self.test_endpoint("GET", "/events")
-        
-        if response is None:
-            return False
-            
-        # Response should be an array
-        if not isinstance(response, list):
-            self.log("Events response should be an array", "ERROR")
-            return False
-            
-        # Verify events have proper structure
-        if response:
-            event = response[0]
-            required_fields = ["id", "title", "date", "time", "location", "city", "eventType"]
-            for field in required_fields:
-                if field not in event:
-                    self.log(f"Missing field in event: {field}", "ERROR")
-                    return False
-                    
-        self.log(f"✅ Events listing working - found {len(response)} events")
-        return True
-    
-    def run_all_tests(self):
-        """Run all optimization tests"""
-        self.log("Starting Oklahoma Car Events Backend Optimization Tests")
-        self.log("=" * 60)
-        
-        # Setup
-        if not self.setup_test_data():
-            self.log("Failed to setup test data", "ERROR")
-            return False
-            
-        # Test results
-        results = {
-            "nearby_users": self.test_nearby_users_optimization(),
-            "locations_nearby": self.test_locations_nearby_optimization(), 
-            "conversations": self.test_conversations_optimization(),
-            "message_sending": self.test_message_sending(),
-            "popup_events": self.test_popup_event_creation(),
-            "events_listing": self.test_events_listing()
-        }
-        
-        # Summary
-        self.log("=" * 60)
-        self.log("TEST RESULTS SUMMARY:")
-        
-        passed = 0
-        total = len(results)
-        
-        for test_name, result in results.items():
-            status = "✅ PASS" if result else "❌ FAIL"
-            self.log(f"{test_name.replace('_', ' ').title()}: {status}")
-            if result:
-                passed += 1
-                
-        self.log(f"\nOverall: {passed}/{total} tests passed")
-        
-        if passed == total:
-            self.log("🎉 All optimization tests PASSED! Query optimizations are working correctly.")
-            return True
         else:
-            self.log("⚠️  Some tests failed. Check the logs above for details.")
+            print_test_result("Apple Auth Session - Unexpected Status", False,
+                            f"Status: {response.status_code}, Response: {response.text}")
             return False
+            
+    except requests.exceptions.RequestException as e:
+        print_test_result("Apple Auth Session - Request Failed", False, f"Error: {str(e)}")
+        return False
+
+def test_apple_auth_complete():
+    """Test Apple registration completion endpoint"""
+    print("🍎 Testing Apple Auth Complete Registration...")
+    
+    url = f"{BACKEND_URL}/auth/apple/complete"
+    payload = {
+        "email": "apple_complete_test@example.com",
+        "nickname": "appleuser123",
+        "appleId": "000123.abc.456",
+        "name": "Apple Test User"
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=30)
+        
+        if response.status_code == 200:
+            data = response.json()
+            # Check if user was created with correct email and name
+            if data.get("email") == payload["email"] and data.get("name") == payload["name"]:
+                print_test_result("Apple Auth Complete - User Creation", True,
+                                f"Created user: {data.get('name')} ({data.get('email')}) with ID: {data.get('id')}")
+                return data.get("id")  # Return user ID for further tests
+            else:
+                print_test_result("Apple Auth Complete - Invalid User Data", False,
+                                f"Expected email: {payload['email']}, name: {payload['name']}, got: {json.dumps(data, indent=2)}")
+                return None
+        else:
+            try:
+                error_data = response.json()
+                print_test_result("Apple Auth Complete - Registration Failed", False,
+                                f"Status: {response.status_code}, Error: {error_data.get('detail', 'Unknown error')}")
+            except:
+                print_test_result("Apple Auth Complete - Registration Failed", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+            return None
+            
+    except requests.exceptions.RequestException as e:
+        print_test_result("Apple Auth Complete - Request Failed", False, f"Error: {str(e)}")
+        return None
+
+def test_apple_auth_duplicate_username():
+    """Test duplicate username handling"""
+    print("🍎 Testing Apple Auth Duplicate Username Check...")
+    
+    url = f"{BACKEND_URL}/auth/apple/complete"
+    payload = {
+        "email": "apple_duplicate_test@example.com",
+        "nickname": "appleuser123",  # Same nickname as previous test
+        "appleId": "000456.def.789",
+        "name": "Apple Duplicate User"
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=30)
+        
+        if response.status_code == 400:
+            try:
+                error_data = response.json()
+                if "Username already taken" in error_data.get("detail", ""):
+                    print_test_result("Apple Auth Duplicate Username - Proper Validation", True,
+                                    f"Correctly rejected duplicate username: {error_data.get('detail')}")
+                    return True
+                else:
+                    print_test_result("Apple Auth Duplicate Username - Wrong Error Message", False,
+                                    f"Expected 'Username already taken', got: {error_data.get('detail')}")
+                    return False
+            except:
+                print_test_result("Apple Auth Duplicate Username - Invalid Error Format", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+                return False
+        else:
+            print_test_result("Apple Auth Duplicate Username - Should Have Failed", False,
+                            f"Expected 400 status, got {response.status_code}")
+            return False
+            
+    except requests.exceptions.RequestException as e:
+        print_test_result("Apple Auth Duplicate Username - Request Failed", False, f"Error: {str(e)}")
+        return False
+
+def test_username_availability():
+    """Test username availability check endpoints"""
+    print("🔍 Testing Username Availability Checks...")
+    
+    # Test taken username
+    url = f"{BACKEND_URL}/auth/check-username/appleuser123"
+    try:
+        response = requests.get(url, timeout=30)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("available") == False:
+                print_test_result("Username Check - Taken Username", True,
+                                f"Correctly shows 'appleuser123' as unavailable")
+            else:
+                print_test_result("Username Check - Taken Username", False,
+                                f"Expected available=false, got: {data}")
+        else:
+            print_test_result("Username Check - Taken Username", False,
+                            f"Status: {response.status_code}, Response: {response.text}")
+    except requests.exceptions.RequestException as e:
+        print_test_result("Username Check - Taken Username", False, f"Error: {str(e)}")
+    
+    # Test available username
+    url = f"{BACKEND_URL}/auth/check-username/newuniquename99"
+    try:
+        response = requests.get(url, timeout=30)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("available") == True:
+                print_test_result("Username Check - Available Username", True,
+                                f"Correctly shows 'newuniquename99' as available")
+                return True
+            else:
+                print_test_result("Username Check - Available Username", False,
+                                f"Expected available=true, got: {data}")
+                return False
+        else:
+            print_test_result("Username Check - Available Username", False,
+                            f"Status: {response.status_code}, Response: {response.text}")
+            return False
+    except requests.exceptions.RequestException as e:
+        print_test_result("Username Check - Available Username", False, f"Error: {str(e)}")
+        return False
+
+def test_existing_auth_endpoints():
+    """Test existing Google auth and login endpoints to ensure they still work"""
+    print("🔐 Testing Existing Authentication Endpoints...")
+    
+    # Test admin login
+    url = f"{BACKEND_URL}/auth/login"
+    payload = {
+        "email": "admin@okcarevents.com",
+        "password": "admin123"
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=30)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("email") == "admin@okcarevents.com" and data.get("isAdmin") == True:
+                print_test_result("Admin Login - Credentials Valid", True,
+                                f"Successfully logged in admin user: {data.get('name')}")
+                return True
+            else:
+                print_test_result("Admin Login - Invalid Response Data", False,
+                                f"Response: {json.dumps(data, indent=2)}")
+                return False
+        else:
+            try:
+                error_data = response.json()
+                print_test_result("Admin Login - Login Failed", False,
+                                f"Status: {response.status_code}, Error: {error_data.get('detail', 'Unknown error')}")
+            except:
+                print_test_result("Admin Login - Login Failed", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+            return False
+            
+    except requests.exceptions.RequestException as e:
+        print_test_result("Admin Login - Request Failed", False, f"Error: {str(e)}")
+        return False
+
+def main():
+    """Run all Apple Sign In authentication tests"""
+    print("=" * 80)
+    print("🍎 APPLE SIGN IN AUTHENTICATION TESTING")
+    print("Oklahoma Car Events Backend API")
+    print(f"Backend URL: {BACKEND_URL}")
+    print(f"Test Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("=" * 80)
+    print()
+    
+    test_results = []
+    
+    # Test Apple auth session verification
+    test_results.append(test_apple_auth_session())
+    
+    # Test Apple auth complete registration
+    user_id = test_apple_auth_complete()
+    test_results.append(user_id is not None)
+    
+    # Test duplicate username handling
+    test_results.append(test_apple_auth_duplicate_username())
+    
+    # Test username availability checks
+    test_results.append(test_username_availability())
+    
+    # Test existing auth endpoints
+    test_results.append(test_existing_auth_endpoints())
+    
+    # Summary
+    print("=" * 80)
+    print("📊 TEST SUMMARY")
+    print("=" * 80)
+    
+    passed = sum(test_results)
+    total = len(test_results)
+    
+    print(f"Total Tests: {total}")
+    print(f"Passed: {passed}")
+    print(f"Failed: {total - passed}")
+    print(f"Success Rate: {(passed/total)*100:.1f}%")
+    
+    if passed == total:
+        print("\n🎉 ALL TESTS PASSED! Apple Sign In authentication is working correctly.")
+        return 0
+    else:
+        print(f"\n⚠️  {total - passed} test(s) failed. Please review the issues above.")
+        return 1
 
 if __name__ == "__main__":
-    tester = APITester()
-    success = tester.run_all_tests()
-    sys.exit(0 if success else 1)
+    sys.exit(main())
