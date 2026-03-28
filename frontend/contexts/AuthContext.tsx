@@ -30,6 +30,7 @@ interface User {
   latitude?: number;
   longitude?: number;
   pushToken?: string;
+  authProvider?: string;
 }
 
 interface AuthContextType {

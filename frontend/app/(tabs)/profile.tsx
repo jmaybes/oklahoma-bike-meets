@@ -789,9 +789,9 @@ export default function ProfileScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out" size={20} color="#fff" />
-          <Text style={styles.logoutButtonText}>Logout</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={() => router.push('/account-settings')}>
+          <Ionicons name="settings-outline" size={20} color="#fff" />
+          <Text style={styles.logoutButtonText}>Log Out or Delete Account</Text>
         </TouchableOpacity>
       </ScrollView>
 

@@ -5,7 +5,7 @@ import re
 import httpx
 
 from database import db
-from models import UserCreate, UserLogin, UserUpdate, GoogleAuthRequest, GoogleAuthComplete, AppleAuthRequest, AppleAuthComplete, PushTokenRegister
+from models import UserCreate, UserLogin, UserUpdate, GoogleAuthRequest, GoogleAuthComplete, AppleAuthRequest, AppleAuthComplete, PushTokenRegister, DeleteAccountRequest
 from helpers import user_helper
 
 router = APIRouter()
@@ -349,4 +349,85 @@ async def get_user(user_id: str):
         "name": user.get("name", ""),
         "nickname": user.get("nickname", ""),
         "email": user.get("email", "")
+    }
+
+
+# ==================== Account Deletion ====================
+
+@router.post("/auth/delete-account")
+async def delete_account(request: DeleteAccountRequest):
+    """Delete a user account and all associated data after verifying credentials."""
+    if not ObjectId.is_valid(request.user_id):
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+
+    user = await db.users.find_one({"_id": ObjectId(request.user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Verify email matches
+    if user.get("email", "").lower() != request.email.lower():
+        raise HTTPException(status_code=401, detail="Email does not match")
+
+    # For email-based accounts, verify password
+    auth_provider = user.get("authProvider", "email")
+    if auth_provider == "email":
+        if not request.password or user.get("password") != request.password:
+            raise HTTPException(status_code=401, detail="Invalid password")
+
+    user_id_str = str(user["_id"])
+    user_id_obj = user["_id"]
+
+    # Delete all associated data
+    deleted_counts = {}
+
+    # Delete user's cars
+    result = await db.user_cars.delete_many({"userId": user_id_str})
+    deleted_counts["cars"] = result.deleted_count
+
+    # Delete user's RSVPs
+    result = await db.rsvps.delete_many({"userId": user_id_str})
+    deleted_counts["rsvps"] = result.deleted_count
+
+    # Delete user's messages (sent)
+    result = await db.messages.delete_many({"senderId": user_id_str})
+    deleted_counts["messages_sent"] = result.deleted_count
+
+    # Delete user's favorites
+    result = await db.favorites.delete_many({"userId": user_id_str})
+    deleted_counts["favorites"] = result.deleted_count
+
+    # Delete user's feedback
+    result = await db.feedback.delete_many({"userId": user_id_str})
+    deleted_counts["feedback"] = result.deleted_count
+
+    # Delete user's performance runs
+    result = await db.performance_runs.delete_many({"userId": user_id_str})
+    deleted_counts["performance_runs"] = result.deleted_count
+
+    # Delete user's routes
+    result = await db.routes.delete_many({"userId": user_id_str})
+    deleted_counts["routes"] = result.deleted_count
+
+    # Delete user's location data
+    result = await db.locations.delete_many({"userId": user_id_str})
+    deleted_counts["locations"] = result.deleted_count
+
+    # Delete user's notifications
+    result = await db.notifications.delete_many({"userId": user_id_str})
+    deleted_counts["notifications"] = result.deleted_count
+
+    # Delete user's event photos
+    result = await db.event_photos.delete_many({"uploaderId": user_id_str})
+    deleted_counts["event_photos"] = result.deleted_count
+
+    # Delete user's comments
+    result = await db.comments.delete_many({"userId": user_id_str})
+    deleted_counts["comments"] = result.deleted_count
+
+    # Finally, delete the user account
+    await db.users.delete_one({"_id": user_id_obj})
+
+    return {
+        "message": "Account and all associated data have been permanently deleted.",
+        "deleted": deleted_counts
     }

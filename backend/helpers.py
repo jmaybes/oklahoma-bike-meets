@@ -56,6 +56,7 @@ def user_helper(user) -> dict:
         "latitude": user.get("latitude"),
         "longitude": user.get("longitude"),
         "pushToken": user.get("pushToken", ""),
+        "authProvider": user.get("authProvider", "email"),
         "createdAt": user["createdAt"],
     }
 

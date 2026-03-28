@@ -95,6 +95,12 @@ class UserLogin(BaseModel):
     password: str
 
 
+class DeleteAccountRequest(BaseModel):
+    user_id: str
+    email: str
+    password: str = ""
+
+
 class GoogleAuthRequest(BaseModel):
     session_id: str
 
