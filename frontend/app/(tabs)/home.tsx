@@ -89,7 +89,14 @@ export default function HomeScreen() {
 
   const scrollY = useSharedValue(0);
 
-  const eventTypes = ['All', 'Car Meet', 'Car Show', 'Cruise', 'Race', 'Other'];
+  const eventTypes = [
+    { label: 'All', value: 'All' },
+    { label: 'Meets', value: 'Car Meet' },
+    { label: 'Shows', value: 'Car Show' },
+    { label: 'Cruise', value: 'Cruise' },
+    { label: 'Race', value: 'Race' },
+    { label: 'Other', value: 'Other' },
+  ];
   const sortOptions = [
     { label: 'Date', value: 'date', icon: 'calendar' },
     { label: 'Distance', value: 'distance', icon: 'navigate' },
@@ -439,14 +446,14 @@ export default function HomeScreen() {
         >
           {eventTypes.map((item) => (
             <TouchableOpacity
-              key={item}
-              style={[styles.filterChip, selectedType === item && styles.filterChipActive]}
-              onPress={() => setSelectedType(item)}
+              key={item.value}
+              style={[styles.filterChip, selectedType === item.value && styles.filterChipActive]}
+              onPress={() => setSelectedType(item.value)}
             >
               <Text
-                style={[styles.filterChipText, selectedType === item && styles.filterChipTextActive]}
+                style={[styles.filterChipText, selectedType === item.value && styles.filterChipTextActive]}
               >
-                {item}
+                {item.label}
               </Text>
             </TouchableOpacity>
           ))}
