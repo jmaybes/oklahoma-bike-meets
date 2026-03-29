@@ -63,7 +63,6 @@ export default function ProfileScreen() {
   const [userCar, setUserCar] = useState<UserCar | null>(null);
   const [loadingCar, setLoadingCar] = useState(false);
   const [showCarModal, setShowCarModal] = useState(false);
-  const [showDonateModal, setShowDonateModal] = useState(false);
   const [savingCar, setSavingCar] = useState(false);
   const [carPhotos, setCarPhotos] = useState<string[]>([]);
   const [garagePublic, setGaragePublic] = useState(true);
@@ -773,22 +772,6 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Donate Button */}
-        <TouchableOpacity 
-          style={styles.donateButton} 
-          onPress={() => setShowDonateModal(true)}
-        >
-          <LinearGradient
-            colors={['#FF6B35', '#E91E63']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.donateButtonGradient}
-          >
-            <Ionicons name="heart" size={20} color="#fff" />
-            <Text style={styles.donateButtonText}>Donate to Keep This App Free</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
         <TouchableOpacity style={styles.logoutButton} onPress={() => router.push('/account-settings')}>
           <Ionicons name="settings-outline" size={20} color="#fff" />
           <Text style={styles.logoutButtonText}>Log Out or Delete Account</Text>
@@ -1219,91 +1202,6 @@ export default function ProfileScreen() {
         </SafeAreaView>
       </Modal>
 
-      {/* Donate Modal */}
-      <Modal
-        visible={showDonateModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowDonateModal(false)}
-      >
-        <View style={styles.donateModalOverlay}>
-          <View style={styles.donateModalContainer}>
-            <LinearGradient
-              colors={['#FF6B35', '#E91E63', '#9C27B0']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.donateModalBorder}
-            >
-              <View style={styles.donateModalContent}>
-                {/* Close Button */}
-                <TouchableOpacity 
-                  style={styles.donateCloseButton}
-                  onPress={() => setShowDonateModal(false)}
-                >
-                  <Ionicons name="close" size={24} color="#fff" />
-                </TouchableOpacity>
-
-                {/* Header */}
-                <View style={styles.donateModalHeader}>
-                  <Ionicons name="heart" size={48} color="#FF6B35" />
-                  <Text style={styles.donateModalTitle}>Support OKC Car Events</Text>
-                </View>
-
-                {/* Message */}
-                <Text style={styles.donateModalMessage}>
-                  Thank you for helping to keep this app free. All donations go towards future development and server fees. The community appreciates you.
-                </Text>
-
-                {/* PayPal Button */}
-                <TouchableOpacity
-                  style={styles.donateOptionButton}
-                  onPress={() => {
-                    Linking.openURL('https://www.paypal.com/donate/?business=AD9SVXEC7FT52&no_recurring=0&item_name=Thank+you+for+helping+to+keep+this+app+free.+Every+dollar+goes+towards+future+development+and+server+fees.+We+appreciates+you.&currency_code=USD');
-                    setShowDonateModal(false);
-                  }}
-                >
-                  <LinearGradient
-                    colors={['#003087', '#009CDE']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.donateOptionGradient}
-                  >
-                    <Ionicons name="logo-paypal" size={24} color="#fff" />
-                    <Text style={styles.donateOptionText}>Donate with PayPal</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                {/* Cash App Button */}
-                <TouchableOpacity
-                  style={styles.donateOptionButton}
-                  onPress={() => {
-                    Linking.openURL('https://cash.app/$jbmsurfss');
-                    setShowDonateModal(false);
-                  }}
-                >
-                  <LinearGradient
-                    colors={['#00D632', '#00B828']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.donateOptionGradient}
-                  >
-                    <Ionicons name="cash" size={24} color="#fff" />
-                    <Text style={styles.donateOptionText}>Donate with Cash App</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                {/* Cancel Button */}
-                <TouchableOpacity
-                  style={styles.donateCancelButton}
-                  onPress={() => setShowDonateModal(false)}
-                >
-                  <Text style={styles.donateCancelText}>Maybe Later</Text>
-                </TouchableOpacity>
-              </View>
-            </LinearGradient>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }
@@ -1578,98 +1476,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 8,
-  },
-  // Donate Button Styles
-  donateButton: {
-    marginHorizontal: 20,
-    marginTop: 24,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  donateButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    gap: 10,
-  },
-  donateButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  // Donate Modal Styles
-  donateModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  donateModalContainer: {
-    width: '100%',
-    maxWidth: 400,
-  },
-  donateModalBorder: {
-    borderRadius: 20,
-    padding: 3,
-  },
-  donateModalContent: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 18,
-    padding: 24,
-  },
-  donateCloseButton: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    zIndex: 1,
-    padding: 8,
-  },
-  donateModalHeader: {
-    alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 8,
-  },
-  donateModalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 12,
-    textAlign: 'center',
-  },
-  donateModalMessage: {
-    fontSize: 15,
-    color: '#ccc',
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  donateOptionButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 12,
-  },
-  donateOptionGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    gap: 12,
-  },
-  donateOptionText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  donateCancelButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    marginTop: 8,
-  },
-  donateCancelText: {
-    color: '#888',
-    fontSize: 14,
   },
   modalContainer: {
     flex: 1,
