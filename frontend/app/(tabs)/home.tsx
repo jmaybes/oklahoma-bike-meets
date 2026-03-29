@@ -437,11 +437,7 @@ export default function HomeScreen() {
 
       {/* Filter Row 1: Event Types */}
       <View style={styles.filterWrapper}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterContent}
-        >
+        <View style={styles.filterContent}>
           {eventTypes.map((item) => (
             <TouchableOpacity
               key={item.value}
@@ -455,7 +451,7 @@ export default function HomeScreen() {
               </Text>
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
       </View>
 
       {/* Filter Row 2: Sort & Past */}
@@ -795,13 +791,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   filterContent: {
-    paddingHorizontal: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
   filterChip: {
-    paddingHorizontal: 16,
+    flex: 1,
+    alignItems: 'center',
     paddingVertical: 10,
     backgroundColor: '#1a1a1a',
     borderRadius: 20,
