@@ -83,7 +83,7 @@ export default function HomeScreen() {
   const [freeOnly, setFreeOnly] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
-  const [sortBy, setSortBy] = useState<'date' | 'distance' | 'name'>('date');
+  const [sortBy, setSortBy] = useState<'date' | 'distance'>('date');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
 
@@ -93,7 +93,6 @@ export default function HomeScreen() {
   const sortOptions = [
     { label: 'Date', value: 'date', icon: 'calendar' },
     { label: 'Distance', value: 'distance', icon: 'navigate' },
-    { label: 'Name', value: 'name', icon: 'text' },
   ];
 
   const scrollHandler = useAnimatedScrollHandler({
@@ -206,11 +205,6 @@ export default function HomeScreen() {
             return a.distance - b.distance;
           });
         }
-        break;
-      case 'name':
-        filtered = filtered.sort((a, b) => {
-          return a.title.localeCompare(b.title);
-        });
         break;
     }
 
@@ -459,30 +453,14 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
-      {/* Filter Row 2: Free, Sort, Past */}
+      {/* Filter Row 2: Sort & Past */}
       <View style={styles.filterRow2}>
-        <TouchableOpacity
-          style={[styles.toggleFilterChip, freeOnly && styles.toggleFilterChipActive]}
-          onPress={() => setFreeOnly(!freeOnly)}
-        >
-          <Ionicons
-            name={freeOnly ? 'checkmark-circle' : 'pricetag-outline'}
-            size={16}
-            color={freeOnly ? '#fff' : '#4CAF50'}
-          />
-          <Text style={[styles.toggleFilterText, freeOnly && styles.toggleFilterTextActive]}>
-            Free Only
-          </Text>
-        </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.sortByButton}
           onPress={() => setShowSortMenu(!showSortMenu)}
         >
           <Ionicons name="swap-vertical" size={16} color="#FF6B35" />
-          <Text style={styles.sortByButtonText}>
-            Sort: {sortOptions.find(o => o.value === sortBy)?.label}
-          </Text>
+          <Text style={styles.sortByButtonText}>SORT BY</Text>
           <Ionicons name={showSortMenu ? 'chevron-up' : 'chevron-down'} size={14} color="#FF6B35" />
         </TouchableOpacity>
 
@@ -503,7 +481,7 @@ export default function HomeScreen() {
                 sortBy === option.value && styles.sortDropdownItemActive,
               ]}
               onPress={() => {
-                setSortBy(option.value as 'date' | 'distance' | 'name');
+                setSortBy(option.value as 'date' | 'distance');
                 setShowSortMenu(false);
               }}
             >
@@ -525,6 +503,35 @@ export default function HomeScreen() {
               )}
             </TouchableOpacity>
           ))}
+
+          {/* Free Events toggle inside dropdown */}
+          <TouchableOpacity
+            style={[
+              styles.sortDropdownItem,
+              freeOnly && styles.sortDropdownItemActive,
+            ]}
+            onPress={() => {
+              setFreeOnly(!freeOnly);
+              setShowSortMenu(false);
+            }}
+          >
+            <Ionicons
+              name={freeOnly ? 'checkmark-circle' : 'pricetag-outline'}
+              size={18}
+              color={freeOnly ? '#4CAF50' : '#999'}
+            />
+            <Text
+              style={[
+                styles.sortDropdownText,
+                freeOnly && { color: '#4CAF50', fontWeight: '600' },
+              ]}
+            >
+              Free Events
+            </Text>
+            {freeOnly && (
+              <Ionicons name="checkmark" size={18} color="#4CAF50" style={{ marginLeft: 'auto' }} />
+            )}
+          </TouchableOpacity>
         </View>
       )}
 
@@ -815,29 +822,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 12,
     gap: 12,
-  },
-  toggleFilterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#4CAF50',
-    gap: 6,
-  },
-  toggleFilterChipActive: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
-  },
-  toggleFilterText: {
-    color: '#4CAF50',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  toggleFilterTextActive: {
-    color: '#fff',
   },
   sortByButton: {
     flex: 1,
