@@ -94,8 +94,6 @@ export default function HomeScreen() {
     { label: 'Meets', value: 'Car Meet' },
     { label: 'Shows', value: 'Car Show' },
     { label: 'Cruise', value: 'Cruise' },
-    { label: 'Race', value: 'Race' },
-    { label: 'Other', value: 'Other' },
   ];
   const sortOptions = [
     { label: 'Date', value: 'date', icon: 'calendar' },
