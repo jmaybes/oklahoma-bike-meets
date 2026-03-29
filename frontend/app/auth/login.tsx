@@ -50,6 +50,7 @@ export default function LoginScreen() {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loadingCredentials, setLoadingCredentials] = useState(true);
+  const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
     loadSavedCredentials();
@@ -203,11 +204,12 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      setLoginError('Please fill in all fields.');
       return;
     }
 
     setLoading(true);
+    setLoginError('');
     try {
       const response = await axios.post(`${API_URL}/api/auth/login`, {
         email,
@@ -222,10 +224,7 @@ export default function LoginScreen() {
       router.replace('/(tabs)/profile');
     } catch (error: any) {
       console.error('Login error:', error);
-      Alert.alert(
-        'Login Failed',
-        error.response?.data?.detail || 'Invalid credentials'
-      );
+      setLoginError('Please check your email and password and try again.');
     } finally {
       setLoading(false);
     }
@@ -296,7 +295,7 @@ export default function LoginScreen() {
                 placeholder="Email"
                 placeholderTextColor="#666"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => { setEmail(text); setLoginError(''); }}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
@@ -315,7 +314,7 @@ export default function LoginScreen() {
                 placeholder="Password"
                 placeholderTextColor="#666"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => { setPassword(text); setLoginError(''); }}
                 secureTextEntry={!showPassword}
                 autoComplete="password"
               />
@@ -349,6 +348,13 @@ export default function LoginScreen() {
                 Save login info on this device
               </Text>
             </View>
+
+            {loginError ? (
+              <View style={styles.loginErrorBox}>
+                <Ionicons name="alert-circle" size={18} color="#FF3B30" />
+                <Text style={styles.loginErrorText}>{loginError}</Text>
+              </View>
+            ) : null}
 
             <TouchableOpacity
               style={[styles.loginButton, loading && styles.loginButtonDisabled]}
@@ -531,6 +537,23 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  loginErrorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 59, 48, 0.1)',
+    borderRadius: 10,
+    padding: 12,
+    gap: 8,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 59, 48, 0.25)',
+  },
+  loginErrorText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#FF6B6B',
+    lineHeight: 18,
   },
   savedIndicator: {
     flexDirection: 'row',
