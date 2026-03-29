@@ -81,22 +81,15 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('All');
   const [freeOnly, setFreeOnly] = useState(false);
-  const [maxDistance, setMaxDistance] = useState<number | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
   const [sortBy, setSortBy] = useState<'date' | 'distance' | 'name'>('date');
+  const [showSortMenu, setShowSortMenu] = useState(false);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
 
   const scrollY = useSharedValue(0);
 
   const eventTypes = ['All', 'Car Meet', 'Car Show', 'Cruise', 'Race', 'Other'];
-  const distanceOptions = [
-    { label: 'Any', value: null },
-    { label: '10 mi', value: 10 },
-    { label: '25 mi', value: 25 },
-    { label: '50 mi', value: 50 },
-    { label: '100 mi', value: 100 },
-  ];
   const sortOptions = [
     { label: 'Date', value: 'date', icon: 'calendar' },
     { label: 'Distance', value: 'distance', icon: 'navigate' },
@@ -116,7 +109,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     filterEvents();
-  }, [events, searchQuery, selectedType, freeOnly, maxDistance, userLocation, sortBy]);
+  }, [events, searchQuery, selectedType, freeOnly, userLocation, sortBy]);
 
   const getUserLocation = async () => {
     try {
@@ -194,15 +187,6 @@ export default function HomeScreen() {
       filtered = filtered.filter((event) => {
         const fee = event.entryFee?.toLowerCase() || '';
         return fee === '' || fee === 'free' || fee === '$0' || fee === '0';
-      });
-    }
-
-    if (maxDistance !== null && userLocation) {
-      filtered = filtered.filter((event) => {
-        if (event.distance !== undefined) {
-          return event.distance <= maxDistance;
-        }
-        return true;
       });
     }
 
@@ -475,7 +459,7 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
-      {/* Filter Row 2: Free & Distance */}
+      {/* Filter Row 2: Free, Sort, Past */}
       <View style={styles.filterRow2}>
         <TouchableOpacity
           style={[styles.toggleFilterChip, freeOnly && styles.toggleFilterChipActive]}
@@ -491,59 +475,58 @@ export default function HomeScreen() {
           </Text>
         </TouchableOpacity>
 
-        <View style={styles.distanceFilterContainer}>
-          <Ionicons name="navigate-outline" size={16} color="#2196F3" />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.distanceOptions}
-          >
-            {distanceOptions.map((option) => (
-              <TouchableOpacity
-                key={option.label}
-                style={[styles.distanceChip, maxDistance === option.value && styles.distanceChipActive]}
-                onPress={() => setMaxDistance(option.value)}
-              >
-                <Text
-                  style={[
-                    styles.distanceChipText,
-                    maxDistance === option.value && styles.distanceChipTextActive,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      </View>
+        <TouchableOpacity
+          style={styles.sortByButton}
+          onPress={() => setShowSortMenu(!showSortMenu)}
+        >
+          <Ionicons name="swap-vertical" size={16} color="#FF6B35" />
+          <Text style={styles.sortByButtonText}>
+            Sort: {sortOptions.find(o => o.value === sortBy)?.label}
+          </Text>
+          <Ionicons name={showSortMenu ? 'chevron-up' : 'chevron-down'} size={14} color="#FF6B35" />
+        </TouchableOpacity>
 
-      {/* Sort Row with Past Button */}
-      <View style={styles.sortRow}>
-        <Text style={styles.sortLabel}>Sort:</Text>
-        <View style={styles.sortOptions}>
-          {sortOptions.map((option) => (
-            <TouchableOpacity
-              key={option.value}
-              style={[styles.sortChip, sortBy === option.value && styles.sortChipActive]}
-              onPress={() => setSortBy(option.value as 'date' | 'distance' | 'name')}
-            >
-              <Ionicons
-                name={option.icon as any}
-                size={14}
-                color={sortBy === option.value ? '#fff' : '#FF6B35'}
-              />
-              <Text style={[styles.sortChipText, sortBy === option.value && styles.sortChipTextActive]}>
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
         <TouchableOpacity style={styles.pastButton} onPress={() => router.push('/events/past')}>
           <Ionicons name="time" size={14} color="#fff" />
           <Text style={styles.pastButtonText}>Past</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Sort Dropdown Menu */}
+      {showSortMenu && (
+        <View style={styles.sortDropdown}>
+          {sortOptions.map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.sortDropdownItem,
+                sortBy === option.value && styles.sortDropdownItemActive,
+              ]}
+              onPress={() => {
+                setSortBy(option.value as 'date' | 'distance' | 'name');
+                setShowSortMenu(false);
+              }}
+            >
+              <Ionicons
+                name={option.icon as any}
+                size={18}
+                color={sortBy === option.value ? '#FF6B35' : '#999'}
+              />
+              <Text
+                style={[
+                  styles.sortDropdownText,
+                  sortBy === option.value && styles.sortDropdownTextActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+              {sortBy === option.value && (
+                <Ionicons name="checkmark" size={18} color="#FF6B35" style={{ marginLeft: 'auto' }} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       {/* Search Box */}
       <View style={styles.searchContainer}>
@@ -563,10 +546,10 @@ export default function HomeScreen() {
       </View>
 
       {/* Location Warning */}
-      {maxDistance !== null && !userLocation && (
+      {sortBy === 'distance' && !userLocation && (
         <View style={styles.locationWarning}>
           <Ionicons name="warning" size={14} color="#FFC107" />
-          <Text style={styles.locationWarningText}>Enable location to filter by distance</Text>
+          <Text style={styles.locationWarningText}>Enable location to sort by distance</Text>
         </View>
       )}
 
@@ -577,7 +560,7 @@ export default function HomeScreen() {
         </Text>
       </View>
     </View>
-  ), [events, filteredEvents, selectedType, freeOnly, maxDistance, sortBy, searchQuery, userLocation, insets.top, heroImageLoaded, heroImageStyle, heroOverlayStyle, heroContentStyle]);
+  ), [events, filteredEvents, selectedType, freeOnly, sortBy, showSortMenu, searchQuery, userLocation, insets.top, heroImageLoaded, heroImageStyle, heroOverlayStyle, heroContentStyle]);
 
   if (loading) {
     return (
@@ -856,80 +839,53 @@ const styles = StyleSheet.create({
   toggleFilterTextActive: {
     color: '#fff',
   },
-  distanceFilterContainer: {
+  sortByButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     backgroundColor: '#1a1a1a',
     borderRadius: 20,
-    paddingLeft: 12,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: '#2196F3',
-  },
-  distanceOptions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    gap: 4,
-  },
-  distanceChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  distanceChipActive: {
-    backgroundColor: '#2196F3',
-  },
-  distanceChipText: {
-    color: '#888',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  distanceChipTextActive: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-
-  // ===== SORT =====
-  sortRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 12,
-    gap: 10,
-  },
-  sortLabel: {
-    color: '#888',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  sortOptions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  sortChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#FF6B35',
-    gap: 4,
+    gap: 6,
   },
-  sortChipActive: {
-    backgroundColor: '#FF6B35',
-    borderColor: '#FF6B35',
-  },
-  sortChipText: {
+  sortByButtonText: {
     color: '#FF6B35',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
   },
-  sortChipTextActive: {
-    color: '#fff',
+  sortDropdown: {
+    marginHorizontal: 20,
+    marginBottom: 12,
+    backgroundColor: '#222',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#333',
+    overflow: 'hidden',
+  },
+  sortDropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a2a',
+  },
+  sortDropdownItemActive: {
+    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+  },
+  sortDropdownText: {
+    color: '#999',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  sortDropdownTextActive: {
+    color: '#FF6B35',
+    fontWeight: '600',
   },
   pastButton: {
     flexDirection: 'row',
