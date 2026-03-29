@@ -766,7 +766,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1a1a1a',
-    marginHorizontal: 20,
+    marginHorizontal: 0,
     paddingHorizontal: 16,
     borderRadius: 12,
     marginBottom: 12,
@@ -790,7 +790,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   filterContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -819,7 +819,7 @@ const styles = StyleSheet.create({
   filterRow2: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
     marginBottom: 12,
     gap: 12,
   },
@@ -842,7 +842,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   sortDropdown: {
-    marginHorizontal: 20,
+    marginHorizontal: 0,
     marginBottom: 12,
     backgroundColor: '#222',
     borderRadius: 12,
@@ -903,7 +903,7 @@ const styles = StyleSheet.create({
 
   // ===== RESULTS ROW =====
   resultsRow: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
     marginBottom: 8,
   },
   resultsText: {
