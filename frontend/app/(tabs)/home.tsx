@@ -311,13 +311,26 @@ export default function HomeScreen() {
       scale.value = withSpring(1, { damping: 15, stiffness: 200 });
     };
 
-    // Custom entering animation: fade + subtle zoom (0.85 → 1)
-    const baseDelay = index * 60;
+    // Custom entering animation: fade + subtle zoom (0.85 → 1) ~600ms
+    const baseDelay = index * 80;
     const contentEntering = () => {
       'worklet';
       const animations = {
-        opacity: withTiming(1, { duration: 350 }),
-        transform: [{ scale: withSpring(1, { damping: 14, stiffness: 160 }) }],
+        opacity: withTiming(1, { duration: 600 }),
+        transform: [{ scale: withSpring(1, { damping: 12, stiffness: 80 }) }],
+      };
+      const initialValues = {
+        opacity: 0,
+        transform: [{ scale: 0.82 }],
+      };
+      return { initialValues, animations };
+    };
+
+    const titleEntering = () => {
+      'worklet';
+      const animations = {
+        opacity: withTiming(1, { duration: 650 }),
+        transform: [{ scale: withSpring(1, { damping: 12, stiffness: 80 }) }],
       };
       const initialValues = {
         opacity: 0,
@@ -326,28 +339,15 @@ export default function HomeScreen() {
       return { initialValues, animations };
     };
 
-    const titleEntering = () => {
+    const detailsEntering = () => {
       'worklet';
       const animations = {
-        opacity: withTiming(1, { duration: 300 }),
-        transform: [{ scale: withSpring(1, { damping: 16, stiffness: 180 }) }],
+        opacity: withTiming(1, { duration: 700 }),
+        transform: [{ scale: withSpring(1, { damping: 12, stiffness: 80 }) }],
       };
       const initialValues = {
         opacity: 0,
         transform: [{ scale: 0.88 }],
-      };
-      return { initialValues, animations };
-    };
-
-    const detailsEntering = () => {
-      'worklet';
-      const animations = {
-        opacity: withTiming(1, { duration: 280 }),
-        transform: [{ scale: withSpring(1, { damping: 16, stiffness: 180 }) }],
-      };
-      const initialValues = {
-        opacity: 0,
-        transform: [{ scale: 0.9 }],
       };
       return { initialValues, animations };
     };
