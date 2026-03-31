@@ -546,6 +546,12 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/my-events')}>
+            <Ionicons name="create" size={24} color="#FF6B35" />
+            <Text style={styles.menuItemText}>My Created Events</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/garage/tagged-photos')}>
             <Ionicons name="images" size={24} color="#9C27B0" />
             <Text style={styles.menuItemText}>Tagged Photos</Text>

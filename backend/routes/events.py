@@ -177,6 +177,15 @@ async def get_events(
     return result
 
 
+@router.get("/events/user/{user_id}")
+async def get_user_events(user_id: str):
+    """Get all events created by a specific user (approved or pending)."""
+    events = await db.events.find({"userId": user_id}).sort("date", -1).to_list(1000)
+    return [event_helper(event) for event in events]
+
+
+
+
 @router.get("/events/{event_id}")
 async def get_event(event_id: str):
     instance_date = None
