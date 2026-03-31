@@ -93,11 +93,13 @@ export default function AdminPendingClubsScreen() {
             setProcessing(clubId);
             try {
               await axios.delete(
-                `${API_URL}/api/admin/clubs/${clubId}/reject`,
-                { params: { admin_id: user?.id } }
+                `${API_URL}/api/admin/clubs/${clubId}/reject?admin_id=${user?.id}`
               );
-              Alert.alert('Success', 'Club rejected');
+              // Remove locally immediately
               setPendingClubs(prev => prev.filter(c => c.id !== clubId));
+              Alert.alert('Success', 'Club rejected and deleted');
+              // Re-fetch to ensure UI is synced with DB
+              fetchPendingClubs();
             } catch (error) {
               console.error('Error rejecting club:', error);
               Alert.alert('Error', 'Failed to reject club');

@@ -8,12 +8,14 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
+import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -32,10 +34,12 @@ interface LeaderboardEntry {
 
 export default function LeaderboardScreen() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   const [selectedType, setSelectedType] = useState<LeaderboardType>('0-60');
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const isAdmin = user?.isAdmin === true;
 
   const types: { type: LeaderboardType; label: string; icon: string; color: string }[] = [
     { type: '0-60', label: '0-60', icon: 'speedometer', color: '#FF6B35' },
@@ -63,6 +67,32 @@ export default function LeaderboardScreen() {
   const onRefresh = () => {
     setRefreshing(true);
     fetchLeaderboard();
+  };
+
+  const handleDeleteEntry = (entry: LeaderboardEntry) => {
+    Alert.alert(
+      'Delete Entry',
+      `Remove ${entry.nickname || entry.userName}'s ${entry.time.toFixed(2)}s run from the leaderboard?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await axios.delete(
+                `${API_URL}/api/admin/performance-runs/${entry.id}?admin_id=${user?.id}`
+              );
+              setLeaderboard(prev => prev.filter(e => e.id !== entry.id));
+              Alert.alert('Deleted', 'Leaderboard entry removed.');
+            } catch (error: any) {
+              console.error('Error deleting entry:', error);
+              Alert.alert('Error', error.response?.data?.detail || 'Failed to delete entry.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getRankColor = (rank: number) => {
@@ -119,6 +149,16 @@ export default function LeaderboardScreen() {
           </Text>
           <Text style={styles.timeUnit}>sec</Text>
         </View>
+
+        {isAdmin && (
+          <TouchableOpacity
+            style={styles.adminDeleteButton}
+            onPress={() => handleDeleteEntry(item)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="trash-outline" size={16} color="#FF3B30" />
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
@@ -438,5 +478,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  adminDeleteButton: {
+    padding: 8,
+    marginLeft: 4,
+    backgroundColor: 'rgba(255,59,48,0.12)',
+    borderRadius: 8,
   },
 });

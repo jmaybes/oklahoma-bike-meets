@@ -111,3 +111,23 @@ async def get_user_performance_runs(user_id: str):
         "location": run.get("location", ""),
         "createdAt": run["createdAt"]
     } for run in runs]
+
+
+@router.delete("/admin/performance-runs/{run_id}")
+async def admin_delete_performance_run(run_id: str, admin_id: str = Query(...)):
+    """Admin-only: delete a leaderboard entry."""
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+
+    if not ObjectId.is_valid(run_id):
+        raise HTTPException(status_code=400, detail="Invalid run ID")
+
+    result = await db.performance_runs.delete_one({"_id": ObjectId(run_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Performance run not found")
+
+    return {"success": True, "message": "Leaderboard entry deleted"}
