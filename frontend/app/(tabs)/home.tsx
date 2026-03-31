@@ -20,6 +20,7 @@ import Animated, {
   useAnimatedStyle,
   useAnimatedScrollHandler,
   withSpring,
+  withTiming,
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
@@ -310,8 +311,49 @@ export default function HomeScreen() {
       scale.value = withSpring(1, { damping: 15, stiffness: 200 });
     };
 
+    // Custom entering animation: fade + subtle zoom (0.85 → 1)
+    const baseDelay = index * 60;
+    const contentEntering = () => {
+      'worklet';
+      const animations = {
+        opacity: withTiming(1, { duration: 350 }),
+        transform: [{ scale: withSpring(1, { damping: 14, stiffness: 160 }) }],
+      };
+      const initialValues = {
+        opacity: 0,
+        transform: [{ scale: 0.85 }],
+      };
+      return { initialValues, animations };
+    };
+
+    const titleEntering = () => {
+      'worklet';
+      const animations = {
+        opacity: withTiming(1, { duration: 300 }),
+        transform: [{ scale: withSpring(1, { damping: 16, stiffness: 180 }) }],
+      };
+      const initialValues = {
+        opacity: 0,
+        transform: [{ scale: 0.88 }],
+      };
+      return { initialValues, animations };
+    };
+
+    const detailsEntering = () => {
+      'worklet';
+      const animations = {
+        opacity: withTiming(1, { duration: 280 }),
+        transform: [{ scale: withSpring(1, { damping: 16, stiffness: 180 }) }],
+      };
+      const initialValues = {
+        opacity: 0,
+        transform: [{ scale: 0.9 }],
+      };
+      return { initialValues, animations };
+    };
+
     return (
-      <Animated.View entering={FadeInDown.delay(index * 60).springify().damping(14)}>
+      <Animated.View entering={FadeInDown.delay(baseDelay).springify().damping(14)}>
         <Pressable
           onPress={() => router.push(`/event/${item.id}`)}
           onPressIn={handlePressIn}
@@ -323,11 +365,11 @@ export default function HomeScreen() {
                 source={{ uri: item.photos[0] }}
                 style={styles.eventImage}
                 resizeMode="cover"
-                entering={FadeIn.delay(index * 60 + 100).duration(400)}
+                entering={FadeIn.delay(baseDelay + 100).duration(400)}
               />
             )}
-            <View style={styles.eventContent}>
-              <View style={styles.eventHeader}>
+            <Animated.View style={styles.eventContent} entering={contentEntering}>
+              <Animated.View style={styles.eventHeader} entering={contentEntering}>
                 <View style={styles.eventTypeContainer}>
                   <Ionicons name="car-sport" size={16} color="#FF6B35" />
                   <Text style={styles.eventType}>{item.eventType}</Text>
@@ -350,14 +392,14 @@ export default function HomeScreen() {
                     </Text>
                   )}
                 </View>
-              </View>
+              </Animated.View>
 
-              <Text style={styles.eventTitle}>{item.title}</Text>
-              <Text style={styles.eventDescription} numberOfLines={2}>
+              <Animated.Text style={styles.eventTitle} entering={titleEntering}>{item.title}</Animated.Text>
+              <Animated.Text style={styles.eventDescription} numberOfLines={2} entering={titleEntering}>
                 {item.description}
-              </Text>
+              </Animated.Text>
 
-              <View style={styles.eventDetails}>
+              <Animated.View style={styles.eventDetails} entering={detailsEntering}>
                 <View style={styles.detailRow}>
                   <Ionicons name="calendar" size={16} color="#888" />
                   <Text style={styles.detailText}>
@@ -372,8 +414,8 @@ export default function HomeScreen() {
                   <Ionicons name="people" size={16} color="#888" />
                   <Text style={styles.detailText}>{item.attendeeCount} attending</Text>
                 </View>
-              </View>
-            </View>
+              </Animated.View>
+            </Animated.View>
           </Animated.View>
         </Pressable>
       </Animated.View>
