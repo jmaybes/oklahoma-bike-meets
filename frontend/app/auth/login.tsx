@@ -9,27 +9,15 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
-  Pressable,
 } from 'react-native';
 import Animated, { 
   FadeInDown, 
-  FadeIn,
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring,
-  withSequence,
-  withTiming,
-  withRepeat,
-  Easing,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import * as WebBrowser from 'expo-web-browser';
-import * as ExpoLinking from 'expo-linking';
-import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -45,8 +33,6 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [appleLoading, setAppleLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loadingCredentials, setLoadingCredentials] = useState(true);
@@ -90,115 +76,6 @@ export default function LoginScreen() {
       }
     } catch (error) {
       console.error('Error saving credentials:', error);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
-    try {
-      // Get the current URL for the callback - use expo-linking for proper scheme resolution
-      const currentUrl = Platform.OS === 'web' 
-        ? window.location.origin 
-        : ExpoLinking.createURL('');
-      
-      // Construct the callback URL
-      const callbackUrl = Platform.OS === 'web'
-        ? `${currentUrl}/auth/google-callback`
-        : ExpoLinking.createURL('auth/google-callback');
-      
-      // Emergent Auth URL
-      const authUrl = `https://demobackend.emergentagent.com/auth/v1/env/oauth/google?callback_url=${encodeURIComponent(callbackUrl)}`;
-      
-      if (Platform.OS === 'web') {
-        // On web, redirect directly
-        window.location.href = authUrl;
-      } else {
-        // On mobile, open in browser
-        const result = await WebBrowser.openAuthSessionAsync(authUrl, callbackUrl);
-        
-        if (result.type === 'success' && result.url) {
-          // Extract session_id from URL
-          const url = new URL(result.url);
-          const sessionId = url.searchParams.get('session_id') || 
-                           url.hash.match(/session_id=([^&]+)/)?.[1];
-          
-          if (sessionId) {
-            // Navigate to callback screen with session_id
-            router.push(`/auth/google-callback?session_id=${sessionId}`);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Google sign-in error:', error);
-      Alert.alert('Error', 'Failed to initiate Google sign-in');
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
-
-  // ==================== Apple Sign In ====================
-  const handleAppleSignIn = async () => {
-    setAppleLoading(true);
-    try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
-
-      if (!credential.identityToken) {
-        Alert.alert('Error', 'Failed to get Apple identity token');
-        return;
-      }
-
-      // Build the full name from Apple's response (only available on first sign-in)
-      const fullName = credential.fullName
-        ? [credential.fullName.givenName, credential.fullName.familyName]
-            .filter(Boolean)
-            .join(' ')
-        : '';
-
-      // Send to backend for verification
-      const response = await axios.post(`${API_URL}/api/auth/apple/session`, {
-        identityToken: credential.identityToken,
-        fullName: fullName || undefined,
-        email: credential.email || undefined,
-      });
-
-      const { isNewUser, user, appleData } = response.data;
-
-      if (isNewUser) {
-        // Navigate to username picker (reuse the google-callback flow)
-        router.push({
-          pathname: '/auth/google-callback',
-          params: {
-            email: appleData.email,
-            name: appleData.name || 'Apple User',
-            picture: '',
-            googleId: '',
-            appleId: appleData.appleId,
-            authProvider: 'apple',
-          },
-        });
-      } else {
-        // Existing user — log them in directly
-        await login(user);
-        Alert.alert('Welcome back!', `Signed in as ${user.nickname || user.email}`);
-        router.replace('/(tabs)/profile');
-      }
-    } catch (error: any) {
-      if (error.code === 'ERR_REQUEST_CANCELED') {
-        // User cancelled — do nothing
-        return;
-      }
-      console.error('Apple sign-in error:', error);
-      Alert.alert(
-        'Apple Sign In Failed',
-        error.response?.data?.detail || error.message || 'Something went wrong'
-      );
-    } finally {
-      setAppleLoading(false);
     }
   };
 
@@ -378,46 +255,6 @@ export default function LoginScreen() {
               </View>
             )}
 
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* Google Sign-In Button */}
-            <TouchableOpacity
-              style={[styles.googleButton, googleLoading && styles.googleButtonDisabled]}
-              onPress={handleGoogleSignIn}
-              disabled={googleLoading}
-            >
-              {googleLoading ? (
-                <ActivityIndicator color="#333" />
-              ) : (
-                <>
-                  <Ionicons name="logo-google" size={20} color="#4285F4" />
-                  <Text style={styles.googleButtonText}>Continue with Google</Text>
-                </>
-              )}
-            </TouchableOpacity>
-
-            {/* Apple Sign-In Button (iOS only) */}
-            {Platform.OS === 'ios' && (
-              <TouchableOpacity
-                style={[styles.appleButton, appleLoading && styles.appleButtonDisabled]}
-                onPress={handleAppleSignIn}
-                disabled={appleLoading}
-              >
-                {appleLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <>
-                    <Ionicons name="logo-apple" size={22} color="#fff" />
-                    <Text style={styles.appleButtonText}>Continue with Apple</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            )}
-
             <TouchableOpacity
               style={styles.registerLink}
               onPress={() => router.push('/auth/register')}
@@ -566,23 +403,9 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     fontSize: 12,
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#333',
-  },
-  dividerText: {
-    color: '#666',
-    marginHorizontal: 12,
-  },
   registerLink: {
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 24,
   },
   registerLinkText: {
     color: '#888',
@@ -591,40 +414,5 @@ const styles = StyleSheet.create({
   registerLinkBold: {
     color: '#FF6B35',
     fontWeight: 'bold',
-  },
-  googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
-  },
-  googleButtonDisabled: {
-    opacity: 0.6,
-  },
-  googleButtonText: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  appleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#000',
-    borderRadius: 12,
-    paddingVertical: 14,
-    gap: 10,
-    marginTop: 10,
-  },
-  appleButtonDisabled: {
-    opacity: 0.6,
-  },
-  appleButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
