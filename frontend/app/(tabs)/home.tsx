@@ -33,7 +33,7 @@ import * as Location from 'expo-location';
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const HERO_HEIGHT = 300;
+const BASE_HERO_HEIGHT = 300;
 const COLLAPSED_HEADER_HEIGHT = 60;
 
 // Hero background images
@@ -74,6 +74,7 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const HERO_HEIGHT = BASE_HERO_HEIGHT + insets.top;
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -387,10 +388,10 @@ export default function HomeScreen() {
   const ListHeaderComponent = useCallback(() => (
     <View>
       {/* Parallax Hero Section */}
-      <View style={styles.heroContainer}>
+      <View style={[styles.heroContainer, { height: HERO_HEIGHT }]}>
         <Animated.Image
           source={{ uri: HERO_IMAGES[0] }}
-          style={[styles.heroImage, heroImageStyle]}
+          style={[styles.heroImage, { height: HERO_HEIGHT + 100 }, heroImageStyle]}
           resizeMode="cover"
           onLoad={() => setHeroImageLoaded(true)}
         />
@@ -632,13 +633,13 @@ const styles = StyleSheet.create({
 
   // ===== HERO / PARALLAX =====
   heroContainer: {
-    height: HERO_HEIGHT,
+    height: BASE_HERO_HEIGHT,
     overflow: 'hidden',
     position: 'relative',
   },
   heroImage: {
     width: SCREEN_WIDTH,
-    height: HERO_HEIGHT + 100,
+    height: BASE_HERO_HEIGHT + 100,
     position: 'absolute',
     top: 0,
     left: 0,
@@ -652,7 +653,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: HERO_HEIGHT * 0.6,
+    height: BASE_HERO_HEIGHT * 0.6,
     zIndex: 2,
   },
   heroContent: {
