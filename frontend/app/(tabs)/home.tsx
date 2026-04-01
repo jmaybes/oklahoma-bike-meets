@@ -338,16 +338,16 @@ export default function HomeScreen() {
 
     useEffect(() => {
       if (isVisible) {
-        // Card animation (~600ms)
-        cardOpacity.value = withTiming(1, { duration: 600 });
-        cardTranslateY.value = withTiming(0, { duration: 650 });
-        cardScale.value = withTiming(1, { duration: 600 });
-        // Content cascades in slightly after (~150ms delay)
-        contentOpacity.value = withTiming(1, { duration: 500 });
-        contentTranslateY.value = withTiming(0, { duration: 550 });
-        // Details enter last (~250ms delay)
-        detailsOpacity.value = withTiming(1, { duration: 450 });
-        detailsTranslateY.value = withTiming(0, { duration: 500 });
+        // Card animation (~300ms)
+        cardOpacity.value = withTiming(1, { duration: 300 });
+        cardTranslateY.value = withTiming(0, { duration: 325 });
+        cardScale.value = withTiming(1, { duration: 300 });
+        // Content cascades in
+        contentOpacity.value = withTiming(1, { duration: 250 });
+        contentTranslateY.value = withTiming(0, { duration: 275 });
+        // Details enter last
+        detailsOpacity.value = withTiming(1, { duration: 225 });
+        detailsTranslateY.value = withTiming(0, { duration: 250 });
       }
     }, [isVisible]);
 
