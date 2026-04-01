@@ -22,6 +22,7 @@ import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
@@ -245,21 +246,34 @@ export default function ProfileScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
-      quality: 0.7,
-      base64: true,
+      quality: 0.6,
+      base64: false,
     });
 
     if (!result.canceled && result.assets) {
-      const base64Images = result.assets
-        .filter(asset => asset.base64)
-        .map(asset => `data:image/jpeg;base64,${asset.base64}`);
-      
-      if (carPhotos.length + base64Images.length > 10) {
+      if (carPhotos.length + result.assets.length > 10) {
         Alert.alert('Limit Reached', 'You can upload a maximum of 10 images');
         return;
       }
-      
-      setCarPhotos([...carPhotos, ...base64Images]);
+
+      // Compress and resize each image for efficient storage
+      const compressedImages: string[] = [];
+      for (const asset of result.assets) {
+        try {
+          const manipulated = await ImageManipulator.manipulateAsync(
+            asset.uri,
+            [{ resize: { width: 1200 } }],
+            { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+          );
+          if (manipulated.base64) {
+            compressedImages.push(`data:image/jpeg;base64,${manipulated.base64}`);
+          }
+        } catch (err) {
+          console.error('Image compression error:', err);
+        }
+      }
+
+      setCarPhotos([...carPhotos, ...compressedImages]);
     }
   };
 
