@@ -956,6 +956,9 @@ export default function ProfileScreen() {
                 <Ionicons name="images" size={24} color="#FF6B35" />
                 <Text style={styles.uploadButtonText}>Upload Photos</Text>
               </TouchableOpacity>
+              <Text style={styles.photoHint}>
+                Tip: If you have trouble saving, try uploading fewer images at a time.
+              </Text>
 
               {carPhotos.length > 0 && (
                 <View style={styles.photosPreview}>
@@ -1593,6 +1596,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  photoHint: {
+    color: '#888',
+    fontSize: 12,
+    marginTop: 8,
+    fontStyle: 'italic',
   },
   photosPreview: {
     flexDirection: 'row',
