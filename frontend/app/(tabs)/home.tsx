@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Platform,
   Pressable,
   Dimensions,
+  ViewToken,
 } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -295,9 +296,60 @@ export default function HomeScreen() {
     };
   });
 
+  // ===== VIEWABILITY TRACKING =====
+  const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set());
+  const seenIdsRef = useRef<Set<string>>(new Set());
+
+  // Reset visibility when filtered events change (new filter applied)
+  useEffect(() => {
+    seenIdsRef.current = new Set();
+    setVisibleIds(new Set());
+  }, [selectedType, searchQuery, freeOnly, sortBy]);
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 20,
+  }).current;
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    const newIds = new Set(seenIdsRef.current);
+    let changed = false;
+    for (const item of viewableItems) {
+      if (item.isViewable && item.item?.id && !seenIdsRef.current.has(item.item.id)) {
+        newIds.add(item.item.id);
+        changed = true;
+      }
+    }
+    if (changed) {
+      seenIdsRef.current = newIds;
+      setVisibleIds(new Set(newIds));
+    }
+  }).current;
+
   // ===== EVENT CARD COMPONENT (GSAP-style scroll animation) =====
-  const AnimatedEventCard = ({ item, index }: { item: Event; index: number }) => {
+  const AnimatedEventCard = ({ item, index, isVisible }: { item: Event; index: number; isVisible: boolean }) => {
     const pressScale = useSharedValue(1);
+    const cardOpacity = useSharedValue(0);
+    const cardTranslateY = useSharedValue(60);
+    const cardScale = useSharedValue(0.88);
+    const contentOpacity = useSharedValue(0);
+    const contentTranslateY = useSharedValue(25);
+    const detailsOpacity = useSharedValue(0);
+    const detailsTranslateY = useSharedValue(20);
+
+    useEffect(() => {
+      if (isVisible) {
+        // Card animation (~600ms)
+        cardOpacity.value = withTiming(1, { duration: 600 });
+        cardTranslateY.value = withTiming(0, { duration: 650 });
+        cardScale.value = withTiming(1, { duration: 600 });
+        // Content cascades in slightly after (~150ms delay)
+        contentOpacity.value = withTiming(1, { duration: 500 });
+        contentTranslateY.value = withTiming(0, { duration: 550 });
+        // Details enter last (~250ms delay)
+        detailsOpacity.value = withTiming(1, { duration: 450 });
+        detailsTranslateY.value = withTiming(0, { duration: 500 });
+      }
+    }, [isVisible]);
 
     const handlePressIn = () => {
       pressScale.value = withSpring(0.97, { damping: 15, stiffness: 200 });
@@ -307,84 +359,45 @@ export default function HomeScreen() {
       pressScale.value = withSpring(1, { damping: 15, stiffness: 200 });
     };
 
-    const pressStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: pressScale.value }],
+    const cardAnimatedStyle = useAnimatedStyle(() => ({
+      opacity: cardOpacity.value,
+      transform: [
+        { translateY: cardTranslateY.value },
+        { scale: cardScale.value * pressScale.value },
+      ],
     }));
 
-    // GSAP-style card entering: slide up + scale + fade (~600ms smooth)
-    const cardEntering = () => {
-      'worklet';
-      const animations = {
-        opacity: withTiming(1, { duration: 600 }),
-        transform: [
-          { translateY: withTiming(0, { duration: 650 }) },
-          { scale: withTiming(1, { duration: 600 }) },
-        ],
-      };
-      const initialValues = {
-        opacity: 0,
-        transform: [
-          { translateY: 60 },
-          { scale: 0.88 },
-        ],
-      };
-      return { initialValues, animations };
-    };
+    const contentAnimatedStyle = useAnimatedStyle(() => ({
+      opacity: contentOpacity.value,
+      transform: [
+        { translateY: contentTranslateY.value },
+      ],
+    }));
 
-    // Text content cascades in after the card
-    const contentEntering = () => {
-      'worklet';
-      const animations = {
-        opacity: withTiming(1, { duration: 500 }),
-        transform: [
-          { translateY: withTiming(0, { duration: 550 }) },
-        ],
-      };
-      const initialValues = {
-        opacity: 0,
-        transform: [
-          { translateY: 25 },
-        ],
-      };
-      return { initialValues, animations };
-    };
-
-    // Details row enters last
-    const detailsEntering = () => {
-      'worklet';
-      const animations = {
-        opacity: withTiming(1, { duration: 450 }),
-        transform: [
-          { translateY: withTiming(0, { duration: 500 }) },
-        ],
-      };
-      const initialValues = {
-        opacity: 0,
-        transform: [
-          { translateY: 20 },
-        ],
-      };
-      return { initialValues, animations };
-    };
+    const detailsAnimatedStyle = useAnimatedStyle(() => ({
+      opacity: detailsOpacity.value,
+      transform: [
+        { translateY: detailsTranslateY.value },
+      ],
+    }));
 
     return (
-      <Animated.View entering={cardEntering}>
+      <Animated.View style={cardAnimatedStyle}>
         <Pressable
           onPress={() => router.push(`/event/${item.id}`)}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
         >
-          <Animated.View style={[styles.eventCard, pressStyle]}>
+          <View style={styles.eventCard}>
             {item.photos && item.photos.length > 0 && (
-              <Animated.Image
+              <Image
                 source={{ uri: item.photos[0] }}
                 style={styles.eventImage}
                 resizeMode="cover"
-                entering={FadeIn.duration(500)}
               />
             )}
             <View style={styles.eventContent}>
-              <Animated.View style={styles.eventHeader} entering={contentEntering}>
+              <Animated.View style={[styles.eventHeader, contentAnimatedStyle]}>
                 <View style={styles.eventTypeContainer}>
                   <Ionicons name="car-sport" size={16} color="#FF6B35" />
                   <Text style={styles.eventType}>{item.eventType}</Text>
@@ -409,14 +422,14 @@ export default function HomeScreen() {
                 </View>
               </Animated.View>
 
-              <Animated.View entering={contentEntering}>
+              <Animated.View style={contentAnimatedStyle}>
                 <Text style={styles.eventTitle}>{item.title}</Text>
                 <Text style={styles.eventDescription} numberOfLines={2}>
                   {item.description}
                 </Text>
               </Animated.View>
 
-              <Animated.View style={styles.eventDetails} entering={detailsEntering}>
+              <Animated.View style={[styles.eventDetails, detailsAnimatedStyle]}>
                 <View style={styles.detailRow}>
                   <Ionicons name="calendar" size={16} color="#888" />
                   <Text style={styles.detailText}>
@@ -433,14 +446,14 @@ export default function HomeScreen() {
                 </View>
               </Animated.View>
             </View>
-          </Animated.View>
+          </View>
         </Pressable>
       </Animated.View>
     );
   };
 
   const renderEventCard = ({ item, index }: { item: Event; index: number }) => (
-    <AnimatedEventCard item={item} index={index} />
+    <AnimatedEventCard item={item} index={index} isVisible={visibleIds.has(item.id)} />
   );
 
   // ===== LIST HEADER with parallax hero + filters =====
@@ -663,6 +676,8 @@ export default function HomeScreen() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         ListHeaderComponent={ListHeaderComponent}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" />
         }
