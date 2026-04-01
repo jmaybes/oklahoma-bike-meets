@@ -78,17 +78,16 @@ export default function LeaderboardScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await axios.delete(
-                `${API_URL}/api/admin/performance-runs/${entry.id}?admin_id=${user?.id}`
-              );
+          onPress: () => {
+            axios.delete(
+              `${API_URL}/api/admin/performance-runs/${entry.id}?admin_id=${user?.id}`
+            ).then(() => {
               setLeaderboard(prev => prev.filter(e => e.id !== entry.id));
-              Alert.alert('Deleted', 'Leaderboard entry removed.');
-            } catch (error: any) {
+              fetchLeaderboard();
+            }).catch((error: any) => {
               console.error('Error deleting entry:', error);
               Alert.alert('Error', error.response?.data?.detail || 'Failed to delete entry.');
-            }
+            });
           },
         },
       ]
