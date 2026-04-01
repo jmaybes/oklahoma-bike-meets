@@ -32,12 +32,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const BASE_HERO_HEIGHT = 300;
 const COLLAPSED_HEADER_HEIGHT = 60;
-const ESTIMATED_CARD_HEIGHT = 350;
-const HEADER_OFFSET = 200; // approximate filter/search section height
 
 // Hero background images
 const HERO_IMAGES = [
@@ -298,7 +296,7 @@ export default function HomeScreen() {
   });
 
   // ===== EVENT CARD COMPONENT (GSAP-style scroll animation) =====
-  const AnimatedEventCard = ({ item, index, scrollY: parentScrollY }: { item: Event; index: number; scrollY: Animated.SharedValue<number> }) => {
+  const AnimatedEventCard = ({ item, index }: { item: Event; index: number }) => {
     const pressScale = useSharedValue(1);
 
     const handlePressIn = () => {
@@ -309,84 +307,84 @@ export default function HomeScreen() {
       pressScale.value = withSpring(1, { damping: 15, stiffness: 200 });
     };
 
-    // Card's estimated position in the scroll content
-    const cardTop = HERO_HEIGHT + HEADER_OFFSET + index * ESTIMATED_CARD_HEIGHT;
-    // Trigger zone: when card is about to enter the bottom of the viewport
-    const triggerStart = cardTop - SCREEN_HEIGHT;
-    const triggerEnd = triggerStart + SCREEN_HEIGHT * 0.45; // 45% of screen = animation range
+    const pressStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: pressScale.value }],
+    }));
 
-    // Scroll-driven card container animation (scale + translateY + opacity)
-    const cardAnimatedStyle = useAnimatedStyle(() => {
-      const progress = interpolate(
-        parentScrollY.value,
-        [triggerStart, triggerEnd],
-        [0, 1],
-        Extrapolation.CLAMP
-      );
-
-      return {
-        opacity: interpolate(progress, [0, 0.6], [0, 1], Extrapolation.CLAMP),
+    // GSAP-style card entering: slide up + scale + fade (~600ms smooth)
+    const cardEntering = () => {
+      'worklet';
+      const animations = {
+        opacity: withTiming(1, { duration: 600 }),
         transform: [
-          { translateY: interpolate(progress, [0, 1], [60, 0], Extrapolation.CLAMP) },
-          { scale: interpolate(progress, [0, 1], [0.88, 1], Extrapolation.CLAMP) * pressScale.value },
+          { translateY: withTiming(0, { duration: 650 }) },
+          { scale: withTiming(1, { duration: 600 }) },
         ],
       };
-    });
-
-    // Scroll-driven text content animation (slightly delayed from card)
-    const contentAnimatedStyle = useAnimatedStyle(() => {
-      const progress = interpolate(
-        parentScrollY.value,
-        [triggerStart, triggerEnd],
-        [0, 1],
-        Extrapolation.CLAMP
-      );
-      // Text fades in slightly after the card
-      const textProgress = interpolate(progress, [0.15, 0.8], [0, 1], Extrapolation.CLAMP);
-
-      return {
-        opacity: textProgress,
+      const initialValues = {
+        opacity: 0,
         transform: [
-          { translateY: interpolate(textProgress, [0, 1], [20, 0], Extrapolation.CLAMP) },
+          { translateY: 60 },
+          { scale: 0.88 },
         ],
       };
-    });
+      return { initialValues, animations };
+    };
 
-    // Scroll-driven details row animation (most delayed)
-    const detailsAnimatedStyle = useAnimatedStyle(() => {
-      const progress = interpolate(
-        parentScrollY.value,
-        [triggerStart, triggerEnd],
-        [0, 1],
-        Extrapolation.CLAMP
-      );
-      const detailProgress = interpolate(progress, [0.3, 1], [0, 1], Extrapolation.CLAMP);
-
-      return {
-        opacity: detailProgress,
+    // Text content cascades in after the card
+    const contentEntering = () => {
+      'worklet';
+      const animations = {
+        opacity: withTiming(1, { duration: 500 }),
         transform: [
-          { translateY: interpolate(detailProgress, [0, 1], [15, 0], Extrapolation.CLAMP) },
+          { translateY: withTiming(0, { duration: 550 }) },
         ],
       };
-    });
+      const initialValues = {
+        opacity: 0,
+        transform: [
+          { translateY: 25 },
+        ],
+      };
+      return { initialValues, animations };
+    };
+
+    // Details row enters last
+    const detailsEntering = () => {
+      'worklet';
+      const animations = {
+        opacity: withTiming(1, { duration: 450 }),
+        transform: [
+          { translateY: withTiming(0, { duration: 500 }) },
+        ],
+      };
+      const initialValues = {
+        opacity: 0,
+        transform: [
+          { translateY: 20 },
+        ],
+      };
+      return { initialValues, animations };
+    };
 
     return (
-      <Animated.View style={cardAnimatedStyle}>
+      <Animated.View entering={cardEntering}>
         <Pressable
           onPress={() => router.push(`/event/${item.id}`)}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
         >
-          <View style={styles.eventCard}>
+          <Animated.View style={[styles.eventCard, pressStyle]}>
             {item.photos && item.photos.length > 0 && (
-              <Image
+              <Animated.Image
                 source={{ uri: item.photos[0] }}
                 style={styles.eventImage}
                 resizeMode="cover"
+                entering={FadeIn.duration(500)}
               />
             )}
             <View style={styles.eventContent}>
-              <Animated.View style={[styles.eventHeader, contentAnimatedStyle]}>
+              <Animated.View style={styles.eventHeader} entering={contentEntering}>
                 <View style={styles.eventTypeContainer}>
                   <Ionicons name="car-sport" size={16} color="#FF6B35" />
                   <Text style={styles.eventType}>{item.eventType}</Text>
@@ -411,14 +409,14 @@ export default function HomeScreen() {
                 </View>
               </Animated.View>
 
-              <Animated.View style={contentAnimatedStyle}>
+              <Animated.View entering={contentEntering}>
                 <Text style={styles.eventTitle}>{item.title}</Text>
                 <Text style={styles.eventDescription} numberOfLines={2}>
                   {item.description}
                 </Text>
               </Animated.View>
 
-              <Animated.View style={[styles.eventDetails, detailsAnimatedStyle]}>
+              <Animated.View style={styles.eventDetails} entering={detailsEntering}>
                 <View style={styles.detailRow}>
                   <Ionicons name="calendar" size={16} color="#888" />
                   <Text style={styles.detailText}>
@@ -435,14 +433,14 @@ export default function HomeScreen() {
                 </View>
               </Animated.View>
             </View>
-          </View>
+          </Animated.View>
         </Pressable>
       </Animated.View>
     );
   };
 
   const renderEventCard = ({ item, index }: { item: Event; index: number }) => (
-    <AnimatedEventCard item={item} index={index} scrollY={scrollY} />
+    <AnimatedEventCard item={item} index={index} />
   );
 
   // ===== LIST HEADER with parallax hero + filters =====
