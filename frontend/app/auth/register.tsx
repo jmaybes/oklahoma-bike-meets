@@ -33,6 +33,7 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleRegister = async () => {
     if (!name || !nickname || !email || !password || !confirmPassword) {
@@ -232,8 +233,15 @@ export default function RegisterScreen() {
                   placeholderTextColor="#666"
                   value={password}
                   onChangeText={setPassword}
-                  secureTextEntry
+                  secureTextEntry={!showPassword}
                 />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <Ionicons
+                    name={showPassword ? "eye-off" : "eye"}
+                    size={22}
+                    color="#888"
+                  />
+                </TouchableOpacity>
               </View>
 
               <View style={styles.inputContainer}>
@@ -244,7 +252,7 @@ export default function RegisterScreen() {
                   placeholderTextColor="#666"
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
-                  secureTextEntry
+                  secureTextEntry={!showPassword}
                 />
               </View>
 
