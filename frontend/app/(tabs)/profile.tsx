@@ -529,7 +529,7 @@ export default function ProfileScreen() {
                 {userCar.modificationNotes && (
                   <View style={styles.carDetailRow}>
                     <Ionicons name="build" size={16} color="#4CAF50" />
-                    <Text style={styles.carDetailText} numberOfLines={2}>{userCar.modificationNotes}</Text>
+                    <Text style={styles.carDetailText}>{userCar.modificationNotes}</Text>
                   </View>
                 )}
                 {userCar.videos && userCar.videos.length > 0 && (
