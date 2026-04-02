@@ -487,8 +487,8 @@ export default function ProfileScreen() {
                       onPress={() => router.push(`/garage/${userCar.id}`)}
                       activeOpacity={0.8}
                     >
-                      <Ionicons name="images-outline" size={16} color="#fff" />
-                      <Text style={styles.viewPicsText}>View Photos</Text>
+                      <Ionicons name="images-outline" size={12} color="#fff" />
+                      <Text style={styles.viewPicsText}>View Pics</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -1435,20 +1435,20 @@ const styles = StyleSheet.create({
   },
   viewPicsButton: {
     position: 'absolute',
-    bottom: 14,
-    left: 14,
+    bottom: 10,
+    left: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 107, 53, 0.9)',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 6,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    gap: 4,
   },
   viewPicsText: {
     color: '#fff',
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '600',
   },
   noPhotoContainer: {
     height: 150,
