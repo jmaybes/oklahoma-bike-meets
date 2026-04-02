@@ -360,11 +360,12 @@ export default function EventGalleryScreen() {
             <Text style={styles.headerTitle}>Event Gallery</Text>
             <Text style={styles.headerSubtitle} numberOfLines={1}>{eventTitle}</Text>
           </View>
-          {isAuthenticated ? (
+          {isAuthenticated && (
             <TouchableOpacity onPress={pickImage} style={styles.uploadButton}>
               <Ionicons name="camera" size={24} color="#fff" />
             </TouchableOpacity>
-          ) : null}
+          )}
+        </View>
       </LinearGradient>
 
       {/* Photo count */}
@@ -393,12 +394,13 @@ export default function EventGalleryScreen() {
               <Ionicons name="camera-outline" size={64} color="#444" />
               <Text style={styles.emptyTitle}>No Photos Yet</Text>
               <Text style={styles.emptySubtitle}>Be the first to share photos from this event!</Text>
-              {isAuthenticated ? (
+              {isAuthenticated && (
                 <TouchableOpacity style={styles.uploadFirstButton} onPress={pickImage}>
                   <Ionicons name="cloud-upload" size={20} color="#fff" />
                   <Text style={styles.uploadFirstText}>Upload Photo</Text>
                 </TouchableOpacity>
-              ) : null}
+              )}
+            </View>
           }
         />
       )}
@@ -435,11 +437,12 @@ export default function EventGalleryScreen() {
                   {selectedPhoto?.createdAt && new Date(selectedPhoto.createdAt).toLocaleDateString()}
                 </Text>
               </View>
-              {isMyPhoto ? (
+              {isMyPhoto && (
                 <TouchableOpacity onPress={deletePhoto}>
                   <Ionicons name="trash-outline" size={24} color="#f44336" />
                 </TouchableOpacity>
-              ) : null}
+              )}
+            </View>
 
             {/* Photo */}
             <View style={styles.photoModalImageContainer}>
@@ -450,11 +453,13 @@ export default function EventGalleryScreen() {
                   resizeMode="contain"
                 />
               ) : null}
+            </View>
 
             {/* Caption */}
             {selectedPhoto?.caption ? (
               <Text style={styles.photoModalCaption}>{selectedPhoto.caption}</Text>
             ) : null}
+
             {/* Tags */}
             {selectedPhoto && selectedPhoto.tags.length > 0 && (
               <View style={styles.tagsContainer}>
@@ -487,12 +492,13 @@ export default function EventGalleryScreen() {
                 <Text style={styles.actionText}>{selectedPhoto?.likeCount || 0}</Text>
               </TouchableOpacity>
 
-              {isAuthenticated && !myTagInPhoto ? (
+              {isAuthenticated && !myTagInPhoto && (
                 <TouchableOpacity style={styles.tagButton} onPress={openTagModal}>
                   <Ionicons name="car-sport-outline" size={22} color="#fff" />
                   <Text style={styles.tagButtonText}>Tag My Car</Text>
                 </TouchableOpacity>
-              ) : null}
+              )}
+            </View>
           </View>
         </View>
       </Modal>
@@ -587,6 +593,7 @@ export default function EventGalleryScreen() {
             {uploadImage ? (
               <Image source={{ uri: uploadImage }} style={styles.uploadPreview} resizeMode="contain" />
             ) : null}
+
             <TextInput
               style={styles.captionInput}
               placeholder="Add a caption..."

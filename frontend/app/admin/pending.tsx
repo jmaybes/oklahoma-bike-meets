@@ -133,12 +133,13 @@ export default function AdminPendingScreen() {
           <Ionicons name="location" size={16} color="#888" />
           <Text style={styles.infoText}>{item.city}</Text>
         </View>
-        {item.organizer ? (
+        {item.organizer && (
           <View style={styles.infoRow}>
             <Ionicons name="person" size={16} color="#888" />
             <Text style={styles.infoText}>{item.organizer}</Text>
           </View>
-        ) : null}
+        )}
+      </View>
 
       <View style={styles.actions}>
         <TouchableOpacity

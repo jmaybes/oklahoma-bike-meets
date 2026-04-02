@@ -306,6 +306,7 @@ export default function EventSearchScreen() {
             </View>
           </View>
         ) : null}
+
         {/* Pending Events Header */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
@@ -344,17 +345,19 @@ export default function EventSearchScreen() {
                   resizeMode="cover"
                 />
               ) : null}
+              
               <View style={styles.eventContent}>
                 <View style={styles.eventHeader}>
                   <Text style={styles.eventTitle} numberOfLines={2}>
                     {event.title}
                   </Text>
-                  {event.isRecurring ? (
+                  {event.isRecurring && (
                     <View style={styles.recurringBadge}>
                       <Ionicons name="repeat" size={12} color="#fff" />
                       <Text style={styles.recurringText}>Weekly</Text>
                     </View>
-                  ) : null}
+                  )}
+                </View>
                 
                 <View style={styles.eventMeta}>
                   <View style={styles.metaItem}>
@@ -383,6 +386,7 @@ export default function EventSearchScreen() {
                     {event.description}
                   </Text>
                 ) : null}
+                
                 <View style={styles.eventActions}>
                   <TouchableOpacity
                     style={[styles.actionButton, styles.approveButton]}

@@ -301,6 +301,7 @@ export default function AdminFeedbackScreen() {
                     <Text style={styles.responseIndicatorText}>Response sent</Text>
                   </View>
                 ) : null}
+              </TouchableOpacity>
             ))
           )}
           <View style={{ height: 40 }} />
@@ -327,7 +328,7 @@ export default function AdminFeedbackScreen() {
             <View style={{ width: 28 }} />
           </View>
 
-          {selectedFeedback && (
+          {selectedFeedback ? (
             <ScrollView style={styles.modalContent} keyboardShouldPersistTaps="handled">
               {/* Type & Status */}
               <View style={styles.detailRow}>
@@ -379,6 +380,7 @@ export default function AdminFeedbackScreen() {
                   </View>
                 </>
               ) : null}
+
               {/* Status Actions */}
               <Text style={styles.detailLabel}>Update Status</Text>
               <View style={styles.statusActions}>
@@ -433,7 +435,7 @@ export default function AdminFeedbackScreen() {
                 )}
               </TouchableOpacity>
             </ScrollView>
-          )}
+          ) : null}
           </KeyboardAvoidingView>
         </View>
       </Modal>

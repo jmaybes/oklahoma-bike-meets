@@ -274,7 +274,7 @@ export default function GarageDetailScreen() {
         <View style={styles.titleSection}>
           <Text style={styles.carYear}>{car.year}</Text>
           <Text style={styles.carTitle}>{car.make} {car.model}</Text>
-          {car.trim ? <Text style={styles.carTrim}>{car.trim}</Text> : null}
+          {car.trim && <Text style={styles.carTrim}>{car.trim}</Text>}
           <View style={styles.ownerRow}>
             <Text style={styles.ownerLabel}>Owner:</Text>
             <Text style={styles.ownerName}>{car.ownerNickname || car.ownerName}</Text>
@@ -293,13 +293,14 @@ export default function GarageDetailScreen() {
             <Text style={styles.statValue}>{car.views || 0}</Text>
             <Text style={styles.statLabel}>Views</Text>
           </View>
-          {car.horsepower ? (
+          {car.horsepower && (
             <View style={styles.statCard}>
               <Ionicons name="flash" size={24} color="#FFC107" />
               <Text style={styles.statValue}>{car.horsepower}</Text>
               <Text style={styles.statLabel}>HP</Text>
             </View>
-          ) : null}
+          )}
+          {car.modifications && car.modifications.length > 0 && (
             <View style={styles.statCard}>
               <Ionicons name="build" size={24} color="#4CAF50" />
               <Text style={styles.statValue}>{car.modifications.length}</Text>
@@ -309,49 +310,53 @@ export default function GarageDetailScreen() {
         </View>
 
         {/* Description */}
-        {car.description ? (
+        {car.description && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>About This Build</Text>
             <Text style={styles.description}>{car.description}</Text>
           </View>
-        ) : null}
+        )}
+
         {/* Specs */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Specifications</Text>
           <View style={styles.specsGrid}>
-            {car.engine ? (
+            {car.engine && (
               <View style={styles.specItem}>
                 <Ionicons name="speedometer" size={20} color="#FF6B35" />
                 <Text style={styles.specLabel}>Engine</Text>
                 <Text style={styles.specValue}>{car.engine}</Text>
               </View>
-            ) : null}
+            )}
+            {car.horsepower && (
               <View style={styles.specItem}>
                 <Ionicons name="flash" size={20} color="#FF6B35" />
                 <Text style={styles.specLabel}>Horsepower</Text>
                 <Text style={styles.specValue}>{car.horsepower} HP</Text>
               </View>
             )}
-            {car.torque ? (
+            {car.torque && (
               <View style={styles.specItem}>
                 <Ionicons name="sync" size={20} color="#FF6B35" />
                 <Text style={styles.specLabel}>Torque</Text>
                 <Text style={styles.specValue}>{car.torque} lb-ft</Text>
               </View>
-            ) : null}
+            )}
+            {car.transmission && (
               <View style={styles.specItem}>
                 <Ionicons name="cog" size={20} color="#FF6B35" />
                 <Text style={styles.specLabel}>Transmission</Text>
                 <Text style={styles.specValue}>{car.transmission}</Text>
               </View>
             )}
-            {car.drivetrain ? (
+            {car.drivetrain && (
               <View style={styles.specItem}>
                 <Ionicons name="git-branch" size={20} color="#FF6B35" />
                 <Text style={styles.specLabel}>Drivetrain</Text>
                 <Text style={styles.specValue}>{car.drivetrain}</Text>
               </View>
-            ) : null}
+            )}
+            {car.color && (
               <View style={styles.specItem}>
                 <Ionicons name="color-palette" size={20} color="#FF6B35" />
                 <Text style={styles.specLabel}>Color</Text>
@@ -381,18 +386,20 @@ export default function GarageDetailScreen() {
                     <Text style={styles.modName}>
                       {mod.brand ? `${mod.brand} ` : ''}{mod.name}
                     </Text>
-                    {mod.description ? (
+                    {mod.description && (
                       <Text style={styles.modDescription}>{mod.description}</Text>
-                    ) : null}
+                    )}
+                  </View>
                 ))}
               </View>
             ))}
-            {car.modificationNotes ? (
+            {car.modificationNotes && (
               <View style={styles.modNotes}>
                 <Text style={styles.modNotesTitle}>Additional Notes</Text>
                 <Text style={styles.modNotesText}>{car.modificationNotes}</Text>
               </View>
-            ) : null}
+            )}
+          </View>
         )}
 
         {/* Social Links */}
@@ -400,12 +407,13 @@ export default function GarageDetailScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Follow This Build</Text>
             <View style={styles.socialRow}>
-              {car.instagramHandle ? (
+              {car.instagramHandle && (
                 <TouchableOpacity style={styles.socialButton} onPress={openInstagram}>
                   <Ionicons name="logo-instagram" size={24} color="#E1306C" />
                   <Text style={styles.socialText}>@{car.instagramHandle.replace('@', '')}</Text>
                 </TouchableOpacity>
-              ) : null}
+              )}
+              {car.youtubeChannel && (
                 <TouchableOpacity style={styles.socialButton} onPress={openYouTube}>
                   <Ionicons name="logo-youtube" size={24} color="#FF0000" />
                   <Text style={styles.socialText}>YouTube</Text>

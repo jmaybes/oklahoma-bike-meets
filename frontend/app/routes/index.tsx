@@ -167,12 +167,13 @@ export default function MyRoutesScreen() {
             <Ionicons name="map-outline" size={16} color="#888" />
             <Text style={styles.statText}>{route.waypoints.length} stops</Text>
           </View>
-          {route.distance ? (
+          {route.distance && (
             <View style={styles.statItem}>
               <Ionicons name="speedometer-outline" size={16} color="#888" />
               <Text style={styles.statText}>{route.distance} mi</Text>
             </View>
-          ) : null}
+          )}
+          {route.estimatedTime && (
             <View style={styles.statItem}>
               <Ionicons name="time-outline" size={16} color="#888" />
               <Text style={styles.statText}>{route.estimatedTime}</Text>
@@ -256,18 +257,19 @@ export default function MyRoutesScreen() {
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Route Planning</Text>
-          {user ? (
+          {user && (
             <TouchableOpacity 
               style={styles.addButton}
               onPress={() => router.push('/routes/create')}
             >
               <Ionicons name="add" size={28} color="#fff" />
             </TouchableOpacity>
-          ) : null}
+          )}
+        </View>
       </LinearGradient>
 
       {/* Tabs */}
-      {user ? (
+      {user && (
         <View style={styles.tabContainer}>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'my' && styles.activeTab]}
@@ -294,7 +296,8 @@ export default function MyRoutesScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      ) : null}
+      )}
+
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF6B35" />
