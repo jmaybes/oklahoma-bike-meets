@@ -27,12 +27,8 @@ async def create_event(event: EventCreate):
     event_dict = event.dict()
     event_dict["createdAt"] = datetime.utcnow().isoformat()
 
-    # If userId is provided, check if user is admin
-    if event_dict.get("userId"):
-        user = await db.users.find_one({"_id": ObjectId(event_dict["userId"])})
-        event_dict["isApproved"] = user.get("isAdmin", False) if user else False
-    else:
-        event_dict["isApproved"] = False
+    # Auto-approve all user event submissions
+    event_dict["isApproved"] = True
 
     event_dict["attendeeCount"] = 0
 
