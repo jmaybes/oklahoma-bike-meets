@@ -86,7 +86,8 @@ export default function RegisterScreen() {
         ? `${currentUrl}/auth/google-callback`
         : ExpoLinking.createURL('auth/google-callback');
       
-      const authUrl = `https://demobackend.emergentagent.com/auth/v1/env/oauth/google?callback_url=${encodeURIComponent(callbackUrl)}`;
+      const authServiceUrl = process.env.EXPO_PUBLIC_AUTH_SERVICE_URL || 'https://demobackend.emergentagent.com';
+      const authUrl = `${authServiceUrl}/auth/v1/env/oauth/google?callback_url=${encodeURIComponent(callbackUrl)}`;
       
       if (Platform.OS === 'web') {
         window.location.href = authUrl;

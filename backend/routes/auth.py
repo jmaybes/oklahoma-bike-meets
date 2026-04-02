@@ -2,13 +2,19 @@ from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime
 from bson import ObjectId
 import re
+import os
 import httpx
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from database import db
 from models import UserCreate, UserLogin, UserUpdate, GoogleAuthRequest, GoogleAuthComplete, AppleAuthRequest, AppleAuthComplete, PushTokenRegister, DeleteAccountRequest
 from helpers import user_helper
 
 router = APIRouter()
+
+EMERGENT_AUTH_URL = os.environ.get("EMERGENT_AUTH_URL", "https://demobackend.emergentagent.com")
 
 
 # ==================== Auth ====================
@@ -45,7 +51,7 @@ async def google_auth_session(request: GoogleAuthRequest):
     try:
         async with httpx.AsyncClient() as http_client:
             response = await http_client.get(
-                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                f"{EMERGENT_AUTH_URL}/auth/v1/env/oauth/session-data",
                 headers={"X-Session-ID": request.session_id},
                 timeout=30.0
             )
