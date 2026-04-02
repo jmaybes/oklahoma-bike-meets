@@ -227,6 +227,15 @@ class PerformanceRunCreate(BaseModel):
     longitude: Optional[float] = None
 
 
+class PerformanceRunUpdate(BaseModel):
+    carInfo: Optional[str] = None
+    zeroToSixty: Optional[float] = None
+    zeroToHundred: Optional[float] = None
+    quarterMile: Optional[float] = None
+    location: Optional[str] = None
+    userId: Optional[str] = None
+
+
 # ==================== OCR Models ====================
 
 class OCRRequest(BaseModel):

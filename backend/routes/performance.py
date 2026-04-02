@@ -3,7 +3,7 @@ from datetime import datetime
 from bson import ObjectId
 
 from database import db
-from models import PerformanceRunCreate
+from models import PerformanceRunCreate, PerformanceRunUpdate
 
 router = APIRouter()
 
@@ -131,3 +131,49 @@ async def admin_delete_performance_run(run_id: str, admin_id: str = Query(...)):
         raise HTTPException(status_code=404, detail="Performance run not found")
 
     return {"success": True, "message": "Leaderboard entry deleted"}
+
+
+@router.put("/admin/performance-runs/{run_id}")
+async def admin_edit_performance_run(run_id: str, update: PerformanceRunUpdate, admin_id: str = Query(...)):
+    """Admin-only: edit any field on a leaderboard entry."""
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+
+    if not ObjectId.is_valid(run_id):
+        raise HTTPException(status_code=400, detail="Invalid run ID")
+
+    existing = await db.performance_runs.find_one({"_id": ObjectId(run_id)})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Performance run not found")
+
+    update_data = {k: v for k, v in update.dict().items() if v is not None}
+    update_data["updatedAt"] = datetime.utcnow().isoformat()
+
+    if update_data:
+        await db.performance_runs.update_one(
+            {"_id": ObjectId(run_id)},
+            {"$set": update_data}
+        )
+
+    updated_run = await db.performance_runs.find_one({"_id": ObjectId(run_id)})
+    user = None
+    if ObjectId.is_valid(updated_run["userId"]):
+        user = await db.users.find_one({"_id": ObjectId(updated_run["userId"])})
+
+    return {
+        "id": str(updated_run["_id"]),
+        "userId": updated_run["userId"],
+        "userName": user["name"] if user else "Unknown",
+        "nickname": user.get("nickname", "") if user else "",
+        "carInfo": updated_run["carInfo"],
+        "zeroToSixty": updated_run.get("zeroToSixty"),
+        "zeroToHundred": updated_run.get("zeroToHundred"),
+        "quarterMile": updated_run.get("quarterMile"),
+        "location": updated_run.get("location", ""),
+        "createdAt": updated_run["createdAt"],
+        "updatedAt": updated_run.get("updatedAt")
+    }

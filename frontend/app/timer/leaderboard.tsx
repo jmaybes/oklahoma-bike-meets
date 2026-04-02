@@ -9,6 +9,11 @@ import {
   RefreshControl,
   Image,
   Alert,
+  Modal,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,6 +35,9 @@ interface LeaderboardEntry {
   time: number;
   location: string;
   createdAt: string;
+  zeroToSixty?: number;
+  zeroToHundred?: number;
+  quarterMile?: number;
 }
 
 export default function LeaderboardScreen() {
@@ -40,6 +48,18 @@ export default function LeaderboardScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const isAdmin = user?.isAdmin === true;
+
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<LeaderboardEntry | null>(null);
+  const [editForm, setEditForm] = useState({
+    carInfo: '',
+    zeroToSixty: '',
+    zeroToHundred: '',
+    quarterMile: '',
+    location: '',
+  });
+  const [saving, setSaving] = useState(false);
 
   const types: { type: LeaderboardType; label: string; icon: string; color: string }[] = [
     { type: '0-60', label: '0-60', icon: 'speedometer', color: '#FF6B35' },
@@ -92,6 +112,78 @@ export default function LeaderboardScreen() {
         },
       ]
     );
+  };
+
+  const handleEditEntry = (entry: LeaderboardEntry) => {
+    setEditingEntry(entry);
+    // Fetch the full run details to populate all fields
+    axios.get(`${API_URL}/api/performance-runs/user/${entry.userId}`)
+      .then(response => {
+        const fullRun = response.data.find((r: any) => r.id === entry.id);
+        if (fullRun) {
+          setEditForm({
+            carInfo: fullRun.carInfo || '',
+            zeroToSixty: fullRun.zeroToSixty != null ? String(fullRun.zeroToSixty) : '',
+            zeroToHundred: fullRun.zeroToHundred != null ? String(fullRun.zeroToHundred) : '',
+            quarterMile: fullRun.quarterMile != null ? String(fullRun.quarterMile) : '',
+            location: fullRun.location || '',
+          });
+        } else {
+          // Fallback to what we have from the leaderboard entry
+          setEditForm({
+            carInfo: entry.carInfo || '',
+            zeroToSixty: '',
+            zeroToHundred: '',
+            quarterMile: '',
+            location: entry.location || '',
+          });
+          // Set the time from the current leaderboard type
+          if (selectedType === '0-60') setEditForm(prev => ({ ...prev, zeroToSixty: String(entry.time) }));
+          if (selectedType === '0-100') setEditForm(prev => ({ ...prev, zeroToHundred: String(entry.time) }));
+          if (selectedType === 'quarter-mile') setEditForm(prev => ({ ...prev, quarterMile: String(entry.time) }));
+        }
+        setShowEditModal(true);
+      })
+      .catch(() => {
+        // Use what we have
+        setEditForm({
+          carInfo: entry.carInfo || '',
+          zeroToSixty: selectedType === '0-60' ? String(entry.time) : '',
+          zeroToHundred: selectedType === '0-100' ? String(entry.time) : '',
+          quarterMile: selectedType === 'quarter-mile' ? String(entry.time) : '',
+          location: entry.location || '',
+        });
+        setShowEditModal(true);
+      });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingEntry || !user) return;
+    setSaving(true);
+
+    try {
+      const updatePayload: any = {};
+      if (editForm.carInfo) updatePayload.carInfo = editForm.carInfo;
+      if (editForm.location) updatePayload.location = editForm.location;
+      if (editForm.zeroToSixty) updatePayload.zeroToSixty = parseFloat(editForm.zeroToSixty);
+      if (editForm.zeroToHundred) updatePayload.zeroToHundred = parseFloat(editForm.zeroToHundred);
+      if (editForm.quarterMile) updatePayload.quarterMile = parseFloat(editForm.quarterMile);
+
+      await axios.put(
+        `${API_URL}/api/admin/performance-runs/${editingEntry.id}?admin_id=${user.id}`,
+        updatePayload
+      );
+
+      setShowEditModal(false);
+      setEditingEntry(null);
+      fetchLeaderboard();
+      Alert.alert('Success', 'Leaderboard entry updated.');
+    } catch (error: any) {
+      console.error('Error updating entry:', error);
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to update entry.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const getRankColor = (rank: number) => {
@@ -150,13 +242,22 @@ export default function LeaderboardScreen() {
         </View>
 
         {isAdmin && (
-          <TouchableOpacity
-            style={styles.adminDeleteButton}
-            onPress={() => handleDeleteEntry(item)}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons name="trash-outline" size={16} color="#FF3B30" />
-          </TouchableOpacity>
+          <View style={styles.adminActions}>
+            <TouchableOpacity
+              style={styles.adminEditButton}
+              onPress={() => handleEditEntry(item)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="pencil" size={15} color="#2196F3" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.adminDeleteButton}
+              onPress={() => handleDeleteEntry(item)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="trash-outline" size={15} color="#FF3B30" />
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     );
@@ -276,6 +377,127 @@ export default function LeaderboardScreen() {
           }
         />
       )}
+
+      {/* Admin Edit Modal */}
+      <Modal
+        visible={showEditModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowEditModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 20 }]}>
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Edit Run</Text>
+                <Text style={styles.modalSubtitle}>
+                  {editingEntry?.nickname || editingEntry?.userName}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowEditModal(false)}
+                style={styles.modalCloseBtn}
+              >
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} style={styles.modalScroll}>
+              {/* Car Info */}
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Car Info</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={editForm.carInfo}
+                  onChangeText={(t) => setEditForm(prev => ({ ...prev, carInfo: t }))}
+                  placeholder="e.g. 2024 Ford Mustang GT"
+                  placeholderTextColor="#555"
+                />
+              </View>
+
+              {/* Location */}
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Location</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={editForm.location}
+                  onChangeText={(t) => setEditForm(prev => ({ ...prev, location: t }))}
+                  placeholder="e.g. Thunder Valley Raceway"
+                  placeholderTextColor="#555"
+                />
+              </View>
+
+              {/* Times Section */}
+              <Text style={styles.formSectionTitle}>Performance Times (seconds)</Text>
+
+              <View style={styles.formRow}>
+                <View style={[styles.formGroup, { flex: 1 }]}>
+                  <Text style={styles.formLabel}>0-60 mph</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    value={editForm.zeroToSixty}
+                    onChangeText={(t) => setEditForm(prev => ({ ...prev, zeroToSixty: t }))}
+                    placeholder="e.g. 4.25"
+                    placeholderTextColor="#555"
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+                <View style={[styles.formGroup, { flex: 1 }]}>
+                  <Text style={styles.formLabel}>0-100 mph</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    value={editForm.zeroToHundred}
+                    onChangeText={(t) => setEditForm(prev => ({ ...prev, zeroToHundred: t }))}
+                    placeholder="e.g. 9.80"
+                    placeholderTextColor="#555"
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>1/4 Mile</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={editForm.quarterMile}
+                  onChangeText={(t) => setEditForm(prev => ({ ...prev, quarterMile: t }))}
+                  placeholder="e.g. 12.50"
+                  placeholderTextColor="#555"
+                  keyboardType="decimal-pad"
+                />
+              </View>
+
+              {/* Save / Cancel */}
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={styles.cancelBtn}
+                  onPress={() => setShowEditModal(false)}
+                >
+                  <Text style={styles.cancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.saveBtn, saving && { opacity: 0.6 }]}
+                  onPress={handleSaveEdit}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <Ionicons name="checkmark" size={20} color="#fff" />
+                      <Text style={styles.saveBtnText}>Save Changes</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -433,6 +655,7 @@ const styles = StyleSheet.create({
   },
   timeContainer: {
     alignItems: 'center',
+    marginRight: 4,
   },
   timeValue: {
     fontSize: 28,
@@ -443,6 +666,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888',
     marginTop: -4,
+  },
+  adminActions: {
+    flexDirection: 'column',
+    gap: 6,
+    marginLeft: 6,
+  },
+  adminEditButton: {
+    padding: 7,
+    backgroundColor: 'rgba(33,150,243,0.12)',
+    borderRadius: 8,
+  },
+  adminDeleteButton: {
+    padding: 7,
+    backgroundColor: 'rgba(255,59,48,0.12)',
+    borderRadius: 8,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -478,10 +716,114 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-  adminDeleteButton: {
-    padding: 8,
-    marginLeft: 4,
-    backgroundColor: 'rgba(255,59,48,0.12)',
-    borderRadius: 8,
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#1a1a1a',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '85%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a2a',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    color: '#888',
+    marginTop: 2,
+  },
+  modalCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalScroll: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  formSectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FF6B35',
+    marginTop: 16,
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  formGroup: {
+    marginBottom: 16,
+  },
+  formLabel: {
+    fontSize: 13,
+    color: '#aaa',
+    marginBottom: 6,
+    fontWeight: '600',
+  },
+  formInput: {
+    backgroundColor: '#252525',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    color: '#fff',
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  formRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    color: '#aaa',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveBtn: {
+    flex: 2,
+    flexDirection: 'row',
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#FF6B35',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  saveBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
