@@ -161,6 +161,7 @@ class UserCarCreate(BaseModel):
     isPublic: bool = True  # Default to public/sharing mode
     instagramHandle: str = ""
     youtubeChannel: str = ""
+    mainPhotoIndex: int = 0
 
 
 class UserCarUpdate(BaseModel):
@@ -182,6 +183,7 @@ class UserCarUpdate(BaseModel):
     isPublic: Optional[bool] = None
     instagramHandle: Optional[str] = None
     youtubeChannel: Optional[str] = None
+    mainPhotoIndex: Optional[int] = None
 
 
 # ==================== Messaging Models ====================

@@ -85,6 +85,7 @@ def user_car_helper(car) -> dict:
         "youtubeChannel": car.get("youtubeChannel", ""),
         "likes": car.get("likes", 0),
         "views": car.get("views", 0),
+        "mainPhotoIndex": car.get("mainPhotoIndex", 0),
         "createdAt": car.get("createdAt"),
         "updatedAt": car.get("updatedAt"),
     }

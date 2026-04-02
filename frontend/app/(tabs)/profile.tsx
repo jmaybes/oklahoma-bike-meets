@@ -66,6 +66,7 @@ export default function ProfileScreen() {
   const [showCarModal, setShowCarModal] = useState(false);
   const [savingCar, setSavingCar] = useState(false);
   const [carPhotos, setCarPhotos] = useState<string[]>([]);
+  const [mainPhotoIndex, setMainPhotoIndex] = useState(0);
   const [garagePublic, setGaragePublic] = useState(true);
   
   const [carForm, setCarForm] = useState({
@@ -126,6 +127,7 @@ export default function ProfileScreen() {
           youtubeChannel: response.data.youtubeChannel || '',
         });
         setCarPhotos(response.data.photos || []);
+        setMainPhotoIndex(response.data.mainPhotoIndex || 0);
         setVideoUrls(response.data.videos || []);
         setGaragePublic(response.data.isPublic !== false);
       }
@@ -279,6 +281,12 @@ export default function ProfileScreen() {
 
   const removeCarPhoto = (index: number) => {
     setCarPhotos(carPhotos.filter((_, i) => i !== index));
+    // Adjust mainPhotoIndex if needed
+    if (index === mainPhotoIndex) {
+      setMainPhotoIndex(0);
+    } else if (index < mainPhotoIndex) {
+      setMainPhotoIndex(mainPhotoIndex - 1);
+    }
   };
 
   const addVideoUrl = () => {
@@ -334,6 +342,7 @@ export default function ProfileScreen() {
         isPublic: garagePublic,
         instagramHandle: carForm.instagramHandle,
         youtubeChannel: carForm.youtubeChannel,
+        mainPhotoIndex: Math.min(mainPhotoIndex, Math.max(0, carPhotos.length - 1)),
       };
 
       let response;
@@ -516,7 +525,7 @@ export default function ProfileScreen() {
               
               <TouchableOpacity style={styles.editCarButton} onPress={() => setShowCarModal(true)}>
                 <Ionicons name="pencil" size={16} color="#FF6B35" />
-                <Text style={styles.editCarButtonText}>Edit Car</Text>
+                <Text style={styles.editCarButtonText}>Edit Car & Photos</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -957,14 +966,38 @@ export default function ProfileScreen() {
                 <Text style={styles.uploadButtonText}>Upload Photos</Text>
               </TouchableOpacity>
               <Text style={styles.photoHint}>
-                Tip: If you have trouble saving, try uploading fewer images at a time.
+                Tip: Tap the star to set a cover photo. Tap X to delete.
               </Text>
 
               {carPhotos.length > 0 && (
                 <View style={styles.photosPreview}>
                   {carPhotos.map((photo, index) => (
-                    <View key={index} style={styles.photoContainer}>
+                    <View key={index} style={[
+                      styles.photoContainer,
+                      index === mainPhotoIndex && styles.photoContainerMain,
+                    ]}>
                       <Image source={{ uri: photo }} style={styles.photoPreview} />
+                      {/* Cover badge */}
+                      {index === mainPhotoIndex && (
+                        <View style={styles.coverBadge}>
+                          <Text style={styles.coverBadgeText}>COVER</Text>
+                        </View>
+                      )}
+                      {/* Set as Cover button */}
+                      <TouchableOpacity
+                        style={[
+                          styles.setCoverButton,
+                          index === mainPhotoIndex && styles.setCoverButtonActive,
+                        ]}
+                        onPress={() => setMainPhotoIndex(index)}
+                      >
+                        <Ionicons 
+                          name={index === mainPhotoIndex ? "star" : "star-outline"} 
+                          size={18} 
+                          color={index === mainPhotoIndex ? "#FFD700" : "#fff"} 
+                        />
+                      </TouchableOpacity>
+                      {/* Delete button */}
                       <TouchableOpacity
                         style={styles.removePhotoButton}
                         onPress={() => removeCarPhoto(index)}
@@ -1612,11 +1645,50 @@ const styles = StyleSheet.create({
   photoContainer: {
     position: 'relative',
   },
+  photoContainerMain: {
+    borderWidth: 2,
+    borderColor: '#FFD700',
+    borderRadius: 14,
+  },
   photoPreview: {
     width: 100,
     height: 100,
     borderRadius: 12,
     backgroundColor: '#2a2a2a',
+  },
+  coverBadge: {
+    position: 'absolute',
+    bottom: 4,
+    left: 4,
+    right: 4,
+    backgroundColor: 'rgba(255, 215, 0, 0.9)',
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    paddingVertical: 2,
+    alignItems: 'center',
+  },
+  coverBadgeText: {
+    color: '#000',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  setCoverButton: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 14,
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#444',
+  },
+  setCoverButtonActive: {
+    backgroundColor: 'rgba(255, 215, 0, 0.3)',
+    borderColor: '#FFD700',
   },
   removePhotoButton: {
     position: 'absolute',
