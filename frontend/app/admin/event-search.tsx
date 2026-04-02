@@ -283,7 +283,7 @@ export default function EventSearchScreen() {
         </TouchableOpacity>
 
         {/* Last Search Stats */}
-        {lastSearchStats ? (
+        {lastSearchStats && (
           <View style={styles.statsContainer}>
             <Text style={styles.statsTitle}>Last Search Results</Text>
             <View style={styles.statsGrid}>
@@ -305,7 +305,7 @@ export default function EventSearchScreen() {
               </View>
             </View>
           </View>
-        ) : null}
+        )}
 
         {/* Pending Events Header */}
         <View style={styles.sectionHeader}>
@@ -338,13 +338,13 @@ export default function EventSearchScreen() {
         ) : (
           pendingEvents.map((event) => (
             <View key={event.id} style={styles.eventCard}>
-              {event.photos?.[0] ? (
+              {event.photos?.[0] && (
                 <Image
                   source={{ uri: event.photos[0] }}
                   style={styles.eventImage}
                   resizeMode="cover"
                 />
-              ) : null}
+              )}
               
               <View style={styles.eventContent}>
                 <View style={styles.eventHeader}>
@@ -381,11 +381,11 @@ export default function EventSearchScreen() {
                   <Text style={styles.eventTypeText}>{event.eventType}</Text>
                 </View>
                 
-                {event.description ? (
+                {event.description && (
                   <Text style={styles.eventDescription} numberOfLines={3}>
                     {event.description}
                   </Text>
-                ) : null}
+                )}
                 
                 <View style={styles.eventActions}>
                   <TouchableOpacity

@@ -213,13 +213,14 @@ export default function RouteDetailScreen() {
               <Text style={styles.statValue}>{route.waypoints.length}</Text>
               <Text style={styles.statLabel}>Stops</Text>
             </View>
-            {route.distance ? (
+            {route.distance && (
               <View style={styles.statBox}>
                 <Ionicons name="speedometer-outline" size={24} color="#FF6B35" />
                 <Text style={styles.statValue}>{route.distance}</Text>
                 <Text style={styles.statLabel}>Miles</Text>
               </View>
-            ) : null}
+            )}
+            {route.estimatedTime && (
               <View style={styles.statBox}>
                 <Ionicons name="time-outline" size={24} color="#FF6B35" />
                 <Text style={styles.statValue}>{route.estimatedTime}</Text>

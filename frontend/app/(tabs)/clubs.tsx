@@ -170,12 +170,13 @@ export default function ClubsScreen() {
               </View>
               
               <View style={styles.clubActions}>
-                {item.contactEmail ? (
+                {item.contactEmail && (
                   <TouchableOpacity style={styles.actionButton}>
                     <Ionicons name="mail-outline" size={18} color="#FF6B35" />
                     <Text style={styles.actionText}>Contact</Text>
                   </TouchableOpacity>
-                ) : null}
+                )}
+                {item.website && (
                   <TouchableOpacity style={styles.actionButton}>
                     <Ionicons name="globe-outline" size={18} color="#2196F3" />
                     <Text style={[styles.actionText, { color: '#2196F3' }]}>Website</Text>

@@ -288,7 +288,7 @@ export default function EventDetailScreen() {
             </View>
           </View>
 
-          {event.organizer ? (
+          {event.organizer && (
             <View style={styles.infoRow}>
               <Ionicons name="person" size={24} color="#FF6B35" />
               <View style={styles.infoContent}>
@@ -296,8 +296,9 @@ export default function EventDetailScreen() {
                 <Text style={styles.infoText}>{event.organizer}</Text>
               </View>
             </View>
-          ) : null}
-          {event.entryFee ? (
+          )}
+
+          {event.entryFee && (
             <View style={styles.infoRow}>
               <Ionicons name="cash" size={24} color="#FF6B35" />
               <View style={styles.infoContent}>
@@ -305,7 +306,8 @@ export default function EventDetailScreen() {
                 <Text style={styles.infoText}>{event.entryFee}</Text>
               </View>
             </View>
-          ) : null}
+          )}
+
           <View style={styles.infoRow}>
             <Ionicons name="people" size={24} color="#FF6B35" />
             <View style={styles.infoContent}>
@@ -315,7 +317,7 @@ export default function EventDetailScreen() {
           </View>
         </Animated.View>
 
-        {event.description ? (
+        {event.description && (
           <Animated.View 
             entering={FadeInDown.delay(300).springify()}
             style={styles.section}
@@ -323,7 +325,8 @@ export default function EventDetailScreen() {
             <Text style={styles.sectionTitle}>About</Text>
             <Text style={styles.description}>{event.description}</Text>
           </Animated.View>
-        ) : null}
+        )}
+
         {event.carTypes.length > 0 && (
           <Animated.View 
             entering={FadeInDown.delay(400).springify()}
@@ -344,13 +347,14 @@ export default function EventDetailScreen() {
           </Animated.View>
         )}
 
-        {event.contactInfo ? (
+        {event.contactInfo && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Contact</Text>
             <Text style={styles.contactText}>{event.contactInfo}</Text>
           </View>
-        ) : null}
-        {event.website ? (
+        )}
+
+        {event.website && (
           <TouchableOpacity
             style={styles.websiteButton}
             onPress={() => openWebsite(event.website)}
@@ -358,7 +362,8 @@ export default function EventDetailScreen() {
             <Ionicons name="globe" size={20} color="#2196F3" />
             <Text style={styles.websiteButtonText}>Visit Website</Text>
           </TouchableOpacity>
-        ) : null}
+        )}
+
         {/* Photo Gallery Link */}
         <TouchableOpacity
           style={styles.galleryButton}

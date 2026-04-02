@@ -446,19 +446,19 @@ export default function EventGalleryScreen() {
 
             {/* Photo */}
             <View style={styles.photoModalImageContainer}>
-              {selectedPhoto ? (
+              {selectedPhoto && (
                 <Image
                   source={{ uri: selectedPhoto.photo }}
                   style={styles.photoModalImage}
                   resizeMode="contain"
                 />
-              ) : null}
+              )}
             </View>
 
             {/* Caption */}
-            {selectedPhoto?.caption ? (
+            {selectedPhoto?.caption && (
               <Text style={styles.photoModalCaption}>{selectedPhoto.caption}</Text>
-            ) : null}
+            )}
 
             {/* Tags */}
             {selectedPhoto && selectedPhoto.tags.length > 0 && (
@@ -590,9 +590,9 @@ export default function EventGalleryScreen() {
               </TouchableOpacity>
             </View>
 
-            {uploadImage ? (
+            {uploadImage && (
               <Image source={{ uri: uploadImage }} style={styles.uploadPreview} resizeMode="contain" />
-            ) : null}
+            )}
 
             <TextInput
               style={styles.captionInput}

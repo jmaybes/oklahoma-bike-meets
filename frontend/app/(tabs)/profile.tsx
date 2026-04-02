@@ -503,27 +503,30 @@ export default function ProfileScreen() {
                 <Text style={styles.carTitle}>
                   {userCar.year} {userCar.make} {userCar.model}
                 </Text>
-                {userCar.trim ? (
+                {userCar.trim && (
                   <Text style={styles.carTrim}>{userCar.trim}</Text>
-                ) : null}
-                  {userCar.color ? (
+                )}
+                <View style={styles.carStatsRow}>
+                  {userCar.color && (
                     <View style={styles.carDetailRow}>
                       <Ionicons name="color-palette" size={16} color="#888" />
                       <Text style={styles.carDetailText}>{userCar.color}</Text>
                     </View>
-                  ) : null}
+                  )}
+                  {userCar.horsepower && (
                     <View style={styles.carDetailRow}>
                       <Ionicons name="flash" size={16} color="#FF6B35" />
                       <Text style={styles.carDetailText}>{userCar.horsepower} HP</Text>
                     </View>
                   )}
                 </View>
-                {userCar.engine ? (
+                {userCar.engine && (
                   <View style={styles.carDetailRow}>
                     <Ionicons name="speedometer" size={16} color="#2196F3" />
                     <Text style={styles.carDetailText}>{userCar.engine}</Text>
                   </View>
-                ) : null}
+                )}
+                {userCar.modificationNotes && (
                   <View style={styles.carDetailRow}>
                     <Ionicons name="build" size={16} color="#4CAF50" />
                     <Text style={styles.carDetailText}>{userCar.modificationNotes}</Text>
@@ -535,9 +538,10 @@ export default function ProfileScreen() {
                     <Text style={styles.carDetailText}>{userCar.videos.length} video{userCar.videos.length !== 1 ? 's' : ''}</Text>
                   </View>
                 )}
-                {userCar.description ? (
+                {userCar.description && (
                   <Text style={styles.carDescription}>{userCar.description}</Text>
-                ) : null}
+                )}
+              </View>
               
               <TouchableOpacity style={styles.editCarButton} onPress={() => setShowCarModal(true)}>
                 <Ionicons name="pencil" size={16} color="#FF6B35" />
@@ -624,7 +628,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {user?.isAdmin ? (
+        {user?.isAdmin && (
           <View style={styles.menuSection}>
             <View style={styles.sectionHeader}>
               <Ionicons name="shield-checkmark" size={20} color="#FF6B35" />
@@ -663,7 +667,8 @@ export default function ProfileScreen() {
               <Ionicons name="chevron-forward" size={24} color="#666" />
             </TouchableOpacity>
           </View>
-        ) : null}
+        )}
+
         <View style={styles.menuSection}>
           <Text style={styles.settingsSectionTitle}>Settings</Text>
           <View style={styles.menuItem}>

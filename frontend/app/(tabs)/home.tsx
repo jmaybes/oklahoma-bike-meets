@@ -409,7 +409,7 @@ export default function HomeScreen() {
                       <Text style={styles.distanceText}>{item.distance.toFixed(1)} mi</Text>
                     </View>
                   )}
-                  {item.entryFee ? (
+                  {item.entryFee && (
                     <Text
                       style={[
                         styles.entryFee,
@@ -418,7 +418,7 @@ export default function HomeScreen() {
                     >
                       {item.entryFee}
                     </Text>
-                  ) : null}
+                  )}
                 </View>
               </Animated.View>
 
