@@ -467,11 +467,31 @@ export default function ProfileScreen() {
           ) : userCar ? (
             <View style={styles.carCard}>
               {userCar.photos && userCar.photos.length > 0 ? (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.carPhotosScroll}>
-                  {userCar.photos.map((photo, index) => (
-                    <Image key={index} source={{ uri: photo }} style={styles.carPhoto} />
-                  ))}
-                </ScrollView>
+                <View style={styles.carMainPhotoContainer}>
+                  <Image 
+                    source={{ uri: userCar.photos[userCar.mainPhotoIndex && userCar.mainPhotoIndex < userCar.photos.length ? userCar.mainPhotoIndex : 0] }} 
+                    style={styles.carMainPhoto} 
+                    resizeMode="cover"
+                  />
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.6)']}
+                    style={styles.carPhotoGradient}
+                  />
+                  <View style={styles.carPhotoCountBadge}>
+                    <Ionicons name="images" size={13} color="#fff" />
+                    <Text style={styles.carPhotoCountText}>{userCar.photos.length}</Text>
+                  </View>
+                  {userCar.photos.length > 0 && (
+                    <TouchableOpacity 
+                      style={styles.viewPicsButton}
+                      onPress={() => router.push(`/garage/${userCar.id}`)}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="images-outline" size={16} color="#fff" />
+                      <Text style={styles.viewPicsText}>View Photos</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               ) : (
                 <View style={styles.noPhotoContainer}>
                   <Ionicons name="car-sport" size={60} color="#333" />
@@ -1367,12 +1387,68 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   carPhotosScroll: {
-    height: 200,
+    height: 220,
   },
   carPhoto: {
     width: 300,
     height: 200,
     marginRight: 8,
+  },
+  carMainPhotoContainer: {
+    height: 220,
+    position: 'relative',
+    backgroundColor: '#111',
+    overflow: 'hidden',
+  },
+  carMainPhoto: {
+    width: '100%',
+    height: '100%',
+    ...Platform.select({
+      web: {
+        objectFit: 'cover' as any,
+      },
+    }),
+  },
+  carPhotoGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 70,
+  },
+  carPhotoCountBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  carPhotoCountText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  viewPicsButton: {
+    position: 'absolute',
+    bottom: 14,
+    left: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 107, 53, 0.9)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+  viewPicsText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
   },
   noPhotoContainer: {
     height: 150,
