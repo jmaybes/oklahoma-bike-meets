@@ -212,12 +212,40 @@ export default function EventDetailScreen() {
         </TouchableOpacity>
         <View style={styles.topBarRight}>
           {user?.isAdmin && (
-            <TouchableOpacity 
-              onPress={() => router.push(`/admin/edit-event/${id}`)}
-              style={styles.editButton}
-            >
-              <Ionicons name="create-outline" size={24} color="#FF6B35" />
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity 
+                onPress={() => router.push(`/admin/edit-event/${id}`)}
+                style={styles.editButton}
+              >
+                <Ionicons name="create-outline" size={24} color="#FF6B35" />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => {
+                  Alert.alert(
+                    'Delete Event',
+                    'Are you sure you want to delete this event? This cannot be undone.',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      {
+                        text: 'Delete',
+                        style: 'destructive',
+                        onPress: () => {
+                          axios.delete(`${API_URL}/api/events/${id}`)
+                            .then(() => {
+                              Alert.alert('Deleted', 'Event has been removed.');
+                              router.back();
+                            })
+                            .catch(() => Alert.alert('Error', 'Failed to delete event.'));
+                        },
+                      },
+                    ]
+                  );
+                }}
+                style={styles.editButton}
+              >
+                <Ionicons name="trash-outline" size={24} color="#FF3B30" />
+              </TouchableOpacity>
+            </>
           )}
           <TouchableOpacity onPress={handleShare}>
             <Ionicons name="share-social" size={24} color="#fff" />

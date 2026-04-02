@@ -183,6 +183,26 @@ export default function ClubsScreen() {
                   </TouchableOpacity>
                 )}
               </View>
+
+              {/* Admin actions */}
+              {user?.isAdmin && (
+                <View style={styles.adminActions}>
+                  <TouchableOpacity
+                    style={styles.adminEditBtn}
+                    onPress={() => router.push(`/admin/edit-club/${item.id}`)}
+                  >
+                    <Ionicons name="create-outline" size={16} color="#2196F3" />
+                    <Text style={styles.adminEditText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.adminDeleteBtn}
+                    onPress={() => handleDeleteClub(item)}
+                  >
+                    <Ionicons name="trash-outline" size={16} color="#FF3B30" />
+                    <Text style={styles.adminDeleteText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           </Animated.View>
         </Pressable>
@@ -206,6 +226,32 @@ export default function ClubsScreen() {
     setClubFacebook('');
   };
 
+  const handleDeleteClub = (club: Club) => {
+    Alert.alert(
+      'Delete Club',
+      `Are you sure you want to delete "${club.name}"? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            axios.delete(`${API_URL}/api/clubs/${club.id}`)
+              .then(() => {
+                setClubs(prev => prev.filter(c => c.id !== club.id));
+                setFilteredClubs(prev => prev.filter(c => c.id !== club.id));
+                fetchClubs();
+              })
+              .catch((error: any) => {
+                console.error('Error deleting club:', error);
+                Alert.alert('Error', error.response?.data?.detail || 'Failed to delete club.');
+              });
+          },
+        },
+      ]
+    );
+  };
+
   const handleSubmitClub = async () => {
     if (!clubName.trim() || !clubDescription.trim() || !clubCity.trim()) {
       Alert.alert('Required Fields', 'Please fill in the club name, description, and city.');
@@ -227,7 +273,7 @@ export default function ClubsScreen() {
         carTypes: [],
         userId: user?.id || null,
       });
-      Alert.alert('Success', 'Car club submitted! It will appear after admin approval.');
+      Alert.alert('Success', 'Car club created and published successfully!');
       setShowCreateModal(false);
       resetForm();
       fetchClubs();
@@ -611,6 +657,46 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 8,
     textAlign: 'center',
+  },
+
+  // ===== ADMIN ACTIONS =====
+  adminActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#2a2a2a',
+    paddingTop: 12,
+  },
+  adminEditBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(33,150,243,0.12)',
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 5,
+  },
+  adminEditText: {
+    color: '#2196F3',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  adminDeleteBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,59,48,0.12)',
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 5,
+  },
+  adminDeleteText: {
+    color: '#FF3B30',
+    fontSize: 13,
+    fontWeight: '600',
   },
 
   // ===== FAB =====

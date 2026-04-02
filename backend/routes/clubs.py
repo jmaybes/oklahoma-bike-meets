@@ -14,11 +14,8 @@ async def create_club(club: ClubCreate):
     club_dict = club.dict()
     club_dict["createdAt"] = datetime.utcnow().isoformat()
 
-    if club_dict.get("userId"):
-        user = await db.users.find_one({"_id": ObjectId(club_dict["userId"])})
-        club_dict["isApproved"] = user.get("isAdmin", False) if user else False
-    else:
-        club_dict["isApproved"] = False
+    # Auto-approve all club submissions
+    club_dict["isApproved"] = True
 
     result = await db.clubs.insert_one(club_dict)
     created_club = await db.clubs.find_one({"_id": result.inserted_id})
