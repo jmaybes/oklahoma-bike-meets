@@ -268,6 +268,12 @@ class ClubCreate(BaseModel):
     location: str
     city: str
     carTypes: List[str] = []
+    contactInfo: str = ""
+    website: str = ""
+    facebookGroup: str = ""
+    meetingSchedule: str = ""
+    focus: str = ""
+    userId: Optional[str] = None
 
 
 class ClubUpdate(BaseModel):

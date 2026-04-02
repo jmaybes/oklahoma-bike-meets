@@ -9,6 +9,11 @@ import {
   RefreshControl,
   TextInput,
   Pressable,
+  Modal,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
 } from 'react-native';
 import Animated, { 
   FadeInRight, 
@@ -22,6 +27,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
+import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -39,11 +45,25 @@ interface Club {
 
 export default function ClubsScreen() {
   const insets = useSafeAreaInsets();
+  const { user, isAuthenticated } = useAuth();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [filteredClubs, setFilteredClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Create club form state
+  const [clubName, setClubName] = useState('');
+  const [clubDescription, setClubDescription] = useState('');
+  const [clubLocation, setClubLocation] = useState('');
+  const [clubCity, setClubCity] = useState('');
+  const [clubFocus, setClubFocus] = useState('');
+  const [clubSchedule, setClubSchedule] = useState('');
+  const [clubContact, setClubContact] = useState('');
+  const [clubWebsite, setClubWebsite] = useState('');
+  const [clubFacebook, setClubFacebook] = useState('');
 
   useEffect(() => {
     fetchClubs();
@@ -174,6 +194,51 @@ export default function ClubsScreen() {
     <AnimatedClubCard item={item} index={index} />
   );
 
+  const resetForm = () => {
+    setClubName('');
+    setClubDescription('');
+    setClubLocation('');
+    setClubCity('');
+    setClubFocus('');
+    setClubSchedule('');
+    setClubContact('');
+    setClubWebsite('');
+    setClubFacebook('');
+  };
+
+  const handleSubmitClub = async () => {
+    if (!clubName.trim() || !clubDescription.trim() || !clubCity.trim()) {
+      Alert.alert('Required Fields', 'Please fill in the club name, description, and city.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await axios.post(`${API_URL}/api/clubs`, {
+        name: clubName.trim(),
+        description: clubDescription.trim(),
+        location: clubLocation.trim(),
+        city: clubCity.trim(),
+        focus: clubFocus.trim(),
+        meetingSchedule: clubSchedule.trim(),
+        contactInfo: clubContact.trim(),
+        website: clubWebsite.trim(),
+        facebookGroup: clubFacebook.trim(),
+        carTypes: [],
+        userId: user?.id || null,
+      });
+      Alert.alert('Success', 'Car club submitted! It will appear after admin approval.');
+      setShowCreateModal(false);
+      resetForm();
+      fetchClubs();
+    } catch (error: any) {
+      console.error('Error creating club:', error);
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to submit club.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -238,6 +303,153 @@ export default function ClubsScreen() {
           }
         />
       )}
+
+      {/* Floating Action Button */}
+      {isAuthenticated && (
+        <TouchableOpacity
+          style={[styles.fab, { bottom: insets.bottom + 20 }]}
+          onPress={() => setShowCreateModal(true)}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={['#9C27B0', '#E91E63']}
+            style={styles.fabGradient}
+          >
+            <Ionicons name="add" size={28} color="#fff" />
+          </LinearGradient>
+        </TouchableOpacity>
+      )}
+
+      {/* Create Club Modal */}
+      <Modal
+        visible={showCreateModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowCreateModal(false)}
+      >
+        <View style={[styles.modalContainer, { paddingTop: Platform.OS === 'ios' ? 20 : insets.top }]}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+          >
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => { setShowCreateModal(false); resetForm(); }}>
+                <Text style={styles.modalCancel}>Cancel</Text>
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Submit a Club</Text>
+              <TouchableOpacity onPress={handleSubmitClub} disabled={submitting}>
+                {submitting ? (
+                  <ActivityIndicator size="small" color="#9C27B0" />
+                ) : (
+                  <Text style={styles.modalSubmit}>Submit</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              style={styles.modalBody}
+              contentContainerStyle={styles.modalBodyContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <Text style={styles.fieldLabel}>Club Name *</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={clubName}
+                onChangeText={setClubName}
+                placeholder="e.g. OKC Mustang Club"
+                placeholderTextColor="#555"
+              />
+
+              <Text style={styles.fieldLabel}>Description *</Text>
+              <TextInput
+                style={[styles.modalInput, styles.modalTextArea]}
+                value={clubDescription}
+                onChangeText={setClubDescription}
+                placeholder="What is your club about?"
+                placeholderTextColor="#555"
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+
+              <Text style={styles.fieldLabel}>Focus / Car Types</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={clubFocus}
+                onChangeText={setClubFocus}
+                placeholder="e.g. Mustangs, JDM, Classic Cars"
+                placeholderTextColor="#555"
+              />
+
+              <View style={styles.rowInputs}>
+                <View style={styles.halfInput}>
+                  <Text style={styles.fieldLabel}>City *</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    value={clubCity}
+                    onChangeText={setClubCity}
+                    placeholder="Oklahoma City"
+                    placeholderTextColor="#555"
+                  />
+                </View>
+                <View style={styles.halfInput}>
+                  <Text style={styles.fieldLabel}>Location</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    value={clubLocation}
+                    onChangeText={setClubLocation}
+                    placeholder="Meeting spot"
+                    placeholderTextColor="#555"
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.fieldLabel}>Meeting Schedule</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={clubSchedule}
+                onChangeText={setClubSchedule}
+                placeholder="e.g. Every Saturday 7PM"
+                placeholderTextColor="#555"
+              />
+
+              <Text style={styles.fieldLabel}>Contact Info</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={clubContact}
+                onChangeText={setClubContact}
+                placeholder="Email or phone"
+                placeholderTextColor="#555"
+              />
+
+              <Text style={styles.fieldLabel}>Website</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={clubWebsite}
+                onChangeText={setClubWebsite}
+                placeholder="https://..."
+                placeholderTextColor="#555"
+                autoCapitalize="none"
+                keyboardType="url"
+              />
+
+              <Text style={styles.fieldLabel}>Facebook Group</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={clubFacebook}
+                onChangeText={setClubFacebook}
+                placeholder="Facebook group URL"
+                placeholderTextColor="#555"
+                autoCapitalize="none"
+                keyboardType="url"
+              />
+
+              <View style={{ height: 40 }} />
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -399,5 +611,87 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 8,
     textAlign: 'center',
+  },
+
+  // ===== FAB =====
+  fab: {
+    position: 'absolute',
+    right: 20,
+    zIndex: 10,
+  },
+  fabGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#9C27B0',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  },
+
+  // ===== CREATE MODAL =====
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#0c0c0c',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1a1a1a',
+  },
+  modalCancel: {
+    color: '#888',
+    fontSize: 16,
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  modalSubmit: {
+    color: '#9C27B0',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  modalBody: {
+    flex: 1,
+  },
+  modalBodyContent: {
+    padding: 16,
+  },
+  fieldLabel: {
+    color: '#aaa',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 6,
+    marginTop: 14,
+  },
+  modalInput: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    color: '#fff',
+    fontSize: 15,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  modalTextArea: {
+    minHeight: 100,
+    paddingTop: 12,
+  },
+  rowInputs: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  halfInput: {
+    flex: 1,
   },
 });
