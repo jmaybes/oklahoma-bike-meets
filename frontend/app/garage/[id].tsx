@@ -626,15 +626,22 @@ const styles = StyleSheet.create({
     height: 320,
     position: 'relative',
     backgroundColor: '#111',
+    overflow: 'hidden',
   },
   mainPhotoContainer: {
     width: width,
     height: 320,
     backgroundColor: '#111',
+    overflow: 'hidden',
   },
   mainPhoto: {
     width: '100%',
     height: '100%',
+    ...Platform.select({
+      web: {
+        objectFit: 'cover' as any,
+      },
+    }),
   },
   photoBottomGradient: {
     position: 'absolute',
