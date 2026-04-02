@@ -20,6 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import * as Location from 'expo-location';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -166,21 +167,34 @@ export default function AddEventScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
-      quality: 0.7,
-      base64: true,
+      quality: 0.6,
+      base64: false,
     });
 
     if (!result.canceled && result.assets) {
-      const base64Images = result.assets
-        .filter(asset => asset.base64)
-        .map(asset => `data:image/jpeg;base64,${asset.base64}`);
-      
-      if (photos.length + base64Images.length > 5) {
+      if (photos.length + result.assets.length > 5) {
         Alert.alert('Limit Reached', 'You can upload a maximum of 5 images');
         return;
       }
-      
-      setPhotos([...photos, ...base64Images]);
+
+      // Resize and compress each photo to fit event card (landscape, 800px wide)
+      const formattedImages: string[] = [];
+      for (const asset of result.assets) {
+        try {
+          const manipulated = await ImageManipulator.manipulateAsync(
+            asset.uri,
+            [{ resize: { width: 800 } }],
+            { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+          );
+          if (manipulated.base64) {
+            formattedImages.push(`data:image/jpeg;base64,${manipulated.base64}`);
+          }
+        } catch (err) {
+          console.error('Image formatting error:', err);
+        }
+      }
+
+      setPhotos([...photos, ...formattedImages]);
     }
   };
 
