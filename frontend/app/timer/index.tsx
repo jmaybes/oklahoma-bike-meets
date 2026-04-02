@@ -397,12 +397,11 @@ export default function TimerScreen() {
             {result ? formatTime(result.time) : formatTime(elapsedTime)}
             <Text style={styles.timerUnit}>s</Text>
           </Text>
-          {(isRunning || result) && (
+          {(isRunning || result) ? (
             <Text style={styles.topSpeedText}>
               Top Speed: {topSpeed.toFixed(1)} MPH
             </Text>
-          )}
-        </View>
+          ) : null}
 
         {/* GPS Status */}
         <View style={styles.gpsStatus}>
@@ -418,7 +417,7 @@ export default function TimerScreen() {
 
         {/* Control Buttons */}
         <View style={styles.controlButtons}>
-          {!isRunning && !waitingForStart && !result && (
+          {!isRunning && !waitingForStart && !result ? (
             <TouchableOpacity
               style={styles.startButton}
               onPress={startCountdown}
@@ -432,9 +431,8 @@ export default function TimerScreen() {
                 <Text style={styles.startButtonText}>START RUN</Text>
               </LinearGradient>
             </TouchableOpacity>
-          )}
-
-          {(isRunning || waitingForStart) && (
+          ) : null}
+          {(isRunning || waitingForStart) ? (
             <TouchableOpacity style={styles.stopButton} onPress={stopTracking}>
               <LinearGradient
                 colors={['#FF3B30', '#C62828']}
@@ -444,9 +442,8 @@ export default function TimerScreen() {
                 <Text style={styles.stopButtonText}>ABORT</Text>
               </LinearGradient>
             </TouchableOpacity>
-          )}
-
-          {result && (
+          ) : null}
+          {result ? (
             <TouchableOpacity style={styles.resetButton} onPress={resetTimer}>
               <LinearGradient
                 colors={['#FF6B35', '#E91E63']}
@@ -456,8 +453,7 @@ export default function TimerScreen() {
                 <Text style={styles.resetButtonText}>TRY AGAIN</Text>
               </LinearGradient>
             </TouchableOpacity>
-          )}
-        </View>
+          ) : null}
 
         {/* Quick Actions */}
         <View style={styles.quickActions}>

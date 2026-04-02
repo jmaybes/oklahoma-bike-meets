@@ -181,12 +181,11 @@ export default function MyRSVPsScreen() {
                   <Ionicons name="car-sport" size={16} color="#FF6B35" />
                   <Text style={styles.eventType}>{item.eventType}</Text>
                 </View>
-                {!upcoming && (
+                {!upcoming ? (
                   <View style={styles.pastBadge}>
                     <Text style={styles.pastBadgeText}>Past</Text>
                   </View>
-                )}
-                {upcoming && (
+                ) : null}
                   <View style={styles.goingBadge}>
                     <Ionicons name="checkmark-circle" size={14} color="#4CAF50" />
                     <Text style={styles.goingBadgeText}>Going</Text>
@@ -207,22 +206,21 @@ export default function MyRSVPsScreen() {
                   <Ionicons name="time-outline" size={14} color="#FF6B35" />
                   <Text style={styles.detailText}>{item.time}</Text>
                 </View>
-                {(item.location || item.city) && (
+                {(item.location || item.city) ? (
                   <View style={styles.detailRow}>
                     <Ionicons name="location-outline" size={14} color="#FF6B35" />
                     <Text style={styles.detailText} numberOfLines={1}>
                       {item.location || item.city}
                     </Text>
                   </View>
-                )}
-              </View>
+                ) : null}
 
               <View style={styles.cardFooter}>
                 <View style={styles.attendeeInfo}>
                   <Ionicons name="people-outline" size={14} color="#888" />
                   <Text style={styles.attendeeText}>{item.attendeeCount} going</Text>
                 </View>
-                {upcoming && (
+                {upcoming ? (
                   <TouchableOpacity
                     style={styles.cancelButton}
                     onPress={() => handleCancelRSVP(item.id)}
@@ -230,8 +228,7 @@ export default function MyRSVPsScreen() {
                     <Ionicons name="close-circle-outline" size={16} color="#ef5350" />
                     <Text style={styles.cancelText}>Cancel</Text>
                   </TouchableOpacity>
-                )}
-              </View>
+                ) : null}
             </View>
           </Animated.View>
         </Pressable>

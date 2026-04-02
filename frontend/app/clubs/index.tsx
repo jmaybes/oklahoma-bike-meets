@@ -116,22 +116,20 @@ export default function ClubsScreen() {
         </View>
       )}
 
-      {item.meetingSchedule && (
+      {item.meetingSchedule ? (
         <View style={styles.infoRow}>
           <Ionicons name="calendar-outline" size={16} color="#888" />
           <Text style={styles.infoText}>{item.meetingSchedule}</Text>
         </View>
-      )}
-
-      {item.memberCount && (
+      ) : null}
+      {item.memberCount ? (
         <View style={styles.infoRow}>
           <Ionicons name="people-outline" size={16} color="#888" />
           <Text style={styles.infoText}>{item.memberCount} members</Text>
         </View>
-      )}
-
+      ) : null}
       <View style={styles.linksContainer}>
-        {item.website && (
+        {item.website ? (
           <TouchableOpacity
             style={styles.linkButton}
             onPress={() => openLink(item.website)}
@@ -139,9 +137,8 @@ export default function ClubsScreen() {
             <Ionicons name="globe" size={20} color="#2196F3" />
             <Text style={styles.linkButtonText}>Website</Text>
           </TouchableOpacity>
-        )}
-
-        {item.facebookGroup && (
+        ) : null}
+        {item.facebookGroup ? (
           <TouchableOpacity
             style={[styles.linkButton, styles.facebookButton]}
             onPress={() => openLink(item.facebookGroup)}
@@ -149,15 +146,13 @@ export default function ClubsScreen() {
             <Ionicons name="logo-facebook" size={20} color="#1877F2" />
             <Text style={[styles.linkButtonText, styles.facebookText]}>Facebook</Text>
           </TouchableOpacity>
-        )}
-
-        {item.contactInfo && (
+        ) : null}
+        {item.contactInfo ? (
           <View style={styles.contactContainer}>
             <Ionicons name="mail" size={16} color="#666" />
             <Text style={styles.contactText}>{item.contactInfo}</Text>
           </View>
-        )}
-      </View>
+        ) : null}
     </View>
   );
 

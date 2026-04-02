@@ -215,10 +215,9 @@ export default function LoginScreen() {
                   styles.checkbox,
                   rememberMe && styles.checkboxChecked
                 ]}>
-                  {rememberMe && (
+                  {rememberMe ? (
                     <Ionicons name="checkmark" size={14} color="#fff" />
-                  )}
-                </View>
+                  ) : null}
                 <Text style={styles.rememberMeText}>Remember me</Text>
               </TouchableOpacity>
               <Text style={styles.rememberMeHint}>
@@ -246,15 +245,14 @@ export default function LoginScreen() {
               )}
             </TouchableOpacity>
 
-            {rememberMe && email && password && (
+            {rememberMe && email && password ? (
               <View style={styles.savedIndicator}>
                 <Ionicons name="shield-checkmark" size={16} color="#4CAF50" />
                 <Text style={styles.savedIndicatorText}>
                   Credentials will be saved securely
                 </Text>
               </View>
-            )}
-
+            ) : null}
             <TouchableOpacity
               style={styles.registerLink}
               onPress={() => router.push('/auth/register')}

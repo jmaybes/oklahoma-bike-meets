@@ -283,7 +283,7 @@ export default function EventSearchScreen() {
         </TouchableOpacity>
 
         {/* Last Search Stats */}
-        {lastSearchStats && (
+        {lastSearchStats ? (
           <View style={styles.statsContainer}>
             <Text style={styles.statsTitle}>Last Search Results</Text>
             <View style={styles.statsGrid}>
@@ -305,8 +305,7 @@ export default function EventSearchScreen() {
               </View>
             </View>
           </View>
-        )}
-
+        ) : null}
         {/* Pending Events Header */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
@@ -338,26 +337,24 @@ export default function EventSearchScreen() {
         ) : (
           pendingEvents.map((event) => (
             <View key={event.id} style={styles.eventCard}>
-              {event.photos?.[0] && (
+              {event.photos?.[0] ? (
                 <Image
                   source={{ uri: event.photos[0] }}
                   style={styles.eventImage}
                   resizeMode="cover"
                 />
-              )}
-              
+              ) : null}
               <View style={styles.eventContent}>
                 <View style={styles.eventHeader}>
                   <Text style={styles.eventTitle} numberOfLines={2}>
                     {event.title}
                   </Text>
-                  {event.isRecurring && (
+                  {event.isRecurring ? (
                     <View style={styles.recurringBadge}>
                       <Ionicons name="repeat" size={12} color="#fff" />
                       <Text style={styles.recurringText}>Weekly</Text>
                     </View>
-                  )}
-                </View>
+                  ) : null}
                 
                 <View style={styles.eventMeta}>
                   <View style={styles.metaItem}>
@@ -381,12 +378,11 @@ export default function EventSearchScreen() {
                   <Text style={styles.eventTypeText}>{event.eventType}</Text>
                 </View>
                 
-                {event.description && (
+                {event.description ? (
                   <Text style={styles.eventDescription} numberOfLines={3}>
                     {event.description}
                   </Text>
-                )}
-                
+                ) : null}
                 <View style={styles.eventActions}>
                   <TouchableOpacity
                     style={[styles.actionButton, styles.approveButton]}
