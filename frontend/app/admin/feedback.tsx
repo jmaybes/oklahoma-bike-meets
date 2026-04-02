@@ -10,6 +10,8 @@ import {
   Modal,
   TextInput,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -314,6 +316,10 @@ export default function AdminFeedbackScreen() {
         onRequestClose={() => setShowDetailModal(false)}
       >
         <View style={styles.modalContainer}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+          >
           <View style={styles.modalHeader}>
             <TouchableOpacity onPress={() => setShowDetailModal(false)}>
               <Ionicons name="close" size={28} color="#fff" />
@@ -323,7 +329,7 @@ export default function AdminFeedbackScreen() {
           </View>
 
           {selectedFeedback && (
-            <ScrollView style={styles.modalContent}>
+            <ScrollView style={styles.modalContent} keyboardShouldPersistTaps="handled">
               {/* Type & Status */}
               <View style={styles.detailRow}>
                 <View style={styles.typeContainerLarge}>
@@ -430,6 +436,7 @@ export default function AdminFeedbackScreen() {
               </TouchableOpacity>
             </ScrollView>
           )}
+          </KeyboardAvoidingView>
         </View>
       </Modal>
     </View>
