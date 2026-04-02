@@ -249,9 +249,7 @@ export default function AddEventScreen() {
 
       await axios.post(`${API_URL}/api/events`, eventData);
       
-      let approvalMessage = user?.isAdmin 
-        ? 'Event created and published successfully!' 
-        : 'Event submitted successfully! It will be visible after admin approval.';
+      let approvalMessage = 'Event created and published successfully!';
       
       if (isRecurring) {
         approvalMessage += `\n\n🔄 This event will repeat every ${daysOfWeek.find(d => d.value === recurrenceDay)?.label || 'week'}.`;
@@ -287,9 +285,13 @@ export default function AddEventScreen() {
           router.push('/(tabs)/home');
         }}
       ]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating event:', error);
-      Alert.alert('Error', 'Failed to create event. Please try again.');
+      const msg = error.response?.data?.detail 
+        || (error.message?.includes('413') || error.message?.includes('Network') 
+          ? 'Photos may be too large. Try uploading fewer or smaller images.' 
+          : 'Failed to create event. Please try again.');
+      Alert.alert('Error', msg);
     } finally {
       setLoading(false);
     }
