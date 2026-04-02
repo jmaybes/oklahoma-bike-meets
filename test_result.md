@@ -1210,3 +1210,31 @@ agent_communication:
       message: "Apple Sign In Authentication testing completed successfully! ✅ ALL 5 REQUESTED ENDPOINTS WORKING PERFECTLY: (1) POST /api/auth/apple/session - Handles JWT decode gracefully with mock tokens, returns appropriate 500 error with proper message instead of crashing. Attempts Apple JWKS verification and falls back to unverified decode. (2) POST /api/auth/apple/complete - Successfully creates users with authProvider: 'apple', stores appleId field, returns proper user data. Database verification confirms correct authProvider and Apple ID storage. (3) Duplicate username validation - Properly returns 400 'Username already taken' error. (4) GET /api/auth/check-username/{nickname} - Correctly returns availability status for both taken and available usernames. (5) Existing auth compatibility - Admin login (admin@okcarevents.com/admin123) still working correctly, Apple integration doesn't interfere with Google auth or email/password flows. ✅ COMPREHENSIVE TESTING: All endpoints tested with realistic Apple user data, error handling verified, database persistence confirmed. The Apple Sign In authentication system is production-ready and fully functional."
     - agent: "testing"
       message: "DELETE Account Endpoint testing completed successfully with 100% pass rate (7/7 tests). ✅ ALL VALIDATION SCENARIOS WORKING PERFECTLY: (1) Invalid user_id returns 400 'Invalid user ID', (2) Non-existent valid ObjectId returns 404 'User not found', (3) Wrong email for admin user returns 401 'Email does not match', (4) Empty fields return 400 validation error. ✅ FULL DELETION WORKFLOW VERIFIED: Created test user 'testdelete@test.com', confirmed username unavailable via GET /api/auth/check-username/testdelete, successfully deleted account with comprehensive data cleanup (cars, rsvps, messages, favorites, feedback, performance_runs, routes, locations, notifications, event_photos, comments), verified username became available after deletion. ✅ SECURE ACCOUNT DELETION: The endpoint provides proper credential verification (email + password for email accounts, OAuth users can use empty password) and complete data removal across all collections as specified in the review request. The DELETE account functionality is production-ready and working correctly."
+
+  - task: "Public Garages Sorted by Likes"
+    implemented: true
+    working: "NA"
+    file: "routes/garage.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated GET /api/user-cars/public to sort by likes descending by default. Added sort query param (likes/views/newest). Added likedBy array to response."
+
+  - task: "Like/Unlike Toggle for Garages"
+    implemented: true
+    working: "NA"
+    file: "routes/garage.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated POST /api/user-cars/{car_id}/like to be a proper toggle. Tracks likedBy array to prevent double-likes. Returns likedBy in response. Also added likedBy to GET /api/user-cars/{car_id} detail endpoint."
+
+agent_communication:
+    - agent: "main"
+      message: "Please test these two new backend features: (1) GET /api/user-cars/public?sort=likes should return garages sorted by most likes first. Test with sort=likes, sort=views, sort=newest. Check that likedBy array is returned. (2) POST /api/user-cars/{car_id}/like?user_id={id} should now toggle like/unlike. First call adds user to likedBy and increments likes. Second call removes user and decrements likes. Use admin login (admin@okcarevents.com / admin123) and an existing car ID."

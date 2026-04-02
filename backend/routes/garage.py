@@ -42,14 +42,23 @@ async def get_user_car(user_id: str):
 @router.get("/user-cars/public")
 async def get_public_garages(
     make: Optional[str] = None,
-    limit: int = Query(default=50, le=100)
+    limit: int = Query(default=50, le=100),
+    sort: str = Query(default="likes", description="Sort by: likes, views, newest")
 ):
-    """Get all public garages to browse"""
+    """Get all public garages to browse, sorted by most liked by default"""
     query = {"isPublic": True}
     if make:
         query["make"] = {"$regex": make, "$options": "i"}
 
-    cars = await db.user_cars.find(query).sort("createdAt", -1).limit(limit).to_list(limit)
+    # Sort options
+    if sort == "views":
+        sort_field = [("views", -1), ("likes", -1)]
+    elif sort == "newest":
+        sort_field = [("createdAt", -1)]
+    else:  # default: likes
+        sort_field = [("likes", -1), ("views", -1)]
+
+    cars = await db.user_cars.find(query).sort(sort_field).limit(limit).to_list(limit)
 
     result = []
     for car in cars:
@@ -57,6 +66,7 @@ async def get_public_garages(
         car_data = user_car_helper(car)
         car_data["ownerName"] = user.get("name", "Unknown") if user else "Unknown"
         car_data["ownerNickname"] = user.get("nickname", "") if user else ""
+        car_data["likedBy"] = car.get("likedBy", [])
         result.append(car_data)
 
     return result
@@ -81,6 +91,7 @@ async def get_car_by_id(car_id: str):
     car_data = user_car_helper(car)
     car_data["ownerName"] = user.get("name", "Unknown") if user else "Unknown"
     car_data["ownerNickname"] = user.get("nickname", "") if user else ""
+    car_data["likedBy"] = car.get("likedBy", [])
 
     return car_data
 
@@ -108,17 +119,39 @@ async def update_user_car(car_id: str, car_update: UserCarUpdate):
 
 @router.post("/user-cars/{car_id}/like")
 async def like_car(car_id: str, user_id: str = Query(...)):
-    """Like a car in someone's garage"""
+    """Toggle like/unlike a car in someone's garage"""
     if not ObjectId.is_valid(car_id):
         raise HTTPException(status_code=400, detail="Invalid car ID")
 
-    await db.user_cars.update_one(
-        {"_id": ObjectId(car_id)},
-        {"$inc": {"likes": 1}}
-    )
+    car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    liked_by = car.get("likedBy", [])
+
+    if user_id in liked_by:
+        # Unlike
+        await db.user_cars.update_one(
+            {"_id": ObjectId(car_id)},
+            {
+                "$pull": {"likedBy": user_id},
+                "$inc": {"likes": -1}
+            }
+        )
+    else:
+        # Like
+        await db.user_cars.update_one(
+            {"_id": ObjectId(car_id)},
+            {
+                "$addToSet": {"likedBy": user_id},
+                "$inc": {"likes": 1}
+            }
+        )
 
     updated_car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
-    return user_car_helper(updated_car)
+    car_data = user_car_helper(updated_car)
+    car_data["likedBy"] = updated_car.get("likedBy", [])
+    return car_data
 
 
 @router.delete("/user-cars/{car_id}")

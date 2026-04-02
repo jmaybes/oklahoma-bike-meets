@@ -65,6 +65,8 @@ interface UserCar {
   ownerName: string;
   ownerNickname: string;
   createdAt: string;
+  mainPhotoIndex?: number;
+  likedBy?: string[];
 }
 
 const modCategories: { [key: string]: { icon: string; color: string } } = {
@@ -107,10 +109,19 @@ export default function GarageDetailScreen() {
   const handleLike = async () => {
     if (!user || !car) return;
     try {
+      // Optimistic update
+      const isCurrentlyLiked = car.likedBy?.includes(user.id);
+      setCar({
+        ...car,
+        likes: isCurrentlyLiked ? (car.likes || 1) - 1 : (car.likes || 0) + 1,
+        likedBy: isCurrentlyLiked
+          ? (car.likedBy || []).filter(id => id !== user.id)
+          : [...(car.likedBy || []), user.id],
+      });
       await axios.post(`${API_URL}/api/user-cars/${car.id}/like?user_id=${user.id}`);
-      fetchCar();
     } catch (error) {
       console.error('Error liking car:', error);
+      fetchCar(); // Revert on error
     }
   };
 
@@ -414,9 +425,21 @@ export default function GarageDetailScreen() {
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.likeButton} onPress={handleLike}>
-            <Ionicons name="heart" size={24} color="#fff" />
-            <Text style={styles.likeButtonText}>Like This Build</Text>
+          <TouchableOpacity 
+            style={[
+              styles.likeButton, 
+              user && car.likedBy?.includes(user.id) && styles.likeButtonLiked
+            ]} 
+            onPress={handleLike}
+          >
+            <Ionicons 
+              name={user && car.likedBy?.includes(user.id) ? "heart" : "heart-outline"} 
+              size={24} 
+              color="#fff" 
+            />
+            <Text style={styles.likeButtonText}>
+              {user && car.likedBy?.includes(user.id) ? 'Liked' : 'Like This Build'} ({car.likes || 0})
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -864,6 +887,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     gap: 8,
+  },
+  likeButtonLiked: {
+    backgroundColor: '#E91E63',
   },
   likeButtonText: {
     color: '#fff',

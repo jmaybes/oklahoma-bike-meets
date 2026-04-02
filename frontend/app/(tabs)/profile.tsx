@@ -537,6 +537,29 @@ export default function ProfileScreen() {
           )}
         </View>
 
+        {/* View Public Garages Link - prominent placement */}
+        <TouchableOpacity 
+          style={styles.publicGarageLink}
+          onPress={() => router.push('/garage')}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={['#1e1e1e', '#252525']}
+            style={styles.publicGarageLinkGradient}
+          >
+            <View style={styles.publicGarageLinkContent}>
+              <View style={styles.publicGarageLinkLeft}>
+                <Ionicons name="people" size={24} color="#FF6B35" />
+                <View>
+                  <Text style={styles.publicGarageLinkTitle}>View Public Garages</Text>
+                  <Text style={styles.publicGarageLinkSub}>Browse and like community builds</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={22} color="#FF6B35" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
         {/* Menu Sections */}
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/messages')}>
@@ -1409,6 +1432,39 @@ const styles = StyleSheet.create({
     color: '#FF6B35',
     marginLeft: 8,
     fontWeight: '600',
+  },
+  publicGarageLink: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 4,
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  publicGarageLinkGradient: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  publicGarageLinkContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  publicGarageLinkLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  publicGarageLinkTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  publicGarageLinkSub: {
+    color: '#888',
+    fontSize: 12,
+    marginTop: 2,
   },
   addCarCard: {
     backgroundColor: '#1a1a1a',
