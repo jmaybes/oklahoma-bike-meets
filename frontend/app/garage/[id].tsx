@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,9 @@ import {
   Share,
   Linking,
   Modal,
+  Animated,
+  FlatList,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,7 +23,13 @@ import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-const { width } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const width = SCREEN_WIDTH;
+
+// Carousel constants
+const CARD_WIDTH = SCREEN_WIDTH * 0.78;
+const CARD_HEIGHT = SCREEN_HEIGHT * 0.55;
+const CARD_SPACING = (SCREEN_WIDTH - CARD_WIDTH) / 2;
 
 interface Modification {
   category: string;
@@ -77,6 +86,8 @@ export default function GarageDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     fetchCar();
@@ -186,12 +197,9 @@ export default function GarageDetailScreen() {
       </LinearGradient>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Photo Gallery */}
+        {/* Photo Gallery - Hero Image */}
         {car.photos && car.photos.length > 0 && (
-          <TouchableOpacity 
-            style={styles.photoGallery}
-            onPress={() => setShowPhotoModal(true)}
-          >
+          <View style={styles.photoGallery}>
             <ScrollView
               horizontal
               pagingEnabled
@@ -202,14 +210,20 @@ export default function GarageDetailScreen() {
               }}
             >
               {car.photos.map((photo, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: photo.startsWith('data:') ? photo : `data:image/jpeg;base64,${photo}` }}
-                  style={styles.mainPhoto}
-                  resizeMode="cover"
-                />
+                <View key={index} style={styles.mainPhotoContainer}>
+                  <Image
+                    source={{ uri: photo.startsWith('data:') ? photo : `data:image/jpeg;base64,${photo}` }}
+                    style={styles.mainPhoto}
+                    resizeMode="cover"
+                  />
+                </View>
               ))}
             </ScrollView>
+            {/* Gradient overlay at bottom for readability */}
+            <LinearGradient
+              colors={['transparent', 'rgba(12,12,12,0.9)']}
+              style={styles.photoBottomGradient}
+            />
             <View style={styles.photoIndicator}>
               {car.photos.map((_, index) => (
                 <View
@@ -227,7 +241,22 @@ export default function GarageDetailScreen() {
                 {activePhotoIndex + 1}/{car.photos.length}
               </Text>
             </View>
-          </TouchableOpacity>
+            {/* View Photos Button */}
+            {car.photos.length > 0 && (
+              <TouchableOpacity 
+                style={styles.viewPhotosButton}
+                onPress={() => {
+                  setCarouselIndex(activePhotoIndex);
+                  scrollX.setValue(activePhotoIndex * (CARD_WIDTH + 16));
+                  setShowPhotoModal(true);
+                }}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="images-outline" size={18} color="#fff" />
+                <Text style={styles.viewPhotosText}>View Photos</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
 
         {/* Car Title */}
@@ -394,34 +423,149 @@ export default function GarageDetailScreen() {
         <View style={{ height: 40 }} />
       </ScrollView>
 
-      {/* Photo Modal */}
+      {/* Carousel Photo Modal */}
       <Modal
         visible={showPhotoModal}
         transparent
         animationType="fade"
         onRequestClose={() => setShowPhotoModal(false)}
+        statusBarTranslucent
       >
-        <View style={styles.photoModal}>
+        <View style={styles.carouselModal}>
+          {/* Close button */}
           <TouchableOpacity 
-            style={styles.closeModalButton}
+            style={[styles.closeModalButton, { top: insets.top + 10 }]}
             onPress={() => setShowPhotoModal(false)}
           >
-            <Ionicons name="close" size={32} color="#fff" />
+            <View style={styles.closeButtonBg}>
+              <Ionicons name="close" size={24} color="#fff" />
+            </View>
           </TouchableOpacity>
-          <ScrollView
+
+          {/* Car info header */}
+          <View style={[styles.carouselHeader, { top: insets.top + 10 }]}>
+            <Text style={styles.carouselTitle}>{car.year} {car.make} {car.model}</Text>
+          </View>
+
+          {/* Carousel */}
+          <Animated.FlatList
+            data={car.photos || []}
+            keyExtractor={(_, index) => index.toString()}
             horizontal
-            pagingEnabled
             showsHorizontalScrollIndicator={false}
-          >
-            {car.photos?.map((photo, index) => (
-              <Image
-                key={index}
-                source={{ uri: photo.startsWith('data:') ? photo : `data:image/jpeg;base64,${photo}` }}
-                style={styles.fullScreenPhoto}
-                resizeMode="contain"
-              />
-            ))}
-          </ScrollView>
+            snapToInterval={CARD_WIDTH + 16}
+            decelerationRate="fast"
+            contentContainerStyle={{
+              paddingHorizontal: CARD_SPACING - 8,
+              alignItems: 'center',
+            }}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: true }
+            )}
+            onMomentumScrollEnd={(e) => {
+              const idx = Math.round(e.nativeEvent.contentOffset.x / (CARD_WIDTH + 16));
+              setCarouselIndex(Math.max(0, Math.min(idx, (car.photos?.length || 1) - 1)));
+            }}
+            initialScrollIndex={carouselIndex}
+            getItemLayout={(_, index) => ({
+              length: CARD_WIDTH + 16,
+              offset: (CARD_WIDTH + 16) * index,
+              index,
+            })}
+            renderItem={({ item: photo, index }) => {
+              const inputRange = [
+                (index - 1) * (CARD_WIDTH + 16),
+                index * (CARD_WIDTH + 16),
+                (index + 1) * (CARD_WIDTH + 16),
+              ];
+
+              const scale = scrollX.interpolate({
+                inputRange,
+                outputRange: [0.85, 1, 0.85],
+                extrapolate: 'clamp',
+              });
+
+              const opacity = scrollX.interpolate({
+                inputRange,
+                outputRange: [0.5, 1, 0.5],
+                extrapolate: 'clamp',
+              });
+
+              const rotateY = scrollX.interpolate({
+                inputRange,
+                outputRange: ['8deg', '0deg', '-8deg'],
+                extrapolate: 'clamp',
+              });
+
+              return (
+                <Animated.View
+                  style={[
+                    styles.carouselCard,
+                    {
+                      transform: [
+                        { scale },
+                        { perspective: 1000 },
+                        { rotateY },
+                      ],
+                      opacity,
+                    },
+                  ]}
+                >
+                  <Image
+                    source={{ uri: photo.startsWith('data:') ? photo : `data:image/jpeg;base64,${photo}` }}
+                    style={styles.carouselImage}
+                    resizeMode="cover"
+                  />
+                  {/* Photo number overlay */}
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.7)']}
+                    style={styles.carouselCardGradient}
+                  >
+                    <Text style={styles.carouselPhotoNumber}>
+                      {index + 1} / {car.photos?.length}
+                    </Text>
+                  </LinearGradient>
+                </Animated.View>
+              );
+            }}
+          />
+
+          {/* Dot indicators */}
+          <View style={styles.carouselDots}>
+            {(car.photos || []).map((_, index) => {
+              const dotInputRange = [
+                (index - 1) * (CARD_WIDTH + 16),
+                index * (CARD_WIDTH + 16),
+                (index + 1) * (CARD_WIDTH + 16),
+              ];
+
+              const dotWidth = scrollX.interpolate({
+                inputRange: dotInputRange,
+                outputRange: [8, 24, 8],
+                extrapolate: 'clamp',
+              });
+
+              const dotOpacity = scrollX.interpolate({
+                inputRange: dotInputRange,
+                outputRange: [0.4, 1, 0.4],
+                extrapolate: 'clamp',
+              });
+
+              return (
+                <Animated.View
+                  key={index}
+                  style={[
+                    styles.carouselDot,
+                    {
+                      width: dotWidth,
+                      opacity: dotOpacity,
+                    },
+                  ]}
+                />
+              );
+            })}
+          </View>
         </View>
       </Modal>
     </View>
@@ -479,12 +623,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   photoGallery: {
-    height: 280,
+    height: 320,
     position: 'relative',
+    backgroundColor: '#111',
+  },
+  mainPhotoContainer: {
+    width: width,
+    height: 320,
+    backgroundColor: '#111',
   },
   mainPhoto: {
-    width: width,
-    height: 280,
+    width: '100%',
+    height: '100%',
+  },
+  photoBottomGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
   },
   photoIndicator: {
     position: 'absolute',
@@ -712,13 +869,104 @@ const styles = StyleSheet.create({
   },
   closeModalButton: {
     position: 'absolute',
-    top: 50,
     right: 20,
     zIndex: 10,
     padding: 8,
   },
+  closeButtonBg: {
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   fullScreenPhoto: {
     width: width,
     height: '100%',
+  },
+  viewPhotosButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 107, 53, 0.9)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 24,
+    gap: 6,
+  },
+  viewPhotosText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  carouselModal: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+  },
+  carouselHeader: {
+    position: 'absolute',
+    left: 20,
+    zIndex: 10,
+  },
+  carouselTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+    opacity: 0.9,
+  },
+  carouselCard: {
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    marginHorizontal: 8,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: '#1a1a1a',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#FF6B35',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
+  },
+  carouselImage: {
+    width: '100%',
+    height: '100%',
+  },
+  carouselCardGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 60,
+    justifyContent: 'flex-end',
+    paddingBottom: 14,
+    paddingHorizontal: 16,
+  },
+  carouselPhotoNumber: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 1,
+  },
+  carouselDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 24,
+    gap: 6,
+  },
+  carouselDot: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FF6B35',
   },
 });
