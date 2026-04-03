@@ -75,7 +75,11 @@ app.include_router(websocket_router)
 async def health_check():
     return {"status": "ok"}
 
-# Global exception handler for DocumentTooLarge
+@app.get("/healthz")
+async def health_check_k8s():
+    return {"status": "ok"}
+
+# Global exception handler for DocumentTooLarge - returns 413 instead of crashing
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     if "DocumentTooLarge" in type(exc).__name__:
@@ -83,11 +87,17 @@ async def global_exception_handler(request: Request, exc: Exception):
             status_code=413,
             content={"detail": "Document too large. Please reduce photo sizes or count."}
         )
-    # Re-raise other exceptions so FastAPI handles them normally
-    raise exc
+    # Return 500 instead of re-raising to prevent server crashes
+    logger.error(f"Unhandled exception: {type(exc).__name__}: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"}
+    )
 
 
 # ==================== Background Scheduler ====================
+
+_scheduler_task = None
 
 async def rsvp_reminder_scheduler():
     """Background task that checks for RSVP reminders every hour."""
@@ -106,47 +116,54 @@ async def rsvp_reminder_scheduler():
             rsvps = await db.rsvps.find({
                 "eventDate": tomorrow,
                 "reminderSent": False
-            }).to_list(10000)
+            }).to_list(100)  # Limit to 100 to prevent memory spikes
 
             if not rsvps:
                 continue
 
             reminders_sent = 0
             for rsvp in rsvps:
-                user = await db.users.find_one({"_id": ObjectId(rsvp["userId"])})
-                if user and user.get("notificationsEnabled", True):
-                    notification = {
-                        "userId": rsvp["userId"],
-                        "type": "event_reminder",
-                        "title": f"Reminder: {rsvp['eventTitle']} is Tomorrow!",
-                        "message": f"Don't forget! {rsvp['eventTitle']} is happening tomorrow at {rsvp['eventTime']} at {rsvp['eventLocation']}",
-                        "eventId": rsvp["eventId"],
-                        "isRead": False,
-                        "createdAt": datetime.utcnow().isoformat()
-                    }
-                    await db.notifications.insert_one(notification)
+                try:
+                    user = await db.users.find_one({"_id": ObjectId(rsvp["userId"])})
+                    if user and user.get("notificationsEnabled", True):
+                        notification = {
+                            "userId": rsvp["userId"],
+                            "type": "event_reminder",
+                            "title": f"Reminder: {rsvp['eventTitle']} is Tomorrow!",
+                            "message": f"Don't forget! {rsvp['eventTitle']} is happening tomorrow at {rsvp['eventTime']} at {rsvp['eventLocation']}",
+                            "eventId": rsvp["eventId"],
+                            "isRead": False,
+                            "createdAt": datetime.utcnow().isoformat()
+                        }
+                        await db.notifications.insert_one(notification)
 
-                    if user.get("pushToken"):
-                        try:
-                            await send_push_notification(
-                                user["pushToken"],
-                                notification["title"],
-                                notification["message"],
-                                {"eventId": rsvp["eventId"], "type": "event_reminder"}
-                            )
-                        except Exception as e:
-                            logger.error(f"Failed to send reminder push: {e}")
+                        if user.get("pushToken"):
+                            try:
+                                await send_push_notification(
+                                    user["pushToken"],
+                                    notification["title"],
+                                    notification["message"],
+                                    {"eventId": rsvp["eventId"], "type": "event_reminder"}
+                                )
+                            except Exception as e:
+                                logger.error(f"Failed to send reminder push: {e}")
 
-                    reminders_sent += 1
+                        reminders_sent += 1
 
-                await db.rsvps.update_one(
-                    {"_id": rsvp["_id"]},
-                    {"$set": {"reminderSent": True}}
-                )
+                    await db.rsvps.update_one(
+                        {"_id": rsvp["_id"]},
+                        {"$set": {"reminderSent": True}}
+                    )
+                except Exception as e:
+                    logger.error(f"Error processing RSVP reminder: {e}")
+                    continue
 
             if reminders_sent > 0:
                 logger.info(f"RSVP Scheduler: Sent {reminders_sent} reminder notifications")
 
+        except asyncio.CancelledError:
+            logger.info("RSVP scheduler cancelled")
+            break
         except Exception as e:
             logger.error(f"RSVP Scheduler error: {e}")
             await asyncio.sleep(60)  # Wait a minute before retrying on error
@@ -155,10 +172,18 @@ async def rsvp_reminder_scheduler():
 @app.on_event("startup")
 async def startup_scheduler():
     """Start the background RSVP reminder scheduler on app startup."""
-    asyncio.create_task(rsvp_reminder_scheduler())
+    global _scheduler_task
+    _scheduler_task = asyncio.create_task(rsvp_reminder_scheduler())
     logger.info("RSVP reminder scheduler started (runs every hour)")
 
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    global _scheduler_task
+    if _scheduler_task:
+        _scheduler_task.cancel()
+        try:
+            await _scheduler_task
+        except asyncio.CancelledError:
+            pass
     client.close()
