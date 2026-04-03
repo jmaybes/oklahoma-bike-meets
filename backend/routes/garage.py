@@ -57,14 +57,30 @@ async def get_user_car(user_id: str, include_photos: bool = Query(default=False)
             return None
         return user_car_helper(car)
     
-    # ZERO photos mode: exclude photos entirely from MongoDB query
+    # Lightweight mode: exclude full photos array from MongoDB, but fetch main photo separately
     car = await db.user_cars.find_one({"userId": user_id}, {"photos": 0})
     if not car:
         return None
     
     car_data = user_car_helper(car)
-    car_data["photos"] = []
-    car_data["photoCount"] = 0
+    
+    # Fetch only the main photo using $slice to avoid loading all images
+    main_idx = car.get("mainPhotoIndex", 0)
+    photo_doc = await db.user_cars.find_one(
+        {"userId": user_id},
+        {"photos": {"$slice": [main_idx, 1]}, "_id": 0}
+    )
+    main_photo = photo_doc.get("photos", [None])[0] if photo_doc and photo_doc.get("photos") else None
+    
+    # Get photo count without loading photos
+    count_doc = await db.user_cars.aggregate([
+        {"$match": {"userId": user_id}},
+        {"$project": {"photoCount": {"$size": {"$ifNull": ["$photos", []]}}}}
+    ]).to_list(1)
+    photo_count = count_doc[0]["photoCount"] if count_doc else 0
+    
+    car_data["photos"] = [main_photo] if main_photo else []
+    car_data["photoCount"] = photo_count
     car_data["mainPhotoIndex"] = 0
     
     return car_data

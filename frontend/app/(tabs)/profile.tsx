@@ -472,7 +472,7 @@ export default function ProfileScreen() {
               {userCar.photos && userCar.photos.length > 0 ? (
                 <View style={styles.carMainPhotoContainer}>
                   <Image 
-                    source={{ uri: userCar.photos[userCar.mainPhotoIndex && userCar.mainPhotoIndex < userCar.photos.length ? userCar.mainPhotoIndex : 0] }} 
+                    source={{ uri: userCar.photos[0] }} 
                     style={styles.carMainPhoto} 
                     resizeMode="cover"
                   />
@@ -482,18 +482,16 @@ export default function ProfileScreen() {
                   />
                   <View style={styles.carPhotoCountBadge}>
                     <Ionicons name="images" size={13} color="#fff" />
-                    <Text style={styles.carPhotoCountText}>{userCar.photos.length}</Text>
+                    <Text style={styles.carPhotoCountText}>{(userCar as any).photoCount || userCar.photos.length}</Text>
                   </View>
-                  {userCar.photos.length > 0 && (
-                    <TouchableOpacity 
-                      style={styles.viewPicsButton}
-                      onPress={() => router.push(`/garage/${userCar.id}`)}
-                      activeOpacity={0.8}
-                    >
-                      <Ionicons name="images-outline" size={12} color="#fff" />
-                      <Text style={styles.viewPicsText}>View Pics</Text>
-                    </TouchableOpacity>
-                  )}
+                  <TouchableOpacity 
+                    style={styles.viewPicsButton}
+                    onPress={() => router.push(`/garage/${userCar.id}`)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="images-outline" size={12} color="#fff" />
+                    <Text style={styles.viewPicsText}>View Pics</Text>
+                  </TouchableOpacity>
                 </View>
               ) : (
                 <View style={styles.noPhotoContainer}>
