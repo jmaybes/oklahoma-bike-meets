@@ -1224,6 +1224,10 @@ export default function ProfileScreen() {
         onRequestClose={() => setShowFeedbackModal(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+          >
           <View style={styles.modalHeader}>
             <TouchableOpacity onPress={() => setShowFeedbackModal(false)}>
               <Ionicons name="close" size={28} color="#fff" />
@@ -1348,6 +1352,7 @@ export default function ProfileScreen() {
               )}
             </TouchableOpacity>
           </ScrollView>
+          </KeyboardAvoidingView>
         </SafeAreaView>
       </Modal>
 
