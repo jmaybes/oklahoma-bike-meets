@@ -581,7 +581,7 @@ export default function ProfileScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* User Feeds Link */}
+        {/* Community Lounge Link */}
         <TouchableOpacity 
           style={styles.publicGarageLink}
           onPress={() => router.push('/feeds')}
@@ -593,9 +593,9 @@ export default function ProfileScreen() {
           >
             <View style={styles.publicGarageLinkContent}>
               <View style={styles.publicGarageLinkLeft}>
-                <Ionicons name="newspaper" size={24} color="#FF6B35" />
+                <Ionicons name="chatbubbles" size={24} color="#FF6B35" />
                 <View>
-                  <Text style={styles.publicGarageLinkTitle}>User Feeds</Text>
+                  <Text style={styles.publicGarageLinkTitle}>Community Lounge</Text>
                   <Text style={styles.publicGarageLinkSub}>Share posts and connect with the community</Text>
                 </View>
               </View>

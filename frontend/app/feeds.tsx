@@ -1165,7 +1165,7 @@ export default function FeedsScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>User Feeds</Text>
+          <Text style={styles.headerTitle}>Community Lounge</Text>
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.authPrompt}>
@@ -1190,7 +1190,7 @@ export default function FeedsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>User Feeds</Text>
+        <Text style={styles.headerTitle}>Community Lounge</Text>
         <View style={{ width: 40 }} />
       </View>
 
