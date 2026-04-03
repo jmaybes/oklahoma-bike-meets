@@ -45,7 +45,8 @@ async def get_public_garages(
     limit: int = Query(default=50, le=100),
     sort: str = Query(default="likes", description="Sort by: likes, views, newest")
 ):
-    """Get all public garages to browse, sorted by most liked by default"""
+    """Get all public garages to browse, sorted by most liked by default.
+    Only returns the main photo per car to keep the response size small."""
     query = {"$or": [{"isPublic": True}, {"isPublic": "true"}]}
     if make:
         query["make"] = {"$regex": make, "$options": "i"}
@@ -67,6 +68,19 @@ async def get_public_garages(
         car_data["ownerName"] = user.get("name", "Unknown") if user else "Unknown"
         car_data["ownerNickname"] = user.get("nickname", "") if user else ""
         car_data["likedBy"] = car.get("likedBy", [])
+
+        # Only send the main photo for the listing (not all photos)
+        # This prevents multi-MB responses when many garages have many photos
+        all_photos = car_data.get("photos", [])
+        photo_count = len(all_photos)
+        main_idx = car_data.get("mainPhotoIndex", 0)
+        if main_idx >= photo_count:
+            main_idx = 0
+        main_photo = all_photos[main_idx] if photo_count > 0 else None
+        car_data["photos"] = [main_photo] if main_photo else []
+        car_data["photoCount"] = photo_count
+        car_data["mainPhotoIndex"] = 0  # Reset since we only have 1 photo now
+
         result.append(car_data)
 
     return result

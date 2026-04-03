@@ -40,6 +40,7 @@ interface UserCar {
   likedBy?: string[];
   description?: string;
   drivetrain?: string;
+  photoCount?: number;
 }
 
 export default function BrowseGaragesScreen() {
@@ -99,7 +100,11 @@ export default function BrowseGaragesScreen() {
     if (!car.photos || car.photos.length === 0) return null;
     const idx = car.mainPhotoIndex && car.mainPhotoIndex < car.photos.length ? car.mainPhotoIndex : 0;
     const photo = car.photos[idx];
-    return photo.startsWith('data:') ? photo : `data:image/jpeg;base64,${photo}`;
+    if (!photo) return null;
+    // Handle both base64 strings and data URIs
+    if (photo.startsWith('data:')) return photo;
+    if (photo.startsWith('http')) return photo;
+    return `data:image/jpeg;base64,${photo}`;
   };
 
   const filteredGarages = garages.filter(car => {
@@ -155,7 +160,7 @@ export default function BrowseGaragesScreen() {
           {/* Photo count badge */}
           <View style={styles.photoCount}>
             <Ionicons name="images" size={13} color="#fff" />
-            <Text style={styles.photoCountText}>{car.photos?.length || 0}</Text>
+            <Text style={styles.photoCountText}>{car.photoCount || car.photos?.length || 0}</Text>
           </View>
           {/* Owner name overlay */}
           <View style={styles.ownerOverlay}>
