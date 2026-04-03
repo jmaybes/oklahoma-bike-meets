@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
@@ -59,11 +60,31 @@ export default function NearbyScreen() {
   const [sendingInvite, setSendingInvite] = useState(false);
   const [showMap, setShowMap] = useState(false); // Default to list view to prevent crashes
   const [mapError, setMapError] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
+  const retryCountRef = useRef(0);
+  const isMountedRef = useRef(true);
+  const locationRef = useRef<{latitude: number; longitude: number} | null>(null);
 
   useEffect(() => {
+    isMountedRef.current = true;
     initializeLocation();
     fetchPrewrittenMessages();
+    return () => { isMountedRef.current = false; };
   }, []);
+
+  // Keep locationRef in sync for useFocusEffect callback
+  useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
+
+  // Refetch nearby users every time the tab comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (locationRef.current && user) {
+        fetchNearbyUsers();
+      }
+    }, [user, radius])
+  );
 
   useEffect(() => {
     if (location && user) {
@@ -106,25 +127,41 @@ export default function NearbyScreen() {
     }
   };
 
-  const fetchNearbyUsers = async () => {
-    if (!location || !user) return;
+  const fetchNearbyUsers = useCallback(async (isRetry = false) => {
+    const loc = locationRef.current || location;
+    if (!loc || !user) return;
 
     try {
+      if (!isRetry) setFetchError(false);
       const response = await axios.get(
         `${API_URL}/api/users/nearby/${user.id}`,
         {
           params: {
-            latitude: location.latitude,
-            longitude: location.longitude,
+            latitude: loc.latitude,
+            longitude: loc.longitude,
             radius: radius,
           },
+          timeout: 15000,
         }
       );
-      setNearbyUsers(response.data.users);
+      if (!isMountedRef.current) return;
+      setNearbyUsers(response.data.users || []);
+      setFetchError(false);
+      retryCountRef.current = 0;
     } catch (error) {
       console.error('Error fetching nearby users:', error);
+      if (!isMountedRef.current) return;
+      if (retryCountRef.current < 3) {
+        retryCountRef.current += 1;
+        const delay = retryCountRef.current * 2000;
+        setTimeout(() => {
+          if (isMountedRef.current) fetchNearbyUsers(true);
+        }, delay);
+      } else {
+        setFetchError(true);
+      }
     }
-  };
+  }, [location, radius, user]);
 
   const fetchPrewrittenMessages = async () => {
     try {
@@ -313,10 +350,24 @@ export default function NearbyScreen() {
         {!showMap && (
           <View style={styles.usersSection}>
             <Text style={styles.sectionTitle}>
-              {nearbyUsers.length > 0 ? 'Nearby Car Enthusiasts' : 'No users found nearby'}
+              {fetchError ? "Couldn't load nearby users" : nearbyUsers.length > 0 ? 'Nearby Car Enthusiasts' : 'No users found nearby'}
             </Text>
             
-            {nearbyUsers.length === 0 ? (
+            {fetchError ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="cloud-offline" size={48} color="#FF5252" />
+                <Text style={styles.emptyText}>
+                  Check your connection and try again
+                </Text>
+                <TouchableOpacity 
+                  style={styles.retryButton}
+                  onPress={() => { retryCountRef.current = 0; setFetchError(false); fetchNearbyUsers(); }}
+                >
+                  <Ionicons name="refresh" size={18} color="#fff" />
+                  <Text style={styles.retryButtonText}>Tap to Retry</Text>
+                </TouchableOpacity>
+              </View>
+            ) : nearbyUsers.length === 0 ? (
               <View style={styles.emptyState}>
                 <Ionicons name="car-sport-outline" size={48} color="#444" />
                 <Text style={styles.emptyText}>
@@ -629,6 +680,21 @@ const styles = StyleSheet.create({
   emptyStateCompactText: {
     color: '#666',
     fontSize: 14,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
+    marginTop: 16,
+    gap: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
   },
   userCard: {
     flexDirection: 'row',
