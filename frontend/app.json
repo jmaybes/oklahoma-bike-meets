@@ -13,13 +13,13 @@
     },
     "updates": {
       "enabled": true,
-      "url": "https://u.expo.dev/ac7ca89d-00ab-447f-a8d6-866238fa8654",
+      "url": "https://u.expo.dev/7e405aed-e51a-4250-adb2-3608942f693e",
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 5000
     },
     "extra": {
       "eas": {
-        "projectId": "ac7ca89d-00ab-447f-a8d6-866238fa8654"
+        "projectId": "7e405aed-e51a-4250-adb2-3608942f693e"
       }
     },
     "ios": {
