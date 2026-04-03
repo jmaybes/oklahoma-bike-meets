@@ -1235,6 +1235,53 @@ agent_communication:
           agent: "main"
           comment: "Updated POST /api/user-cars/{car_id}/like to be a proper toggle. Tracks likedBy array to prevent double-likes. Returns likedBy in response. Also added likedBy to GET /api/user-cars/{car_id} detail endpoint."
 
+  - task: "User Feeds - CRUD Posts"
+    implemented: true
+    working: true
+    file: "routes/feeds.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented full CRUD for feed posts: GET /api/feeds (list with pagination), GET /api/feeds/{post_id} (single post), POST /api/feeds (create with base64 image compression), PUT /api/feeds/{post_id}?user_id={id} (edit own posts), DELETE /api/feeds/{post_id}?user_id={id} (delete own posts + comments)."
+        - working: true
+          agent: "testing"
+          comment: "User Feeds CRUD Posts testing completed successfully with 100% pass rate (5/5 tests). ✅ POST /api/feeds - Creates posts with userId, userName, text, images fields. Auto-generates id, likes (0), commentCount (0), createdAt timestamp. Validates required fields and image limits (max 4). ✅ GET /api/feeds - Lists posts with pagination (limit/skip), newest first. Returns proper array with all post fields including imageCount. ✅ GET /api/feeds/{post_id} - Retrieves single post by ID with ObjectId validation. Returns complete post structure. ✅ PUT /api/feeds/{post_id}?user_id={id} - Updates post text with authorization (owner only). Sets edited=true and updatedAt timestamp. ✅ DELETE /api/feeds/{post_id}?user_id={id} - Deletes post and associated comments with proper authorization. All endpoints handle validation, authorization, and data persistence correctly."
+
+  - task: "User Feeds - Likes"
+    implemented: true
+    working: true
+    file: "routes/feeds.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "POST /api/feeds/{post_id}/like?user_id={id} toggles like/unlike. Uses likedBy array to track users. Returns liked status and count."
+        - working: true
+          agent: "testing"
+          comment: "User Feeds Likes system testing completed successfully with 100% pass rate (2/2 tests). ✅ POST /api/feeds/{post_id}/like?user_id={id} - First like correctly adds user to likedBy array, increments likes count (0→1), returns {liked: true, likes: 1}. ✅ POST /api/feeds/{post_id}/like?user_id={id} - Second call (toggle) removes user from likedBy array, decrements likes count (1→0), returns {liked: false, likes: 0}. Toggle functionality working perfectly with proper like count management and user tracking in likedBy array."
+
+  - task: "User Feeds - Comments"
+    implemented: true
+    working: true
+    file: "routes/feeds.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/feeds/{post_id}/comments (list comments), POST /api/feeds/{post_id}/comments (add comment, increments commentCount on post), DELETE /api/feeds/{post_id}/comments/{comment_id}?user_id={id} (delete own comment, decrements commentCount)."
+        - working: true
+          agent: "testing"
+          comment: "User Feeds Comments system testing completed successfully with 100% pass rate (3/3 tests). ✅ POST /api/feeds/{post_id}/comments - Creates comments with userId, userName, text fields. Auto-generates id, createdAt timestamp, increments commentCount on parent post. Validates empty text and post existence. ✅ GET /api/feeds/{post_id}/comments - Lists comments for post, chronologically ordered (oldest first). Returns proper array with all comment fields (id, postId, userId, userName, text, createdAt). ✅ DELETE /api/feeds/{post_id}/comments/{comment_id}?user_id={id} - Deletes comment with authorization (owner only), decrements commentCount on parent post, returns {status: 'deleted'}. All comment operations handle validation, authorization, and proper parent post updates."
+
 agent_communication:
     - agent: "main"
-      message: "Please test these two new backend features: (1) GET /api/user-cars/public?sort=likes should return garages sorted by most likes first. Test with sort=likes, sort=views, sort=newest. Check that likedBy array is returned. (2) POST /api/user-cars/{car_id}/like?user_id={id} should now toggle like/unlike. First call adds user to likedBy and increments likes. Second call removes user and decrements likes. Use admin login (admin@okcarevents.com / admin123) and an existing car ID."
+      message: "Please test the NEW User Feeds feature with all CRUD endpoints. Use admin login (admin@okcarevents.com / admin123). Test: (1) POST /api/feeds - create a post with userId, userName, text, and images=[]. (2) GET /api/feeds - list posts with pagination (limit, skip params). (3) GET /api/feeds/{post_id} - get single post. (4) PUT /api/feeds/{post_id}?user_id={userId} - edit post text. (5) DELETE /api/feeds/{post_id}?user_id={userId} - delete post. (6) POST /api/feeds/{post_id}/like?user_id={userId} - toggle like (call twice to verify toggle). (7) POST /api/feeds/{post_id}/comments - add comment with userId, userName, text. (8) GET /api/feeds/{post_id}/comments - list comments. (9) DELETE /api/feeds/{post_id}/comments/{comment_id}?user_id={userId} - delete comment. Test authorization (editing/deleting other user's posts should fail with 403)."
+    - agent: "testing"
+      message: "USER FEEDS BACKEND API TESTING COMPLETED SUCCESSFULLY! ✅ 100% SUCCESS RATE (13/13 tests passed) for all User Feeds endpoints. ✅ COMPREHENSIVE TESTING COMPLETED: (1) Admin login working (admin@okcarevents.com/admin123), (2) POST /api/feeds creates posts with proper validation and auto-generated fields, (3) GET /api/feeds lists posts with pagination, (4) GET /api/feeds/{post_id} retrieves single posts, (5) PUT /api/feeds/{post_id} edits posts with authorization, (6) POST /api/feeds/{post_id}/like toggles likes correctly (like→unlike), (7) POST /api/feeds/{post_id}/comments adds comments and increments commentCount, (8) GET /api/feeds/{post_id}/comments lists comments chronologically, (9) DELETE /api/feeds/{post_id}/comments/{comment_id} removes comments with authorization, (10) Authorization test confirmed 403 for editing other user's posts, (11) DELETE /api/feeds/{post_id} removes posts and associated comments, (12) Verification confirmed deleted posts no longer appear in listings. ✅ ALL FEATURES WORKING: CRUD operations, like/unlike toggle, comment system, authorization controls, data persistence, proper error handling. The User Feeds API is production-ready and fully functional."

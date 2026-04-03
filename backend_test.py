@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Apple Sign In Authentication
-Oklahoma Car Events App - Apple Auth Testing
+Backend Test Suite for User Feeds Feature
+Tests all CRUD operations, likes, comments, and authorization
 """
 
 import requests
@@ -9,272 +9,431 @@ import json
 import sys
 from datetime import datetime
 
-# Backend URL from environment
+# Backend URL from frontend/.env
 BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
 
-def print_test_result(test_name, success, details=""):
-    """Print formatted test results"""
-    status = "✅ PASS" if success else "❌ FAIL"
-    print(f"{status} {test_name}")
-    if details:
-        print(f"    {details}")
-    print()
+# Test credentials from review request
+ADMIN_EMAIL = "admin@okcarevents.com"
+ADMIN_PASSWORD = "admin123"
 
-def test_apple_auth_session():
-    """Test Apple auth session verification endpoint"""
-    print("🍎 Testing Apple Auth Session Verification...")
-    
-    url = f"{BACKEND_URL}/auth/apple/session"
-    payload = {
-        "identityToken": "mock_token",
-        "fullName": "Test User",
-        "email": "apple_test@example.com"
-    }
-    
-    try:
-        response = requests.post(url, json=payload, timeout=30)
+class UserFeedsTest:
+    def __init__(self):
+        self.admin_id = None
+        self.admin_name = None
+        self.test_post_id = None
+        self.test_comment_id = None
+        self.session = requests.Session()
+        self.session.headers.update({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        })
+
+    def log(self, message):
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
+
+    def test_login(self):
+        """Test 1: POST /api/auth/login - Login to get admin user ID"""
+        self.log("🔐 Testing admin login...")
         
-        # The endpoint should handle JWT decode gracefully (may fail verification but should not crash)
-        if response.status_code in [200, 401, 500]:
-            # Check if it's a proper error response or success
-            if response.status_code == 200:
-                data = response.json()
-                if "isNewUser" in data and "appleData" in data:
-                    print_test_result("Apple Auth Session - Success Response", True, 
-                                    f"Status: {response.status_code}, Response: {json.dumps(data, indent=2)}")
-                    return True
+        login_data = {
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        }
+        
+        response = self.session.post(f"{BACKEND_URL}/auth/login", json=login_data)
+        
+        if response.status_code != 200:
+            self.log(f"❌ Login failed: {response.status_code} - {response.text}")
+            return False
+            
+        user_data = response.json()
+        self.admin_id = user_data.get("id")
+        self.admin_name = user_data.get("name", "Admin User")
+        
+        if not self.admin_id:
+            self.log("❌ Login response missing user ID")
+            return False
+            
+        self.log(f"✅ Login successful - Admin ID: {self.admin_id}, Name: {self.admin_name}")
+        return True
+
+    def test_create_post(self):
+        """Test 2: POST /api/feeds - Create a post"""
+        self.log("📝 Testing post creation...")
+        
+        post_data = {
+            "userId": self.admin_id,
+            "userName": self.admin_name,
+            "text": "First test post about cars! Just got back from an amazing car show in Oklahoma City. The variety of classic muscle cars was incredible!",
+            "images": []
+        }
+        
+        response = self.session.post(f"{BACKEND_URL}/feeds", json=post_data)
+        
+        if response.status_code != 200:
+            self.log(f"❌ Post creation failed: {response.status_code} - {response.text}")
+            return False
+            
+        post = response.json()
+        self.test_post_id = post.get("id")
+        
+        if not self.test_post_id:
+            self.log("❌ Post creation response missing post ID")
+            return False
+            
+        # Verify post structure
+        required_fields = ["id", "userId", "userName", "text", "likes", "commentCount", "createdAt"]
+        missing_fields = [field for field in required_fields if field not in post]
+        
+        if missing_fields:
+            self.log(f"❌ Post missing required fields: {missing_fields}")
+            return False
+            
+        self.log(f"✅ Post created successfully - ID: {self.test_post_id}")
+        self.log(f"   Text: {post['text'][:50]}...")
+        self.log(f"   Likes: {post['likes']}, Comments: {post['commentCount']}")
+        return True
+
+    def test_list_posts(self):
+        """Test 3: GET /api/feeds - List posts (verify the created post appears)"""
+        self.log("📋 Testing post listing...")
+        
+        response = self.session.get(f"{BACKEND_URL}/feeds")
+        
+        if response.status_code != 200:
+            self.log(f"❌ Post listing failed: {response.status_code} - {response.text}")
+            return False
+            
+        posts = response.json()
+        
+        if not isinstance(posts, list):
+            self.log("❌ Post listing should return an array")
+            return False
+            
+        # Find our test post
+        test_post = None
+        for post in posts:
+            if post.get("id") == self.test_post_id:
+                test_post = post
+                break
+                
+        if not test_post:
+            self.log(f"❌ Created post {self.test_post_id} not found in listing")
+            return False
+            
+        self.log(f"✅ Post listing successful - Found {len(posts)} posts")
+        self.log(f"   Test post found: {test_post['text'][:50]}...")
+        return True
+
+    def test_get_single_post(self):
+        """Test 4: GET /api/feeds/{post_id} - Get single post by ID"""
+        self.log("🔍 Testing single post retrieval...")
+        
+        response = self.session.get(f"{BACKEND_URL}/feeds/{self.test_post_id}")
+        
+        if response.status_code != 200:
+            self.log(f"❌ Single post retrieval failed: {response.status_code} - {response.text}")
+            return False
+            
+        post = response.json()
+        
+        if post.get("id") != self.test_post_id:
+            self.log(f"❌ Retrieved post ID mismatch: expected {self.test_post_id}, got {post.get('id')}")
+            return False
+            
+        self.log(f"✅ Single post retrieval successful")
+        self.log(f"   Post ID: {post['id']}")
+        self.log(f"   Text: {post['text'][:50]}...")
+        return True
+
+    def test_edit_post(self):
+        """Test 5: PUT /api/feeds/{post_id}?user_id={admin_id} - Edit the post text"""
+        self.log("✏️ Testing post editing...")
+        
+        update_data = {
+            "text": "Updated test post - This car show was even better than I initially thought! The 1969 Camaro SS was absolutely stunning."
+        }
+        
+        response = self.session.put(
+            f"{BACKEND_URL}/feeds/{self.test_post_id}?user_id={self.admin_id}",
+            json=update_data
+        )
+        
+        if response.status_code != 200:
+            self.log(f"❌ Post editing failed: {response.status_code} - {response.text}")
+            return False
+            
+        updated_post = response.json()
+        
+        if updated_post.get("text") != update_data["text"]:
+            self.log(f"❌ Post text not updated correctly")
+            return False
+            
+        if not updated_post.get("edited"):
+            self.log(f"❌ Post should be marked as edited")
+            return False
+            
+        self.log(f"✅ Post editing successful")
+        self.log(f"   Updated text: {updated_post['text'][:50]}...")
+        self.log(f"   Edited flag: {updated_post['edited']}")
+        return True
+
+    def test_like_post_first_time(self):
+        """Test 6: POST /api/feeds/{post_id}/like?user_id={admin_id} - Like the post (should return liked=true)"""
+        self.log("👍 Testing post like (first time)...")
+        
+        response = self.session.post(f"{BACKEND_URL}/feeds/{self.test_post_id}/like?user_id={self.admin_id}")
+        
+        if response.status_code != 200:
+            self.log(f"❌ Post like failed: {response.status_code} - {response.text}")
+            return False
+            
+        like_result = response.json()
+        
+        if not like_result.get("liked"):
+            self.log(f"❌ Post should be liked after first like")
+            return False
+            
+        if like_result.get("likes") != 1:
+            self.log(f"❌ Like count should be 1, got {like_result.get('likes')}")
+            return False
+            
+        self.log(f"✅ Post like successful")
+        self.log(f"   Liked: {like_result['liked']}, Count: {like_result['likes']}")
+        return True
+
+    def test_like_post_toggle(self):
+        """Test 7: POST /api/feeds/{post_id}/like?user_id={admin_id} - Like again (toggle - should return liked=false)"""
+        self.log("👎 Testing post like toggle (unlike)...")
+        
+        response = self.session.post(f"{BACKEND_URL}/feeds/{self.test_post_id}/like?user_id={self.admin_id}")
+        
+        if response.status_code != 200:
+            self.log(f"❌ Post unlike failed: {response.status_code} - {response.text}")
+            return False
+            
+        like_result = response.json()
+        
+        if like_result.get("liked"):
+            self.log(f"❌ Post should be unliked after toggle")
+            return False
+            
+        if like_result.get("likes") != 0:
+            self.log(f"❌ Like count should be 0, got {like_result.get('likes')}")
+            return False
+            
+        self.log(f"✅ Post unlike successful")
+        self.log(f"   Liked: {like_result['liked']}, Count: {like_result['likes']}")
+        return True
+
+    def test_add_comment(self):
+        """Test 8: POST /api/feeds/{post_id}/comments - Add comment"""
+        self.log("💬 Testing comment addition...")
+        
+        comment_data = {
+            "userId": self.admin_id,
+            "userName": self.admin_name,
+            "text": "Great post! I was at that show too. The Camaro was definitely the highlight of the event."
+        }
+        
+        response = self.session.post(f"{BACKEND_URL}/feeds/{self.test_post_id}/comments", json=comment_data)
+        
+        if response.status_code != 200:
+            self.log(f"❌ Comment addition failed: {response.status_code} - {response.text}")
+            return False
+            
+        comment = response.json()
+        self.test_comment_id = comment.get("id")
+        
+        if not self.test_comment_id:
+            self.log("❌ Comment creation response missing comment ID")
+            return False
+            
+        # Verify comment structure
+        required_fields = ["id", "postId", "userId", "userName", "text", "createdAt"]
+        missing_fields = [field for field in required_fields if field not in comment]
+        
+        if missing_fields:
+            self.log(f"❌ Comment missing required fields: {missing_fields}")
+            return False
+            
+        self.log(f"✅ Comment added successfully - ID: {self.test_comment_id}")
+        self.log(f"   Text: {comment['text'][:50]}...")
+        return True
+
+    def test_list_comments(self):
+        """Test 9: GET /api/feeds/{post_id}/comments - List comments (verify comment appears)"""
+        self.log("📝 Testing comment listing...")
+        
+        response = self.session.get(f"{BACKEND_URL}/feeds/{self.test_post_id}/comments")
+        
+        if response.status_code != 200:
+            self.log(f"❌ Comment listing failed: {response.status_code} - {response.text}")
+            return False
+            
+        comments = response.json()
+        
+        if not isinstance(comments, list):
+            self.log("❌ Comment listing should return an array")
+            return False
+            
+        # Find our test comment
+        test_comment = None
+        for comment in comments:
+            if comment.get("id") == self.test_comment_id:
+                test_comment = comment
+                break
+                
+        if not test_comment:
+            self.log(f"❌ Created comment {self.test_comment_id} not found in listing")
+            return False
+            
+        self.log(f"✅ Comment listing successful - Found {len(comments)} comments")
+        self.log(f"   Test comment found: {test_comment['text'][:50]}...")
+        return True
+
+    def test_delete_comment(self):
+        """Test 10: DELETE /api/feeds/{post_id}/comments/{comment_id}?user_id={admin_id} - Delete the comment"""
+        self.log("🗑️ Testing comment deletion...")
+        
+        response = self.session.delete(
+            f"{BACKEND_URL}/feeds/{self.test_post_id}/comments/{self.test_comment_id}?user_id={self.admin_id}"
+        )
+        
+        if response.status_code != 200:
+            self.log(f"❌ Comment deletion failed: {response.status_code} - {response.text}")
+            return False
+            
+        result = response.json()
+        
+        if result.get("status") != "deleted":
+            self.log(f"❌ Comment deletion should return status 'deleted'")
+            return False
+            
+        # Verify comment is gone
+        response = self.session.get(f"{BACKEND_URL}/feeds/{self.test_post_id}/comments")
+        if response.status_code == 200:
+            comments = response.json()
+            for comment in comments:
+                if comment.get("id") == self.test_comment_id:
+                    self.log(f"❌ Comment still exists after deletion")
+                    return False
+                    
+        self.log(f"✅ Comment deletion successful")
+        return True
+
+    def test_authorization_edit_other_user_post(self):
+        """Test 11: Test authorization - Try PUT /api/feeds/{post_id}?user_id=fake_user_id - Should return 403"""
+        self.log("🔒 Testing authorization (edit other user's post)...")
+        
+        fake_user_id = "507f1f77bcf86cd799439011"  # Valid ObjectId format but fake
+        update_data = {
+            "text": "Trying to edit someone else's post"
+        }
+        
+        response = self.session.put(
+            f"{BACKEND_URL}/feeds/{self.test_post_id}?user_id={fake_user_id}",
+            json=update_data
+        )
+        
+        if response.status_code != 403:
+            self.log(f"❌ Authorization test failed: expected 403, got {response.status_code}")
+            return False
+            
+        self.log(f"✅ Authorization test successful - 403 Forbidden returned")
+        return True
+
+    def test_delete_post(self):
+        """Test 12: DELETE /api/feeds/{post_id}?user_id={admin_id} - Delete the post"""
+        self.log("🗑️ Testing post deletion...")
+        
+        response = self.session.delete(f"{BACKEND_URL}/feeds/{self.test_post_id}?user_id={self.admin_id}")
+        
+        if response.status_code != 200:
+            self.log(f"❌ Post deletion failed: {response.status_code} - {response.text}")
+            return False
+            
+        result = response.json()
+        
+        if result.get("status") != "deleted":
+            self.log(f"❌ Post deletion should return status 'deleted'")
+            return False
+            
+        self.log(f"✅ Post deletion successful")
+        return True
+
+    def test_verify_post_deleted(self):
+        """Test 13: GET /api/feeds - Verify deleted post is gone"""
+        self.log("🔍 Testing post deletion verification...")
+        
+        response = self.session.get(f"{BACKEND_URL}/feeds")
+        
+        if response.status_code != 200:
+            self.log(f"❌ Post listing failed: {response.status_code} - {response.text}")
+            return False
+            
+        posts = response.json()
+        
+        # Check that our test post is no longer in the list
+        for post in posts:
+            if post.get("id") == self.test_post_id:
+                self.log(f"❌ Deleted post still appears in listing")
+                return False
+                
+        self.log(f"✅ Post deletion verified - Post no longer in listing")
+        return True
+
+    def run_all_tests(self):
+        """Run all User Feeds tests in sequence"""
+        self.log("🚀 Starting User Feeds Backend API Tests")
+        self.log(f"Backend URL: {BACKEND_URL}")
+        
+        tests = [
+            ("Login", self.test_login),
+            ("Create Post", self.test_create_post),
+            ("List Posts", self.test_list_posts),
+            ("Get Single Post", self.test_get_single_post),
+            ("Edit Post", self.test_edit_post),
+            ("Like Post (First)", self.test_like_post_first_time),
+            ("Like Post (Toggle)", self.test_like_post_toggle),
+            ("Add Comment", self.test_add_comment),
+            ("List Comments", self.test_list_comments),
+            ("Delete Comment", self.test_delete_comment),
+            ("Authorization Test", self.test_authorization_edit_other_user_post),
+            ("Delete Post", self.test_delete_post),
+            ("Verify Deletion", self.test_verify_post_deleted),
+        ]
+        
+        passed = 0
+        failed = 0
+        
+        for test_name, test_func in tests:
+            try:
+                if test_func():
+                    passed += 1
                 else:
-                    print_test_result("Apple Auth Session - Invalid Response Structure", False,
-                                    f"Status: {response.status_code}, Response: {response.text}")
-                    return False
-            else:
-                # Check if error is handled gracefully
-                try:
-                    error_data = response.json()
-                    print_test_result("Apple Auth Session - Graceful Error Handling", True,
-                                    f"Status: {response.status_code}, Error: {error_data.get('detail', 'Unknown error')}")
-                    return True
-                except:
-                    print_test_result("Apple Auth Session - Error Response Format", False,
-                                    f"Status: {response.status_code}, Response: {response.text}")
-                    return False
-        else:
-            print_test_result("Apple Auth Session - Unexpected Status", False,
-                            f"Status: {response.status_code}, Response: {response.text}")
-            return False
+                    failed += 1
+                    self.log(f"❌ {test_name} FAILED")
+            except Exception as e:
+                failed += 1
+                self.log(f"❌ {test_name} FAILED with exception: {e}")
             
-    except requests.exceptions.RequestException as e:
-        print_test_result("Apple Auth Session - Request Failed", False, f"Error: {str(e)}")
-        return False
-
-def test_apple_auth_complete():
-    """Test Apple registration completion endpoint"""
-    print("🍎 Testing Apple Auth Complete Registration...")
-    
-    url = f"{BACKEND_URL}/auth/apple/complete"
-    payload = {
-        "email": "apple_complete_test@example.com",
-        "nickname": "appleuser123",
-        "appleId": "000123.abc.456",
-        "name": "Apple Test User"
-    }
-    
-    try:
-        response = requests.post(url, json=payload, timeout=30)
+            self.log("")  # Empty line for readability
         
-        if response.status_code == 200:
-            data = response.json()
-            # Check if user was created with correct email and name
-            if data.get("email") == payload["email"] and data.get("name") == payload["name"]:
-                print_test_result("Apple Auth Complete - User Creation", True,
-                                f"Created user: {data.get('name')} ({data.get('email')}) with ID: {data.get('id')}")
-                return data.get("id")  # Return user ID for further tests
-            else:
-                print_test_result("Apple Auth Complete - Invalid User Data", False,
-                                f"Expected email: {payload['email']}, name: {payload['name']}, got: {json.dumps(data, indent=2)}")
-                return None
-        else:
-            try:
-                error_data = response.json()
-                print_test_result("Apple Auth Complete - Registration Failed", False,
-                                f"Status: {response.status_code}, Error: {error_data.get('detail', 'Unknown error')}")
-            except:
-                print_test_result("Apple Auth Complete - Registration Failed", False,
-                                f"Status: {response.status_code}, Response: {response.text}")
-            return None
-            
-    except requests.exceptions.RequestException as e:
-        print_test_result("Apple Auth Complete - Request Failed", False, f"Error: {str(e)}")
-        return None
-
-def test_apple_auth_duplicate_username():
-    """Test duplicate username handling"""
-    print("🍎 Testing Apple Auth Duplicate Username Check...")
-    
-    url = f"{BACKEND_URL}/auth/apple/complete"
-    payload = {
-        "email": "apple_duplicate_test@example.com",
-        "nickname": "appleuser123",  # Same nickname as previous test
-        "appleId": "000456.def.789",
-        "name": "Apple Duplicate User"
-    }
-    
-    try:
-        response = requests.post(url, json=payload, timeout=30)
+        self.log("=" * 60)
+        self.log(f"🏁 User Feeds Backend API Test Results:")
+        self.log(f"   ✅ Passed: {passed}")
+        self.log(f"   ❌ Failed: {failed}")
+        self.log(f"   📊 Success Rate: {(passed/(passed+failed)*100):.1f}%")
         
-        if response.status_code == 400:
-            try:
-                error_data = response.json()
-                if "Username already taken" in error_data.get("detail", ""):
-                    print_test_result("Apple Auth Duplicate Username - Proper Validation", True,
-                                    f"Correctly rejected duplicate username: {error_data.get('detail')}")
-                    return True
-                else:
-                    print_test_result("Apple Auth Duplicate Username - Wrong Error Message", False,
-                                    f"Expected 'Username already taken', got: {error_data.get('detail')}")
-                    return False
-            except:
-                print_test_result("Apple Auth Duplicate Username - Invalid Error Format", False,
-                                f"Status: {response.status_code}, Response: {response.text}")
-                return False
+        if failed == 0:
+            self.log("🎉 ALL TESTS PASSED! User Feeds API is working correctly.")
+            return True
         else:
-            print_test_result("Apple Auth Duplicate Username - Should Have Failed", False,
-                            f"Expected 400 status, got {response.status_code}")
+            self.log("⚠️  Some tests failed. Please check the logs above.")
             return False
-            
-    except requests.exceptions.RequestException as e:
-        print_test_result("Apple Auth Duplicate Username - Request Failed", False, f"Error: {str(e)}")
-        return False
-
-def test_username_availability():
-    """Test username availability check endpoints"""
-    print("🔍 Testing Username Availability Checks...")
-    
-    # Test taken username
-    url = f"{BACKEND_URL}/auth/check-username/appleuser123"
-    try:
-        response = requests.get(url, timeout=30)
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("available") == False:
-                print_test_result("Username Check - Taken Username", True,
-                                f"Correctly shows 'appleuser123' as unavailable")
-            else:
-                print_test_result("Username Check - Taken Username", False,
-                                f"Expected available=false, got: {data}")
-        else:
-            print_test_result("Username Check - Taken Username", False,
-                            f"Status: {response.status_code}, Response: {response.text}")
-    except requests.exceptions.RequestException as e:
-        print_test_result("Username Check - Taken Username", False, f"Error: {str(e)}")
-    
-    # Test available username
-    url = f"{BACKEND_URL}/auth/check-username/newuniquename99"
-    try:
-        response = requests.get(url, timeout=30)
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("available") == True:
-                print_test_result("Username Check - Available Username", True,
-                                f"Correctly shows 'newuniquename99' as available")
-                return True
-            else:
-                print_test_result("Username Check - Available Username", False,
-                                f"Expected available=true, got: {data}")
-                return False
-        else:
-            print_test_result("Username Check - Available Username", False,
-                            f"Status: {response.status_code}, Response: {response.text}")
-            return False
-    except requests.exceptions.RequestException as e:
-        print_test_result("Username Check - Available Username", False, f"Error: {str(e)}")
-        return False
-
-def test_existing_auth_endpoints():
-    """Test existing Google auth and login endpoints to ensure they still work"""
-    print("🔐 Testing Existing Authentication Endpoints...")
-    
-    # Test admin login
-    url = f"{BACKEND_URL}/auth/login"
-    payload = {
-        "email": "admin@okcarevents.com",
-        "password": "admin123"
-    }
-    
-    try:
-        response = requests.post(url, json=payload, timeout=30)
-        
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("email") == "admin@okcarevents.com" and data.get("isAdmin") == True:
-                print_test_result("Admin Login - Credentials Valid", True,
-                                f"Successfully logged in admin user: {data.get('name')}")
-                return True
-            else:
-                print_test_result("Admin Login - Invalid Response Data", False,
-                                f"Response: {json.dumps(data, indent=2)}")
-                return False
-        else:
-            try:
-                error_data = response.json()
-                print_test_result("Admin Login - Login Failed", False,
-                                f"Status: {response.status_code}, Error: {error_data.get('detail', 'Unknown error')}")
-            except:
-                print_test_result("Admin Login - Login Failed", False,
-                                f"Status: {response.status_code}, Response: {response.text}")
-            return False
-            
-    except requests.exceptions.RequestException as e:
-        print_test_result("Admin Login - Request Failed", False, f"Error: {str(e)}")
-        return False
-
-def main():
-    """Run all Apple Sign In authentication tests"""
-    print("=" * 80)
-    print("🍎 APPLE SIGN IN AUTHENTICATION TESTING")
-    print("Oklahoma Car Events Backend API")
-    print(f"Backend URL: {BACKEND_URL}")
-    print(f"Test Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("=" * 80)
-    print()
-    
-    test_results = []
-    
-    # Test Apple auth session verification
-    test_results.append(test_apple_auth_session())
-    
-    # Test Apple auth complete registration
-    user_id = test_apple_auth_complete()
-    test_results.append(user_id is not None)
-    
-    # Test duplicate username handling
-    test_results.append(test_apple_auth_duplicate_username())
-    
-    # Test username availability checks
-    test_results.append(test_username_availability())
-    
-    # Test existing auth endpoints
-    test_results.append(test_existing_auth_endpoints())
-    
-    # Summary
-    print("=" * 80)
-    print("📊 TEST SUMMARY")
-    print("=" * 80)
-    
-    passed = sum(test_results)
-    total = len(test_results)
-    
-    print(f"Total Tests: {total}")
-    print(f"Passed: {passed}")
-    print(f"Failed: {total - passed}")
-    print(f"Success Rate: {(passed/total)*100:.1f}%")
-    
-    if passed == total:
-        print("\n🎉 ALL TESTS PASSED! Apple Sign In authentication is working correctly.")
-        return 0
-    else:
-        print(f"\n⚠️  {total - passed} test(s) failed. Please review the issues above.")
-        return 1
 
 if __name__ == "__main__":
-    sys.exit(main())
+    tester = UserFeedsTest()
+    success = tester.run_all_tests()
+    sys.exit(0 if success else 1)

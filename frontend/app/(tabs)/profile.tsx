@@ -583,6 +583,29 @@ export default function ProfileScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
+        {/* User Feeds Link */}
+        <TouchableOpacity 
+          style={styles.publicGarageLink}
+          onPress={() => router.push('/feeds')}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={['#1e1e1e', '#252525']}
+            style={styles.publicGarageLinkGradient}
+          >
+            <View style={styles.publicGarageLinkContent}>
+              <View style={styles.publicGarageLinkLeft}>
+                <Ionicons name="newspaper" size={24} color="#FF6B35" />
+                <View>
+                  <Text style={styles.publicGarageLinkTitle}>User Feeds</Text>
+                  <Text style={styles.publicGarageLinkSub}>Share posts and connect with the community</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={22} color="#FF6B35" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
         {/* Menu Sections */}
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/messages')}>

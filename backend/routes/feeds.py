@@ -67,12 +67,31 @@ def comment_helper(comment) -> dict:
 
 @router.get("/feeds")
 async def get_feed_posts(
-    limit: int = Query(default=30, le=100),
+    limit: int = Query(default=15, le=50),
     skip: int = Query(default=0, ge=0),
 ):
-    """Get feed posts, newest first. Excludes full images for listing performance."""
+    """Get feed posts, newest first. Returns images for display in feed."""
     posts = await db.feed_posts.find().sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
-    return [feed_post_helper(p) for p in posts]
+    result = []
+    for p in posts:
+        post_data = feed_post_helper(p)
+        # Include image count for UI even if images load lazily
+        post_data["imageCount"] = len(post_data.get("images", []))
+        result.append(post_data)
+    return result
+
+
+@router.get("/feeds/{post_id}")
+async def get_feed_post(post_id: str):
+    """Get a single feed post by ID."""
+    if not ObjectId.is_valid(post_id):
+        raise HTTPException(status_code=400, detail="Invalid post ID")
+    
+    post = await db.feed_posts.find_one({"_id": ObjectId(post_id)})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    return feed_post_helper(post)
 
 
 @router.post("/feeds")
