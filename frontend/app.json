@@ -8,6 +8,20 @@
     "scheme": "okccarmeets",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "enabled": true,
+      "url": "https://u.expo.dev/ac7ca89d-00ab-447f-a8d6-866238fa8654",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 5000
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ac7ca89d-00ab-447f-a8d6-866238fa8654"
+      }
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.velocityvisualcrew.okccarmeets",
