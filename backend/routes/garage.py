@@ -46,7 +46,7 @@ async def get_public_garages(
     sort: str = Query(default="likes", description="Sort by: likes, views, newest")
 ):
     """Get all public garages to browse, sorted by most liked by default"""
-    query = {"isPublic": True}
+    query = {"$or": [{"isPublic": True}, {"isPublic": "true"}]}
     if make:
         query["make"] = {"$regex": make, "$options": "i"}
 
