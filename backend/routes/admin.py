@@ -340,3 +340,70 @@ async def scheduled_weekly_search(secret_key: str = Query(...)):
     except Exception as e:
         logger.error(f"Scheduled search error: {e}")
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+
+# ==================== Admin Broadcast Message ====================
+
+@router.post("/admin/broadcast")
+async def broadcast_message(
+    admin_id: str = Query(...),
+    message: dict = None
+):
+    """Send a message from admin to all users."""
+    if not message or not message.get("content"):
+        raise HTTPException(status_code=400, detail="Message content is required")
+
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+
+    admin_name = admin.get("nickname") or admin.get("name", "Admin")
+    content = message["content"]
+
+    # Get all non-admin users
+    users = await db.users.find({"_id": {"$ne": admin["_id"]}}).to_list(10000)
+
+    sent_count = 0
+    push_count = 0
+
+    for user in users:
+        user_id = str(user["_id"])
+
+        # Insert message into DB
+        msg_doc = {
+            "senderId": admin_id,
+            "recipientId": user_id,
+            "content": content,
+            "createdAt": datetime.utcnow().isoformat(),
+            "isRead": False,
+        }
+        await db.messages.insert_one(msg_doc)
+        sent_count += 1
+
+        # Send push notification if user has a token
+        push_token = user.get("pushToken")
+        if push_token and user.get("notificationsEnabled", True):
+            try:
+                await send_push_notification(
+                    push_token=push_token,
+                    title=f"Message from {admin_name}",
+                    body=content[:120] + ("..." if len(content) > 120 else ""),
+                    data={
+                        "type": "message",
+                        "senderId": admin_id,
+                        "senderName": admin_name,
+                    },
+                )
+                push_count += 1
+            except Exception as e:
+                logger.error(f"Push notification failed for user {user_id}: {e}")
+
+    return {
+        "success": True,
+        "messagesSent": sent_count,
+        "pushNotificationsSent": push_count,
+        "totalUsers": len(users),
+    }

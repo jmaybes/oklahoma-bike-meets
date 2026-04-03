@@ -700,6 +700,14 @@ export default function ProfileScreen() {
               <Text style={styles.menuItemText}>Event Search</Text>
               <Ionicons name="chevron-forward" size={24} color="#666" />
             </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.menuItem, styles.adminMenuItem]} 
+              onPress={() => router.push('/admin/broadcast')}
+            >
+              <Ionicons name="megaphone" size={24} color="#FF9800" />
+              <Text style={styles.menuItemText}>Broadcast Message</Text>
+              <Ionicons name="chevron-forward" size={24} color="#666" />
+            </TouchableOpacity>
           </View>
         )}
 
