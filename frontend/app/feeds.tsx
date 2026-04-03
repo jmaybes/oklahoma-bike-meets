@@ -33,6 +33,7 @@ import Animated, {
   withTiming,
   withSpring,
 } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const IMAGE_GAP = 3;
@@ -491,7 +492,12 @@ const BottomNavBar = () => {
   ];
 
   return (
-    <View style={[navS.container, { paddingBottom: bottomPadding, height: 64 + bottomPadding }]}>
+    <LinearGradient
+      colors={['#FF6B35', '#E91E63']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+      style={[navS.container, { paddingBottom: bottomPadding, height: 64 + bottomPadding }]}
+    >
       {tabs.map((tab) => (
         <TouchableOpacity
           key={tab.name}
@@ -499,26 +505,18 @@ const BottomNavBar = () => {
           onPress={() => router.replace(tab.route as any)}
           activeOpacity={0.7}
         >
-          <Ionicons name={tab.icon as any} size={24} color="#777" />
+          <Ionicons name={tab.icon as any} size={24} color="rgba(255,255,255,0.85)" />
           <Text style={navS.tabLabel}>{tab.name}</Text>
         </TouchableOpacity>
       ))}
-    </View>
+    </LinearGradient>
   );
 };
 
 const navS = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
     paddingTop: 10,
-    elevation: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
   },
   tab: {
     flex: 1,
@@ -529,7 +527,7 @@ const navS = StyleSheet.create({
   tabLabel: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#777',
+    color: 'rgba(255,255,255,0.9)',
     letterSpacing: 0.3,
   },
 });
@@ -766,11 +764,11 @@ export default function FeedsScreen() {
     return (
       <View style={[s.container, { paddingTop: insets.top }]}>
         <StatusBar barStyle="dark-content" />
-        <View style={s.headerBar}>
-          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><Ionicons name="arrow-back" size={24} color="#333" /></TouchableOpacity>
+        <LinearGradient colors={['#FF6B35', '#E91E63']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.headerBar}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><Ionicons name="arrow-back" size={24} color="#fff" /></TouchableOpacity>
           <Text style={s.headerTitle}>Community Lounge</Text>
           <View style={{ width: 40 }} />
-        </View>
+        </LinearGradient>
         <View style={s.authPrompt}>
           <Ionicons name="chatbubbles-outline" size={60} color="#ccc" />
           <Text style={s.authTitle}>Join the Conversation</Text>
@@ -787,11 +785,11 @@ export default function FeedsScreen() {
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" />
-      <View style={s.headerBar}>
-        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><Ionicons name="arrow-back" size={24} color="#333" /></TouchableOpacity>
+      <LinearGradient colors={['#FF6B35', '#E91E63']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.headerBar}>
+        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><Ionicons name="arrow-back" size={24} color="#fff" /></TouchableOpacity>
         <Text style={s.headerTitle}>Community Lounge</Text>
         <View style={{ width: 40 }} />
-      </View>
+      </LinearGradient>
 
       <FlatList
         data={posts}
@@ -877,9 +875,9 @@ export default function FeedsScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f2f2f2' },
-  headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e8e8e8' },
-  backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { color: '#1a1a1a', fontSize: 20, fontWeight: '800' },
+  headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
+  backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { color: '#fff', fontSize: 20, fontWeight: '800' },
   listContent: { paddingBottom: 20 },
 
   // Compose trigger
