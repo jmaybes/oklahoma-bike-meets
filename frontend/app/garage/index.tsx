@@ -103,13 +103,14 @@ export default function BrowseGaragesScreen() {
   };
 
   const filteredGarages = garages.filter(car => {
+    if (!searchQuery) return true;
     const searchLower = searchQuery.toLowerCase();
     return (
-      car.make.toLowerCase().includes(searchLower) ||
-      car.model.toLowerCase().includes(searchLower) ||
-      car.year.toLowerCase().includes(searchLower) ||
-      car.ownerName.toLowerCase().includes(searchLower) ||
-      (car.ownerNickname && car.ownerNickname.toLowerCase().includes(searchLower))
+      (car.make || '').toLowerCase().includes(searchLower) ||
+      (car.model || '').toLowerCase().includes(searchLower) ||
+      (car.year || '').toLowerCase().includes(searchLower) ||
+      (car.ownerName || '').toLowerCase().includes(searchLower) ||
+      (car.ownerNickname || '').toLowerCase().includes(searchLower)
     );
   });
 
