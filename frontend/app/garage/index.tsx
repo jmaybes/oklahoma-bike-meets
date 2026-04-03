@@ -50,11 +50,7 @@ export default function BrowseGaragesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    fetchGarages();
-  }, []);
-
-  const fetchGarages = async () => {
+  const fetchGarages = useCallback(async () => {
     try {
       const response = await axios.get(`${API_URL}/api/user-cars/public?sort=likes`);
       setGarages(response.data);
@@ -64,7 +60,11 @@ export default function BrowseGaragesScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchGarages();
+  }, [fetchGarages]);
 
   const onRefresh = () => {
     setRefreshing(true);

@@ -136,12 +136,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadUser = async () => {
     try {
-      const userData = await AsyncStorage.getItem('user');
-      if (userData) {
+      const userData = await Promise.race([
+        AsyncStorage.getItem('user'),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000))
+      ]);
+      if (userData && typeof userData === 'string') {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
-        // Register push token for existing user
-        registerPushToken(parsedUser.id);
       }
     } catch (error) {
       console.error('Error loading user:', error);
@@ -149,6 +150,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     }
   };
+
+  // Defer push token registration to avoid interfering with initial render
+  useEffect(() => {
+    if (user && !isLoading) {
+      const timer = setTimeout(() => {
+        registerPushToken(user.id);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [user, isLoading]);
 
   const registerPushToken = async (userId: string) => {
     try {
