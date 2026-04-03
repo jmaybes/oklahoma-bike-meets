@@ -189,21 +189,12 @@ async def rsvp_reminder_scheduler():
 
 @app.on_event("startup")
 async def startup_scheduler():
-    """Start the background RSVP reminder scheduler on app startup."""
-    global _scheduler_task
+    """App startup - scheduler disabled to reduce container memory/stability issues."""
     logger.info(f"========== APP STARTING: {APP_VERSION} ==========")
-    logger.info(f"========== BUILD ID: deploy-fix-april3-v7 ==========")
-    _scheduler_task = asyncio.create_task(rsvp_reminder_scheduler())
-    logger.info("RSVP reminder scheduler started (runs every hour)")
+    logger.info(f"========== BUILD ID: deploy-fix-april3-v8 ==========")
+    logger.info("App started successfully (RSVP scheduler disabled for stability)")
 
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    global _scheduler_task
-    if _scheduler_task:
-        _scheduler_task.cancel()
-        try:
-            await _scheduler_task
-        except asyncio.CancelledError:
-            pass
     client.close()
