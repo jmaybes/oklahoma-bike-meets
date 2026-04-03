@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,8 @@ import {
   RefreshControl,
   Keyboard,
   StatusBar,
+  Pressable,
+  ViewToken,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +26,12 @@ import { useAuth } from '../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import api from '../utils/api';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from 'react-native-reanimated';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const IMAGE_GAP = 3;
@@ -477,6 +485,29 @@ export default function FeedsScreen() {
   const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
   const [showComments, setShowComments] = useState(false);
 
+  // Scroll animation tracking
+  const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set());
+  const seenIdsRef = useRef<Set<string>>(new Set());
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 15,
+  }).current;
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    const newIds = new Set(seenIdsRef.current);
+    let changed = false;
+    for (const item of viewableItems) {
+      if (item.isViewable && item.item?.id && !seenIdsRef.current.has(item.item.id)) {
+        newIds.add(item.item.id);
+        changed = true;
+      }
+    }
+    if (changed) {
+      seenIdsRef.current = newIds;
+      setVisibleIds(new Set(newIds));
+    }
+  }).current;
+
   // ==================== FETCH USER CAR PHOTO ====================
 
   useEffect(() => {
@@ -518,6 +549,8 @@ export default function FeedsScreen() {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setHasMore(true);
+    seenIdsRef.current = new Set();
+    setVisibleIds(new Set());
     fetchPosts(0, false);
   }, [fetchPosts]);
 
@@ -653,7 +686,39 @@ export default function FeedsScreen() {
 
   // ==================== RENDER POST ====================
 
-  const renderPost = useCallback(({ item }: { item: FeedPost }) => {
+  // ==================== ANIMATED POST CARD ====================
+
+  const AnimatedPostCard = ({ item, isVisible }: { item: FeedPost; isVisible: boolean }) => {
+    const cardOpacity = useSharedValue(0);
+    const cardTranslateY = useSharedValue(50);
+    const cardScale = useSharedValue(0.92);
+    const contentOpacity = useSharedValue(0);
+    const contentTranslateY = useSharedValue(20);
+    const pressScale = useSharedValue(1);
+
+    useEffect(() => {
+      if (isVisible) {
+        cardOpacity.value = withTiming(1, { duration: 400 });
+        cardTranslateY.value = withTiming(0, { duration: 425 });
+        cardScale.value = withTiming(1, { duration: 400 });
+        contentOpacity.value = withTiming(1, { duration: 350 });
+        contentTranslateY.value = withTiming(0, { duration: 375 });
+      }
+    }, [isVisible]);
+
+    const cardAnimatedStyle = useAnimatedStyle(() => ({
+      opacity: cardOpacity.value,
+      transform: [
+        { translateY: cardTranslateY.value },
+        { scale: cardScale.value * pressScale.value },
+      ],
+    }));
+
+    const contentAnimatedStyle = useAnimatedStyle(() => ({
+      opacity: contentOpacity.value,
+      transform: [{ translateY: contentTranslateY.value }],
+    }));
+
     const isOwner = user?.id === item.userId;
     const isLiked = user ? item.likedBy.includes(user.id) : false;
     const textLines = countTextLines(item.text);
@@ -661,62 +726,75 @@ export default function FeedsScreen() {
     const avatarUri = item.userAvatar ? ensureUri(item.userAvatar) : null;
 
     return (
-      <View style={styles.postCard}>
-        {/* Header */}
-        <View style={styles.postHeader}>
-          {avatarUri ? (
-            <Image source={{ uri: avatarUri }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarText}>{item.userName?.charAt(0)?.toUpperCase() || '?'}</Text>
+      <Animated.View style={cardAnimatedStyle}>
+        <Pressable
+          onPressIn={() => { pressScale.value = withSpring(0.98, { damping: 15, stiffness: 200 }); }}
+          onPressOut={() => { pressScale.value = withSpring(1, { damping: 15, stiffness: 200 }); }}
+        >
+          <View style={styles.postCard}>
+            {/* Header */}
+            <View style={styles.postHeader}>
+              {avatarUri ? (
+                <Image source={{ uri: avatarUri }} style={styles.avatar} />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Text style={styles.avatarText}>{item.userName?.charAt(0)?.toUpperCase() || '?'}</Text>
+                </View>
+              )}
+              <View style={{ flex: 1 }}>
+                <Text style={styles.userName}>{item.userName}</Text>
+                <Text style={styles.postTime}>{timeAgo(item.createdAt)}{item.edited ? ' · edited' : ''}</Text>
+              </View>
+              {isOwner && (
+                <TouchableOpacity style={styles.moreBtn} onPress={() => {
+                  Alert.alert('Post Options', '', [
+                    { text: 'Edit', onPress: () => openEdit(item) },
+                    { text: 'Delete', style: 'destructive', onPress: () => deletePost(item.id) },
+                    { text: 'Cancel', style: 'cancel' },
+                  ]);
+                }}>
+                  <Ionicons name="ellipsis-horizontal" size={20} color="#999" />
+                </TouchableOpacity>
+              )}
             </View>
-          )}
-          <View style={{ flex: 1 }}>
-            <Text style={styles.userName}>{item.userName}</Text>
-            <Text style={styles.postTime}>{timeAgo(item.createdAt)}{item.edited ? ' · edited' : ''}</Text>
+
+            {/* Text */}
+            <Animated.View style={contentAnimatedStyle}>
+              {item.text ? (
+                <Text style={[styles.postText, isShortText && styles.postTextLarge]}>{item.text}</Text>
+              ) : null}
+            </Animated.View>
+
+            {/* Images */}
+            {item.images && item.images.length > 0 && (
+              <View style={styles.imageContainer}>
+                <ImageGrid images={item.images} onImagePress={(index) => openViewer(item.images, index)} />
+              </View>
+            )}
+
+            {/* Actions */}
+            <Animated.View style={[styles.actionsRow, contentAnimatedStyle]}>
+              <TouchableOpacity style={styles.actionBtn} onPress={() => toggleLike(item.id)} activeOpacity={0.7}>
+                <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={22} color={isLiked ? '#FF4444' : '#999'} />
+                {item.likes > 0 && <Text style={[styles.actionCount, isLiked && { color: '#FF4444' }]}>{item.likes}</Text>}
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.commentActionBtn} onPress={() => openComments(item.id)} activeOpacity={0.7}>
+                <Ionicons name="chatbubble-outline" size={20} color="#FF6B35" />
+                <Text style={styles.commentActionText}>
+                  {item.commentCount > 0 ? `${item.commentCount} Comment${item.commentCount > 1 ? 's' : ''}` : 'Comment'}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
           </View>
-          {isOwner && (
-            <TouchableOpacity style={styles.moreBtn} onPress={() => {
-              Alert.alert('Post Options', '', [
-                { text: 'Edit', onPress: () => openEdit(item) },
-                { text: 'Delete', style: 'destructive', onPress: () => deletePost(item.id) },
-                { text: 'Cancel', style: 'cancel' },
-              ]);
-            }}>
-              <Ionicons name="ellipsis-horizontal" size={20} color="#999" />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Text */}
-        {item.text ? (
-          <Text style={[styles.postText, isShortText && styles.postTextLarge]}>{item.text}</Text>
-        ) : null}
-
-        {/* Images */}
-        {item.images && item.images.length > 0 && (
-          <View style={styles.imageContainer}>
-            <ImageGrid images={item.images} onImagePress={(index) => openViewer(item.images, index)} />
-          </View>
-        )}
-
-        {/* Actions */}
-        <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.actionBtn} onPress={() => toggleLike(item.id)} activeOpacity={0.7}>
-            <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={22} color={isLiked ? '#FF4444' : '#999'} />
-            {item.likes > 0 && <Text style={[styles.actionCount, isLiked && { color: '#FF4444' }]}>{item.likes}</Text>}
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.commentActionBtn} onPress={() => openComments(item.id)} activeOpacity={0.7}>
-            <Ionicons name="chatbubble-outline" size={20} color="#FF6B35" />
-            <Text style={styles.commentActionText}>
-              {item.commentCount > 0 ? `${item.commentCount} Comment${item.commentCount > 1 ? 's' : ''}` : 'Comment'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+        </Pressable>
+      </Animated.View>
     );
-  }, [user, posts]);
+  };
+
+  const renderPost = useCallback(({ item }: { item: FeedPost }) => {
+    return <AnimatedPostCard item={item} isVisible={visibleIds.has(item.id)} />;
+  }, [user, visibleIds]);
 
   // ==================== COMPOSE SECTION ====================
 
@@ -873,6 +951,8 @@ export default function FeedsScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" colors={['#FF6B35']} />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
         ListFooterComponent={loadingMore ? <ActivityIndicator color="#FF6B35" style={{ marginVertical: 20 }} /> : null}
         ListEmptyComponent={!loading ? (
           <View style={styles.emptyContainer}>
