@@ -25,6 +25,52 @@ async def create_user_car(car: UserCarCreate):
     if car_dict.get("photos"):
         car_dict["photos"] = compress_photos_list(car_dict["photos"])
 
+        # Validate total document size won't exceed 15MB MongoDB limit
+        MAX_DOC_SIZE = 15 * 1024 * 1024
+        total_photo_bytes = sum(len(p.encode('utf-8')) if isinstance(p, str) else 0 for p in car_dict["photos"])
+        if total_photo_bytes + 2048 > MAX_DOC_SIZE:
+            from helpers import compress_photo_base64
+            import io as _io
+            import base64 as _b64
+            from PIL import Image as _Img
+            for quality in [50, 35, 20]:
+                recompressed = []
+                for photo in car_dict["photos"]:
+                    try:
+                        raw = photo.split(',', 1)[-1] if ',' in photo and photo.startswith('data:') else photo
+                        img_bytes = _b64.b64decode(raw)
+                        img = _Img.open(_io.BytesIO(img_bytes))
+                        if img.mode in ('RGBA', 'P'):
+                            img = img.convert('RGB')
+                        w, h = img.size
+                        max_dim = 800 if quality <= 35 else 1000
+                        if w > max_dim or h > max_dim:
+                            ratio = min(max_dim / w, max_dim / h)
+                            img = img.resize((int(w * ratio), int(h * ratio)), _Img.LANCZOS)
+                        buf = _io.BytesIO()
+                        img.save(buf, format='JPEG', quality=quality, optimize=True)
+                        compressed = _b64.b64encode(buf.getvalue()).decode('utf-8')
+                        recompressed.append(f"data:image/jpeg;base64,{compressed}")
+                    except Exception:
+                        recompressed.append(photo)
+                car_dict["photos"] = recompressed
+                total_photo_bytes = sum(len(p.encode('utf-8')) for p in recompressed)
+                if total_photo_bytes + 2048 <= MAX_DOC_SIZE:
+                    break
+            # Strip excess photos as last resort
+            total_photo_bytes = sum(len(p.encode('utf-8')) for p in car_dict["photos"])
+            if total_photo_bytes + 2048 > MAX_DOC_SIZE:
+                kept = []
+                running_size = 2048
+                for photo in car_dict["photos"]:
+                    photo_size = len(photo.encode('utf-8'))
+                    if running_size + photo_size <= MAX_DOC_SIZE:
+                        kept.append(photo)
+                        running_size += photo_size
+                    else:
+                        break
+                car_dict["photos"] = kept
+
     existing = await db.user_cars.find_one({"userId": car.userId})
     if existing:
         try:
@@ -176,6 +222,61 @@ async def update_user_car(car_id: str, car_update: UserCarUpdate):
     # Compress photos to prevent DocumentTooLarge errors
     if update_data.get("photos"):
         update_data["photos"] = compress_photos_list(update_data["photos"])
+
+        # Validate total document size won't exceed 15MB MongoDB limit
+        MAX_DOC_SIZE = 15 * 1024 * 1024  # 15MB
+        total_photo_bytes = sum(len(p.encode('utf-8')) if isinstance(p, str) else 0 for p in update_data["photos"])
+        # Estimate ~2KB overhead for non-photo fields
+        estimated_doc_size = total_photo_bytes + 2048
+
+        if estimated_doc_size > MAX_DOC_SIZE:
+            # Progressively re-compress with lower quality until under limit
+            from helpers import compress_photo_base64
+            import io as _io
+            import base64 as _b64
+            from PIL import Image as _Img
+
+            for quality in [50, 35, 20]:
+                recompressed = []
+                for photo in update_data["photos"]:
+                    try:
+                        raw = photo.split(',', 1)[-1] if ',' in photo and photo.startswith('data:') else photo
+                        img_bytes = _b64.b64decode(raw)
+                        img = _Img.open(_io.BytesIO(img_bytes))
+                        if img.mode in ('RGBA', 'P'):
+                            img = img.convert('RGB')
+                        # Shrink dimensions further
+                        w, h = img.size
+                        max_dim = 800 if quality <= 35 else 1000
+                        if w > max_dim or h > max_dim:
+                            ratio = min(max_dim / w, max_dim / h)
+                            img = img.resize((int(w * ratio), int(h * ratio)), _Img.LANCZOS)
+                        buf = _io.BytesIO()
+                        img.save(buf, format='JPEG', quality=quality, optimize=True)
+                        compressed = _b64.b64encode(buf.getvalue()).decode('utf-8')
+                        recompressed.append(f"data:image/jpeg;base64,{compressed}")
+                    except Exception:
+                        recompressed.append(photo)
+
+                update_data["photos"] = recompressed
+                total_photo_bytes = sum(len(p.encode('utf-8')) for p in recompressed)
+                if total_photo_bytes + 2048 <= MAX_DOC_SIZE:
+                    break
+
+            # Final check — if still too large, strip excess photos
+            total_photo_bytes = sum(len(p.encode('utf-8')) for p in update_data["photos"])
+            if total_photo_bytes + 2048 > MAX_DOC_SIZE:
+                kept = []
+                running_size = 2048
+                for photo in update_data["photos"]:
+                    photo_size = len(photo.encode('utf-8'))
+                    if running_size + photo_size <= MAX_DOC_SIZE:
+                        kept.append(photo)
+                        running_size += photo_size
+                    else:
+                        break
+                update_data["photos"] = kept
+                logger.warning(f"Stripped photos to {len(kept)} to stay under 15MB limit for car {car_id}")
 
     if update_data:
         try:
