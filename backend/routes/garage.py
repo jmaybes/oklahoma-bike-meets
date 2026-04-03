@@ -49,23 +49,40 @@ async def create_user_car(car: UserCarCreate):
 async def get_user_car(user_id: str, include_photos: bool = Query(default=False)):
     """Get a user's car. By default returns only the main photo to save bandwidth.
     Pass ?include_photos=true to get all photos (for editing)."""
-    car = await db.user_cars.find_one({"userId": user_id})
+    
+    if include_photos:
+        # Full data for editing - loads all photos
+        car = await db.user_cars.find_one({"userId": user_id})
+        if not car:
+            return None
+        return user_car_helper(car)
+    
+    # Optimized: exclude photos from MongoDB query to save memory
+    car = await db.user_cars.find_one({"userId": user_id}, {"photos": 0})
     if not car:
         return None
+    
     car_data = user_car_helper(car)
-
-    if not include_photos:
-        # Only return main photo to prevent OOM on large garages
-        all_photos = car_data.get("photos", [])
-        photo_count = len(all_photos)
-        main_idx = car_data.get("mainPhotoIndex", 0)
-        if main_idx >= photo_count:
-            main_idx = 0
-        main_photo = all_photos[main_idx] if photo_count > 0 else None
-        car_data["photos"] = [main_photo] if main_photo else []
-        car_data["photoCount"] = photo_count
-        car_data["mainPhotoIndex"] = 0
-
+    main_idx = car.get("mainPhotoIndex", 0)
+    
+    # Fetch ONLY the main photo using $slice (never loads all photos into memory)
+    photo_doc = await db.user_cars.find_one(
+        {"userId": user_id},
+        {"photos": {"$slice": [main_idx, 1]}, "_id": 0}
+    )
+    main_photo = photo_doc.get("photos", [None])[0] if photo_doc and photo_doc.get("photos") else None
+    
+    # Get total photo count without loading photos
+    count_doc = await db.user_cars.aggregate([
+        {"$match": {"userId": user_id}},
+        {"$project": {"photoCount": {"$size": {"$ifNull": ["$photos", []]}}}}
+    ]).to_list(1)
+    photo_count = count_doc[0]["photoCount"] if count_doc else 0
+    
+    car_data["photos"] = [main_photo] if main_photo else []
+    car_data["photoCount"] = photo_count
+    car_data["mainPhotoIndex"] = 0
+    
     return car_data
 
 
@@ -76,7 +93,7 @@ async def get_public_garages(
     sort: str = Query(default="likes", description="Sort by: likes, views, newest")
 ):
     """Get all public garages to browse, sorted by most liked by default.
-    Only returns the main photo per car to keep the response size small."""
+    Uses MongoDB projection to avoid loading all photos into memory."""
     query = {"$or": [{"isPublic": True}, {"isPublic": "true"}]}
     if make:
         query["make"] = {"$regex": make, "$options": "i"}
@@ -89,27 +106,35 @@ async def get_public_garages(
     else:  # default: likes
         sort_field = [("likes", -1), ("views", -1)]
 
-    cars = await db.user_cars.find(query).sort(sort_field).limit(limit).to_list(limit)
+    # Exclude photos from the main query to save memory
+    cars = await db.user_cars.find(query, {"photos": 0}).sort(sort_field).limit(limit).to_list(limit)
 
     result = []
     for car in cars:
-        user = await db.users.find_one({"_id": ObjectId(car["userId"])}) if ObjectId.is_valid(car["userId"]) else None
+        user = await db.users.find_one({"_id": ObjectId(car["userId"])}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(car.get("userId", "")) else None
         car_data = user_car_helper(car)
         car_data["ownerName"] = user.get("name", "Unknown") if user else "Unknown"
         car_data["ownerNickname"] = user.get("nickname", "") if user else ""
         car_data["likedBy"] = car.get("likedBy", [])
 
-        # Only send the main photo for the listing (not all photos)
-        # This prevents multi-MB responses when many garages have many photos
-        all_photos = car_data.get("photos", [])
-        photo_count = len(all_photos)
-        main_idx = car_data.get("mainPhotoIndex", 0)
-        if main_idx >= photo_count:
-            main_idx = 0
-        main_photo = all_photos[main_idx] if photo_count > 0 else None
+        # Fetch only the main photo using $slice
+        main_idx = car.get("mainPhotoIndex", 0)
+        photo_doc = await db.user_cars.find_one(
+            {"_id": car["_id"]},
+            {"photos": {"$slice": [main_idx, 1]}, "_id": 0}
+        )
+        main_photo = photo_doc.get("photos", [None])[0] if photo_doc and photo_doc.get("photos") else None
+
+        # Get photo count without loading photos
+        count_doc = await db.user_cars.aggregate([
+            {"$match": {"_id": car["_id"]}},
+            {"$project": {"photoCount": {"$size": {"$ifNull": ["$photos", []]}}}}
+        ]).to_list(1)
+        photo_count = count_doc[0]["photoCount"] if count_doc else 0
+
         car_data["photos"] = [main_photo] if main_photo else []
         car_data["photoCount"] = photo_count
-        car_data["mainPhotoIndex"] = 0  # Reset since we only have 1 photo now
+        car_data["mainPhotoIndex"] = 0
 
         result.append(car_data)
 
