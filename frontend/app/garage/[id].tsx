@@ -14,6 +14,8 @@ import {
   Animated,
   FlatList,
   Platform,
+  Alert,
+  TextInput,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -90,6 +92,9 @@ export default function GarageDetailScreen() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
+  const isAdmin = user?.isAdmin === true;
+  const [showSetLikes, setShowSetLikes] = useState(false);
+  const [likesInput, setLikesInput] = useState('');
 
   useEffect(() => {
     fetchCar();
@@ -122,6 +127,26 @@ export default function GarageDetailScreen() {
     } catch (error) {
       console.error('Error liking car:', error);
       fetchCar(); // Revert on error
+    }
+  };
+
+  const handleSetLikes = async () => {
+    if (!user || !car) return;
+    const count = parseInt(likesInput);
+    if (isNaN(count) || count < 0) {
+      Alert.alert('Invalid', 'Enter a valid number (0 or higher)');
+      return;
+    }
+    try {
+      await axios.put(
+        `${API_URL}/api/admin/user-cars/${car.id}/set-likes?admin_id=${user.id}&likes=${count}`
+      );
+      setCar({ ...car, likes: count });
+      setShowSetLikes(false);
+      setLikesInput('');
+      Alert.alert('Success', `Likes set to ${count}`);
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to set likes');
     }
   };
 
@@ -442,6 +467,38 @@ export default function GarageDetailScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Admin Set Likes */}
+        {isAdmin && (
+          <View style={styles.adminSetLikesSection}>
+            {showSetLikes ? (
+              <View style={styles.setLikesRow}>
+                <TextInput
+                  style={styles.setLikesInput}
+                  value={likesInput}
+                  onChangeText={setLikesInput}
+                  placeholder={String(car.likes || 0)}
+                  placeholderTextColor="#666"
+                  keyboardType="number-pad"
+                />
+                <TouchableOpacity style={styles.setLikesSave} onPress={handleSetLikes}>
+                  <Ionicons name="checkmark" size={18} color="#fff" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.setLikesCancel} onPress={() => { setShowSetLikes(false); setLikesInput(''); }}>
+                  <Ionicons name="close" size={18} color="#aaa" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity 
+                style={styles.adminSetLikesBtn}
+                onPress={() => { setShowSetLikes(true); setLikesInput(String(car.likes || 0)); }}
+              >
+                <Ionicons name="shield" size={14} color="#2196F3" />
+                <Text style={styles.adminSetLikesText}>Admin: Set Likes</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -895,6 +952,58 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  adminSetLikesSection: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  adminSetLikesBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(33,150,243,0.1)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(33,150,243,0.3)',
+  },
+  adminSetLikesText: {
+    color: '#2196F3',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  setLikesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  setLikesInput: {
+    flex: 1,
+    backgroundColor: '#252525',
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    color: '#fff',
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  setLikesSave: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#4CAF50',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  setLikesCancel: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   photoModal: {
     flex: 1,

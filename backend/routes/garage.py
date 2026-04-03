@@ -169,3 +169,30 @@ async def delete_user_car(car_id: str, user_id: str = Query(...)):
 
     await db.user_cars.delete_one({"_id": ObjectId(car_id)})
     return {"message": "Car deleted successfully"}
+
+
+@router.put("/admin/user-cars/{car_id}/set-likes")
+async def admin_set_likes(car_id: str, admin_id: str = Query(...), likes: int = Query(...)):
+    """Admin-only: set the like count on a garage entry"""
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=400, detail="Invalid car ID")
+
+    car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    await db.user_cars.update_one(
+        {"_id": ObjectId(car_id)},
+        {"$set": {"likes": max(0, likes)}}
+    )
+
+    updated_car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    car_data = user_car_helper(updated_car)
+    return car_data
