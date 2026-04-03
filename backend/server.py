@@ -191,6 +191,8 @@ async def rsvp_reminder_scheduler():
 async def startup_scheduler():
     """Start the background RSVP reminder scheduler on app startup."""
     global _scheduler_task
+    logger.info(f"========== APP STARTING: {APP_VERSION} ==========")
+    logger.info(f"========== BUILD ID: deploy-fix-april3-v7 ==========")
     _scheduler_task = asyncio.create_task(rsvp_reminder_scheduler())
     logger.info("RSVP reminder scheduler started (runs every hour)")
 
