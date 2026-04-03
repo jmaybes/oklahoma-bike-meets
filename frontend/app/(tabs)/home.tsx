@@ -29,7 +29,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import axios from 'axios';
+import api from '../../utils/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 
@@ -151,7 +151,7 @@ export default function HomeScreen() {
   const fetchEvents = useCallback(async (isRetry = false) => {
     try {
       if (!isRetry) setFetchError(false);
-      const response = await axios.get(`${API_URL}/api/events`, { timeout: 15000 });
+      const response = await api.get('/events');
       if (!isMountedRef.current) return;
       const eventsWithDistance = response.data.map((event: Event) => {
         if (userLocation && event.latitude && event.longitude) {

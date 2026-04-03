@@ -27,7 +27,8 @@ import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import axios from 'axios';
+import api from '../../utils/api';
+import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -98,7 +99,7 @@ export default function ClubsScreen() {
   const fetchClubs = useCallback(async (isRetry = false) => {
     try {
       if (!isRetry) setFetchError(false);
-      const response = await axios.get(`${API_URL}/api/clubs`, { timeout: 15000 });
+      const response = await api.get('/clubs');
       if (!isMountedRef.current) return;
       setClubs(response.data);
       setFilteredClubs(response.data);
@@ -266,7 +267,7 @@ export default function ClubsScreen() {
           text: 'Delete',
           style: 'destructive',
           onPress: () => {
-            axios.delete(`${API_URL}/api/clubs/${club.id}`)
+            api.delete(`/clubs/${club.id}`)
               .then(() => {
                 setClubs(prev => prev.filter(c => c.id !== club.id));
                 setFilteredClubs(prev => prev.filter(c => c.id !== club.id));
@@ -290,7 +291,7 @@ export default function ClubsScreen() {
 
     setSubmitting(true);
     try {
-      await axios.post(`${API_URL}/api/clubs`, {
+      await api.post('/clubs', {
         name: clubName.trim(),
         description: clubDescription.trim(),
         location: clubLocation.trim(),

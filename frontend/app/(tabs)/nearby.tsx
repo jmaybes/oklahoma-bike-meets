@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 import Slider from '@react-native-community/slider';
-import axios from 'axios';
+import api from '../../utils/api';
 import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import MapErrorBoundary from '../../components/MapErrorBoundary';
@@ -133,15 +133,14 @@ export default function NearbyScreen() {
 
     try {
       if (!isRetry) setFetchError(false);
-      const response = await axios.get(
-        `${API_URL}/api/users/nearby/${user.id}`,
+      const response = await api.get(
+        `/users/nearby/${user.id}`,
         {
           params: {
             latitude: loc.latitude,
             longitude: loc.longitude,
             radius: radius,
           },
-          timeout: 15000,
         }
       );
       if (!isMountedRef.current) return;
@@ -165,7 +164,7 @@ export default function NearbyScreen() {
 
   const fetchPrewrittenMessages = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/meetup/prewritten-messages`);
+      const response = await api.get('/meetup/prewritten-messages');
       setPrewrittenMessages(response.data.messages);
       if (response.data.messages.length > 0) {
         setSelectedMessage(response.data.messages[0]);
@@ -180,7 +179,7 @@ export default function NearbyScreen() {
 
     try {
       setLocationPrivate(value);
-      await axios.put(`${API_URL}/api/users/${user.id}`, {
+      await api.put(`/users/${user.id}`, {
         locationPrivate: value,
       });
       if (updateUser) {
@@ -203,7 +202,7 @@ export default function NearbyScreen() {
 
     setSendingInvite(true);
     try {
-      const response = await axios.post(`${API_URL}/api/meetup/send-invite`, {
+      const response = await api.post('/meetup/send-invite', {
         senderId: user.id,
         senderName: user.nickname || user.name,
         senderLatitude: location.latitude,

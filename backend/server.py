@@ -70,25 +70,43 @@ app.include_router(api_router)
 # Include WebSocket router directly on app (no /api prefix)
 app.include_router(websocket_router)
 
+# Version marker - change this to verify deployments are picking up new code
+APP_VERSION = "v2.1.0-2026-04-03"
+
 # Health check endpoint for Kubernetes probes
 @app.get("/api/health")
 async def health_check():
-    return {"status": "ok"}
+    """Health check that also tests database connectivity."""
+    try:
+        from database import db
+        # Quick DB ping to verify connectivity
+        await db.command("ping")
+        return {"status": "ok", "version": APP_VERSION, "db": "connected"}
+    except Exception as e:
+        logger.error(f"Health check DB failure: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={"status": "unhealthy", "version": APP_VERSION, "db": str(e)}
+        )
 
 @app.get("/healthz")
 async def health_check_k8s():
-    return {"status": "ok"}
+    return {"status": "ok", "version": APP_VERSION}
 
-# Global exception handler for DocumentTooLarge - returns 413 instead of crashing
+@app.get("/api/version")
+async def get_version():
+    return {"version": APP_VERSION, "note": "If you see this, the new code IS deployed"}
+
+# Global exception handler - catches ALL unhandled exceptions to prevent crashes
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    if "DocumentTooLarge" in type(exc).__name__:
+    exc_name = type(exc).__name__
+    if "DocumentTooLarge" in exc_name:
         return JSONResponse(
             status_code=413,
             content={"detail": "Document too large. Please reduce photo sizes or count."}
         )
-    # Return 500 instead of re-raising to prevent server crashes
-    logger.error(f"Unhandled exception: {type(exc).__name__}: {exc}")
+    logger.error(f"Unhandled {exc_name} on {request.method} {request.url.path}: {exc}")
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal server error"}
