@@ -104,10 +104,13 @@ export default function ProfileScreen() {
     }
   }, [isAuthenticated, user]);
 
-  const fetchUserCar = async () => {
+  const fetchUserCar = async (includeAllPhotos = false) => {
     try {
       setLoadingCar(true);
-      const response = await axios.get(`${API_URL}/api/user-cars/user/${user?.id}`);
+      const url = includeAllPhotos 
+        ? `${API_URL}/api/user-cars/user/${user?.id}?include_photos=true`
+        : `${API_URL}/api/user-cars/user/${user?.id}`;
+      const response = await axios.get(url);
       if (response.data) {
         setUserCar(response.data);
         setCarForm({
@@ -452,7 +455,7 @@ export default function ProfileScreen() {
               <Text style={styles.headerTitle}>My Garage</Text>
               <Text style={styles.headerSubtitle}>{user?.name}</Text>
             </View>
-            <TouchableOpacity onPress={() => setShowCarModal(true)}>
+            <TouchableOpacity onPress={() => { fetchUserCar(true); setShowCarModal(true); }}>
               <Ionicons name="settings-outline" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
@@ -543,7 +546,7 @@ export default function ProfileScreen() {
                 )}
               </View>
               
-              <TouchableOpacity style={styles.editCarButton} onPress={() => setShowCarModal(true)}>
+              <TouchableOpacity style={styles.editCarButton} onPress={() => { fetchUserCar(true); setShowCarModal(true); }}>
                 <Ionicons name="pencil" size={16} color="#FF6B35" />
                 <Text style={styles.editCarButtonText}>Edit Car & Photos</Text>
               </TouchableOpacity>

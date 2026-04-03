@@ -46,11 +46,27 @@ async def create_user_car(car: UserCarCreate):
 
 
 @router.get("/user-cars/user/{user_id}")
-async def get_user_car(user_id: str):
+async def get_user_car(user_id: str, include_photos: bool = Query(default=False)):
+    """Get a user's car. By default returns only the main photo to save bandwidth.
+    Pass ?include_photos=true to get all photos (for editing)."""
     car = await db.user_cars.find_one({"userId": user_id})
     if not car:
         return None
-    return user_car_helper(car)
+    car_data = user_car_helper(car)
+
+    if not include_photos:
+        # Only return main photo to prevent OOM on large garages
+        all_photos = car_data.get("photos", [])
+        photo_count = len(all_photos)
+        main_idx = car_data.get("mainPhotoIndex", 0)
+        if main_idx >= photo_count:
+            main_idx = 0
+        main_photo = all_photos[main_idx] if photo_count > 0 else None
+        car_data["photos"] = [main_photo] if main_photo else []
+        car_data["photoCount"] = photo_count
+        car_data["mainPhotoIndex"] = 0
+
+    return car_data
 
 
 @router.get("/user-cars/public")

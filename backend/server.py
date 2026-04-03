@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 import asyncio
 import logging
 
@@ -31,6 +32,10 @@ logger = logging.getLogger(__name__)
 
 # Create the main app
 app = FastAPI(title="Oklahoma Car Events API")
+
+# GZip compression middleware - reduces response sizes by 80-90%
+# Critical for base64 photo payloads to prevent OOM kills
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # CORS middleware
 app.add_middleware(
