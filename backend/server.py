@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Request
+from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 import asyncio
 import logging
@@ -63,6 +64,22 @@ app.include_router(api_router)
 
 # Include WebSocket router directly on app (no /api prefix)
 app.include_router(websocket_router)
+
+# Health check endpoint for Kubernetes probes
+@app.get("/api/health")
+async def health_check():
+    return {"status": "ok"}
+
+# Global exception handler for DocumentTooLarge
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    if "DocumentTooLarge" in type(exc).__name__:
+        return JSONResponse(
+            status_code=413,
+            content={"detail": "Document too large. Please reduce photo sizes or count."}
+        )
+    # Re-raise other exceptions so FastAPI handles them normally
+    raise exc
 
 
 # ==================== Background Scheduler ====================

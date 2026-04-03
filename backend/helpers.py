@@ -9,6 +9,71 @@ from PIL import Image
 
 logger = logging.getLogger(__name__)
 
+# ==================== Photo Compression ====================
+
+MAX_PHOTO_DIMENSION = 1200  # Max width or height in pixels
+MAX_PHOTO_SIZE_BYTES = 800_000  # ~800KB per photo after compression
+JPEG_QUALITY = 75
+
+def compress_photo_base64(photo_b64: str) -> str:
+    """Compress a base64-encoded photo to reduce MongoDB document size.
+    Returns compressed base64 string."""
+    try:
+        # Strip data URI prefix if present
+        if ',' in photo_b64 and photo_b64.startswith('data:'):
+            header, raw_b64 = photo_b64.split(',', 1)
+        else:
+            header = None
+            raw_b64 = photo_b64
+
+        img_bytes = base64.b64decode(raw_b64)
+
+        # If already small enough, return as-is
+        if len(img_bytes) <= MAX_PHOTO_SIZE_BYTES:
+            return photo_b64
+
+        img = Image.open(io.BytesIO(img_bytes))
+
+        # Convert RGBA to RGB for JPEG
+        if img.mode in ('RGBA', 'P'):
+            img = img.convert('RGB')
+
+        # Resize if too large
+        w, h = img.size
+        if w > MAX_PHOTO_DIMENSION or h > MAX_PHOTO_DIMENSION:
+            ratio = min(MAX_PHOTO_DIMENSION / w, MAX_PHOTO_DIMENSION / h)
+            new_size = (int(w * ratio), int(h * ratio))
+            img = img.resize(new_size, Image.LANCZOS)
+
+        # Compress to JPEG
+        buffer = io.BytesIO()
+        quality = JPEG_QUALITY
+        img.save(buffer, format='JPEG', quality=quality, optimize=True)
+
+        # If still too large, reduce quality further
+        while buffer.tell() > MAX_PHOTO_SIZE_BYTES and quality > 30:
+            buffer = io.BytesIO()
+            quality -= 10
+            img.save(buffer, format='JPEG', quality=quality, optimize=True)
+
+        compressed_b64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+        if header:
+            return f"data:image/jpeg;base64,{compressed_b64}"
+        return compressed_b64
+
+    except Exception as e:
+        logger.warning(f"Photo compression failed, using original: {e}")
+        return photo_b64
+
+
+def compress_photos_list(photos: list) -> list:
+    """Compress a list of base64 photos."""
+    if not photos:
+        return photos
+    return [compress_photo_base64(p) for p in photos if p]
+
+
 # ==================== Serializer Helpers ====================
 
 def event_helper(event) -> dict:

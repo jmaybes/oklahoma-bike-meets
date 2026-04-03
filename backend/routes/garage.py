@@ -2,10 +2,14 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 from datetime import datetime
 from bson import ObjectId
+from pymongo.errors import DocumentTooLarge
 
 from database import db
 from models import UserCarCreate, UserCarUpdate
-from helpers import user_car_helper
+from helpers import user_car_helper, compress_photos_list
+
+import logging
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -17,16 +21,26 @@ async def create_user_car(car: UserCarCreate):
     car_dict["views"] = 0
     car_dict["createdAt"] = datetime.utcnow().isoformat()
 
+    # Compress photos to prevent DocumentTooLarge errors
+    if car_dict.get("photos"):
+        car_dict["photos"] = compress_photos_list(car_dict["photos"])
+
     existing = await db.user_cars.find_one({"userId": car.userId})
     if existing:
-        await db.user_cars.update_one(
-            {"_id": existing["_id"]},
-            {"$set": {**car_dict, "updatedAt": datetime.utcnow().isoformat()}}
-        )
+        try:
+            await db.user_cars.update_one(
+                {"_id": existing["_id"]},
+                {"$set": {**car_dict, "updatedAt": datetime.utcnow().isoformat()}}
+            )
+        except DocumentTooLarge:
+            raise HTTPException(status_code=413, detail="Photos are too large. Please use fewer or smaller images.")
         updated_car = await db.user_cars.find_one({"_id": existing["_id"]})
         return user_car_helper(updated_car)
 
-    result = await db.user_cars.insert_one(car_dict)
+    try:
+        result = await db.user_cars.insert_one(car_dict)
+    except DocumentTooLarge:
+        raise HTTPException(status_code=413, detail="Photos are too large. Please use fewer or smaller images.")
     created_car = await db.user_cars.find_one({"_id": result.inserted_id})
     return user_car_helper(created_car)
 
@@ -118,11 +132,18 @@ async def update_user_car(car_id: str, car_update: UserCarUpdate):
     update_data = {k: v for k, v in car_update.dict().items() if v is not None}
     update_data["updatedAt"] = datetime.utcnow().isoformat()
 
+    # Compress photos to prevent DocumentTooLarge errors
+    if update_data.get("photos"):
+        update_data["photos"] = compress_photos_list(update_data["photos"])
+
     if update_data:
-        await db.user_cars.update_one(
-            {"_id": ObjectId(car_id)},
-            {"$set": update_data}
-        )
+        try:
+            await db.user_cars.update_one(
+                {"_id": ObjectId(car_id)},
+                {"$set": update_data}
+            )
+        except DocumentTooLarge:
+            raise HTTPException(status_code=413, detail="Photos are too large. Please use fewer or smaller images.")
 
     updated_car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
     if not updated_car:
