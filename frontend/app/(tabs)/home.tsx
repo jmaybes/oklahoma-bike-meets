@@ -26,6 +26,7 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
@@ -81,6 +82,7 @@ export default function HomeScreen() {
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('All');
   const [freeOnly, setFreeOnly] = useState(false);
@@ -89,6 +91,8 @@ export default function HomeScreen() {
   const [sortBy, setSortBy] = useState<'date' | 'distance'>('date');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
+  const retryCountRef = useRef(0);
+  const isMountedRef = useRef(true);
 
   const scrollY = useSharedValue(0);
 
@@ -110,9 +114,17 @@ export default function HomeScreen() {
   });
 
   useEffect(() => {
-    fetchEvents();
+    isMountedRef.current = true;
     getUserLocation();
+    return () => { isMountedRef.current = false; };
   }, []);
+
+  // Refetch events every time the tab comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchEvents();
+    }, [])
+  );
 
   useEffect(() => {
     filterEvents();
@@ -136,9 +148,11 @@ export default function HomeScreen() {
     }
   };
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async (isRetry = false) => {
     try {
-      const response = await axios.get(`${API_URL}/api/events`);
+      if (!isRetry) setFetchError(false);
+      const response = await axios.get(`${API_URL}/api/events`, { timeout: 15000 });
+      if (!isMountedRef.current) return;
       const eventsWithDistance = response.data.map((event: Event) => {
         if (userLocation && event.latitude && event.longitude) {
           return {
@@ -154,13 +168,28 @@ export default function HomeScreen() {
         return event;
       });
       setEvents(eventsWithDistance);
+      setFetchError(false);
+      retryCountRef.current = 0;
     } catch (error) {
       console.error('Error fetching events:', error);
+      if (!isMountedRef.current) return;
+      // Auto-retry up to 3 times with backoff
+      if (retryCountRef.current < 3) {
+        retryCountRef.current += 1;
+        const delay = retryCountRef.current * 2000;
+        setTimeout(() => {
+          if (isMountedRef.current) fetchEvents(true);
+        }, delay);
+      } else {
+        setFetchError(true);
+      }
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
-  };
+  }, [userLocation]);
 
   const filterEvents = () => {
     let filtered = events;
@@ -221,6 +250,8 @@ export default function HomeScreen() {
 
   const onRefresh = () => {
     setRefreshing(true);
+    retryCountRef.current = 0;
+    setFetchError(false);
     fetchEvents();
   };
 
@@ -683,9 +714,26 @@ export default function HomeScreen() {
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="car" size={64} color="#333" />
-            <Text style={styles.emptyText}>No events found</Text>
-            <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+            {fetchError ? (
+              <>
+                <Ionicons name="cloud-offline" size={64} color="#FF5252" />
+                <Text style={styles.emptyText}>{"Couldn't load events"}</Text>
+                <Text style={styles.emptySubtext}>Check your connection and try again</Text>
+                <TouchableOpacity 
+                  style={styles.retryButton}
+                  onPress={() => { retryCountRef.current = 0; setFetchError(false); setLoading(true); fetchEvents(); }}
+                >
+                  <Ionicons name="refresh" size={18} color="#fff" />
+                  <Text style={styles.retryButtonText}>Tap to Retry</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Ionicons name="car" size={64} color="#333" />
+                <Text style={styles.emptyText}>No events found</Text>
+                <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+              </>
+            )}
           </View>
         }
       />
@@ -1096,5 +1144,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 4,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
+    marginTop: 20,
+    gap: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

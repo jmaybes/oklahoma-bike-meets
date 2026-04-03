@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -50,9 +51,12 @@ export default function ClubsScreen() {
   const [filteredClubs, setFilteredClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const retryCountRef = useRef(0);
+  const isMountedRef = useRef(true);
 
   // Create club form state
   const [clubName, setClubName] = useState('');
@@ -66,8 +70,16 @@ export default function ClubsScreen() {
   const [clubFacebook, setClubFacebook] = useState('');
 
   useEffect(() => {
-    fetchClubs();
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
   }, []);
+
+  // Refetch clubs every time the tab comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchClubs();
+    }, [])
+  );
 
   useEffect(() => {
     if (searchQuery) {
@@ -83,22 +95,40 @@ export default function ClubsScreen() {
     }
   }, [searchQuery, clubs]);
 
-  const fetchClubs = async () => {
+  const fetchClubs = useCallback(async (isRetry = false) => {
     try {
-      setLoading(true);
-      const response = await axios.get(`${API_URL}/api/clubs`);
+      if (!isRetry) setFetchError(false);
+      const response = await axios.get(`${API_URL}/api/clubs`, { timeout: 15000 });
+      if (!isMountedRef.current) return;
       setClubs(response.data);
       setFilteredClubs(response.data);
+      setFetchError(false);
+      retryCountRef.current = 0;
     } catch (error) {
       console.error('Error fetching clubs:', error);
+      if (!isMountedRef.current) return;
+      // Auto-retry up to 3 times with backoff
+      if (retryCountRef.current < 3) {
+        retryCountRef.current += 1;
+        const delay = retryCountRef.current * 2000;
+        setTimeout(() => {
+          if (isMountedRef.current) fetchClubs(true);
+        }, delay);
+      } else {
+        setFetchError(true);
+      }
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
-  };
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
+    retryCountRef.current = 0;
+    setFetchError(false);
     fetchClubs();
   };
 
@@ -340,11 +370,28 @@ export default function ClubsScreen() {
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="people-outline" size={80} color="#333" />
-              <Text style={styles.emptyTitle}>No Clubs Found</Text>
-              <Text style={styles.emptySubtitle}>
-                {searchQuery ? 'Try a different search term' : 'Check back later for new clubs'}
-              </Text>
+              {fetchError ? (
+                <>
+                  <Ionicons name="cloud-offline" size={80} color="#FF5252" />
+                  <Text style={styles.emptyTitle}>{"Couldn't load clubs"}</Text>
+                  <Text style={styles.emptySubtitle}>Check your connection and try again</Text>
+                  <TouchableOpacity 
+                    style={styles.retryButton}
+                    onPress={() => { retryCountRef.current = 0; setFetchError(false); setLoading(true); fetchClubs(); }}
+                  >
+                    <Ionicons name="refresh" size={18} color="#fff" />
+                    <Text style={styles.retryButtonText}>Tap to Retry</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <Ionicons name="people-outline" size={80} color="#333" />
+                  <Text style={styles.emptyTitle}>No Clubs Found</Text>
+                  <Text style={styles.emptySubtitle}>
+                    {searchQuery ? 'Try a different search term' : 'Check back later for new clubs'}
+                  </Text>
+                </>
+              )}
             </View>
           }
         />
@@ -657,6 +704,21 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 8,
     textAlign: 'center',
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#9C27B0',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
+    marginTop: 20,
+    gap: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
   },
 
   // ===== ADMIN ACTIONS =====
