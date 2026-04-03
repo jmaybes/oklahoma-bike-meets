@@ -551,9 +551,19 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <TouchableOpacity style={styles.addCarCard} onPress={() => setShowCarModal(true)}>
-              <Ionicons name="add-circle" size={60} color="#FF6B35" />
-              <Text style={styles.addCarTitle}>Add Your Car</Text>
-              <Text style={styles.addCarSubtitle}>Showcase your ride with photos, specs, and mods</Text>
+              <View style={styles.nudgeBadge}>
+                <Ionicons name="construct" size={12} color="#fff" />
+                <Text style={styles.nudgeBadgeText}>FIXED & READY</Text>
+              </View>
+              <Ionicons name="car-sport" size={56} color="#FF6B35" />
+              <Text style={styles.addCarTitle}>Set Up Your Garage!</Text>
+              <Text style={styles.addCarSubtitle}>
+                We've fixed the saving issues — your garage will save correctly now. Add your ride with photos, specs, and mods!
+              </Text>
+              <View style={styles.nudgeButton}>
+                <Ionicons name="add" size={20} color="#fff" />
+                <Text style={styles.nudgeButtonText}>Get Started</Text>
+              </View>
             </TouchableOpacity>
           )}
         </View>
@@ -1585,23 +1595,56 @@ const styles = StyleSheet.create({
   addCarCard: {
     backgroundColor: '#1a1a1a',
     borderRadius: 16,
-    padding: 40,
+    padding: 28,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#FF6B35',
     borderStyle: 'dashed',
   },
+  nudgeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 12,
+    marginBottom: 14,
+  },
+  nudgeBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
   addCarTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
-    marginTop: 16,
+    marginTop: 12,
   },
   addCarSubtitle: {
     fontSize: 14,
-    color: '#888',
+    color: '#aaa',
     marginTop: 8,
     textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 8,
+  },
+  nudgeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 22,
+    marginTop: 18,
+  },
+  nudgeButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
   },
   menuSection: {
     paddingHorizontal: 20,
