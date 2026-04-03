@@ -763,38 +763,45 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Community Garages Section */}
+        {/* Garage Visibility Section */}
         <View style={styles.menuSection}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="people" size={20} color="#FF6B35" />
-            <Text style={styles.sectionHeaderText}>Community Garages</Text>
+            <Ionicons name="eye" size={20} color="#FF6B35" />
+            <Text style={styles.sectionHeaderText}>Garage Visibility</Text>
           </View>
-          <TouchableOpacity 
-            style={styles.menuItem} 
-            onPress={() => router.push('/garage')}
-          >
-            <Ionicons name="car-sport" size={24} color="#4CAF50" />
-            <Text style={styles.menuItemText}>Browse All Garages</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
-          <View style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <Ionicons name={garagePublic ? "globe" : "lock-closed"} size={24} color={garagePublic ? "#4CAF50" : "#FFC107"} />
-              <View>
-                <Text style={styles.settingText}>
-                  {garagePublic ? 'Public Garage' : 'Private Garage'}
-                </Text>
-                <Text style={styles.settingHintSmall}>
-                  {garagePublic ? 'Others can see your build' : 'Only you can see your garage'}
+          <View style={[
+            styles.visibilityToggleCard,
+            { borderColor: garagePublic ? '#4CAF50' : '#FF5252', borderWidth: 1.5 }
+          ]}>
+            <View style={styles.visibilityStatusRow}>
+              <View style={[
+                styles.visibilityBadge,
+                { backgroundColor: garagePublic ? 'rgba(76,175,80,0.15)' : 'rgba(255,82,82,0.15)' }
+              ]}>
+                <Ionicons 
+                  name={garagePublic ? "globe-outline" : "lock-closed"} 
+                  size={20} 
+                  color={garagePublic ? "#4CAF50" : "#FF5252"} 
+                />
+                <Text style={[
+                  styles.visibilityBadgeText,
+                  { color: garagePublic ? '#4CAF50' : '#FF5252' }
+                ]}>
+                  {garagePublic ? 'PUBLIC' : 'PRIVATE'}
                 </Text>
               </View>
+              <Switch
+                value={garagePublic}
+                onValueChange={toggleGaragePublic}
+                trackColor={{ false: '#FF5252', true: '#4CAF50' }}
+                thumbColor="#fff"
+              />
             </View>
-            <Switch
-              value={garagePublic}
-              onValueChange={toggleGaragePublic}
-              trackColor={{ false: '#FFC107', true: '#4CAF50' }}
-              thumbColor="#fff"
-            />
+            <Text style={styles.visibilityDescription}>
+              {garagePublic 
+                ? 'Your garage is visible to everyone in Community Garages. Other users can browse, view, and like your build.'
+                : 'Your garage is hidden. Only you can see it. Turn on to share your build with the community.'}
+            </Text>
           </View>
         </View>
 
@@ -1121,28 +1128,37 @@ export default function ProfileScreen() {
                 autoCapitalize="none"
               />
 
-              <View style={styles.publicToggleContainer}>
+              <View style={[
+                styles.publicToggleContainer,
+                { borderColor: garagePublic ? '#4CAF50' : '#FF5252', borderWidth: 1.5 }
+              ]}>
                 <View style={styles.publicToggleInfo}>
-                  <Ionicons 
-                    name={garagePublic ? "globe" : "lock-closed"} 
-                    size={24} 
-                    color={garagePublic ? "#4CAF50" : "#FFC107"} 
-                  />
-                  <View>
-                    <Text style={styles.publicToggleTitle}>
-                      {garagePublic ? 'Public Garage' : 'Private Garage'}
-                    </Text>
-                    <Text style={styles.publicToggleHint}>
-                      {garagePublic 
-                        ? 'Your car will be visible in Community Garages' 
-                        : 'Only you can see your garage'}
+                  <View style={[
+                    styles.visibilityBadge,
+                    { backgroundColor: garagePublic ? 'rgba(76,175,80,0.15)' : 'rgba(255,82,82,0.15)' }
+                  ]}>
+                    <Ionicons 
+                      name={garagePublic ? "globe-outline" : "lock-closed"} 
+                      size={18} 
+                      color={garagePublic ? "#4CAF50" : "#FF5252"} 
+                    />
+                    <Text style={[
+                      styles.visibilityBadgeText,
+                      { color: garagePublic ? '#4CAF50' : '#FF5252' }
+                    ]}>
+                      {garagePublic ? 'PUBLIC' : 'PRIVATE'}
                     </Text>
                   </View>
+                  <Text style={styles.publicToggleHint}>
+                    {garagePublic 
+                      ? 'Visible to everyone in Community Garages' 
+                      : 'Hidden — only you can see your garage'}
+                  </Text>
                 </View>
                 <Switch
                   value={garagePublic}
                   onValueChange={setGaragePublic}
-                  trackColor={{ false: '#FFC107', true: '#4CAF50' }}
+                  trackColor={{ false: '#FF5252', true: '#4CAF50' }}
                   thumbColor="#fff"
                 />
               </View>
@@ -1869,10 +1885,9 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   publicToggleInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flex: 1,
-    gap: 12,
+    gap: 8,
+    marginRight: 12,
   },
   publicToggleTitle: {
     fontSize: 16,
@@ -1881,8 +1896,38 @@ const styles = StyleSheet.create({
   },
   publicToggleHint: {
     fontSize: 12,
-    color: '#888',
+    color: '#999',
     marginTop: 2,
+  },
+  visibilityToggleCard: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 14,
+    padding: 16,
+    marginHorizontal: 4,
+  },
+  visibilityStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  visibilityBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+  },
+  visibilityBadgeText: {
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  visibilityDescription: {
+    fontSize: 13,
+    color: '#aaa',
+    lineHeight: 18,
   },
   saveButton: {
     backgroundColor: '#FF6B35',
