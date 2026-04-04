@@ -1448,12 +1448,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   carShowcaseSection: {
-    padding: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 0,
   },
   carCard: {
     backgroundColor: '#1a1a1a',
-    borderRadius: 16,
+    borderRadius: 0,
     overflow: 'hidden',
+    width: '100%',
   },
   carPhotosScroll: {
     height: 220,
