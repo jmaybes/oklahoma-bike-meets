@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Query
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson import ObjectId
 
 from database import db
-from models import LocationUpdate, MeetupInviteRequest
+from models import LocationUpdate, MeetupInviteRequest, PopupInviteRequest
 from helpers import haversine_distance, send_push_notification
 
 router = APIRouter()
@@ -152,6 +152,136 @@ async def send_meetup_invite(invite: MeetupInviteRequest):
         "message": f"Meetup invite sent to {invites_sent} nearby users",
         "invitesSent": invites_sent,
         "radius": invite.radius
+    }
+
+
+@router.post("/meetup/send-popup-invite")
+async def send_popup_invite(invite: PopupInviteRequest):
+    """Send pop-up event invites to specifically selected nearby users with optional location sharing."""
+    if not ObjectId.is_valid(invite.senderId):
+        raise HTTPException(status_code=400, detail="Invalid sender ID")
+
+    if not invite.recipientIds or len(invite.recipientIds) == 0:
+        raise HTTPException(status_code=400, detail="No recipients selected")
+
+    sender = await db.users.find_one({"_id": ObjectId(invite.senderId)})
+    if not sender:
+        raise HTTPException(status_code=404, detail="Sender not found")
+
+    # Cap location duration at 60 minutes
+    duration_minutes = min(invite.locationDuration, 60)
+
+    # If sharing location, create a location share record with expiry
+    location_share_id = None
+    if invite.shareLocation and invite.latitude is not None and invite.longitude is not None:
+        expires_at = datetime.utcnow() + timedelta(minutes=duration_minutes)
+        share_doc = {
+            "userId": invite.senderId,
+            "userName": invite.senderName,
+            "latitude": invite.latitude,
+            "longitude": invite.longitude,
+            "expiresAt": expires_at.isoformat(),
+            "createdAt": datetime.utcnow().isoformat(),
+            "durationMinutes": duration_minutes,
+            "isActive": True,
+        }
+        result = await db.location_shares.insert_one(share_doc)
+        location_share_id = str(result.inserted_id)
+
+    # Build the message content
+    message_lines = [f"🏁 Pop-Up Event Invite from {invite.senderName}!"]
+    if invite.shareLocation and invite.latitude is not None:
+        message_lines.append(f"📍 Live location shared for {duration_minutes} min")
+    if invite.message.strip():
+        message_lines.append(f"\n{invite.message.strip()}")
+
+    full_message = "\n".join(message_lines)
+
+    invites_sent = 0
+    now_iso = datetime.utcnow().isoformat()
+
+    for rid in invite.recipientIds:
+        if not ObjectId.is_valid(rid):
+            continue
+
+        # Create a message in the messages collection so it appears in chat
+        msg_doc = {
+            "senderId": invite.senderId,
+            "recipientId": rid,
+            "content": full_message,
+            "isRead": False,
+            "createdAt": now_iso,
+            "isPopupInvite": True,
+        }
+        if location_share_id:
+            msg_doc["locationShareId"] = location_share_id
+
+        await db.messages.insert_one(msg_doc)
+
+        # Send push notification
+        recipient = await db.users.find_one(
+            {"_id": ObjectId(rid)},
+            {"pushToken": 1, "notificationsEnabled": 1}
+        )
+        if recipient and recipient.get("pushToken") and recipient.get("notificationsEnabled", True):
+            try:
+                await send_push_notification(
+                    recipient["pushToken"],
+                    f"🏁 Pop-Up Invite from {invite.senderName}!",
+                    invite.message[:100] if invite.message else "You're invited to a pop-up car meet!",
+                    {
+                        "type": "popup_invite",
+                        "senderId": invite.senderId,
+                        "locationShareId": location_share_id or "",
+                    }
+                )
+            except Exception as e:
+                print(f"Failed to send push notification to {rid}: {e}")
+
+        invites_sent += 1
+
+    return {
+        "message": f"Pop-up invite sent to {invites_sent} users",
+        "invitesSent": invites_sent,
+        "locationShareId": location_share_id,
+    }
+
+
+@router.get("/meetup/location-share/{share_id}")
+async def get_location_share(share_id: str):
+    """Get a shared location by its ID. Returns 404 if expired or not found."""
+    if not ObjectId.is_valid(share_id):
+        raise HTTPException(status_code=400, detail="Invalid share ID")
+
+    share = await db.location_shares.find_one({"_id": ObjectId(share_id)})
+    if not share:
+        raise HTTPException(status_code=404, detail="Location share not found")
+
+    # Check expiry
+    expires_at = datetime.fromisoformat(share["expiresAt"])
+    if datetime.utcnow() > expires_at:
+        # Mark as inactive
+        await db.location_shares.update_one(
+            {"_id": ObjectId(share_id)},
+            {"$set": {"isActive": False}}
+        )
+        return {
+            "id": share_id,
+            "expired": True,
+            "message": "This location share has expired"
+        }
+
+    remaining = (expires_at - datetime.utcnow()).total_seconds()
+    return {
+        "id": share_id,
+        "expired": False,
+        "userId": share["userId"],
+        "userName": share.get("userName", ""),
+        "latitude": share["latitude"],
+        "longitude": share["longitude"],
+        "durationMinutes": share.get("durationMinutes", 30),
+        "remainingSeconds": int(remaining),
+        "expiresAt": share["expiresAt"],
     }
 
 

@@ -1280,8 +1280,41 @@ agent_communication:
           agent: "testing"
           comment: "User Feeds Comments system testing completed successfully with 100% pass rate (3/3 tests). ✅ POST /api/feeds/{post_id}/comments - Creates comments with userId, userName, text fields. Auto-generates id, createdAt timestamp, increments commentCount on parent post. Validates empty text and post existence. ✅ GET /api/feeds/{post_id}/comments - Lists comments for post, chronologically ordered (oldest first). Returns proper array with all comment fields (id, postId, userId, userName, text, createdAt). ✅ DELETE /api/feeds/{post_id}/comments/{comment_id}?user_id={id} - Deletes comment with authorization (owner only), decrements commentCount on parent post, returns {status: 'deleted'}. All comment operations handle validation, authorization, and proper parent post updates."
 
+
+  - task: "Pop-Up Invite to Selected Nearby Users"
+    implemented: true
+    working: true
+    file: "routes/nearby.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "POST /api/meetup/send-popup-invite - New endpoint that sends personalized pop-up event invites to specifically selected nearby users. Takes senderId, senderName, recipientIds (list), message, shareLocation (bool), latitude/longitude (optional), locationDuration (int, max 60 min). Creates a message in the messages collection for each recipient. Optionally creates a location_shares document with an expiry. Sends push notifications. Also added GET /api/meetup/location-share/{share_id} to retrieve shared location data (checks expiry)."
+        - working: true
+          agent: "testing"
+          comment: "Pop-Up Invite feature testing completed successfully with 100% pass rate (8/8 tests). ✅ POST /api/meetup/send-popup-invite WITH location sharing - Creates location share record with 30min expiry, sends invite to recipients, returns invitesSent=1 and locationShareId. ✅ POST /api/meetup/send-popup-invite WITHOUT location sharing - Works correctly with shareLocation=false, returns invitesSent=1 and locationShareId=null. ✅ Validation working: Empty recipientIds returns 400 'No recipients selected', invalid senderId returns 400 'Invalid sender ID'. ✅ Messages created in conversations - Verified pop-up invites appear in message threads. ✅ Admin authentication working (admin@okcarevents.com/admin123). ✅ GET /api/meetup/prewritten-messages returns 5 prewritten messages. All endpoints working as specified in review request."
+
+  - task: "Pop-Up Invite Location Share Retrieval"
+    implemented: true
+    working: true
+    file: "routes/nearby.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/meetup/location-share/{share_id} - Returns the shared location details including lat, lon, remaining time, and expired status. If the share has expired, returns {expired: true}."
+        - working: true
+          agent: "testing"
+          comment: "GET /api/meetup/location-share/{share_id} endpoint working perfectly. Successfully retrieves location share data with expired=false, latitude/longitude coordinates, remainingSeconds>0 (1799s tested), and proper expiry handling. Location sharing duration correctly set to 30 minutes with automatic expiry tracking. All required fields present in response structure."
+
 agent_communication:
     - agent: "main"
-      message: "Please test the NEW User Feeds feature with all CRUD endpoints. Use admin login (admin@okcarevents.com / admin123). Test: (1) POST /api/feeds - create a post with userId, userName, text, and images=[]. (2) GET /api/feeds - list posts with pagination (limit, skip params). (3) GET /api/feeds/{post_id} - get single post. (4) PUT /api/feeds/{post_id}?user_id={userId} - edit post text. (5) DELETE /api/feeds/{post_id}?user_id={userId} - delete post. (6) POST /api/feeds/{post_id}/like?user_id={userId} - toggle like (call twice to verify toggle). (7) POST /api/feeds/{post_id}/comments - add comment with userId, userName, text. (8) GET /api/feeds/{post_id}/comments - list comments. (9) DELETE /api/feeds/{post_id}/comments/{comment_id}?user_id={userId} - delete comment. Test authorization (editing/deleting other user's posts should fail with 403)."
+      message: "Please test the NEW Pop-Up Invite feature endpoints. First login as admin (admin@okcarevents.com / admin123) to get a user ID. Then test: (1) POST /api/meetup/send-popup-invite with body {senderId: '<admin_user_id>', senderName: 'Admin', recipientIds: ['<any_valid_user_id>'], message: 'Test pop-up meet tonight!', shareLocation: true, latitude: 35.4676, longitude: -97.5164, locationDuration: 30}. Verify it returns invitesSent count and locationShareId. (2) GET /api/meetup/location-share/{locationShareId} - use the ID from step 1, verify it returns location data with expired: false, remainingSeconds, etc. (3) Test POST /api/meetup/send-popup-invite with shareLocation: false to verify it works without location sharing. (4) Test with empty recipientIds array to verify 400 error. (5) Test with invalid senderId to verify 400 error. Also test existing endpoints still work: GET /api/meetup/prewritten-messages."
     - agent: "testing"
       message: "USER FEEDS BACKEND API TESTING COMPLETED SUCCESSFULLY! ✅ 100% SUCCESS RATE (13/13 tests passed) for all User Feeds endpoints. ✅ COMPREHENSIVE TESTING COMPLETED: (1) Admin login working (admin@okcarevents.com/admin123), (2) POST /api/feeds creates posts with proper validation and auto-generated fields, (3) GET /api/feeds lists posts with pagination, (4) GET /api/feeds/{post_id} retrieves single posts, (5) PUT /api/feeds/{post_id} edits posts with authorization, (6) POST /api/feeds/{post_id}/like toggles likes correctly (like→unlike), (7) POST /api/feeds/{post_id}/comments adds comments and increments commentCount, (8) GET /api/feeds/{post_id}/comments lists comments chronologically, (9) DELETE /api/feeds/{post_id}/comments/{comment_id} removes comments with authorization, (10) Authorization test confirmed 403 for editing other user's posts, (11) DELETE /api/feeds/{post_id} removes posts and associated comments, (12) Verification confirmed deleted posts no longer appear in listings. ✅ ALL FEATURES WORKING: CRUD operations, like/unlike toggle, comment system, authorization controls, data persistence, proper error handling. The User Feeds API is production-ready and fully functional."
+    - agent: "testing"
+      message: "POP-UP INVITE FEATURE TESTING COMPLETED SUCCESSFULLY! ✅ 100% SUCCESS RATE (8/8 tests passed) for all Pop-Up Invite endpoints as specified in review request. ✅ COMPREHENSIVE TESTING COMPLETED: (1) Admin login working (admin@okcarevents.com/admin123), (2) GET /api/meetup/prewritten-messages returns 5 prewritten messages, (3) POST /api/meetup/send-popup-invite WITH location sharing creates location share record with 30min expiry and returns proper invitesSent=1 and locationShareId, (4) GET /api/meetup/location-share/{locationShareId} retrieves location data with expired=false, coordinates, and remainingSeconds>0, (5) POST /api/meetup/send-popup-invite WITHOUT location sharing works correctly with shareLocation=false and returns locationShareId=null, (6) Validation working: empty recipientIds returns 400 'No recipients selected', (7) Validation working: invalid senderId returns 400 'Invalid sender ID', (8) Messages created verification shows pop-up invites appear in conversation threads. ✅ ALL FEATURES WORKING: Location sharing with expiry, message creation, push notifications, validation, error handling. The Pop-Up Invite API is production-ready and fully functional as specified."

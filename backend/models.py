@@ -214,6 +214,17 @@ class MeetupInviteRequest(BaseModel):
     isCustomMessage: bool = False
 
 
+class PopupInviteRequest(BaseModel):
+    senderId: str
+    senderName: str
+    recipientIds: List[str]
+    message: str
+    shareLocation: bool = False
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    locationDuration: int = 30  # minutes, max 60
+
+
 # ==================== Performance Models ====================
 
 class PerformanceRunCreate(BaseModel):
