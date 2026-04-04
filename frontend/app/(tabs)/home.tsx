@@ -934,6 +934,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 4,
+    marginRight: 15,
   },
   facebookIcon: {
     width: 40,
