@@ -1,17 +1,26 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
+from pydantic import BaseModel
 from datetime import datetime
 from bson import ObjectId
 from pymongo.errors import DocumentTooLarge
 
 from database import db
 from models import UserCarCreate, UserCarUpdate
-from helpers import user_car_helper, compress_photos_list
+from helpers import user_car_helper, compress_photos_list, compress_photo_base64
 
 import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+class SinglePhotoUpload(BaseModel):
+    photo: str  # single base64 photo
+
+
+class PhotoRemoveRequest(BaseModel):
+    index: int
 
 
 @router.post("/user-cars")
@@ -373,3 +382,119 @@ async def admin_set_likes(car_id: str, admin_id: str = Query(...), likes: int = 
     updated_car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
     car_data = user_car_helper(updated_car)
     return car_data
+
+
+# ==================== CHUNKED PHOTO UPLOAD ====================
+
+@router.post("/user-cars/{car_id}/photos/upload")
+async def upload_single_photo(car_id: str, body: SinglePhotoUpload, user_id: str = Query(...)):
+    """Upload a single photo to a car. This endpoint accepts one photo at a time
+    to stay within proxy body size limits. The photo is compressed server-side."""
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=400, detail="Invalid car ID")
+
+    car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    if car["userId"] != user_id:
+        raise HTTPException(status_code=403, detail="You can only upload to your own garage")
+
+    current_photos = car.get("photos", [])
+    if len(current_photos) >= 10:
+        raise HTTPException(status_code=400, detail="Maximum 10 photos allowed")
+
+    # Compress the photo server-side
+    compressed = compress_photo_base64(body.photo)
+
+    try:
+        await db.user_cars.update_one(
+            {"_id": ObjectId(car_id)},
+            {"$push": {"photos": compressed}}
+        )
+    except DocumentTooLarge:
+        raise HTTPException(status_code=413, detail="Adding this photo would exceed the storage limit. Try a smaller image.")
+
+    updated_car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    photo_count = len(updated_car.get("photos", []))
+    return {
+        "success": True,
+        "photoCount": photo_count,
+        "message": f"Photo {photo_count} uploaded successfully"
+    }
+
+
+@router.delete("/user-cars/{car_id}/photos/{photo_index}")
+async def remove_photo_by_index(car_id: str, photo_index: int, user_id: str = Query(...)):
+    """Remove a single photo from a car by its index."""
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=400, detail="Invalid car ID")
+
+    car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    if car["userId"] != user_id:
+        raise HTTPException(status_code=403, detail="You can only modify your own garage")
+
+    photos = car.get("photos", [])
+    if photo_index < 0 or photo_index >= len(photos):
+        raise HTTPException(status_code=400, detail="Invalid photo index")
+
+    # Remove photo at index
+    photos.pop(photo_index)
+    
+    # Adjust mainPhotoIndex if needed
+    main_idx = car.get("mainPhotoIndex", 0)
+    if photo_index == main_idx:
+        main_idx = 0
+    elif photo_index < main_idx:
+        main_idx = max(0, main_idx - 1)
+    
+    if main_idx >= len(photos):
+        main_idx = max(0, len(photos) - 1)
+
+    await db.user_cars.update_one(
+        {"_id": ObjectId(car_id)},
+        {"$set": {"photos": photos, "mainPhotoIndex": main_idx}}
+    )
+
+    return {"success": True, "photoCount": len(photos), "mainPhotoIndex": main_idx}
+
+
+@router.post("/user-cars/create-or-update-metadata")
+async def create_or_update_car_metadata(car: UserCarCreate):
+    """Create or update a car's metadata WITHOUT photos.
+    Photos should be uploaded separately via the chunked upload endpoint.
+    This avoids large payloads that get rejected by the proxy."""
+    car_dict = car.dict()
+    
+    # Remove photos from the metadata save — they'll be uploaded separately
+    photos_to_save = car_dict.pop("photos", None)
+    car_dict["updatedAt"] = datetime.utcnow().isoformat()
+
+    existing = await db.user_cars.find_one({"userId": car.userId})
+    if existing:
+        # Preserve existing photos if none provided
+        if not photos_to_save:
+            car_dict.pop("photos", None)
+        
+        await db.user_cars.update_one(
+            {"_id": existing["_id"]},
+            {"$set": car_dict}
+        )
+        updated = await db.user_cars.find_one({"_id": existing["_id"]})
+        result = user_car_helper(updated)
+        result["photoCount"] = len(updated.get("photos", []))
+        return result
+    else:
+        car_dict["likes"] = 0
+        car_dict["views"] = 0
+        car_dict["createdAt"] = datetime.utcnow().isoformat()
+        car_dict["photos"] = []  # Start empty, photos uploaded separately
+        
+        insert_result = await db.user_cars.insert_one(car_dict)
+        created = await db.user_cars.find_one({"_id": insert_result.inserted_id})
+        result = user_car_helper(created)
+        result["photoCount"] = 0
+        return result

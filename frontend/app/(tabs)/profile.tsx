@@ -66,6 +66,8 @@ export default function ProfileScreen() {
   const [loadingCar, setLoadingCar] = useState(false);
   const [showCarModal, setShowCarModal] = useState(false);
   const [savingCar, setSavingCar] = useState(false);
+  const [photoUploadProgress, setPhotoUploadProgress] = useState('');
+  const [photoUploadCount, setPhotoUploadCount] = useState(0);
   const [carPhotos, setCarPhotos] = useState<string[]>([]);
   const [mainPhotoIndex, setMainPhotoIndex] = useState(0);
   const [garagePublic, setGaragePublic] = useState(true);
@@ -252,7 +254,7 @@ export default function ProfileScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
-      quality: 0.6,
+      quality: 0.5,
       base64: false,
     });
 
@@ -262,14 +264,14 @@ export default function ProfileScreen() {
         return;
       }
 
-      // Compress and resize each image for efficient storage
+      // Compress and resize each image aggressively for reliable uploads
       const compressedImages: string[] = [];
       for (const asset of result.assets) {
         try {
           const manipulated = await ImageManipulator.manipulateAsync(
             asset.uri,
-            [{ resize: { width: 1200 } }],
-            { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+            [{ resize: { width: 800 } }],
+            { compress: 0.35, format: ImageManipulator.SaveFormat.JPEG, base64: true }
           );
           if (manipulated.base64) {
             compressedImages.push(`data:image/jpeg;base64,${manipulated.base64}`);
@@ -325,8 +327,11 @@ export default function ProfileScreen() {
     }
 
     setSavingCar(true);
+    setPhotoUploadProgress('');
+    setPhotoUploadCount(0);
     try {
-      const carData = {
+      // Step 1: Save car metadata WITHOUT photos (small payload, always works)
+      const metadataPayload = {
         userId: user?.id,
         make: carForm.make,
         model: carForm.model,
@@ -339,9 +344,9 @@ export default function ProfileScreen() {
         transmission: carForm.transmission,
         drivetrain: carForm.drivetrain,
         description: carForm.description,
-        photos: carPhotos,
+        photos: [],  // Photos uploaded separately
         videos: videoUrls,
-        modifications: [], // Will add structured mods later
+        modifications: [],
         modificationNotes: carForm.modificationNotes,
         isPublic: garagePublic,
         instagramHandle: carForm.instagramHandle,
@@ -349,21 +354,100 @@ export default function ProfileScreen() {
         mainPhotoIndex: Math.min(mainPhotoIndex, Math.max(0, carPhotos.length - 1)),
       };
 
-      let response;
-      if (userCar?.id) {
-        response = await axios.put(`${API_URL}/api/user-cars/${userCar.id}`, carData);
-      } else {
-        response = await axios.post(`${API_URL}/api/user-cars`, carData);
+      setPhotoUploadProgress('Saving car info...');
+      let carResponse;
+      try {
+        carResponse = await axios.post(`${API_URL}/api/user-cars/create-or-update-metadata`, metadataPayload);
+      } catch (metaError: any) {
+        console.error('Metadata save error:', metaError);
+        throw new Error('Failed to save car details. Please try again.');
       }
+
+      const savedCarId = carResponse.data?.id;
+      if (!savedCarId) {
+        throw new Error('Failed to get car ID after save');
+      }
+
+      // Step 2: Figure out which photos need to be uploaded
+      // Existing photos (already in DB) start with "data:image" and are from the server
+      // We need to determine which photos are NEW vs already stored
+      const existingPhotoCount = carResponse.data?.photoCount || 0;
       
-      setUserCar(response.data);
+      // If the user hasn't changed photos (same count, no new ones), skip upload
+      const newPhotos = carPhotos.filter(p => p && p.length > 0);
+      
+      if (newPhotos.length > 0) {
+        // Clear existing photos first, then upload all current ones fresh
+        // This ensures the photo order matches what the user sees
+        setPhotoUploadProgress('Preparing photos...');
+        
+        // Delete all existing photos by setting to empty array, then upload fresh
+        try {
+          await axios.put(`${API_URL}/api/user-cars/${savedCarId}`, {
+            photos: [],
+            mainPhotoIndex: 0,
+          });
+        } catch (clearErr) {
+          console.log('Note: Could not clear old photos, continuing with upload');
+        }
+
+        // Step 3: Upload each photo individually (chunked - bypasses proxy limits)
+        let uploadedCount = 0;
+        let failedCount = 0;
+        for (let i = 0; i < newPhotos.length; i++) {
+          setPhotoUploadProgress(`Uploading photo ${i + 1} of ${newPhotos.length}...`);
+          setPhotoUploadCount(i + 1);
+          try {
+            await axios.post(
+              `${API_URL}/api/user-cars/${savedCarId}/photos/upload?user_id=${user?.id}`,
+              { photo: newPhotos[i] },
+              { timeout: 30000 }
+            );
+            uploadedCount++;
+          } catch (photoErr: any) {
+            failedCount++;
+            console.error(`Failed to upload photo ${i + 1}:`, photoErr?.response?.status, photoErr?.message);
+            // Continue uploading remaining photos
+          }
+        }
+
+        // Step 4: Set the main photo index
+        if (uploadedCount > 0) {
+          try {
+            const adjustedIndex = Math.min(mainPhotoIndex, uploadedCount - 1);
+            await axios.put(`${API_URL}/api/user-cars/${savedCarId}`, {
+              mainPhotoIndex: adjustedIndex,
+            });
+          } catch (idxErr) {
+            console.log('Note: Could not set main photo index');
+          }
+        }
+
+        if (failedCount > 0 && uploadedCount === 0) {
+          throw new Error(`All ${failedCount} photos failed to upload. Your car info was saved but photos could not be uploaded. This may be due to image size limits.`);
+        } else if (failedCount > 0) {
+          Alert.alert(
+            'Partially Saved',
+            `Car saved! ${uploadedCount} of ${newPhotos.length} photos uploaded successfully. ${failedCount} photo(s) were too large and skipped.`
+          );
+        }
+      }
+
+      setPhotoUploadProgress('');
+      // Refresh car data
+      const refreshed = await axios.get(`${API_URL}/api/user-cars/user/${user?.id}?include_photos=true`);
+      setUserCar(refreshed.data);
       setShowCarModal(false);
-      Alert.alert('Success', 'Your car has been saved to your garage!');
+      if (!newPhotos.length || carPhotos.length === 0) {
+        Alert.alert('Success', 'Your car has been saved to your garage!');
+      } else {
+        Alert.alert('Success', 'Your car and photos have been saved!');
+      }
     } catch (error: any) {
       console.error('Error saving car:', error);
-      let errorMsg = 'Failed to save car. Please try again.';
-      if (error?.response?.status === 413 || error?.response?.data?.detail?.includes?.('size')) {
-        errorMsg = 'Photos are too large. Try removing some photos or using lower resolution images.';
+      let errorMsg = error?.message || 'Failed to save car. Please try again.';
+      if (error?.response?.status === 413) {
+        errorMsg = 'Data too large. Try removing some photos or using lower resolution images.';
       } else if (error?.response?.data?.detail) {
         errorMsg = error.response.data.detail;
       } else if (error?.message?.includes?.('Network')) {
@@ -374,6 +458,8 @@ export default function ProfileScreen() {
       Alert.alert('Error Saving Garage', errorMsg);
     } finally {
       setSavingCar(false);
+      setPhotoUploadProgress('');
+      setPhotoUploadCount(0);
     }
   };
 
@@ -1224,7 +1310,12 @@ export default function ProfileScreen() {
                 disabled={savingCar}
               >
                 {savingCar ? (
-                  <ActivityIndicator color="#fff" />
+                  <View style={{ alignItems: 'center', gap: 4 }}>
+                    <ActivityIndicator color="#fff" />
+                    {photoUploadProgress ? (
+                      <Text style={{ color: '#fff', fontSize: 12 }}>{photoUploadProgress}</Text>
+                    ) : null}
+                  </View>
                 ) : (
                   <>
                     <Ionicons name="checkmark" size={20} color="#fff" />
