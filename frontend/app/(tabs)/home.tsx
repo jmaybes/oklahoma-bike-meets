@@ -474,7 +474,7 @@ export default function HomeScreen() {
       translateX.value = START_POS;
       translateX.value = withRepeat(
         withSequence(
-          withTiming(END_POS, { duration: 6000 }),
+          withTiming(END_POS, { duration: 9000 }),
           withTiming(START_POS, { duration: 0 })
         ),
         -1,
