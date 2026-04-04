@@ -646,6 +646,12 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/my-favorites')}>
+            <Ionicons name="heart" size={24} color="#E91E63" />
+            <Text style={styles.menuItemText}>My Favorite Events</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/my-events')}>
             <Ionicons name="create" size={24} color="#FF6B35" />
             <Text style={styles.menuItemText}>My Created Events</Text>

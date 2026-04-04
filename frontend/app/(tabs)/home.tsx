@@ -13,6 +13,7 @@ import {
   Pressable,
   Dimensions,
   ViewToken,
+  Alert,
 } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -29,6 +30,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useAuth } from '../../contexts/AuthContext';
 import api from '../../utils/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
@@ -77,6 +79,7 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   const HERO_HEIGHT = BASE_HERO_HEIGHT + insets.top;
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
@@ -91,6 +94,7 @@ export default function HomeScreen() {
   const [sortBy, setSortBy] = useState<'date' | 'distance'>('date');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const retryCountRef = useRef(0);
   const isMountedRef = useRef(true);
 
@@ -123,8 +127,51 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchEvents();
-    }, [])
+      if (user?.id) fetchFavorites();
+    }, [user?.id])
   );
+
+  const fetchFavorites = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await api.get(`/favorites/user/${user.id}`);
+      const ids = new Set((response.data || []).map((e: any) => e.id || e._id));
+      setFavoriteIds(ids);
+    } catch (error) {
+      console.log('Error fetching favorites:', error);
+    }
+  };
+
+  const toggleFavorite = async (eventId: string) => {
+    if (!user?.id) {
+      Alert.alert('Login Required', 'Please log in to save event favorites.');
+      return;
+    }
+    const isFav = favoriteIds.has(eventId);
+    // Optimistic update
+    setFavoriteIds(prev => {
+      const next = new Set(prev);
+      if (isFav) next.delete(eventId);
+      else next.add(eventId);
+      return next;
+    });
+    try {
+      if (isFav) {
+        await api.delete(`/favorites/${user.id}/${eventId}`);
+      } else {
+        await api.post('/favorites', { userId: user.id, eventId });
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      // Revert on error
+      setFavoriteIds(prev => {
+        const next = new Set(prev);
+        if (isFav) next.add(eventId);
+        else next.delete(eventId);
+        return next;
+      });
+    }
+  };
 
   useEffect(() => {
     filterEvents();
@@ -493,9 +540,27 @@ export default function HomeScreen() {
                   <Ionicons name="location" size={16} color="#888" />
                   <Text style={styles.detailText}>{item.city}</Text>
                 </View>
-                <View style={styles.detailRow}>
-                  <Ionicons name="people" size={16} color="#888" />
-                  <Text style={styles.detailText}>{item.attendeeCount} attending</Text>
+                <View style={styles.detailRowSpaced}>
+                  <View style={styles.detailRow}>
+                    <Ionicons name="people" size={16} color="#888" />
+                    <Text style={styles.detailText}>
+                      {item.attendeeCount > 0 ? item.attendeeCount : '??'} attending
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(item.id);
+                    }}
+                    style={styles.favoriteButton}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons
+                      name={favoriteIds.has(item.id) ? 'heart' : 'heart-outline'}
+                      size={24}
+                      color={favoriteIds.has(item.id) ? '#E91E63' : '#888'}
+                    />
+                  </TouchableOpacity>
                 </View>
               </Animated.View>
             </View>
@@ -1166,10 +1231,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  detailRowSpaced: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   detailText: {
     fontSize: 14,
     color: '#888',
     marginLeft: 8,
+  },
+  favoriteButton: {
+    padding: 4,
   },
   emptyContainer: {
     alignItems: 'center',
