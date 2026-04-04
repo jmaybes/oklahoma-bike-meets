@@ -338,13 +338,21 @@ export default function NearbyScreen() {
         <Text style={styles.userDistance}>{nearbyUser.distance} miles away</Text>
       </View>
       {!showCheckbox && (
-        <TouchableOpacity
-          style={styles.messageButton}
-          onPress={() => router.push(`/messages/${nearbyUser.id}`)}
-        >
-          <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
-          <Text style={styles.messageButtonText}>Message</Text>
-        </TouchableOpacity>
+        <View style={styles.userActions}>
+          <TouchableOpacity
+            style={styles.garageButton}
+            onPress={() => router.push(`/user-garage/${nearbyUser.id}`)}
+          >
+            <Ionicons name="car-sport" size={18} color="#FF6B35" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.messageButton}
+            onPress={() => router.push(`/messages/${nearbyUser.id}`)}
+          >
+            <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
+            <Text style={styles.messageButtonText}>Message</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -1135,6 +1143,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 13,
     fontWeight: '600',
+  },
+  userActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  garageButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 107, 53, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 107, 53, 0.3)',
   },
 
   // Bottom button container

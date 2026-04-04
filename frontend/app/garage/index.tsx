@@ -128,7 +128,7 @@ export default function BrowseGaragesScreen() {
       <TouchableOpacity
         key={car.id}
         style={styles.garageCard}
-        onPress={() => router.push(`/garage/${car.id}`)}
+        onPress={() => router.push(`/user-garage/${car.userId}`)}
         activeOpacity={0.85}
       >
         {/* Rank badge for top 3 */}
