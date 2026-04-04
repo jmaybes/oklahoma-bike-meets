@@ -8,6 +8,25 @@ from models import PerformanceRunCreate, PerformanceRunUpdate
 router = APIRouter()
 
 
+def serialize_run(run, user=None):
+    """Helper to serialize a performance run document."""
+    return {
+        "id": str(run["_id"]),
+        "userId": run["userId"],
+        "userName": user["name"] if user else run.get("userName", "Unknown"),
+        "nickname": (user.get("nickname", "") if user else run.get("nickname", "")),
+        "carInfo": run.get("carInfo", ""),
+        "zeroToSixty": run.get("zeroToSixty"),
+        "zeroToHundred": run.get("zeroToHundred"),
+        "quarterMile": run.get("quarterMile"),
+        "quarterMileSpeed": run.get("quarterMileSpeed"),
+        "topSpeed": run.get("topSpeed"),
+        "location": run.get("location", ""),
+        "isManualEntry": run.get("isManualEntry", False),
+        "createdAt": run.get("createdAt", ""),
+    }
+
+
 @router.post("/performance-runs")
 async def create_performance_run(run: PerformanceRunCreate):
     run_dict = run.dict()
@@ -16,16 +35,37 @@ async def create_performance_run(run: PerformanceRunCreate):
     result = await db.performance_runs.insert_one(run_dict)
     created_run = await db.performance_runs.find_one({"_id": result.inserted_id})
 
-    return {
-        "id": str(created_run["_id"]),
-        "userId": created_run["userId"],
-        "carInfo": created_run["carInfo"],
-        "zeroToSixty": created_run.get("zeroToSixty"),
-        "zeroToHundred": created_run.get("zeroToHundred"),
-        "quarterMile": created_run.get("quarterMile"),
-        "location": created_run.get("location", ""),
-        "createdAt": created_run["createdAt"]
-    }
+    return serialize_run(created_run)
+
+
+@router.get("/performance-runs/user/{user_id}/best")
+async def get_user_personal_bests(user_id: str):
+    """Get a user's personal best times for each category."""
+    best = {}
+
+    # Best 0-60
+    best_060 = await db.performance_runs.find(
+        {"userId": user_id, "zeroToSixty": {"$exists": True, "$ne": None}}
+    ).sort("zeroToSixty", 1).limit(1).to_list(1)
+    best["zeroToSixty"] = best_060[0]["zeroToSixty"] if best_060 else None
+
+    # Best 0-100
+    best_0100 = await db.performance_runs.find(
+        {"userId": user_id, "zeroToHundred": {"$exists": True, "$ne": None}}
+    ).sort("zeroToHundred", 1).limit(1).to_list(1)
+    best["zeroToHundred"] = best_0100[0]["zeroToHundred"] if best_0100 else None
+
+    # Best quarter mile
+    best_qm = await db.performance_runs.find(
+        {"userId": user_id, "quarterMile": {"$exists": True, "$ne": None}}
+    ).sort("quarterMile", 1).limit(1).to_list(1)
+    best["quarterMile"] = best_qm[0]["quarterMile"] if best_qm else None
+
+    # Total runs count
+    total = await db.performance_runs.count_documents({"userId": user_id})
+    best["totalRuns"] = total
+
+    return best
 
 
 @router.get("/leaderboard/0-60")
@@ -36,17 +76,12 @@ async def get_zero_to_sixty_leaderboard(limit: int = 100):
 
     leaderboard = []
     for run in runs:
-        user = await db.users.find_one({"_id": ObjectId(run["userId"])})
-        leaderboard.append({
-            "id": str(run["_id"]),
-            "userId": run["userId"],
-            "userName": user["name"] if user else "Unknown",
-            "nickname": user.get("nickname", "") if user else "",
-            "carInfo": run["carInfo"],
-            "time": run["zeroToSixty"],
-            "location": run.get("location", ""),
-            "createdAt": run["createdAt"]
-        })
+        user = None
+        if ObjectId.is_valid(run.get("userId", "")):
+            user = await db.users.find_one({"_id": ObjectId(run["userId"])})
+        entry = serialize_run(run, user)
+        entry["time"] = run["zeroToSixty"]
+        leaderboard.append(entry)
 
     return leaderboard
 
@@ -59,17 +94,12 @@ async def get_zero_to_hundred_leaderboard(limit: int = 100):
 
     leaderboard = []
     for run in runs:
-        user = await db.users.find_one({"_id": ObjectId(run["userId"])})
-        leaderboard.append({
-            "id": str(run["_id"]),
-            "userId": run["userId"],
-            "userName": user["name"] if user else "Unknown",
-            "nickname": user.get("nickname", "") if user else "",
-            "carInfo": run["carInfo"],
-            "time": run["zeroToHundred"],
-            "location": run.get("location", ""),
-            "createdAt": run["createdAt"]
-        })
+        user = None
+        if ObjectId.is_valid(run.get("userId", "")):
+            user = await db.users.find_one({"_id": ObjectId(run["userId"])})
+        entry = serialize_run(run, user)
+        entry["time"] = run["zeroToHundred"]
+        leaderboard.append(entry)
 
     return leaderboard
 
@@ -82,17 +112,12 @@ async def get_quarter_mile_leaderboard(limit: int = 100):
 
     leaderboard = []
     for run in runs:
-        user = await db.users.find_one({"_id": ObjectId(run["userId"])})
-        leaderboard.append({
-            "id": str(run["_id"]),
-            "userId": run["userId"],
-            "userName": user["name"] if user else "Unknown",
-            "nickname": user.get("nickname", "") if user else "",
-            "carInfo": run["carInfo"],
-            "time": run["quarterMile"],
-            "location": run.get("location", ""),
-            "createdAt": run["createdAt"]
-        })
+        user = None
+        if ObjectId.is_valid(run.get("userId", "")):
+            user = await db.users.find_one({"_id": ObjectId(run["userId"])})
+        entry = serialize_run(run, user)
+        entry["time"] = run["quarterMile"]
+        leaderboard.append(entry)
 
     return leaderboard
 
@@ -100,17 +125,7 @@ async def get_quarter_mile_leaderboard(limit: int = 100):
 @router.get("/performance-runs/user/{user_id}")
 async def get_user_performance_runs(user_id: str):
     runs = await db.performance_runs.find({"userId": user_id}).sort("createdAt", -1).to_list(1000)
-
-    return [{
-        "id": str(run["_id"]),
-        "userId": run["userId"],
-        "carInfo": run["carInfo"],
-        "zeroToSixty": run.get("zeroToSixty"),
-        "zeroToHundred": run.get("zeroToHundred"),
-        "quarterMile": run.get("quarterMile"),
-        "location": run.get("location", ""),
-        "createdAt": run["createdAt"]
-    } for run in runs]
+    return [serialize_run(run) for run in runs]
 
 
 @router.delete("/admin/performance-runs/{run_id}")
@@ -161,19 +176,9 @@ async def admin_edit_performance_run(run_id: str, update: PerformanceRunUpdate, 
 
     updated_run = await db.performance_runs.find_one({"_id": ObjectId(run_id)})
     user = None
-    if ObjectId.is_valid(updated_run["userId"]):
+    if ObjectId.is_valid(updated_run.get("userId", "")):
         user = await db.users.find_one({"_id": ObjectId(updated_run["userId"])})
 
-    return {
-        "id": str(updated_run["_id"]),
-        "userId": updated_run["userId"],
-        "userName": user["name"] if user else "Unknown",
-        "nickname": user.get("nickname", "") if user else "",
-        "carInfo": updated_run["carInfo"],
-        "zeroToSixty": updated_run.get("zeroToSixty"),
-        "zeroToHundred": updated_run.get("zeroToHundred"),
-        "quarterMile": updated_run.get("quarterMile"),
-        "location": updated_run.get("location", ""),
-        "createdAt": updated_run["createdAt"],
-        "updatedAt": updated_run.get("updatedAt")
-    }
+    result = serialize_run(updated_run, user)
+    result["updatedAt"] = updated_run.get("updatedAt")
+    return result

@@ -7,7 +7,6 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  Image,
   Alert,
   Modal,
   TextInput,
@@ -38,6 +37,9 @@ interface LeaderboardEntry {
   zeroToSixty?: number;
   zeroToHundred?: number;
   quarterMile?: number;
+  quarterMileSpeed?: number;
+  topSpeed?: number;
+  isManualEntry?: boolean;
 }
 
 export default function LeaderboardScreen() {
@@ -223,6 +225,7 @@ export default function LeaderboardScreen() {
         <View style={styles.entryDetails}>
           <Text style={styles.userName}>
             {item.nickname || item.userName}
+            {item.isManualEntry ? ' 📝' : ''}
           </Text>
           <Text style={styles.carInfo}>{item.carInfo}</Text>
           <View style={styles.metaRow}>
@@ -319,11 +322,7 @@ export default function LeaderboardScreen() {
             ]}
             onPress={() => setSelectedType(type.type)}
           >
-            {type.icon === 'rocket' ? (
-              <Image source={require('../../assets/images/okc-logo.png')} style={{ width: 18, height: 18 }} resizeMode="contain" />
-            ) : (
-              <Ionicons name={type.icon as any} size={18} color={selectedType === type.type ? '#fff' : '#888'} />
-            )}
+            <Ionicons name={type.icon as any} size={18} color={selectedType === type.type ? '#fff' : '#888'} />
             <Text
               style={[
                 styles.typeButtonText,

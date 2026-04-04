@@ -1173,9 +1173,93 @@ frontend:
           agent: "testing"
           comment: "Pop-Up Invite RSVP System testing completed successfully with 100% pass rate (10/10 tests). ✅ Complete workflow verified: (1) Admin login working (admin@okcarevents.com/admin123), (2) POST /api/meetup/send-popup-invite creates popup invites with location sharing (30min duration, Oklahoma City coordinates), (3) GET /api/messages/thread/{user_id}/{partner_id} returns messages with isPopupInvite=true and locationShareId fields, (4) POST /api/meetup/popup-rsvp accepts 'attending' status and returns correct response, (5) GET /api/meetup/popup-rsvp/{message_id} shows attending=1/declined=0 with proper RSVP array, (6) RSVP status change to 'declined' working correctly, (7) Upsert behavior confirmed (attending=0/declined=1 for same user), (8) Validation working: 400 error for invalid status 'maybe', (9) Validation working: 400 error 'This message is not a pop-up invite' for regular messages. ✅ All endpoints functioning perfectly with proper error handling, data persistence, and business logic as specified in review request."
 
+  - task: "Performance Timer NEW Fields - topSpeed"
+    implemented: true
+    working: true
+    file: "routes/performance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "topSpeed field working perfectly in all endpoints. ✅ POST /api/performance-runs accepts and stores topSpeed values (tested 65.3, 115.0, 120.0). ✅ All leaderboard endpoints (0-60, quarter-mile) include topSpeed in response. ✅ GET /api/performance-runs/user/{user_id} includes topSpeed for all runs. ✅ PUT /api/admin/performance-runs/{run_id} successfully updates topSpeed field. ✅ Backward compatibility maintained - existing runs show topSpeed: null. Field properly serialized in serialize_run function."
+
+  - task: "Performance Timer NEW Fields - isManualEntry"
+    implemented: true
+    working: true
+    file: "routes/performance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "isManualEntry field working perfectly in all endpoints. ✅ POST /api/performance-runs accepts boolean values (tested true/false). ✅ All leaderboard endpoints include isManualEntry in response. ✅ GET /api/performance-runs/user/{user_id} includes isManualEntry for all runs. ✅ PUT /api/admin/performance-runs/{run_id} successfully updates isManualEntry field. ✅ Default value false working correctly for existing data. Field properly serialized in serialize_run function."
+
+  - task: "Performance Timer NEW Fields - quarterMileSpeed"
+    implemented: true
+    working: true
+    file: "routes/performance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "quarterMileSpeed field working perfectly in all endpoints. ✅ POST /api/performance-runs accepts and stores quarterMileSpeed values (tested 112.3, 115.0). ✅ GET /api/leaderboard/quarter-mile includes quarterMileSpeed in response. ✅ GET /api/performance-runs/user/{user_id} includes quarterMileSpeed for all runs. ✅ PUT /api/admin/performance-runs/{run_id} successfully updates quarterMileSpeed field. ✅ Backward compatibility maintained - existing runs show quarterMileSpeed: null. Field properly serialized in serialize_run function."
+
+  - task: "Performance Timer NEW Fields - Enhanced location"
+    implemented: true
+    working: true
+    file: "routes/performance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Enhanced location field working perfectly in all endpoints. ✅ POST /api/performance-runs accepts and stores location strings (tested 'Thunder Valley', 'OKC Raceway'). ✅ All leaderboard endpoints include location in response. ✅ GET /api/performance-runs/user/{user_id} includes location for all runs. ✅ PUT /api/admin/performance-runs/{run_id} successfully updates location field. ✅ Backward compatibility maintained - existing runs retain their location data. Field properly serialized in serialize_run function."
+
+  - task: "Performance Timer Personal Bests API"
+    implemented: true
+    working: true
+    file: "routes/performance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/performance-runs/user/{user_id}/best endpoint working perfectly. ✅ Returns proper structure with zeroToSixty, zeroToHundred, quarterMile best times and totalRuns count. ✅ Correctly finds fastest times across all user runs. ✅ Handles mixed data (existing runs without new fields, new runs with all fields). ✅ Tested with admin user showing existing 0-60 best (2.8s) and new quarter-mile best (12.5s). ✅ totalRuns count accurate including all user performance runs."
+
+  - task: "Performance Timer Admin Edit with NEW Fields"
+    implemented: true
+    working: true
+    file: "routes/performance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "PUT /api/admin/performance-runs/{run_id} endpoint working perfectly with NEW fields. ✅ Admin authentication working (admin@okcarevents.com/admin123). ✅ Successfully updates quarterMileSpeed (112.3→115.0) and topSpeed (115.0→120.0) in single request. ✅ Partial updates working correctly - only specified fields changed. ✅ updatedAt timestamp properly set on modifications. ✅ Response includes all updated fields with correct values. ✅ Admin authorization properly validated with 403 for non-admin users."
+
+  - task: "Performance Timer Admin Delete"
+    implemented: true
+    working: true
+    file: "routes/performance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "DELETE /api/admin/performance-runs/{run_id} endpoint working perfectly. ✅ Admin authentication working (admin@okcarevents.com/admin123). ✅ Successfully deletes performance runs with proper authorization checks. ✅ Returns proper success message. ✅ Handles invalid run IDs with 404 error. ✅ Admin authorization properly validated with 403 for non-admin users. ✅ Cleanup functionality verified - test runs properly deleted after testing."
+
 agent_communication:
-    - agent: "main"
-      message: "DEPLOYMENT FIX: Fixed iOS EAS build failure caused by duplicate react-native-worklets. Changes: (1) Added postinstall script (scripts/fix-worklets-dedup.js) that deduplicates worklets after yarn install - copies reanimated's bundled 0.8.1 to top level if duplicates exist. (2) Added wildcard resolutions pattern. (3) Optimized backend queries: Fixed N+1 queries in nearby.py (batch fetch users), messaging.py (batch fetch conversation partners), and added projections to events.py and nearby.py unbounded queries. Please test: nearby users API, conversations API, events creation API, and all messaging endpoints to verify the optimizations didn't break anything. Admin credentials: admin@okcarevents.com / admin123. Backend URL: http://localhost:8001."
+    - agent: "testing"
+      message: "PERFORMANCE TIMER NEW FIELDS TESTING COMPLETED SUCCESSFULLY! ✅ ALL 9 TEST SCENARIOS PASSED (100% success rate): (1) Admin login working (admin@okcarevents.com/admin123), (2) 0-60 run creation with NEW fields (topSpeed: 65.3, isManualEntry: true, location: Thunder Valley), (3) Quarter-mile run creation with NEW fields (quarterMileSpeed: 112.3, topSpeed: 115.0, isManualEntry: false, location: OKC Raceway), (4) Personal bests API working with mixed data (existing 0-60: 2.8s, new quarter-mile: 12.5s), (5) 0-60 leaderboard includes all NEW fields, (6) Quarter-mile leaderboard includes quarterMileSpeed field, (7) User runs endpoint includes NEW fields for all runs, (8) Admin edit successfully updates NEW fields (quarterMileSpeed: 112.3→115.0, topSpeed: 115.0→120.0), (9) Admin delete working for cleanup. ✅ BACKWARD COMPATIBILITY VERIFIED: Existing performance runs (2018 McLaren 570s MSO-X with 2.8s 0-60) work perfectly with NEW fields showing as null/default values. ✅ ALL NEW FIELDS WORKING: topSpeed, isManualEntry, quarterMileSpeed, enhanced location field. The Performance Timer backend improvements are production-ready and fully functional as specified in the review request."
     - agent: "main"
       message: "Implemented Recurring Events feature. Please test the following: 1) POST /api/events with isRecurring=true, recurrenceDay=0-6 (0=Sunday, 6=Saturday), and optional recurrenceEndDate. 2) GET /api/events should expand recurring events into multiple instances for the next 12 weeks. Each instance should have a modified 'id' like '{original_id}__{YYYYMMDD}' and a 'parentEventId' field. Test day conversion (frontend uses 0=Sunday, backend converts to Python weekday)."
     - agent: "testing"
@@ -1357,10 +1441,47 @@ agent_communication:
           agent: "main"
           comment: "GET /api/messages/thread/{user_id}/{partner_id} now returns isPopupInvite (bool) and locationShareId (string) for popup invite messages, so the frontend chat screen can render them as rich invite cards."
 
+  - task: "Performance Timer Personal Bests Endpoint"
+    implemented: true
+    working: "NA"
+    file: "routes/performance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added GET /api/performance-runs/user/{user_id}/best endpoint to return personal best times for 0-60, 0-100, and quarter-mile, plus total run count. Also added quarterMileSpeed, topSpeed, and isManualEntry fields to PerformanceRunCreate model."
+
+  - task: "Performance Timer Run Creation with New Fields"
+    implemented: true
+    working: "NA"
+    file: "routes/performance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated POST /api/performance-runs to support new fields: quarterMileSpeed, topSpeed, isManualEntry. These fields are now persisted in MongoDB and returned in API responses."
+
+  - task: "Leaderboard Returns New Fields"
+    implemented: true
+    working: "NA"
+    file: "routes/performance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated all leaderboard endpoints (GET /api/leaderboard/0-60, 0-100, quarter-mile) to include quarterMileSpeed, topSpeed, and isManualEntry fields in responses."
+
+
 
 agent_communication:
     - agent: "main"
-      message: "Please test the NEW Pop-Up Invite feature endpoints. First login as admin (admin@okcarevents.com / admin123) to get a user ID. Then test: (1) POST /api/meetup/send-popup-invite with body {senderId: '<admin_user_id>', senderName: 'Admin', recipientIds: ['<any_valid_user_id>'], message: 'Test pop-up meet tonight!', shareLocation: true, latitude: 35.4676, longitude: -97.5164, locationDuration: 30}. Verify it returns invitesSent count and locationShareId. (2) GET /api/meetup/location-share/{locationShareId} - use the ID from step 1, verify it returns location data with expired: false, remainingSeconds, etc. (3) Test POST /api/meetup/send-popup-invite with shareLocation: false to verify it works without location sharing. (4) Test with empty recipientIds array to verify 400 error. (5) Test with invalid senderId to verify 400 error. Also test existing endpoints still work: GET /api/meetup/prewritten-messages."
+      message: "Please test the PERFORMANCE TIMER backend improvements. First login as admin (admin@okcarevents.com / admin123) to get a user ID. Then test: (1) POST /api/performance-runs with body {userId: '<admin_id>', carInfo: '2024 Mustang GT', zeroToSixty: 4.25, topSpeed: 65.3, isManualEntry: true, location: 'Thunder Valley'} - verify it saves all new fields. (2) POST /api/performance-runs with quarterMile data: {userId: '<admin_id>', carInfo: '2024 Mustang GT', quarterMile: 12.5, quarterMileSpeed: 112.3, topSpeed: 115.0, isManualEntry: false, location: 'OKC'}. (3) GET /api/performance-runs/user/<admin_id>/best - verify it returns personal bests for all 3 categories plus totalRuns count. (4) GET /api/leaderboard/0-60 - verify entries include the new fields (topSpeed, isManualEntry). (5) GET /api/leaderboard/quarter-mile - verify quarterMileSpeed is included. (6) GET /api/performance-runs/user/<admin_id> - verify all runs include new fields."
     - agent: "testing"
       message: "USER FEEDS BACKEND API TESTING COMPLETED SUCCESSFULLY! ✅ 100% SUCCESS RATE (13/13 tests passed) for all User Feeds endpoints. ✅ COMPREHENSIVE TESTING COMPLETED: (1) Admin login working (admin@okcarevents.com/admin123), (2) POST /api/feeds creates posts with proper validation and auto-generated fields, (3) GET /api/feeds lists posts with pagination, (4) GET /api/feeds/{post_id} retrieves single posts, (5) PUT /api/feeds/{post_id} edits posts with authorization, (6) POST /api/feeds/{post_id}/like toggles likes correctly (like→unlike), (7) POST /api/feeds/{post_id}/comments adds comments and increments commentCount, (8) GET /api/feeds/{post_id}/comments lists comments chronologically, (9) DELETE /api/feeds/{post_id}/comments/{comment_id} removes comments with authorization, (10) Authorization test confirmed 403 for editing other user's posts, (11) DELETE /api/feeds/{post_id} removes posts and associated comments, (12) Verification confirmed deleted posts no longer appear in listings. ✅ ALL FEATURES WORKING: CRUD operations, like/unlike toggle, comment system, authorization controls, data persistence, proper error handling. The User Feeds API is production-ready and fully functional."
     - agent: "testing"

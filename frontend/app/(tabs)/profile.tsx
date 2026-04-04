@@ -635,7 +635,7 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer-main')}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer')}>
             <Ionicons name="timer" size={24} color="#E91E63" />
             <Text style={styles.menuItemText}>Performance Timer</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />

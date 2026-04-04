@@ -7,7 +7,8 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  Image,
+  Share,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,8 +26,18 @@ interface PerformanceRun {
   zeroToSixty?: number;
   zeroToHundred?: number;
   quarterMile?: number;
+  quarterMileSpeed?: number;
+  topSpeed?: number;
   location: string;
+  isManualEntry?: boolean;
   createdAt: string;
+}
+
+interface PersonalBests {
+  zeroToSixty: number | null;
+  zeroToHundred: number | null;
+  quarterMile: number | null;
+  totalRuns: number;
 }
 
 export default function MyRunsScreen() {
@@ -35,10 +46,12 @@ export default function MyRunsScreen() {
   const [runs, setRuns] = useState<PerformanceRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [personalBests, setPersonalBests] = useState<PersonalBests | null>(null);
 
   useEffect(() => {
     if (isAuthenticated && user) {
       fetchMyRuns();
+      fetchPersonalBests();
     } else {
       setLoading(false);
     }
@@ -57,9 +70,19 @@ export default function MyRunsScreen() {
     }
   };
 
+  const fetchPersonalBests = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/performance-runs/user/${user?.id}/best`);
+      setPersonalBests(res.data);
+    } catch (err) {
+      console.log('Error fetching personal bests');
+    }
+  };
+
   const onRefresh = () => {
     setRefreshing(true);
     fetchMyRuns();
+    fetchPersonalBests();
   };
 
   const formatDate = (dateStr: string) => {
@@ -73,38 +96,86 @@ export default function MyRunsScreen() {
     });
   };
 
-  const getBestTimes = () => {
-    const best060 = runs.filter(r => r.zeroToSixty).sort((a, b) => (a.zeroToSixty || 99) - (b.zeroToSixty || 99))[0];
-    const best0100 = runs.filter(r => r.zeroToHundred).sort((a, b) => (a.zeroToHundred || 99) - (b.zeroToHundred || 99))[0];
-    const bestQuarter = runs.filter(r => r.quarterMile).sort((a, b) => (a.quarterMile || 99) - (b.quarterMile || 99))[0];
-    
-    return { best060, best0100, bestQuarter };
+  const shareRun = async (item: PerformanceRun) => {
+    const runType = item.zeroToSixty ? '0-60 MPH' : item.zeroToHundred ? '0-100 MPH' : '1/4 Mile';
+    const time = item.zeroToSixty || item.zeroToHundred || item.quarterMile || 0;
+    let message = `🏁 ${runType}: ${time.toFixed(2)}s`;
+    if (item.carInfo) message += `\n🚗 ${item.carInfo}`;
+    if (item.topSpeed) message += `\n⚡ Top Speed: ${item.topSpeed.toFixed(1)} MPH`;
+    if (item.quarterMileSpeed) message += `\n💨 Trap Speed: ${item.quarterMileSpeed.toFixed(1)} MPH`;
+    if (item.isManualEntry) message += `\n📝 Manual Entry`;
+    message += `\n📱 OKC Car Events`;
+
+    try {
+      await Share.share({ message });
+    } catch (err) {
+      console.error('Share error:', err);
+    }
   };
 
   const renderRunItem = ({ item }: { item: PerformanceRun }) => {
     const runType = item.zeroToSixty ? '0-60' : item.zeroToHundred ? '0-100' : '1/4 Mile';
     const time = item.zeroToSixty || item.zeroToHundred || item.quarterMile || 0;
     const color = item.zeroToSixty ? '#FF6B35' : item.zeroToHundred ? '#E91E63' : '#9C27B0';
-    const isHundred = item.zeroToHundred && !item.zeroToSixty;
-    const icon = item.zeroToSixty ? 'speedometer' : item.zeroToHundred ? null : 'flag';
+    const icon = item.zeroToSixty ? 'speedometer' : item.zeroToHundred ? 'rocket' : 'flag';
+
+    // Check if this is a personal best
+    let isPB = false;
+    if (personalBests) {
+      if (item.zeroToSixty && personalBests.zeroToSixty === item.zeroToSixty) isPB = true;
+      if (item.zeroToHundred && personalBests.zeroToHundred === item.zeroToHundred) isPB = true;
+      if (item.quarterMile && personalBests.quarterMile === item.quarterMile) isPB = true;
+    }
 
     return (
-      <View style={styles.runItem}>
+      <View style={[styles.runItem, isPB && { borderColor: '#FFD700', borderWidth: 1 }]}>
         <View style={[styles.runTypeIcon, { backgroundColor: `${color}20` }]}>
-          {isHundred ? (
-            <Image source={require('../../assets/images/okc-logo.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
-          ) : (
-            <Ionicons name={icon as any} size={24} color={color} />
-          )}
+          <Ionicons name={icon as any} size={22} color={color} />
         </View>
         <View style={styles.runDetails}>
-          <Text style={styles.runType}>{runType} MPH</Text>
+          <View style={styles.runTitleRow}>
+            <Text style={styles.runType}>{runType} MPH</Text>
+            {isPB && (
+              <View style={styles.pbTag}>
+                <Ionicons name="trophy" size={10} color="#FFD700" />
+                <Text style={styles.pbTagText}>PB</Text>
+              </View>
+            )}
+            {item.isManualEntry && (
+              <View style={styles.manualTag}>
+                <Ionicons name="create" size={10} color="#4CAF50" />
+                <Text style={styles.manualTagText}>Manual</Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.carInfo}>{item.carInfo}</Text>
-          <Text style={styles.runDate}>{formatDate(item.createdAt)}</Text>
+          <View style={styles.metaRow}>
+            {item.topSpeed ? (
+              <>
+                <Ionicons name="flash" size={11} color="#666" />
+                <Text style={styles.metaText}>{item.topSpeed.toFixed(1)} MPH</Text>
+                <Text style={styles.metaDot}>•</Text>
+              </>
+            ) : null}
+            {item.quarterMileSpeed ? (
+              <>
+                <Text style={styles.metaText}>Trap: {item.quarterMileSpeed.toFixed(1)}</Text>
+                <Text style={styles.metaDot}>•</Text>
+              </>
+            ) : null}
+            <Text style={styles.metaText}>{formatDate(item.createdAt)}</Text>
+          </View>
         </View>
-        <View style={styles.runTimeContainer}>
+        <View style={styles.runRight}>
           <Text style={[styles.runTime, { color }]}>{time.toFixed(2)}</Text>
           <Text style={styles.runTimeUnit}>sec</Text>
+          <TouchableOpacity
+            onPress={() => shareRun(item)}
+            style={styles.shareBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="share-outline" size={16} color="#888" />
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -127,25 +198,19 @@ export default function MyRunsScreen() {
             <View style={{ width: 40 }} />
           </View>
         </LinearGradient>
-
         <View style={styles.authRequiredContainer}>
           <Ionicons name="lock-closed" size={60} color="#333" />
           <Text style={styles.authRequiredTitle}>Login Required</Text>
           <Text style={styles.authRequiredSubtitle}>
             Sign in to view and track your performance runs
           </Text>
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={() => router.push('/auth/login')}
-          >
+          <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/auth/login')}>
             <Text style={styles.loginButtonText}>Login</Text>
           </TouchableOpacity>
         </View>
       </View>
     );
   }
-
-  const { best060, best0100, bestQuarter } = getBestTimes();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
@@ -165,29 +230,31 @@ export default function MyRunsScreen() {
       </LinearGradient>
 
       {/* Personal Bests */}
-      {runs.length > 0 && (
+      {personalBests && (
         <View style={styles.personalBests}>
-          <Text style={styles.personalBestsTitle}>Personal Bests</Text>
+          <Text style={styles.personalBestsTitle}>
+            Personal Bests ({personalBests.totalRuns} total runs)
+          </Text>
           <View style={styles.bestsGrid}>
             <View style={styles.bestItem}>
-              <Ionicons name="speedometer" size={20} color="#FF6B35" />
+              <Ionicons name="speedometer" size={18} color="#FF6B35" />
               <Text style={styles.bestLabel}>0-60</Text>
               <Text style={[styles.bestValue, { color: '#FF6B35' }]}>
-                {best060?.zeroToSixty?.toFixed(2) || '--'}s
+                {personalBests.zeroToSixty?.toFixed(2) || '--'}s
               </Text>
             </View>
             <View style={styles.bestItem}>
-              <Image source={require('../../assets/images/okc-logo.png')} style={{ width: 20, height: 20 }} resizeMode="contain" />
+              <Ionicons name="rocket" size={18} color="#E91E63" />
               <Text style={styles.bestLabel}>0-100</Text>
               <Text style={[styles.bestValue, { color: '#E91E63' }]}>
-                {best0100?.zeroToHundred?.toFixed(2) || '--'}s
+                {personalBests.zeroToHundred?.toFixed(2) || '--'}s
               </Text>
             </View>
             <View style={styles.bestItem}>
-              <Ionicons name="flag" size={20} color="#9C27B0" />
+              <Ionicons name="flag" size={18} color="#9C27B0" />
               <Text style={styles.bestLabel}>1/4 Mile</Text>
               <Text style={[styles.bestValue, { color: '#9C27B0' }]}>
-                {bestQuarter?.quarterMile?.toFixed(2) || '--'}s
+                {personalBests.quarterMile?.toFixed(2) || '--'}s
               </Text>
             </View>
           </View>
@@ -213,14 +280,8 @@ export default function MyRunsScreen() {
               <Text style={styles.emptySubtitle}>
                 Start your first performance run to track your times
               </Text>
-              <TouchableOpacity
-                style={styles.startRunButton}
-                onPress={() => router.push('/timer')}
-              >
-                <LinearGradient
-                  colors={['#FF6B35', '#E91E63']}
-                  style={styles.startRunGradient}
-                >
+              <TouchableOpacity style={styles.startRunButton} onPress={() => router.push('/timer')}>
+                <LinearGradient colors={['#FF6B35', '#E91E63']} style={styles.startRunGradient}>
                   <Ionicons name="play" size={20} color="#fff" />
                   <Text style={styles.startRunText}>Start a Run</Text>
                 </LinearGradient>
@@ -228,16 +289,10 @@ export default function MyRunsScreen() {
             </View>
           }
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor="#FF6B35"
-            />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" />
           }
           ListHeaderComponent={
-            runs.length > 0 ? (
-              <Text style={styles.runHistoryTitle}>Run History</Text>
-            ) : null
+            runs.length > 0 ? <Text style={styles.runHistoryTitle}>Run History</Text> : null
           }
         />
       )}
@@ -279,10 +334,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   personalBestsTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 16,
+    marginBottom: 14,
     textAlign: 'center',
   },
   bestsGrid: {
@@ -294,11 +349,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   bestLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#888',
+    fontWeight: '600',
   },
   bestValue: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   loadingContainer: {
@@ -319,20 +375,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   runItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1a1a1a',
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    padding: 14,
+    marginBottom: 10,
   },
   runTypeIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -340,32 +396,81 @@ const styles = StyleSheet.create({
   runDetails: {
     flex: 1,
   },
-  runType: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+  runTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginBottom: 2,
   },
+  runType: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  pbTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,215,0,0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    gap: 3,
+  },
+  pbTagText: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#FFD700',
+  },
+  manualTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(76,175,80,0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    gap: 3,
+  },
+  manualTagText: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+  },
   carInfo: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#aaa',
     marginBottom: 4,
   },
-  runDate: {
-    fontSize: 11,
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flexWrap: 'wrap',
+  },
+  metaText: {
+    fontSize: 10,
     color: '#666',
   },
-  runTimeContainer: {
+  metaDot: {
+    fontSize: 10,
+    color: '#666',
+    marginHorizontal: 2,
+  },
+  runRight: {
     alignItems: 'center',
+    marginLeft: 4,
   },
   runTime: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
   },
   runTimeUnit: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#888',
-    marginTop: -4,
+    marginTop: -3,
+  },
+  shareBtn: {
+    marginTop: 6,
+    padding: 4,
   },
   emptyContainer: {
     alignItems: 'center',

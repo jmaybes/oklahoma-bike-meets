@@ -240,9 +240,12 @@ class PerformanceRunCreate(BaseModel):
     zeroToSixty: Optional[float] = None
     zeroToHundred: Optional[float] = None
     quarterMile: Optional[float] = None
+    quarterMileSpeed: Optional[float] = None  # Trap speed at end of 1/4 mile
+    topSpeed: Optional[float] = None
     location: str = ""
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    isManualEntry: bool = False
 
 
 class PerformanceRunUpdate(BaseModel):
@@ -250,8 +253,11 @@ class PerformanceRunUpdate(BaseModel):
     zeroToSixty: Optional[float] = None
     zeroToHundred: Optional[float] = None
     quarterMile: Optional[float] = None
+    quarterMileSpeed: Optional[float] = None
+    topSpeed: Optional[float] = None
     location: Optional[str] = None
     userId: Optional[str] = None
+    isManualEntry: Optional[bool] = None
 
 
 # ==================== OCR Models ====================
