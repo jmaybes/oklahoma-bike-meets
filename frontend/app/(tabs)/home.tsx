@@ -622,6 +622,13 @@ export default function HomeScreen() {
               <Ionicons name="car-sport" size={20} color="#FF6B35" />
               <Text style={styles.heroStatLabel}>& Clubs</Text>
             </View>
+            <View style={styles.heroStatDivider} />
+            <View style={styles.heroStatItem}>
+              <Text style={styles.heroStatNumber}>
+                {`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`}
+              </Text>
+              <Text style={styles.heroStatLabel}>Today</Text>
+            </View>
           </View>
         </Animated.View>
       </View>
@@ -752,17 +759,11 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Results count + today's date */}
+      {/* Results count */}
       <View style={styles.resultsRow}>
         <Text style={styles.resultsText}>
           {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''} found
         </Text>
-        <View style={styles.dateContainer}>
-          <Ionicons name="calendar-outline" size={14} color="#FF6B35" />
-          <Text style={styles.resultsDate}>
-            {`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`}
-          </Text>
-        </View>
       </View>
     </View>
   ), [events, filteredEvents, selectedType, freeOnly, sortBy, showSortMenu, searchQuery, userLocation, insets.top, heroImageLoaded, heroImageStyle, heroOverlayStyle, heroContentStyle]);
