@@ -605,7 +605,18 @@ export default function HomeScreen() {
             <Ionicons name="flame" size={14} color="#FF6B35" />
             <Text style={styles.heroBadgeText}>OKC's #1 Car Community</Text>
           </View>
-          <Text style={styles.heroTitle}>Oklahoma{'\n'}Car Events</Text>
+          <View style={styles.heroTitleRow}>
+            <Text style={styles.heroTitle}>Oklahoma{'\n'}Car Events</Text>
+            <TouchableOpacity
+              style={styles.facebookButton}
+              onPress={() => {
+                // Facebook link placeholder
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="logo-facebook" size={28} color="#1877F2" />
+            </TouchableOpacity>
+          </View>
           <Text style={styles.heroSubtitle}>Discover meets, shows & cruises near you</Text>
           <View style={styles.heroStats}>
             <View style={styles.heroStatItem}>
@@ -627,7 +638,9 @@ export default function HomeScreen() {
               <Text style={styles.heroStatNumber}>
                 {`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`}
               </Text>
-              <Text style={styles.heroStatLabel}>Today</Text>
+              <Text style={styles.heroStatLabel}>
+                {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()]}
+              </Text>
             </View>
           </View>
         </Animated.View>
@@ -907,6 +920,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     lineHeight: 42,
     letterSpacing: -0.5,
+  },
+  heroTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  facebookButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 4,
   },
   heroSubtitle: {
     fontSize: 15,
