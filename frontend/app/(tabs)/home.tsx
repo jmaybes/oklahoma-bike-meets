@@ -1069,7 +1069,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 4,
-    marginRight: '10%',
+    marginRight: '7%',
   },
   facebookIcon: {
     width: 44,
