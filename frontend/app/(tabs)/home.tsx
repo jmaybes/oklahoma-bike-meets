@@ -194,13 +194,35 @@ export default function HomeScreen() {
   const filterEvents = () => {
     let filtered = events;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
     filtered = filtered.filter((event) => {
       if (!event.date) return true;
       try {
+        // Combine date + time so events stay visible until after their scheduled time
         const eventDate = new Date(event.date);
-        return eventDate >= today;
+        if (event.time) {
+          // Parse time like "7:00 PM", "19:00", etc.
+          const timeParts = event.time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+          if (timeParts) {
+            let hours = parseInt(timeParts[1]);
+            const minutes = parseInt(timeParts[2]);
+            const ampm = timeParts[3];
+            if (ampm) {
+              if (ampm.toUpperCase() === 'PM' && hours !== 12) hours += 12;
+              if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+            }
+            eventDate.setHours(hours, minutes, 0, 0);
+          } else {
+            // If time can't be parsed, set to end of day
+            eventDate.setHours(23, 59, 59, 0);
+          }
+        } else {
+          // No time specified — keep visible until end of day
+          eventDate.setHours(23, 59, 59, 0);
+        }
+        // Add 2 hour grace period after event time
+        eventDate.setTime(eventDate.getTime() + 2 * 60 * 60 * 1000);
+        return eventDate >= now;
       } catch {
         return true;
       }

@@ -64,17 +64,35 @@ export default function PastEventsScreen() {
   const fetchEvents = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/events`);
-      const allEvents = response.data.events || [];
+      const allEvents = response.data || [];
       
-      // Filter for past events only
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // Filter for past events — use event time, not just date
+      const now = new Date();
       
       const pastEvents = allEvents.filter((event: Event) => {
         if (!event.date) return false;
         try {
           const eventDate = new Date(event.date);
-          return eventDate < today;
+          if (event.time) {
+            const timeParts = event.time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+            if (timeParts) {
+              let hours = parseInt(timeParts[1]);
+              const minutes = parseInt(timeParts[2]);
+              const ampm = timeParts[3];
+              if (ampm) {
+                if (ampm.toUpperCase() === 'PM' && hours !== 12) hours += 12;
+                if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+              }
+              eventDate.setHours(hours, minutes, 0, 0);
+            } else {
+              eventDate.setHours(23, 59, 59, 0);
+            }
+          } else {
+            eventDate.setHours(23, 59, 59, 0);
+          }
+          // Add 2 hour grace period
+          eventDate.setTime(eventDate.getTime() + 2 * 60 * 60 * 1000);
+          return eventDate < now;
         } catch {
           return false;
         }
