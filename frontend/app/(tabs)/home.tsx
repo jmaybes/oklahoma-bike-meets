@@ -438,6 +438,79 @@ export default function HomeScreen() {
     }
   }).current;
 
+  // ===== DROPPING TEXT (Cycling Words) COMPONENT =====
+  const DroppingText = () => {
+    const words = ['Meets', 'Shows', 'Cruises', 'Races', '& MORE!'];
+    const [activeIndex, setActiveIndex] = useState(0);
+    const opacity = useSharedValue(0);
+    const translateY = useSharedValue(-20);
+    const rotate = useSharedValue(-15);
+    const scale = useSharedValue(0.8);
+
+    useEffect(() => {
+      const animate = () => {
+        // Slide in
+        opacity.value = withTiming(1, { duration: 200 });
+        translateY.value = withTiming(0, { duration: 250 });
+        rotate.value = withTiming(0, { duration: 250 });
+        scale.value = withTiming(1, { duration: 250 });
+
+        // Hold, then slide out
+        setTimeout(() => {
+          opacity.value = withTiming(0, { duration: 300 });
+          translateY.value = withTiming(40, { duration: 300 });
+          scale.value = withTiming(0.5, { duration: 300 });
+        }, 1200);
+      };
+
+      animate();
+      const interval = setInterval(() => {
+        setActiveIndex(prev => (prev + 1) % words.length);
+      }, 1600);
+
+      return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+      // Reset to entry position then animate in
+      opacity.value = 0;
+      translateY.value = -20;
+      rotate.value = -15;
+      scale.value = 0.8;
+
+      opacity.value = withTiming(1, { duration: 200 });
+      translateY.value = withTiming(0, { duration: 250 });
+      rotate.value = withTiming(0, { duration: 250 });
+      scale.value = withTiming(1, { duration: 250 });
+
+      // Hold then exit
+      const exitTimer = setTimeout(() => {
+        opacity.value = withTiming(0, { duration: 300 });
+        translateY.value = withTiming(40, { duration: 300 });
+        scale.value = withTiming(0.5, { duration: 300 });
+      }, 1200);
+
+      return () => clearTimeout(exitTimer);
+    }, [activeIndex]);
+
+    const animStyle = useAnimatedStyle(() => ({
+      opacity: opacity.value,
+      transform: [
+        { translateY: translateY.value },
+        { rotate: `${rotate.value}deg` },
+        { scale: scale.value },
+      ],
+    }));
+
+    return (
+      <View style={styles.droppingContainer}>
+        <Animated.Text style={[styles.droppingWord, animStyle]}>
+          {words[activeIndex]}
+        </Animated.Text>
+      </View>
+    );
+  };
+
   // ===== ANIMATED COUNTER COMPONENT =====
   const AnimatedCounter = ({ target, duration = 2000 }: { target: number; duration?: number }) => {
     const [display, setDisplay] = useState(0);
@@ -674,7 +747,10 @@ export default function HomeScreen() {
             <Text style={styles.heroBadgeText}>OKC's #1 Car Community</Text>
           </View>
           <View style={styles.heroTitleRow}>
-            <Text style={styles.heroTitle}>Oklahoma{'\n'}Car Events</Text>
+            <View>
+              <Text style={styles.heroTitle}>Oklahoma Car</Text>
+              <DroppingText />
+            </View>
             <TouchableOpacity
               style={styles.facebookButton}
               onPress={() => {
@@ -993,6 +1069,17 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#fff',
     lineHeight: 42,
+    letterSpacing: -0.5,
+  },
+  droppingContainer: {
+    height: 46,
+    overflow: 'hidden',
+    justifyContent: 'center',
+  },
+  droppingWord: {
+    fontSize: 38,
+    fontWeight: '700',
+    color: '#FF6B35',
     letterSpacing: -0.5,
   },
   heroTitleRow: {
