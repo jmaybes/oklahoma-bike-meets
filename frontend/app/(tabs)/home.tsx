@@ -1015,7 +1015,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: 'rgba(255,255,255,0.8)',
     letterSpacing: 0.3,
-    width: 500,
+    width: 600,
   },
   heroSubtitleContainer: {
     overflow: 'hidden',
