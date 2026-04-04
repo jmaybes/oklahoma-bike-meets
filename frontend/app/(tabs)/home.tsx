@@ -23,6 +23,7 @@ import Animated, {
   useAnimatedScrollHandler,
   withSpring,
   withTiming,
+  withRepeat,
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
@@ -425,6 +426,32 @@ export default function HomeScreen() {
     }
   }).current;
 
+  // ===== MARQUEE SUBTITLE COMPONENT =====
+  const MarqueeSubtitle = () => {
+    const translateX = useSharedValue(0);
+    const SCREEN_WIDTH = Dimensions.get('window').width;
+    const TEXT_WIDTH = SCREEN_WIDTH * 1.5;
+
+    useEffect(() => {
+      translateX.value = 0;
+      translateX.value = withRepeat(
+        withTiming(-TEXT_WIDTH + SCREEN_WIDTH * 0.6, { duration: 8000 }),
+        -1,
+        true
+      );
+    }, []);
+
+    const animStyle = useAnimatedStyle(() => ({
+      transform: [{ translateX: translateX.value }],
+    }));
+
+    return (
+      <Animated.Text style={[styles.heroSubtitle, animStyle]} numberOfLines={1}>
+        Discover meets, shows, cruises, & more near you
+      </Animated.Text>
+    );
+  };
+
   // ===== EVENT CARD COMPONENT (GSAP-style scroll animation) =====
   const AnimatedEventCard = ({ item, index, isVisible }: { item: Event; index: number; isVisible: boolean }) => {
     const pressScale = useSharedValue(1);
@@ -621,7 +648,9 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
           </View>
-          <Text style={styles.heroSubtitle}>Discover meets, shows & cruises near you</Text>
+          <View style={styles.heroSubtitleContainer}>
+            <MarqueeSubtitle />
+          </View>
           <View style={styles.heroStats}>
             <View style={styles.heroStatItem}>
               <Text style={styles.heroStatNumber}>{events.length}</Text>
@@ -944,8 +973,13 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     fontSize: 15,
     color: 'rgba(255,255,255,0.8)',
-    marginTop: 8,
     letterSpacing: 0.3,
+    width: 500,
+  },
+  heroSubtitleContainer: {
+    overflow: 'hidden',
+    height: 20,
+    marginTop: 8,
   },
   heroStats: {
     flexDirection: 'row',
