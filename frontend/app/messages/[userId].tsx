@@ -10,6 +10,8 @@ import {
   Platform,
   ActivityIndicator,
   Keyboard,
+  Linking,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,10 +22,8 @@ import axios from 'axios';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
-// Get WebSocket URL from API URL
 const getWebSocketUrl = () => {
   if (!API_URL) return '';
-  // Replace http/https with ws/wss
   const wsUrl = API_URL.replace(/^http/, 'ws');
   return wsUrl;
 };
@@ -35,6 +35,8 @@ interface Message {
   content: string;
   createdAt: string;
   status?: 'sending' | 'sent' | 'delivered' | 'read';
+  isPopupInvite?: boolean;
+  locationShareId?: string | null;
 }
 
 interface Partner {
@@ -42,6 +44,14 @@ interface Partner {
   name: string;
   nickname?: string;
   email: string;
+}
+
+interface LocationShareData {
+  latitude: number;
+  longitude: number;
+  expired: boolean;
+  remainingSeconds?: number;
+  userName?: string;
 }
 
 export default function ChatScreen() {
@@ -56,7 +66,12 @@ export default function ChatScreen() {
   const [isPartnerTyping, setIsPartnerTyping] = useState(false);
   const [isPartnerOnline, setIsPartnerOnline] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
-  
+
+  // RSVP & location state caches
+  const [rsvpStatuses, setRsvpStatuses] = useState<Record<string, string>>({});
+  const [locationShares, setLocationShares] = useState<Record<string, LocationShareData>>({});
+  const [rsvpLoading, setRsvpLoading] = useState<Record<string, boolean>>({});
+
   const flatListRef = useRef<FlatList>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -66,7 +81,6 @@ export default function ChatScreen() {
   // Connect to WebSocket
   const connectWebSocket = useCallback(() => {
     if (!user?.id || wsRef.current?.readyState === WebSocket.OPEN) return;
-
     const wsUrl = `${getWebSocketUrl()}/ws/messages/${user.id}`;
     console.log('Connecting to WebSocket:', wsUrl);
     setConnectionStatus('connecting');
@@ -77,8 +91,6 @@ export default function ChatScreen() {
       ws.onopen = () => {
         console.log('WebSocket connected');
         setConnectionStatus('connected');
-        
-        // Start ping interval to keep connection alive
         pingIntervalRef.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: 'ping' }));
@@ -89,67 +101,44 @@ export default function ChatScreen() {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log('WebSocket message received:', data.type);
-
           switch (data.type) {
             case 'new_message':
-              // Only add messages from the current chat partner
-              if (data.message && 
+              if (data.message &&
                   (data.message.senderId === userId || data.message.receiverId === userId)) {
                 setMessages(prev => {
-                  // Check if message already exists to prevent duplicates
                   const exists = prev.some(m => m.id === data.message.id);
                   if (exists) return prev;
                   return [...prev, data.message];
                 });
-                // Scroll to bottom on new message
                 setTimeout(() => {
                   flatListRef.current?.scrollToEnd({ animated: true });
                 }, 100);
               }
               break;
-
             case 'message_sent':
-              // Update message status when confirmed sent
               if (data.message) {
-                setMessages(prev => 
-                  prev.map(m => 
+                setMessages(prev =>
+                  prev.map(m =>
                     m.id === data.message.id ? { ...m, status: 'sent' } : m
                   )
                 );
               }
               break;
-
             case 'typing':
-              // Show typing indicator if it's from our chat partner
               if (data.senderId === userId) {
                 setIsPartnerTyping(true);
-                // Clear typing indicator after 3 seconds
-                if (typingTimeoutRef.current) {
-                  clearTimeout(typingTimeoutRef.current);
-                }
-                typingTimeoutRef.current = setTimeout(() => {
-                  setIsPartnerTyping(false);
-                }, 3000);
+                if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                typingTimeoutRef.current = setTimeout(() => setIsPartnerTyping(false), 3000);
               }
               break;
-
             case 'user_online':
-              if (data.userId === userId) {
-                setIsPartnerOnline(true);
-              }
+              if (data.userId === userId) setIsPartnerOnline(true);
               break;
-
             case 'user_offline':
-              if (data.userId === userId) {
-                setIsPartnerOnline(false);
-              }
+              if (data.userId === userId) setIsPartnerOnline(false);
               break;
-
             case 'pong':
-              // Heartbeat response received
               break;
-
             case 'error':
               console.error('WebSocket error:', data.error);
               break;
@@ -159,25 +148,13 @@ export default function ChatScreen() {
         }
       };
 
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setConnectionStatus('disconnected');
-      };
+      ws.onerror = () => setConnectionStatus('disconnected');
 
       ws.onclose = () => {
-        console.log('WebSocket closed');
         setConnectionStatus('disconnected');
-        
-        // Clear ping interval
-        if (pingIntervalRef.current) {
-          clearInterval(pingIntervalRef.current);
-        }
-
-        // Attempt to reconnect after 3 seconds
+        if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
         reconnectTimeoutRef.current = setTimeout(() => {
-          if (user?.id) {
-            connectWebSocket();
-          }
+          if (user?.id) connectWebSocket();
         }, 3000);
       };
 
@@ -188,68 +165,35 @@ export default function ChatScreen() {
     }
   }, [user?.id, userId]);
 
-  // Disconnect WebSocket
   const disconnectWebSocket = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-    }
-    if (pingIntervalRef.current) {
-      clearInterval(pingIntervalRef.current);
-    }
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
+    if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
+    if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+    if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
   }, []);
 
-  // Send message via WebSocket
   const sendMessageViaWS = useCallback((content: string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN && user?.id && userId) {
       const tempId = `temp-${Date.now()}`;
-      const messageData = {
-        type: 'new_message',
-        recipientId: userId,
-        content: content,
-        tempId: tempId,
-      };
-
-      // Optimistically add message to UI
-      const optimisticMessage: Message = {
-        id: tempId,
-        senderId: user.id,
-        receiverId: userId,
-        content: content,
-        createdAt: new Date().toISOString(),
-        status: 'sending',
-      };
-      
-      setMessages(prev => [...prev, optimisticMessage]);
-      wsRef.current.send(JSON.stringify(messageData));
-      
-      // Scroll to bottom
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-      
+      wsRef.current.send(JSON.stringify({
+        type: 'new_message', recipientId: userId, content, tempId,
+      }));
+      setMessages(prev => [...prev, {
+        id: tempId, senderId: user.id, receiverId: userId,
+        content, createdAt: new Date().toISOString(), status: 'sending',
+      }]);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
       return true;
     }
     return false;
   }, [user?.id, userId]);
 
-  // Send typing indicator
   const sendTypingIndicator = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN && userId) {
-      wsRef.current.send(JSON.stringify({
-        type: 'typing',
-        recipientId: userId,
-      }));
+      wsRef.current.send(JSON.stringify({ type: 'typing', recipientId: userId }));
     }
   }, [userId]);
 
-  // Check if partner is online
   const checkPartnerOnline = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/messages/online/${userId}`);
@@ -259,17 +203,13 @@ export default function ChatScreen() {
     }
   };
 
-  // Connect WebSocket when screen is focused
   useFocusEffect(
     useCallback(() => {
       if (isAuthenticated && user?.id) {
         connectWebSocket();
         checkPartnerOnline();
       }
-
-      return () => {
-        disconnectWebSocket();
-      };
+      return () => disconnectWebSocket();
     }, [isAuthenticated, user?.id, connectWebSocket, disconnectWebSocket])
   );
 
@@ -281,6 +221,45 @@ export default function ChatScreen() {
       setLoading(false);
     }
   }, [isAuthenticated, user, userId]);
+
+  // After messages load, fetch location data and RSVPs for popup invites
+  useEffect(() => {
+    if (messages.length > 0 && user) {
+      const popupMessages = messages.filter(m => m.isPopupInvite);
+      popupMessages.forEach(msg => {
+        // Fetch location share data if not cached
+        if (msg.locationShareId && !locationShares[msg.locationShareId]) {
+          fetchLocationShare(msg.locationShareId);
+        }
+        // Fetch RSVP status if not cached
+        if (!rsvpStatuses[msg.id]) {
+          fetchRsvpStatus(msg.id);
+        }
+      });
+    }
+  }, [messages, user]);
+
+  const fetchLocationShare = async (shareId: string) => {
+    try {
+      const response = await axios.get(`${API_URL}/api/meetup/location-share/${shareId}`);
+      setLocationShares(prev => ({ ...prev, [shareId]: response.data }));
+    } catch (error) {
+      console.error('Error fetching location share:', error);
+    }
+  };
+
+  const fetchRsvpStatus = async (messageId: string) => {
+    if (!user) return;
+    try {
+      const response = await axios.get(`${API_URL}/api/meetup/popup-rsvp/${messageId}`);
+      const myRsvp = response.data.rsvps?.find((r: any) => r.userId === user.id);
+      if (myRsvp) {
+        setRsvpStatuses(prev => ({ ...prev, [messageId]: myRsvp.status }));
+      }
+    } catch (error) {
+      console.error('Error fetching RSVP status:', error);
+    }
+  };
 
   const fetchPartnerInfo = async () => {
     try {
@@ -305,33 +284,20 @@ export default function ChatScreen() {
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !user || !userId) return;
-
     const content = newMessage.trim();
     setNewMessage('');
     Keyboard.dismiss();
-
-    // Try to send via WebSocket first
     const sentViaWS = sendMessageViaWS(content);
-
     if (!sentViaWS) {
-      // Fallback to HTTP if WebSocket is not connected
       setSending(true);
       try {
-        const messageData = {
-          senderId: user.id,
-          receiverId: userId,
-          content: content,
-        };
-
-        const response = await axios.post(`${API_URL}/api/messages`, messageData);
+        const response = await axios.post(`${API_URL}/api/messages`, {
+          senderId: user.id, receiverId: userId, content,
+        });
         setMessages(prev => [...prev, response.data]);
-        
-        setTimeout(() => {
-          flatListRef.current?.scrollToEnd({ animated: true });
-        }, 100);
+        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
       } catch (error) {
         console.error('Error sending message:', error);
-        // Show the message back in input if failed
         setNewMessage(content);
       } finally {
         setSending(false);
@@ -341,10 +307,49 @@ export default function ChatScreen() {
 
   const handleTextChange = (text: string) => {
     setNewMessage(text);
-    // Send typing indicator (debounced)
     sendTypingIndicator();
   };
 
+  // ====== Location & RSVP Handlers ======
+  const openLocationInMaps = (lat: number, lon: number) => {
+    const label = 'Pop-Up Event Location';
+    const url = Platform.select({
+      ios: `maps://app?daddr=${lat},${lon}&dirflg=d`,
+      android: `google.navigation:q=${lat},${lon}`,
+      default: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`,
+    });
+    if (url) {
+      Linking.canOpenURL(url).then(supported => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          // Fallback to web Google Maps
+          Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`);
+        }
+      });
+    }
+  };
+
+  const handleRsvp = async (messageId: string, status: 'attending' | 'declined') => {
+    if (!user) return;
+    setRsvpLoading(prev => ({ ...prev, [messageId]: true }));
+    try {
+      await axios.post(`${API_URL}/api/meetup/popup-rsvp`, {
+        messageId,
+        userId: user.id,
+        userName: user.nickname || user.name,
+        status,
+      });
+      setRsvpStatuses(prev => ({ ...prev, [messageId]: status }));
+    } catch (error) {
+      console.error('Error sending RSVP:', error);
+      Alert.alert('Error', 'Could not send your RSVP. Please try again.');
+    } finally {
+      setRsvpLoading(prev => ({ ...prev, [messageId]: false }));
+    }
+  };
+
+  // ====== Formatters ======
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -355,24 +360,156 @@ export default function ChatScreen() {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return 'Today';
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
-    } else {
-      return date.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        month: 'short', 
-        day: 'numeric' 
-      });
-    }
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   };
 
+  // ====== Render Pop-Up Invite Card ======
+  const renderPopupInviteCard = (item: Message) => {
+    const isMyMessage = item.senderId === user?.id;
+    const currentRsvp = rsvpStatuses[item.id];
+    const isRsvpLoading = rsvpLoading[item.id];
+    const locShare = item.locationShareId ? locationShares[item.locationShareId] : null;
+    const hasLocation = locShare && !locShare.expired && locShare.latitude;
+    const locationExpired = locShare?.expired;
+
+    return (
+      <View style={[styles.messageContainer, isMyMessage && styles.myMessageContainer]}>
+        <View style={styles.popupInviteCard}>
+          {/* Header Gradient */}
+          <LinearGradient
+            colors={['#FF6B35', '#E91E63']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.popupCardHeader}
+          >
+            <Ionicons name="flash" size={18} color="#fff" />
+            <Text style={styles.popupCardHeaderText}>Pop-Up Event Invite</Text>
+          </LinearGradient>
+
+          {/* Message Body */}
+          <View style={styles.popupCardBody}>
+            <Text style={styles.popupCardContent}>{item.content}</Text>
+
+            {/* Location Button */}
+            {item.locationShareId && (
+              <View style={styles.locationSection}>
+                {hasLocation ? (
+                  <TouchableOpacity
+                    style={styles.locationButton}
+                    onPress={() => openLocationInMaps(locShare.latitude, locShare.longitude)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.locationButtonIcon}>
+                      <Ionicons name="navigate" size={20} color="#fff" />
+                    </View>
+                    <View style={styles.locationButtonInfo}>
+                      <Text style={styles.locationButtonTitle}>Get Directions</Text>
+                      <Text style={styles.locationButtonSub}>
+                        Tap to open in Maps • {Math.round((locShare.remainingSeconds || 0) / 60)} min left
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#4CAF50" />
+                  </TouchableOpacity>
+                ) : locationExpired ? (
+                  <View style={styles.locationExpired}>
+                    <Ionicons name="time-outline" size={18} color="#888" />
+                    <Text style={styles.locationExpiredText}>Location share has expired</Text>
+                  </View>
+                ) : (
+                  <View style={styles.locationLoading}>
+                    <ActivityIndicator size="small" color="#FF6B35" />
+                    <Text style={styles.locationLoadingText}>Loading location...</Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* RSVP Section - only for received invites */}
+            {!isMyMessage && (
+              <View style={styles.rsvpSection}>
+                <Text style={styles.rsvpLabel}>Will you be there?</Text>
+                {currentRsvp ? (
+                  <View style={styles.rsvpStatus}>
+                    <View style={[
+                      styles.rsvpStatusBadge,
+                      currentRsvp === 'attending' ? styles.rsvpAttendingBadge : styles.rsvpDeclinedBadge,
+                    ]}>
+                      <Ionicons
+                        name={currentRsvp === 'attending' ? 'checkmark-circle' : 'close-circle'}
+                        size={18}
+                        color="#fff"
+                      />
+                      <Text style={styles.rsvpStatusText}>
+                        {currentRsvp === 'attending' ? "I'll be there!" : "Can't make it"}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.rsvpChangeButton}
+                      onPress={() => handleRsvp(item.id, currentRsvp === 'attending' ? 'declined' : 'attending')}
+                      disabled={isRsvpLoading}
+                    >
+                      <Text style={styles.rsvpChangeText}>Change RSVP</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={styles.rsvpButtons}>
+                    <TouchableOpacity
+                      style={[styles.rsvpButton, styles.rsvpAttendButton]}
+                      onPress={() => handleRsvp(item.id, 'attending')}
+                      disabled={isRsvpLoading}
+                    >
+                      {isRsvpLoading ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <>
+                          <Ionicons name="checkmark-circle" size={18} color="#fff" />
+                          <Text style={styles.rsvpButtonText}>I'll be there!</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.rsvpButton, styles.rsvpDeclineButton]}
+                      onPress={() => handleRsvp(item.id, 'declined')}
+                      disabled={isRsvpLoading}
+                    >
+                      {isRsvpLoading ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <>
+                          <Ionicons name="close-circle" size={18} color="#fff" />
+                          <Text style={styles.rsvpButtonText}>Can't make it</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* If sender, show that this is the invite they sent */}
+            {isMyMessage && (
+              <View style={styles.sentBadge}>
+                <Ionicons name="paper-plane" size={14} color="#888" />
+                <Text style={styles.sentBadgeText}>Invite sent</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Footer with time */}
+          <View style={styles.popupCardFooter}>
+            <Text style={styles.popupCardTime}>{formatTime(item.createdAt)}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  // ====== Render Message ======
   const renderMessage = ({ item, index }: { item: Message; index: number }) => {
     const isMyMessage = item.senderId === user?.id;
-    
-    // Check if we should show date header
+
     let showDateHeader = false;
     if (index === 0) {
       showDateHeader = true;
@@ -389,26 +526,31 @@ export default function ChatScreen() {
             <Text style={styles.dateHeaderText}>{formatDateHeader(item.createdAt)}</Text>
           </View>
         )}
-        <View style={[styles.messageContainer, isMyMessage && styles.myMessageContainer]}>
-          <View style={[styles.messageBubble, isMyMessage ? styles.myMessageBubble : styles.theirMessageBubble]}>
-            <Text style={[styles.messageText, isMyMessage && styles.myMessageText]}>
-              {item.content}
-            </Text>
-            <View style={styles.messageFooter}>
-              <Text style={[styles.messageTime, isMyMessage && styles.myMessageTime]}>
-                {formatTime(item.createdAt)}
+
+        {item.isPopupInvite ? (
+          renderPopupInviteCard(item)
+        ) : (
+          <View style={[styles.messageContainer, isMyMessage && styles.myMessageContainer]}>
+            <View style={[styles.messageBubble, isMyMessage ? styles.myMessageBubble : styles.theirMessageBubble]}>
+              <Text style={[styles.messageText, isMyMessage && styles.myMessageText]}>
+                {item.content}
               </Text>
-              {isMyMessage && item.status && (
-                <Ionicons 
-                  name={item.status === 'sending' ? 'time-outline' : 'checkmark-done'} 
-                  size={14} 
-                  color={item.status === 'sending' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.7)'} 
-                  style={styles.statusIcon}
-                />
-              )}
+              <View style={styles.messageFooter}>
+                <Text style={[styles.messageTime, isMyMessage && styles.myMessageTime]}>
+                  {formatTime(item.createdAt)}
+                </Text>
+                {isMyMessage && item.status && (
+                  <Ionicons
+                    name={item.status === 'sending' ? 'time-outline' : 'checkmark-done'}
+                    size={14}
+                    color={item.status === 'sending' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.7)'}
+                    style={styles.statusIcon}
+                  />
+                )}
+              </View>
             </View>
           </View>
-        </View>
+        )}
       </>
     );
   };
@@ -495,7 +637,6 @@ export default function ChatScreen() {
           />
         )}
 
-        {/* Typing indicator */}
         {isPartnerTyping && (
           <View style={styles.typingBubble}>
             <View style={styles.typingDots}>
@@ -675,6 +816,189 @@ const styles = StyleSheet.create({
   statusIcon: {
     marginLeft: 4,
   },
+
+  // Pop-Up Invite Card
+  popupInviteCard: {
+    width: '90%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#1a1a1a',
+    marginVertical: 4,
+  },
+  popupCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  popupCardHeaderText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  popupCardBody: {
+    padding: 14,
+  },
+  popupCardContent: {
+    color: '#ddd',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+
+  // Location Section
+  locationSection: {
+    marginBottom: 12,
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(76, 175, 80, 0.12)',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(76, 175, 80, 0.3)',
+  },
+  locationButtonIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  locationButtonInfo: {
+    flex: 1,
+  },
+  locationButtonTitle: {
+    color: '#4CAF50',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  locationButtonSub: {
+    color: '#7CB342',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  locationExpired: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#222',
+    borderRadius: 10,
+    padding: 10,
+  },
+  locationExpiredText: {
+    color: '#888',
+    fontSize: 13,
+  },
+  locationLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 10,
+  },
+  locationLoadingText: {
+    color: '#888',
+    fontSize: 13,
+  },
+
+  // RSVP Section
+  rsvpSection: {
+    borderTopWidth: 1,
+    borderTopColor: '#2a2a2a',
+    paddingTop: 12,
+  },
+  rsvpLabel: {
+    color: '#aaa',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 10,
+  },
+  rsvpButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  rsvpButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 6,
+    minHeight: 48,
+  },
+  rsvpAttendButton: {
+    backgroundColor: '#4CAF50',
+  },
+  rsvpDeclineButton: {
+    backgroundColor: '#666',
+  },
+  rsvpButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  rsvpStatus: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  rsvpStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+  },
+  rsvpAttendingBadge: {
+    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+  },
+  rsvpDeclinedBadge: {
+    backgroundColor: 'rgba(244, 67, 54, 0.15)',
+  },
+  rsvpStatusText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  rsvpChangeButton: {
+    paddingVertical: 6,
+  },
+  rsvpChangeText: {
+    color: '#FF6B35',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  sentBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  sentBadgeText: {
+    color: '#888',
+    fontSize: 12,
+  },
+
+  // Card footer
+  popupCardFooter: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: '#151515',
+    alignItems: 'flex-end',
+  },
+  popupCardTime: {
+    color: '#666',
+    fontSize: 11,
+  },
+
+  // Typing
   typingBubble: {
     paddingHorizontal: 16,
     paddingBottom: 8,
@@ -695,15 +1019,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#666',
   },
-  typingDot1: {
-    opacity: 0.4,
-  },
-  typingDot2: {
-    opacity: 0.6,
-  },
-  typingDot3: {
-    opacity: 0.8,
-  },
+  typingDot1: { opacity: 0.4 },
+  typingDot2: { opacity: 0.6 },
+  typingDot3: { opacity: 0.8 },
+
+  // Empty & Auth
   emptyChat: {
     flex: 1,
     alignItems: 'center',

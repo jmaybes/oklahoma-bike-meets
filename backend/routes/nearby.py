@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from bson import ObjectId
 
 from database import db
-from models import LocationUpdate, MeetupInviteRequest, PopupInviteRequest
+from models import LocationUpdate, MeetupInviteRequest, PopupInviteRequest, PopupRsvpRequest
 from helpers import haversine_distance, send_push_notification
 
 router = APIRouter()
@@ -282,6 +282,82 @@ async def get_location_share(share_id: str):
         "durationMinutes": share.get("durationMinutes", 30),
         "remainingSeconds": int(remaining),
         "expiresAt": share["expiresAt"],
+    }
+
+
+# ==================== Pop-Up RSVP ====================
+
+@router.post("/meetup/popup-rsvp")
+async def rsvp_popup_invite(rsvp: PopupRsvpRequest):
+    """RSVP to a pop-up event invite. Status: 'attending' or 'declined'."""
+    if not ObjectId.is_valid(rsvp.messageId):
+        raise HTTPException(status_code=400, detail="Invalid message ID")
+    if rsvp.status not in ("attending", "declined"):
+        raise HTTPException(status_code=400, detail="Status must be 'attending' or 'declined'")
+
+    # Verify the message exists and is a popup invite
+    message = await db.messages.find_one({"_id": ObjectId(rsvp.messageId)})
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    if not message.get("isPopupInvite"):
+        raise HTTPException(status_code=400, detail="This message is not a pop-up invite")
+
+    # Upsert the RSVP (one per user per message)
+    await db.popup_rsvps.update_one(
+        {"messageId": rsvp.messageId, "userId": rsvp.userId},
+        {"$set": {
+            "messageId": rsvp.messageId,
+            "userId": rsvp.userId,
+            "userName": rsvp.userName,
+            "status": rsvp.status,
+            "updatedAt": datetime.utcnow().isoformat(),
+        }},
+        upsert=True,
+    )
+
+    # Notify the invite sender about the RSVP
+    sender_id = message.get("senderId")
+    if sender_id and sender_id != rsvp.userId:
+        sender = await db.users.find_one(
+            {"_id": ObjectId(sender_id)},
+            {"pushToken": 1, "notificationsEnabled": 1}
+        )
+        status_emoji = "✅" if rsvp.status == "attending" else "❌"
+        status_text = "will be there" if rsvp.status == "attending" else "can't make it"
+
+        if sender and sender.get("pushToken") and sender.get("notificationsEnabled", True):
+            try:
+                await send_push_notification(
+                    sender["pushToken"],
+                    f"{status_emoji} RSVP: {rsvp.userName}",
+                    f"{rsvp.userName} {status_text} for your pop-up event!",
+                    {"type": "popup_rsvp", "messageId": rsvp.messageId, "status": rsvp.status}
+                )
+            except Exception as e:
+                print(f"Failed to send RSVP notification: {e}")
+
+    return {"status": rsvp.status, "message": f"RSVP recorded as {rsvp.status}"}
+
+
+@router.get("/meetup/popup-rsvp/{message_id}")
+async def get_popup_rsvps(message_id: str):
+    """Get all RSVPs for a specific pop-up invite message."""
+    if not ObjectId.is_valid(message_id):
+        raise HTTPException(status_code=400, detail="Invalid message ID")
+
+    rsvps = await db.popup_rsvps.find(
+        {"messageId": message_id}
+    ).to_list(500)
+
+    return {
+        "rsvps": [{
+            "userId": r["userId"],
+            "userName": r.get("userName", ""),
+            "status": r["status"],
+            "updatedAt": r.get("updatedAt", ""),
+        } for r in rsvps],
+        "attending": sum(1 for r in rsvps if r["status"] == "attending"),
+        "declined": sum(1 for r in rsvps if r["status"] == "declined"),
     }
 
 

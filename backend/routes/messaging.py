@@ -104,14 +104,21 @@ async def get_message_thread(user_id: str, partner_id: str):
         {"$set": {"isRead": True}}
     )
 
-    return [{
-        "id": str(msg["_id"]),
-        "senderId": msg["senderId"],
-        "recipientId": msg["recipientId"],
-        "content": msg["content"],
-        "isRead": msg.get("isRead", False),
-        "createdAt": msg["createdAt"]
-    } for msg in messages]
+    result = []
+    for msg in messages:
+        m = {
+            "id": str(msg["_id"]),
+            "senderId": msg["senderId"],
+            "recipientId": msg["recipientId"],
+            "content": msg["content"],
+            "isRead": msg.get("isRead", False),
+            "createdAt": msg["createdAt"],
+        }
+        if msg.get("isPopupInvite"):
+            m["isPopupInvite"] = True
+            m["locationShareId"] = msg.get("locationShareId", None)
+        result.append(m)
+    return result
 
 
 # ==================== Online Status ====================

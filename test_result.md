@@ -1161,6 +1161,18 @@ frontend:
           agent: "testing"
           comment: "DELETE Account endpoint testing completed successfully with 100% pass rate (7/7 tests). ✅ All validation scenarios working: (1) Invalid user_id returns 400 'Invalid user ID', (2) Non-existent valid ObjectId returns 404 'User not found', (3) Wrong email for admin user returns 401 'Email does not match', (4) Empty fields return 400 validation error. ✅ Full deletion workflow verified: Created test user 'testdelete@test.com', confirmed username unavailable, successfully deleted account with comprehensive data cleanup (cars, rsvps, messages, favorites, feedback, performance_runs, routes, locations, notifications, event_photos, comments), verified username became available after deletion. ✅ GET /api/auth/check-username/{nickname} working properly before and after deletion. The endpoint provides secure account deletion with proper credential verification and complete data removal as specified."
 
+  - task: "Pop-Up Invite RSVP System"
+    implemented: true
+    working: true
+    file: "routes/nearby.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Pop-Up Invite RSVP System testing completed successfully with 100% pass rate (10/10 tests). ✅ Complete workflow verified: (1) Admin login working (admin@okcarevents.com/admin123), (2) POST /api/meetup/send-popup-invite creates popup invites with location sharing (30min duration, Oklahoma City coordinates), (3) GET /api/messages/thread/{user_id}/{partner_id} returns messages with isPopupInvite=true and locationShareId fields, (4) POST /api/meetup/popup-rsvp accepts 'attending' status and returns correct response, (5) GET /api/meetup/popup-rsvp/{message_id} shows attending=1/declined=0 with proper RSVP array, (6) RSVP status change to 'declined' working correctly, (7) Upsert behavior confirmed (attending=0/declined=1 for same user), (8) Validation working: 400 error for invalid status 'maybe', (9) Validation working: 400 error 'This message is not a pop-up invite' for regular messages. ✅ All endpoints functioning perfectly with proper error handling, data persistence, and business logic as specified in review request."
+
 agent_communication:
     - agent: "main"
       message: "DEPLOYMENT FIX: Fixed iOS EAS build failure caused by duplicate react-native-worklets. Changes: (1) Added postinstall script (scripts/fix-worklets-dedup.js) that deduplicates worklets after yarn install - copies reanimated's bundled 0.8.1 to top level if duplicates exist. (2) Added wildcard resolutions pattern. (3) Optimized backend queries: Fixed N+1 queries in nearby.py (batch fetch users), messaging.py (batch fetch conversation partners), and added projections to events.py and nearby.py unbounded queries. Please test: nearby users API, conversations API, events creation API, and all messaging endpoints to verify the optimizations didn't break anything. Admin credentials: admin@okcarevents.com / admin123. Backend URL: http://localhost:8001."
@@ -1184,6 +1196,8 @@ agent_communication:
       message: "Enhanced My Garage (User Cars) system testing completed successfully! ✅ All 5 requested enhanced endpoints working perfectly: (1) POST /api/user-cars with ALL new fields - performance specs (horsepower, torque, transmission, drivetrain), media (photos, videos), structured modifications with full object schema, social integration (Instagram, YouTube), privacy controls (isPublic). (2) PUT /api/user-cars/{car_id} with enhanced fields - successfully updated privacy, performance specs, modification notes. (3) GET /api/user-cars/public with owner info - includes ownerName/ownerNickname, respects privacy settings, supports make filtering. (4) POST /api/user-cars/{car_id}/like - increments likes count with user_id parameter. (5) GET /api/user-cars/{car_id} - returns all enhanced fields, increments views, includes owner info. Privacy controls work perfectly (public/private toggling), community features functional (likes/views), make filtering operational. All new field types properly validated and serialized."
     - agent: "testing"
       message: "Enhanced My Garage frontend testing completed successfully in mobile view (390x844)! ✅ Navigation to Garage/Profile Tab working at http://localhost:3000/(tabs)/profile. ✅ 'My Garage' header with 'Showcase your ride' subtitle visible. ✅ Tab bar shows correct 5 tabs (Events, Nearby, Clubs, Add, Garage) with NO Timer tab. ✅ Guest Mode view working with login/register buttons. ✅ Community Garages accessible at /garage with search functionality. ✅ All navigation elements working properly. Minor Issue: Beta Notice Modal has persistent display issues that require localStorage manipulation to bypass - this prevents smooth user experience on first app launch. The core My Garage functionality is fully implemented and working as specified, but the beta modal needs UX improvement for proper dismissal."
+    - agent: "testing"
+      message: "Pop-Up Invite RSVP System testing completed successfully with 100% pass rate (10/10 tests). ✅ Complete workflow verified: Admin login, popup invite creation with location sharing, message thread retrieval with popup flags, RSVP attending/declined functionality, upsert behavior confirmation, and comprehensive validation testing. All endpoints (POST /api/meetup/send-popup-invite, GET /api/messages/thread, POST /api/meetup/popup-rsvp, GET /api/meetup/popup-rsvp) working perfectly with proper error handling and business logic as specified in review request."
     - agent: "testing"
       message: "New feature testing completed for: ✅ Admin Feedback Management API - 3/4 endpoints working (GET admin feedback, status filtering, status updates). ❌ PUT /api/feedback/{id}/respond fails with 500 error due to invalid ObjectId validation in existing test data ('test123' not valid ObjectId). ✅ WebSocket Online Status API - Both endpoints working (GET /api/messages/online returns empty array, GET /api/messages/online/{user_id} returns false). ✅ Event Import API - Working (POST /api/admin/events/import returns stats: total=0, new=0, duplicates=0, errors=0). ✅ Events with Images - All 73 events have photos field populated with image URLs from Unsplash/Pexels. Root cause of feedback response failure is data validation issue in existing test data with non-ObjectId userId values."
     - agent: "testing"
@@ -1310,6 +1324,39 @@ agent_communication:
         - working: true
           agent: "testing"
           comment: "GET /api/meetup/location-share/{share_id} endpoint working perfectly. Successfully retrieves location share data with expired=false, latitude/longitude coordinates, remainingSeconds>0 (1799s tested), and proper expiry handling. Location sharing duration correctly set to 30 minutes with automatic expiry tracking. All required fields present in response structure."
+
+  - task: "Pop-Up Invite RSVP System"
+    implemented: true
+    working: true
+    file: "routes/nearby.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "POST /api/meetup/popup-rsvp - allows users to RSVP to a pop-up invite message with status 'attending' or 'declined'. Upserts (one RSVP per user per message). Notifies invite sender via push notification. GET /api/meetup/popup-rsvp/{message_id} - returns all RSVPs for a message with attending/declined counts. Message thread endpoint now returns isPopupInvite and locationShareId fields."
+        - working: true
+          agent: "testing"
+          comment: "Pop-Up Invite RSVP System testing completed successfully with 100% pass rate (10/10 tests). ✅ Complete workflow verified: (1) Admin login working (admin@okcarevents.com/admin123), (2) POST /api/meetup/send-popup-invite creates popup invites with location sharing (30min duration, Oklahoma City coordinates), (3) GET /api/messages/thread/{user_id}/{partner_id} returns messages with isPopupInvite=true and locationShareId fields, (4) POST /api/meetup/popup-rsvp accepts 'attending' status and returns correct response, (5) GET /api/meetup/popup-rsvp/{message_id} shows attending=1/declined=0 with proper RSVP array, (6) RSVP status change to 'declined' working correctly, (7) Upsert behavior confirmed (attending=0/declined=1 for same user), (8) Validation working: 400 error for invalid status 'maybe', (9) Validation working: 400 error 'This message is not a pop-up invite' for regular messages. ✅ All endpoints functioning perfectly with proper error handling, data persistence, and business logic as specified in review request."
+
+  - task: "Message Thread Returns Popup Invite Fields"
+    implemented: true
+    working: true
+    file: "routes/messaging.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated GET /api/messages/thread/{user_id}/{partner_id} to include isPopupInvite and locationShareId fields in the response when messages are pop-up invites."
+        - working: true
+          agent: "testing"
+          comment: "Message Thread Popup Invite Fields testing completed successfully. ✅ GET /api/messages/thread/{user_id}/{partner_id} correctly returns isPopupInvite=true and locationShareId fields for popup invite messages. ✅ Regular messages do not include these fields. ✅ Message thread retrieval working correctly with proper field inclusion based on message type. All popup invite fields properly included in message thread responses as specified in review request."
+          agent: "main"
+          comment: "GET /api/messages/thread/{user_id}/{partner_id} now returns isPopupInvite (bool) and locationShareId (string) for popup invite messages, so the frontend chat screen can render them as rich invite cards."
+
 
 agent_communication:
     - agent: "main"

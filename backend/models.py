@@ -225,6 +225,13 @@ class PopupInviteRequest(BaseModel):
     locationDuration: int = 30  # minutes, max 60
 
 
+class PopupRsvpRequest(BaseModel):
+    messageId: str
+    userId: str
+    userName: str
+    status: str  # "attending" or "declined"
+
+
 # ==================== Performance Models ====================
 
 class PerformanceRunCreate(BaseModel):
