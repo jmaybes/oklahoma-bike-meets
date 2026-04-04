@@ -692,9 +692,12 @@ export default function HomeScreen() {
         <Text style={styles.resultsText}>
           {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''} found
         </Text>
-        <Text style={styles.resultsDate}>
-          {`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`}
-        </Text>
+        <View style={styles.dateContainer}>
+          <Ionicons name="calendar-outline" size={14} color="#FF6B35" />
+          <Text style={styles.resultsDate}>
+            {`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`}
+          </Text>
+        </View>
       </View>
     </View>
   ), [events, filteredEvents, selectedType, freeOnly, sortBy, showSortMenu, searchQuery, userLocation, insets.top, heroImageLoaded, heroImageStyle, heroOverlayStyle, heroContentStyle]);
@@ -1066,8 +1069,13 @@ const styles = StyleSheet.create({
   },
   resultsDate: {
     color: '#FF6B35',
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
 
   // ===== EVENT CARDS =====
@@ -1140,16 +1148,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   eventTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 8,
   },
   eventDescription: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#aaa',
     marginBottom: 12,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   eventDetails: {
     gap: 8,
@@ -1159,7 +1167,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   detailText: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#888',
     marginLeft: 8,
   },
