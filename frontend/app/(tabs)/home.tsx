@@ -1060,15 +1060,15 @@ const styles = StyleSheet.create({
 
   // ===== EVENT CARDS =====
   eventsList: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
     paddingBottom: 20,
   },
   eventCard: {
     backgroundColor: '#1a1a1a',
-    borderRadius: 16,
-    marginBottom: 16,
+    borderRadius: 0,
+    marginBottom: 8,
     overflow: 'hidden',
-    borderWidth: 1,
+    borderBottomWidth: 1,
     borderColor: '#222',
   },
   eventImage: {
