@@ -738,7 +738,7 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
           </View>
-          <Text style={styles.heroSubtitle}>Discover events near you</Text>
+          <Text style={styles.heroSubtitle}>Discover events near you!</Text>
           <View style={styles.heroStats}>
             <View style={styles.heroStatItem}>
               <AnimatedCounter target={events.length} />
