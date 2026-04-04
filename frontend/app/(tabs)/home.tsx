@@ -614,7 +614,11 @@ export default function HomeScreen() {
               }}
               activeOpacity={0.7}
             >
-              <Ionicons name="logo-facebook" size={28} color="#1877F2" />
+              <Image
+                source={{ uri: 'https://customer-assets.emergentagent.com/job_8376f36e-4319-4936-bd1c-469dba05892e/artifacts/w62t9pko_3d-square-facebook-fb-logo-icon-social-media-701751695134398wf9frtn9ok.png' }}
+                style={styles.facebookIcon}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
           </View>
           <Text style={styles.heroSubtitle}>Discover meets, shows & cruises near you</Text>
@@ -927,13 +931,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   facebookButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 4,
+  },
+  facebookIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
   },
   heroSubtitle: {
     fontSize: 15,
