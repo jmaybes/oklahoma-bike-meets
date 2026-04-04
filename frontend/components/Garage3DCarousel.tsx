@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { View, Image, StyleSheet, Dimensions } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  withSequence,
-  withDelay,
-  withRepeat,
   Easing,
+  runOnJS,
   interpolate,
 } from 'react-native-reanimated';
 
@@ -31,39 +29,34 @@ export default function Garage3DCarousel({ photos }: Props) {
     );
   }
 
-  // Total rotation goes from 0 to 360 degrees (one full cylinder revolution)
-  // Each face sits at angle = (i/n) * 360
-  const rotation = useSharedValue(0);
+  const currentFace = useSharedValue(0);
   const anglePerFace = 360 / n;
 
+  const goToNextFace = useCallback(() => {
+    const next = currentFace.value + 1;
+    currentFace.value = withTiming(next, {
+      duration: 1200,
+      easing: Easing.bezier(0.5, -0.2, 0.5, 1.2),
+    }, (finished) => {
+      if (finished) {
+        // If we've completed a full revolution, reset to avoid huge numbers
+        if (currentFace.value >= n) {
+          currentFace.value = 0;
+        }
+        runOnJS(scheduleNext)();
+      }
+    });
+  }, [n]);
+
+  const scheduleNext = useCallback(() => {
+    // Hold for 1.5s, then rotate to next
+    const timer = setTimeout(goToNextFace, 1500);
+    return () => clearTimeout(timer);
+  }, [goToNextFace]);
+
   useEffect(() => {
-    // Build keyframes: pause at each face, then rotate to next with elastic easing
-    // CSS: 12s total, cubic-bezier(.5,-0.2,.5,1.2)
-    // Each face gets ~(1/n) of the total duration
-    // Within that segment: 3% pause at start, transition, 3% pause at end
-    const TOTAL_DURATION = 12000; // 12 seconds for full revolution
-    const SEGMENT = TOTAL_DURATION / n;
-    const PAUSE = SEGMENT * 0.3;   // 30% pause (hold)
-    const TRANSITION = SEGMENT * 0.7; // 70% transition
-
-    const steps: any[] = [];
-    for (let i = 0; i < n; i++) {
-      const targetAngle = (i + 1) * anglePerFace;
-      // Hold at current position
-      steps.push(
-        withDelay(PAUSE, withTiming(targetAngle, {
-          duration: TRANSITION,
-          easing: Easing.bezier(0.5, -0.2, 0.5, 1.2),
-        }))
-      );
-    }
-
-    rotation.value = 0;
-    rotation.value = withRepeat(
-      withSequence(...steps),
-      -1,
-      false,
-    );
+    const timer = setTimeout(goToNextFace, 2000); // Initial delay
+    return () => clearTimeout(timer);
   }, [n]);
 
   return (
@@ -74,7 +67,8 @@ export default function Garage3DCarousel({ photos }: Props) {
           photo={photo}
           index={index}
           total={n}
-          rotation={rotation}
+          anglePerFace={anglePerFace}
+          currentFace={currentFace}
         />
       ))}
     </View>
@@ -85,53 +79,54 @@ interface FaceProps {
   photo: string;
   index: number;
   total: number;
-  rotation: Animated.SharedValue<number>;
+  anglePerFace: number;
+  currentFace: Animated.SharedValue<number>;
 }
 
-function CylinderFace({ photo, index, total, rotation }: FaceProps) {
-  const faceAngle = (index / total) * 360; // This face's position on the cylinder
-
+function CylinderFace({ photo, index, total, anglePerFace, currentFace }: FaceProps) {
   const animatedStyle = useAnimatedStyle(() => {
-    // The face's angle relative to the viewer
-    // As the cylinder rotates, each face's apparent angle changes
-    let relativeAngle = faceAngle - rotation.value;
+    // Current rotation angle of the cylinder
+    const cylinderAngle = currentFace.value * anglePerFace;
+
+    // This face's fixed position on the cylinder
+    const faceAngle = index * anglePerFace;
+
+    // Relative angle: how far this face is from facing the viewer
+    let relAngle = faceAngle - cylinderAngle;
 
     // Normalize to -180..180
-    relativeAngle = ((relativeAngle % 360) + 540) % 360 - 180;
+    relAngle = ((relAngle % 360) + 540) % 360 - 180;
 
-    // Face is visible when its relative angle is near 0 (facing viewer)
-    // At ±90 degrees it's edge-on (invisible)
-    const absAngle = Math.abs(relativeAngle);
+    const absAngle = Math.abs(relAngle);
 
-    // Opacity: fully visible at 0°, fading from 40-80°, invisible at 80°+
+    // Opacity: visible when facing viewer, hidden when rotated away
     const opacity = interpolate(
       absAngle,
-      [0, 40, 80, 180],
-      [1, 1, 0, 0],
+      [0, 50, 80, 180],
+      [1, 0.9, 0, 0],
       'clamp'
     );
 
-    // Scale: slight shrink as face rotates away
+    // 3D cylinder radius (same math as CSS: 50%/tan(180deg/n))
+    const tanVal = Math.tan((Math.PI) / total);
+    const radius = (CAROUSEL_HEIGHT * 0.5) / tanVal;
+
+    // Vertical displacement on the cylinder surface
+    const translateY = -Math.sin((relAngle * Math.PI) / 180) * radius * 0.4;
+
+    // Scale for depth
     const scale = interpolate(
       absAngle,
       [0, 90, 180],
-      [1, 0.65, 0.5],
+      [1, 0.6, 0.4],
       'clamp'
     );
-
-    // The cylinder radius - translateY to push face outward
-    // In the CSS: translateY(50%/tan(180deg/n)) 
-    const radiusAngle = (180 / total) * (Math.PI / 180);
-    const radius = (CAROUSEL_HEIGHT * 0.5) / Math.tan(radiusAngle);
-
-    // Vertical position on the cylinder
-    const translateY = Math.sin((relativeAngle * Math.PI) / 180) * radius * 0.35;
 
     return {
       opacity,
       transform: [
-        { perspective: 500 },
-        { rotateX: `${-relativeAngle}deg` },
+        { perspective: 400 },
+        { rotateX: `${-relAngle * 0.8}deg` },
         { translateY },
         { scale },
       ],
