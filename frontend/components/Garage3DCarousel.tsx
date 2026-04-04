@@ -1,17 +1,18 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Image, StyleSheet, Dimensions } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withSequence,
+  withDelay,
+  withRepeat,
   Easing,
-  runOnJS,
+  interpolate,
 } from 'react-native-reanimated';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAROUSEL_HEIGHT = 260;
-// Half the height = the "radius" of the cube face from center
-const FACE_OFFSET = CAROUSEL_HEIGHT / 2;
 
 interface Props {
   photos: string[];
@@ -25,108 +26,97 @@ export default function Garage3DCarousel({ photos }: Props) {
   if (n === 1) {
     return (
       <View style={styles.container}>
-        <Image source={{ uri: validPhotos[0] }} style={styles.fullImage} resizeMode="cover" />
+        <Image source={{ uri: validPhotos[0] }} style={styles.singleImage} resizeMode="cover" />
       </View>
     );
   }
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const rotation = useSharedValue(0);
-
-  const advanceToNext = useCallback(() => {
-    setCurrentIndex(prev => (prev + 1) % n);
-    rotation.value = 0;
-  }, [n]);
+  const progress = useSharedValue(0);
+  const CYCLE_DURATION = 3000;
 
   useEffect(() => {
-    const cycle = () => {
-      // Hold for 2.5s, then rotate over 0.8s
-      const holdTimer = setTimeout(() => {
-        rotation.value = withTiming(
-          -90,
-          {
-            duration: 800,
-            easing: Easing.bezier(0.4, 0.0, 0.2, 1),
-          },
-          (finished) => {
-            if (finished) {
-              runOnJS(advanceToNext)();
-            }
-          }
-        );
-      }, 2500);
+    const steps: any[] = [];
+    for (let i = 0; i < n; i++) {
+      steps.push(withTiming(i, { duration: 0 }));
+      steps.push(withDelay(CYCLE_DURATION * 0.65, withTiming(i + 1, {
+        duration: CYCLE_DURATION * 0.35,
+        easing: Easing.bezier(0.5, -0.2, 0.5, 1.2),
+      })));
+    }
 
-      return holdTimer;
-    };
+    progress.value = 0;
+    progress.value = withRepeat(
+      withSequence(...steps),
+      -1,
+      false
+    );
+  }, [n]);
 
-    const timer = cycle();
-    const interval = setInterval(() => {
-      // This will be managed by the animation callback
-    }, 3300);
+  return (
+    <View style={styles.container}>
+      {validPhotos.map((photo, index) => (
+        <CarouselFace
+          key={`${photo}-${index}`}
+          photo={photo}
+          index={index}
+          total={n}
+          progress={progress}
+        />
+      ))}
+    </View>
+  );
+}
 
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
-    };
-  }, [currentIndex, n]);
+interface FaceProps {
+  photo: string;
+  index: number;
+  total: number;
+  progress: Animated.SharedValue<number>;
+}
 
-  const nextIndex = (currentIndex + 1) % n;
+function CarouselFace({ photo, index, total, progress }: FaceProps) {
+  const animatedStyle = useAnimatedStyle(() => {
+    const p = progress.value % total;
 
-  // Current face: starts at 0deg (front-facing), rotates to -90deg (top, going away)
-  const currentFaceStyle = useAnimatedStyle(() => {
-    const rotX = rotation.value; // 0 to -90
-    // When at 0: fully visible, front-facing
-    // When at -90: rotated up and away
-    const opacity = rotX < -85 ? 0 : 1;
+    let diff = p - index;
+    if (diff > total / 2) diff -= total;
+    if (diff < -total / 2) diff += total;
+
+    const anglePerFace = 360 / total;
+    const rotateX = diff * anglePerFace;
+
+    const opacity = interpolate(
+      Math.abs(rotateX),
+      [0, 60, 90, 180],
+      [1, 0.6, 0, 0],
+      'clamp'
+    );
+
+    const radius = CAROUSEL_HEIGHT * 0.45;
+    const translateY = Math.sin((rotateX * Math.PI) / 180) * radius;
+    const scale = interpolate(
+      Math.abs(rotateX),
+      [0, 90, 180],
+      [1, 0.7, 0.5],
+      'clamp'
+    );
 
     return {
-      transform: [
-        { perspective: 600 },
-        { rotateX: `${rotX}deg` },
-        // Translate the face so it rotates around the bottom edge (like a cube)
-        { translateY: -FACE_OFFSET * (1 - Math.cos((-rotX * Math.PI) / 180)) * 0.5 },
-      ],
       opacity,
-      zIndex: rotX > -45 ? 2 : 1,
-    };
-  });
-
-  // Next face: starts at 90deg (below, hidden), rotates to 0deg (front-facing)
-  const nextFaceStyle = useAnimatedStyle(() => {
-    const rotX = rotation.value + 90; // starts at 90, ends at 0
-    const opacity = rotX > 85 ? 0 : 1;
-
-    return {
       transform: [
-        { perspective: 600 },
-        { rotateX: `${rotX}deg` },
-        { translateY: FACE_OFFSET * (1 - Math.cos((rotX * Math.PI) / 180)) * 0.5 },
+        { perspective: 800 },
+        { rotateX: `${-rotateX}deg` },
+        { translateY: translateY * 0.3 },
+        { scale },
       ],
-      opacity,
-      zIndex: rotX < 45 ? 2 : 1,
+      zIndex: opacity > 0.5 ? 10 : 1,
     };
   });
 
   return (
-    <View style={styles.container}>
-      {/* Next face (behind/below, rotates in) */}
-      <Animated.View style={[styles.face, nextFaceStyle]}>
-        <Image
-          source={{ uri: validPhotos[nextIndex] }}
-          style={styles.fullImage}
-          resizeMode="cover"
-        />
-      </Animated.View>
-
-      {/* Current face (front, rotates out) */}
-      <Animated.View style={[styles.face, currentFaceStyle]}>
-        <Image
-          source={{ uri: validPhotos[currentIndex] }}
-          style={styles.fullImage}
-          resizeMode="cover"
-        />
-      </Animated.View>
-    </View>
+    <Animated.View style={[styles.face, animatedStyle]}>
+      <Image source={{ uri: photo }} style={styles.faceImage} resizeMode="cover" />
+    </Animated.View>
   );
 }
 
@@ -134,18 +124,22 @@ const styles = StyleSheet.create({
   container: {
     width: SCREEN_WIDTH,
     height: CAROUSEL_HEIGHT,
+    alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
     backgroundColor: '#111',
   },
+  singleImage: {
+    width: '100%',
+    height: '100%',
+  },
   face: {
     position: 'absolute',
-    top: 0,
-    left: 0,
     width: '100%',
     height: CAROUSEL_HEIGHT,
     backfaceVisibility: 'hidden',
   },
-  fullImage: {
+  faceImage: {
     width: '100%',
     height: '100%',
   },
