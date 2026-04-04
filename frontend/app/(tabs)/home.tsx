@@ -687,10 +687,13 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Results count */}
+      {/* Results count + today's date */}
       <View style={styles.resultsRow}>
         <Text style={styles.resultsText}>
           {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''} found
+        </Text>
+        <Text style={styles.resultsDate}>
+          {`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`}
         </Text>
       </View>
     </View>
@@ -1049,12 +1052,20 @@ const styles = StyleSheet.create({
 
   // ===== RESULTS ROW =====
   resultsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 0,
     marginBottom: 8,
   },
   resultsText: {
     color: '#666',
     fontSize: 13,
+    fontWeight: '500',
+  },
+  resultsDate: {
+    color: '#888',
+    fontSize: 12,
     fontWeight: '500',
   },
 
