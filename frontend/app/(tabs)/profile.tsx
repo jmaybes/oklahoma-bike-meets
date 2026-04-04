@@ -359,9 +359,19 @@ export default function ProfileScreen() {
       setUserCar(response.data);
       setShowCarModal(false);
       Alert.alert('Success', 'Your car has been saved to your garage!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving car:', error);
-      Alert.alert('Error', 'Failed to save car. Please try again.');
+      let errorMsg = 'Failed to save car. Please try again.';
+      if (error?.response?.status === 413 || error?.response?.data?.detail?.includes?.('size')) {
+        errorMsg = 'Photos are too large. Try removing some photos or using lower resolution images.';
+      } else if (error?.response?.data?.detail) {
+        errorMsg = error.response.data.detail;
+      } else if (error?.message?.includes?.('Network')) {
+        errorMsg = 'Network error. Please check your connection and try again.';
+      } else if (error?.message?.includes?.('timeout')) {
+        errorMsg = 'Upload timed out. Try with fewer or smaller photos.';
+      }
+      Alert.alert('Error Saving Garage', errorMsg);
     } finally {
       setSavingCar(false);
     }
