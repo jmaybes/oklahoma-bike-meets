@@ -934,11 +934,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 4,
-    marginRight: 15,
+    marginRight: '15%',
   },
   facebookIcon: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: 8,
   },
   heroSubtitle: {
