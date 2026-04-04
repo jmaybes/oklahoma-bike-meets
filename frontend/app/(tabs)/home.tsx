@@ -487,7 +487,7 @@ export default function HomeScreen() {
     }));
 
     return (
-      <Animated.Text style={[styles.heroSubtitle, animStyle]} numberOfLines={1}>
+      <Animated.Text style={[styles.heroSubtitle, animStyle]}>
         Discover meets, shows, cruises, & more near you
       </Animated.Text>
     );
