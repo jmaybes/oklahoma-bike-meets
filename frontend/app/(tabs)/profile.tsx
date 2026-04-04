@@ -25,6 +25,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
+import Garage3DCarousel from '../../components/Garage3DCarousel';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -100,7 +101,7 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      fetchUserCar();
+      fetchUserCar(true);
     }
   }, [isAuthenticated, user]);
 
@@ -471,11 +472,7 @@ export default function ProfileScreen() {
             <View style={styles.carCard}>
               {userCar.photos && userCar.photos.length > 0 ? (
                 <View style={styles.carMainPhotoContainer}>
-                  <Image 
-                    source={{ uri: userCar.photos[0] }} 
-                    style={styles.carMainPhoto} 
-                    resizeMode="cover"
-                  />
+                  <Garage3DCarousel photos={userCar.photos} />
                   <LinearGradient
                     colors={['transparent', 'rgba(0,0,0,0.6)']}
                     style={styles.carPhotoGradient}
