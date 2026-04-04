@@ -145,6 +145,8 @@ export default function BrowseGaragesScreen() {
               source={{ uri: mainPhoto }}
               style={styles.carImage}
               resizeMode="cover"
+              onError={() => {}}
+              defaultSource={undefined}
             />
           ) : (
             <View style={styles.noImageContainer}>
