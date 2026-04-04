@@ -536,36 +536,6 @@ export default function HomeScreen() {
     return <Text style={styles.heroStatNumber}>{display}</Text>;
   };
 
-  // ===== MARQUEE SUBTITLE COMPONENT =====
-  const MarqueeSubtitle = () => {
-    const translateX = useSharedValue(0);
-    const SCREEN_WIDTH = Dimensions.get('window').width;
-    const START_POS = 0;
-    const END_POS = -(SCREEN_WIDTH * 0.85);
-
-    useEffect(() => {
-      translateX.value = START_POS;
-      translateX.value = withRepeat(
-        withSequence(
-          withTiming(END_POS, { duration: 9000 }),
-          withTiming(START_POS, { duration: 0 })
-        ),
-        -1,
-        false
-      );
-    }, []);
-
-    const animStyle = useAnimatedStyle(() => ({
-      transform: [{ translateX: translateX.value }],
-    }));
-
-    return (
-      <Animated.Text style={[styles.heroSubtitle, animStyle]}>
-        Discover meets, shows, cruises, & more near you
-      </Animated.Text>
-    );
-  };
-
   // ===== EVENT CARD COMPONENT (GSAP-style scroll animation) =====
   const AnimatedEventCard = ({ item, index, isVisible }: { item: Event; index: number; isVisible: boolean }) => {
     const pressScale = useSharedValue(1);
@@ -748,8 +718,11 @@ export default function HomeScreen() {
           </View>
           <View style={styles.heroTitleRow}>
             <View>
-              <Text style={styles.heroTitle}>Oklahoma Car</Text>
-              <DroppingText />
+              <Text style={styles.heroTitle}>Oklahoma</Text>
+              <View style={styles.droppingRow}>
+                <Text style={styles.heroTitle}>Car </Text>
+                <DroppingText />
+              </View>
             </View>
             <TouchableOpacity
               style={styles.facebookButton}
@@ -765,9 +738,7 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
           </View>
-          <View style={styles.heroSubtitleContainer}>
-            <MarqueeSubtitle />
-          </View>
+          <Text style={styles.heroSubtitle}>Discover events near you</Text>
           <View style={styles.heroStats}>
             <View style={styles.heroStatItem}>
               <AnimatedCounter target={events.length} />
@@ -1079,8 +1050,15 @@ const styles = StyleSheet.create({
   droppingWord: {
     fontSize: 38,
     fontWeight: '700',
-    color: '#FF6B35',
+    color: '#fff',
     letterSpacing: -0.5,
+    textShadowColor: '#FF6B35',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
+  },
+  droppingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   heroTitleRow: {
     flexDirection: 'row',
@@ -1102,11 +1080,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: 'rgba(255,255,255,0.8)',
     letterSpacing: 0.3,
-    width: 600,
-  },
-  heroSubtitleContainer: {
-    overflow: 'hidden',
-    height: 20,
     marginTop: 8,
   },
   heroStats: {
