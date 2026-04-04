@@ -65,6 +65,16 @@ export default function NearbyScreen() {
   const isMountedRef = useRef(true);
   const locationRef = useRef<{latitude: number; longitude: number} | null>(null);
 
+  // Selection & Pop-Up Invite state
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [showPopupInvite, setShowPopupInvite] = useState(false);
+  const [popupStep, setPopupStep] = useState(1);
+  const [shareLocation, setShareLocation] = useState(false);
+  const [locationDuration, setLocationDuration] = useState(30); // minutes
+  const [popupDetails, setPopupDetails] = useState('');
+  const [sendingPopup, setSendingPopup] = useState(false);
+
   useEffect(() => {
     isMountedRef.current = true;
     initializeLocation();
