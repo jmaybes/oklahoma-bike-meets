@@ -24,6 +24,7 @@ import Animated, {
   withSpring,
   withTiming,
   withRepeat,
+  withSequence,
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
@@ -96,6 +97,7 @@ export default function HomeScreen() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [clubsCount, setClubsCount] = useState(0);
   const retryCountRef = useRef(0);
   const isMountedRef = useRef(true);
 
@@ -128,9 +130,19 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchEvents();
+      fetchClubsCount();
       if (user?.id) fetchFavorites();
     }, [user?.id])
   );
+
+  const fetchClubsCount = async () => {
+    try {
+      const response = await api.get('/clubs');
+      setClubsCount(Array.isArray(response.data) ? response.data.length : 0);
+    } catch (error) {
+      console.log('Error fetching clubs count:', error);
+    }
+  };
 
   const fetchFavorites = async () => {
     if (!user?.id) return;
@@ -426,18 +438,47 @@ export default function HomeScreen() {
     }
   }).current;
 
+  // ===== ANIMATED COUNTER COMPONENT =====
+  const AnimatedCounter = ({ target, duration = 2000 }: { target: number; duration?: number }) => {
+    const [display, setDisplay] = useState(0);
+    const prevTarget = useRef(0);
+
+    useEffect(() => {
+      if (target === 0) { setDisplay(0); return; }
+      const startVal = prevTarget.current;
+      prevTarget.current = target;
+      const startTime = Date.now();
+      const step = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(startVal + (target - startVal) * eased);
+        setDisplay(current);
+        if (progress < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }, [target]);
+
+    return <Text style={styles.heroStatNumber}>{display}</Text>;
+  };
+
   // ===== MARQUEE SUBTITLE COMPONENT =====
   const MarqueeSubtitle = () => {
     const translateX = useSharedValue(0);
     const SCREEN_WIDTH = Dimensions.get('window').width;
-    const TEXT_WIDTH = SCREEN_WIDTH * 1.5;
+    const START_POS = 0;
+    const END_POS = -(SCREEN_WIDTH * 0.85);
 
     useEffect(() => {
-      translateX.value = 0;
+      translateX.value = START_POS;
       translateX.value = withRepeat(
-        withTiming(-TEXT_WIDTH + SCREEN_WIDTH * 0.6, { duration: 8000 }),
+        withSequence(
+          withTiming(END_POS, { duration: 6000 }),
+          withTiming(START_POS, { duration: 0 })
+        ),
         -1,
-        true
+        false
       );
     }, []);
 
@@ -653,18 +694,18 @@ export default function HomeScreen() {
           </View>
           <View style={styles.heroStats}>
             <View style={styles.heroStatItem}>
-              <Text style={styles.heroStatNumber}>{events.length}</Text>
+              <AnimatedCounter target={events.length} />
               <Text style={styles.heroStatLabel}>Events</Text>
             </View>
             <View style={styles.heroStatDivider} />
             <View style={styles.heroStatItem}>
-              <Text style={styles.heroStatNumber}>{filteredEvents.length}</Text>
+              <AnimatedCounter target={filteredEvents.length} />
               <Text style={styles.heroStatLabel}>Upcoming</Text>
             </View>
             <View style={styles.heroStatDivider} />
             <View style={styles.heroStatItem}>
-              <Ionicons name="car-sport" size={20} color="#FF6B35" />
-              <Text style={styles.heroStatLabel}>& Clubs</Text>
+              <AnimatedCounter target={clubsCount} />
+              <Text style={styles.heroStatLabel}>Clubs</Text>
             </View>
             <View style={styles.heroStatDivider} />
             <View style={styles.heroStatItem}>
