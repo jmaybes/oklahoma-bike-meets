@@ -936,6 +936,7 @@ const styles = StyleSheet.create({
   filterWrapper: {
     marginBottom: 12,
     paddingVertical: 4,
+    paddingHorizontal: 5,
     marginTop: 8,
   },
   filterContent: {
@@ -968,7 +969,7 @@ const styles = StyleSheet.create({
   filterRow2: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 0,
+    paddingHorizontal: 5,
     marginBottom: 12,
     gap: 12,
   },
@@ -1055,7 +1056,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 0,
+    paddingHorizontal: 5,
     marginBottom: 8,
   },
   resultsText: {
@@ -1064,9 +1065,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   resultsDate: {
-    color: '#888',
-    fontSize: 12,
-    fontWeight: '500',
+    color: '#FF6B35',
+    fontSize: 13,
+    fontWeight: '600',
   },
 
   // ===== EVENT CARDS =====
