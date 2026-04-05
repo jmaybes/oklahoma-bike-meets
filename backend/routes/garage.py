@@ -110,37 +110,22 @@ async def get_user_car(user_id: str, include_photos: bool = Query(default=False)
         car = await db.user_cars.find_one({"userId": user_id})
         if not car:
             return None
-        # Generate thumbnails instead of sending full-size photos
-        raw_photos = car.get("photos", [])
-        thumbnails = []
-        for photo in raw_photos:
-            if photo and len(photo) > 100:
-                thumbnails.append(make_thumbnail_base64(photo))
-            else:
-                thumbnails.append(photo or "")
-        car["photos"] = thumbnails
+        # Use pre-computed thumbnail, exclude heavy photos array
         result = user_car_helper(car)
-        result["photoCount"] = len(raw_photos)
+        result["photoCount"] = len(car.get("photos", []))
+        thumbnail = car.get("thumbnail", "")
+        result["photos"] = [thumbnail] if thumbnail else ([""] * len(car.get("photos", [])) if car.get("photos") else [])
         return result
     
-    # Lightweight mode: exclude full photos array from MongoDB, but fetch main photo separately
+    # Lightweight mode: exclude full photos, use pre-computed thumbnail
     car = await db.user_cars.find_one({"userId": user_id}, {"photos": 0})
     if not car:
         return None
     
     car_data = user_car_helper(car)
     
-    # Fetch only the main photo using $slice to avoid loading all images
-    main_idx = car.get("mainPhotoIndex", 0)
-    photo_doc = await db.user_cars.find_one(
-        {"userId": user_id},
-        {"photos": {"$slice": [main_idx, 1]}, "_id": 0}
-    )
-    main_photo = photo_doc.get("photos", [None])[0] if photo_doc and photo_doc.get("photos") else None
-    
-    # Compress main photo to thumbnail for lightweight view
-    if main_photo and len(main_photo) > 100:
-        main_photo = make_thumbnail_base64(main_photo)
+    # Use pre-computed thumbnail (no image processing!)
+    thumbnail = car.get("thumbnail", "")
     
     # Get photo count without loading photos
     count_doc = await db.user_cars.aggregate([
@@ -149,7 +134,7 @@ async def get_user_car(user_id: str, include_photos: bool = Query(default=False)
     ]).to_list(1)
     photo_count = count_doc[0]["photoCount"] if count_doc else 0
     
-    car_data["photos"] = [main_photo] if main_photo else []
+    car_data["photos"] = [thumbnail] if thumbnail else []
     car_data["photoCount"] = photo_count
     car_data["mainPhotoIndex"] = 0
     
@@ -162,8 +147,7 @@ async def get_public_garages(
     limit: int = Query(default=50, le=100),
     sort: str = Query(default="likes", description="Sort by: likes, views, newest")
 ):
-    """Get all public garages to browse, sorted by most liked by default.
-    Uses MongoDB projection to avoid loading all photos into memory."""
+    """Get all public garages with pre-computed thumbnails. No image processing at request time."""
     query = {"$or": [{"isPublic": True}, {"isPublic": "true"}]}
     if make:
         query["make"] = {"$regex": make, "$options": "i"}
@@ -176,7 +160,7 @@ async def get_public_garages(
     else:  # default: likes
         sort_field = [("likes", -1), ("views", -1)]
 
-    # Exclude photos from the main query to save memory
+    # Exclude full photos array - only fetch thumbnail + metadata
     cars = await db.user_cars.find(query, {"photos": 0}).sort(sort_field).limit(limit).to_list(limit)
 
     result = []
@@ -187,27 +171,10 @@ async def get_public_garages(
         car_data["ownerNickname"] = user.get("nickname", "") if user else ""
         car_data["likedBy"] = car.get("likedBy", [])
 
-        # Fetch only the main photo using $slice
-        main_idx = car.get("mainPhotoIndex", 0)
-        photo_doc = await db.user_cars.find_one(
-            {"_id": car["_id"]},
-            {"photos": {"$slice": [main_idx, 1]}, "_id": 0}
-        )
-        main_photo = photo_doc.get("photos", [None])[0] if photo_doc and photo_doc.get("photos") else None
-
-        # Create thumbnail for browse view (drastically reduces response size)
-        if main_photo and len(main_photo) > 100:
-            main_photo = make_thumbnail_base64(main_photo)
-
-        # Get photo count without loading photos
-        count_doc = await db.user_cars.aggregate([
-            {"$match": {"_id": car["_id"]}},
-            {"$project": {"photoCount": {"$size": {"$ifNull": ["$photos", []]}}}}
-        ]).to_list(1)
-        photo_count = count_doc[0]["photoCount"] if count_doc else 0
-
-        car_data["photos"] = [main_photo] if main_photo else []
-        car_data["photoCount"] = photo_count
+        # Use pre-computed thumbnail (no image processing!)
+        thumbnail = car.get("thumbnail", "")
+        car_data["photos"] = [thumbnail] if thumbnail else []
+        car_data["photoCount"] = car.get("photoCount", 0)
         car_data["mainPhotoIndex"] = 0
 
         result.append(car_data)
@@ -247,21 +214,12 @@ async def get_car_by_id(car_id: str):
     photo_count = count_doc[0]["photoCount"] if count_doc else 0
     car_data["photoCount"] = photo_count
     
-    # Generate thumbnails for all photos (small enough to fit in one response)
-    thumbnails = []
+    # Use pre-computed thumbnail for all photo slots (no PIL processing!)
+    thumbnail = car.get("thumbnail", "")
     if photo_count > 0:
-        photo_doc = await db.user_cars.find_one(
-            {"_id": ObjectId(car_id)},
-            {"photos": 1, "_id": 0}
-        )
-        if photo_doc and photo_doc.get("photos"):
-            for photo in photo_doc["photos"]:
-                if photo and len(photo) > 100:
-                    thumbnails.append(make_thumbnail_base64(photo))
-                else:
-                    thumbnails.append(photo or "")
-    
-    car_data["photos"] = thumbnails
+        car_data["photos"] = [thumbnail if thumbnail else ""] * photo_count
+    else:
+        car_data["photos"] = []
     car_data["mainPhotoIndex"] = 0
 
     return car_data
