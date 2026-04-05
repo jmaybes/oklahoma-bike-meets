@@ -59,7 +59,7 @@ async def get_clubs(city: Optional[str] = Query(None), carType: Optional[str] = 
         "website": club.get("website", ""),
         "memberCount": club.get("memberCount", 0),
         "isApproved": club.get("isApproved", True),
-        "createdAt": club.get("createdAt")
+        "createdAt": str(club["createdAt"]) if club.get("createdAt") else None
     } for club in clubs]
 
 
@@ -85,7 +85,7 @@ async def get_club(club_id: str):
         "meetingSchedule": club.get("meetingSchedule", ""),
         "memberCount": club.get("memberCount", ""),
         "photos": club.get("photos", []),
-        "createdAt": club.get("createdAt")
+        "createdAt": str(club["createdAt"]) if club.get("createdAt") else None
     }
 
 

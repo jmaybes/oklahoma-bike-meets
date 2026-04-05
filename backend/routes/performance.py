@@ -4,6 +4,7 @@ from bson import ObjectId
 
 from database import db
 from models import PerformanceRunCreate, PerformanceRunUpdate
+from helpers import _sid
 
 router = APIRouter()
 
@@ -12,7 +13,7 @@ def serialize_run(run, user=None):
     """Helper to serialize a performance run document."""
     return {
         "id": str(run["_id"]),
-        "userId": run["userId"],
+        "userId": _sid(run["userId"]),
         "userName": user["name"] if user else run.get("userName", "Unknown"),
         "nickname": (user.get("nickname", "") if user else run.get("nickname", "")),
         "carInfo": run.get("carInfo", ""),
@@ -23,7 +24,7 @@ def serialize_run(run, user=None):
         "topSpeed": run.get("topSpeed"),
         "location": run.get("location", ""),
         "isManualEntry": run.get("isManualEntry", False),
-        "createdAt": run.get("createdAt", ""),
+        "createdAt": str(run["createdAt"]) if run.get("createdAt") else "",
     }
 
 

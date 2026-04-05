@@ -3,6 +3,7 @@ from datetime import datetime
 from bson import ObjectId
 
 from database import db
+from helpers import _sid
 
 router = APIRouter()
 
@@ -16,13 +17,13 @@ async def get_notifications(user_id: str, unread_only: bool = False):
     notifications = await db.notifications.find(query).sort("createdAt", -1).limit(50).to_list(50)
     return [{
         "id": str(notif["_id"]),
-        "userId": notif["userId"],
-        "eventId": notif.get("eventId"),
+        "userId": _sid(notif["userId"]),
+        "eventId": _sid(notif.get("eventId")),
         "type": notif.get("type", "general"),
         "title": notif["title"],
         "message": notif["message"],
         "isRead": notif.get("isRead", False),
-        "createdAt": notif.get("createdAt")
+        "createdAt": str(notif["createdAt"]) if notif.get("createdAt") else None
     } for notif in notifications]
 
 

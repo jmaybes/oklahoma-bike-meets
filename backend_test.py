@@ -1,307 +1,763 @@
 #!/usr/bin/env python3
 """
-Backend Test Suite for Oklahoma Car Events - Chunked Garage Photo Upload System
-Tests the new chunked photo upload functionality as specified in the review request.
+Oklahoma Car Events Backend API Testing with Production Data
+Testing specific endpoints after production database import
 """
 
 import requests
 import json
 import sys
-import time
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List
 
-# Configuration
-BASE_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
+# Backend URL from environment
+BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
+
+# Admin credentials from review request
 ADMIN_EMAIL = "admin@okcarevents.com"
 ADMIN_PASSWORD = "admin123"
+ADMIN_USER_ID = "69bb035fb5d3f5e057f073ca"
 
-# Test data - small base64 encoded 1x1 pixel JPEG images
-TEST_PHOTO_1 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AKwA//9k="
-TEST_PHOTO_2 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AKwA//9k="
-
-class TestResult:
+class ProductionDataTester:
     def __init__(self):
-        self.passed = 0
-        self.failed = 0
-        self.errors = []
+        self.session = requests.Session()
+        self.admin_token = None
+        self.test_results = []
         
-    def add_pass(self, test_name: str):
-        self.passed += 1
-        print(f"✅ {test_name}")
-        
-    def add_fail(self, test_name: str, error: str):
-        self.failed += 1
-        self.errors.append(f"{test_name}: {error}")
-        print(f"❌ {test_name}: {error}")
-        
-    def summary(self):
-        total = self.passed + self.failed
-        print(f"\n=== TEST SUMMARY ===")
-        print(f"Total: {total}, Passed: {self.passed}, Failed: {self.failed}")
-        if self.errors:
-            print("\nFAILED TESTS:")
-            for error in self.errors:
-                print(f"  - {error}")
-        return self.failed == 0
-
-def make_request(method: str, endpoint: str, data: Dict = None, params: Dict = None, headers: Dict = None) -> requests.Response:
-    """Make HTTP request with proper error handling"""
-    url = f"{BASE_URL}{endpoint}"
-    default_headers = {"Content-Type": "application/json"}
-    if headers:
-        default_headers.update(headers)
-    
-    try:
-        if method == "GET":
-            response = requests.get(url, params=params, headers=default_headers, timeout=30)
-        elif method == "POST":
-            response = requests.post(url, json=data, params=params, headers=default_headers, timeout=30)
-        elif method == "PUT":
-            response = requests.put(url, json=data, params=params, headers=default_headers, timeout=30)
-        elif method == "DELETE":
-            response = requests.delete(url, params=params, headers=default_headers, timeout=30)
-        else:
-            raise ValueError(f"Unsupported method: {method}")
-        
-        return response
-    except requests.exceptions.RequestException as e:
-        print(f"Request failed: {e}")
-        raise
-
-def test_chunked_garage_photo_upload():
-    """Test the chunked garage photo upload system"""
-    result = TestResult()
-    admin_id = None
-    car_id = None
-    original_car_data = None
-    initial_photo_count = 0  # Initialize this variable
-    
-    print("🚀 Starting Chunked Garage Photo Upload System Tests")
-    print("=" * 60)
-    
-    # Step 1: Login as admin
-    try:
-        login_data = {"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
-        response = make_request("POST", "/auth/login", login_data)
-        
-        if response.status_code == 200:
-            admin_data = response.json()
-            admin_id = admin_data.get("id")
-            if admin_id:
-                result.add_pass("Admin login successful")
-            else:
-                result.add_fail("Admin login", "No admin ID in response")
-                return result
-        else:
-            result.add_fail("Admin login", f"Status {response.status_code}: {response.text}")
-            return result
-    except Exception as e:
-        result.add_fail("Admin login", f"Exception: {str(e)}")
-        return result
-    
-    # Check if admin already has a car (to restore later)
-    try:
-        response = make_request("GET", f"/user-cars/user/{admin_id}", params={"include_photos": True})
-        if response.status_code == 200:
-            original_car_data = response.json()
-            if original_car_data:
-                print(f"📝 Admin has existing car: {original_car_data.get('year', 'Unknown')} {original_car_data.get('make', 'Unknown')} {original_car_data.get('model', 'Unknown')}")
-                car_id = original_car_data.get("id")
-            else:
-                print("📝 Admin has no existing car")
-        else:
-            result.add_fail("Check existing car", f"Status {response.status_code}: {response.text}")
-    except Exception as e:
-        result.add_fail("Check existing car", f"Exception: {str(e)}")
-    
-    # Step 2: Test metadata-only save (create new car or update existing)
-    try:
-        metadata = {
-            "userId": admin_id,
-            "make": "Test",
-            "model": "Car", 
-            "year": "2025",
-            "color": "Red",
-            "isPublic": True,
-            "photos": []
+    def log_test(self, endpoint: str, status: str, details: str = "", response_data: Any = None):
+        """Log test results"""
+        result = {
+            "endpoint": endpoint,
+            "status": status,
+            "details": details,
+            "response_data": response_data
         }
+        self.test_results.append(result)
+        status_emoji = "✅" if status == "PASS" else "❌"
+        print(f"{status_emoji} {endpoint}: {status}")
+        if details:
+            print(f"   Details: {details}")
+        if status == "FAIL" and response_data:
+            print(f"   Response: {response_data}")
+        print()
+
+    def test_admin_login(self) -> bool:
+        """Test admin login and store token"""
+        print("🔐 Testing Admin Login...")
         
-        response = make_request("POST", "/user-cars/create-or-update-metadata", metadata)
-        
-        if response.status_code == 200:
-            car_data = response.json()
-            car_id = car_data.get("id")
-            photo_count = car_data.get("photoCount", 0)
-            
-            if car_id:
-                result.add_pass("Metadata-only save")
-                print(f"  Car ID: {car_id}, Photo Count: {photo_count} (existing photos preserved)")
-                # Store the initial photo count for later tests
-                initial_photo_count = photo_count
-            else:
-                result.add_fail("Metadata-only save", f"Missing car ID")
-        else:
-            result.add_fail("Metadata-only save", f"Status {response.status_code}: {response.text}")
-    except Exception as e:
-        result.add_fail("Metadata-only save", f"Exception: {str(e)}")
-        initial_photo_count = 0
-    
-    if not car_id:
-        result.add_fail("Test setup", "No car ID available for photo upload tests")
-        return result
-    
-    # Step 3: Upload first photo
-    try:
-        photo_data = {"photo": TEST_PHOTO_1}
-        response = make_request("POST", f"/user-cars/{car_id}/photos/upload", photo_data, params={"user_id": admin_id})
-        
-        if response.status_code == 200:
-            upload_result = response.json()
-            expected_count = initial_photo_count + 1
-            if upload_result.get("success") and upload_result.get("photoCount") == expected_count:
-                result.add_pass("Upload first photo")
-                print(f"  Photo Count: {upload_result.get('photoCount')}")
-            else:
-                result.add_fail("Upload first photo", f"Expected count {expected_count}, got {upload_result.get('photoCount')}")
-        else:
-            result.add_fail("Upload first photo", f"Status {response.status_code}: {response.text}")
-    except Exception as e:
-        result.add_fail("Upload first photo", f"Exception: {str(e)}")
-    
-    # Step 4: Upload second photo
-    try:
-        photo_data = {"photo": TEST_PHOTO_2}
-        response = make_request("POST", f"/user-cars/{car_id}/photos/upload", photo_data, params={"user_id": admin_id})
-        
-        if response.status_code == 200:
-            upload_result = response.json()
-            expected_count = initial_photo_count + 2
-            if upload_result.get("success") and upload_result.get("photoCount") == expected_count:
-                result.add_pass("Upload second photo")
-                print(f"  Photo Count: {upload_result.get('photoCount')}")
-            else:
-                result.add_fail("Upload second photo", f"Expected count {expected_count}, got {upload_result.get('photoCount')}")
-        else:
-            result.add_fail("Upload second photo", f"Status {response.status_code}: {response.text}")
-    except Exception as e:
-        result.add_fail("Upload second photo", f"Exception: {str(e)}")
-    
-    # Step 5: Verify photos are persisted
-    try:
-        response = make_request("GET", f"/user-cars/user/{admin_id}", params={"include_photos": True})
-        
-        if response.status_code == 200:
-            car_data = response.json()
-            if car_data:
-                photos = car_data.get("photos", [])
-                expected_count = initial_photo_count + 2
-                if len(photos) == expected_count:
-                    result.add_pass("Verify photos persisted")
-                    print(f"  Found {len(photos)} photos in database")
-                else:
-                    result.add_fail("Verify photos persisted", f"Expected {expected_count} photos, found {len(photos)}")
-            else:
-                result.add_fail("Verify photos persisted", "No car data returned")
-        else:
-            result.add_fail("Verify photos persisted", f"Status {response.status_code}: {response.text}")
-    except Exception as e:
-        result.add_fail("Verify photos persisted", f"Exception: {str(e)}")
-    
-    # Step 6: Delete a photo by index
-    try:
-        response = make_request("DELETE", f"/user-cars/{car_id}/photos/0", params={"user_id": admin_id})
-        
-        if response.status_code == 200:
-            delete_result = response.json()
-            expected_count = initial_photo_count + 1  # After deleting one of the two we added
-            if delete_result.get("success") and delete_result.get("photoCount") == expected_count:
-                result.add_pass("Delete photo by index")
-                print(f"  Photo Count after deletion: {delete_result.get('photoCount')}")
-            else:
-                result.add_fail("Delete photo by index", f"Expected count {expected_count}, got {delete_result.get('photoCount')}")
-        else:
-            result.add_fail("Delete photo by index", f"Status {response.status_code}: {response.text}")
-    except Exception as e:
-        result.add_fail("Delete photo by index", f"Exception: {str(e)}")
-    
-    # Step 7: Test security - try uploading to another user's car
-    try:
-        photo_data = {"photo": TEST_PHOTO_1}
-        response = make_request("POST", f"/user-cars/{car_id}/photos/upload", photo_data, params={"user_id": "fake_user_id"})
-        
-        if response.status_code == 403:
-            result.add_pass("Security test - unauthorized upload")
-        else:
-            result.add_fail("Security test - unauthorized upload", f"Expected 403, got {response.status_code}")
-    except Exception as e:
-        result.add_fail("Security test - unauthorized upload", f"Exception: {str(e)}")
-    
-    # Step 8: Verify public garages endpoint still works
-    try:
-        response = make_request("GET", "/user-cars/public", params={"sort": "likes"})
-        
-        if response.status_code == 200:
-            public_cars = response.json()
-            if isinstance(public_cars, list):
-                # Look for our test car if it's public
-                test_car_found = any(car.get("make") == "Test" and car.get("model") == "Car" for car in public_cars)
-                result.add_pass("Public garages endpoint")
-                print(f"  Found {len(public_cars)} public cars, test car visible: {test_car_found}")
-            else:
-                result.add_fail("Public garages endpoint", f"Expected list, got {type(public_cars)}")
-        else:
-            result.add_fail("Public garages endpoint", f"Status {response.status_code}: {response.text}")
-    except Exception as e:
-        result.add_fail("Public garages endpoint", f"Exception: {str(e)}")
-    
-    # Step 9: Clean up - restore original car data if it existed
-    try:
-        if original_car_data:
-            # Restore the original McLaren data
-            restore_data = {
-                "userId": admin_id,
-                "make": original_car_data.get("make", "McLaren"),
-                "model": original_car_data.get("model", "570s MSO-X"),
-                "year": original_car_data.get("year", "2018"),
-                "color": original_car_data.get("color", "Orange"),
-                "isPublic": original_car_data.get("isPublic", True),
-                "photos": []  # Will be empty for metadata-only save
-            }
-            
-            response = make_request("POST", "/user-cars/create-or-update-metadata", restore_data)
+        try:
+            response = self.session.post(
+                f"{BACKEND_URL}/auth/login",
+                json={
+                    "email": ADMIN_EMAIL,
+                    "password": ADMIN_PASSWORD
+                }
+            )
             
             if response.status_code == 200:
-                result.add_pass("Cleanup - restore original car")
-                print(f"  Restored: {restore_data['year']} {restore_data['make']} {restore_data['model']}")
+                data = response.json()
+                if data.get("isAdmin") == True:
+                    self.admin_token = data.get("id")  # Using user ID as token
+                    self.log_test(
+                        "POST /api/auth/login",
+                        "PASS",
+                        f"Admin login successful. User ID: {self.admin_token}, isAdmin: {data.get('isAdmin')}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "POST /api/auth/login",
+                        "FAIL",
+                        "User is not admin",
+                        data
+                    )
+                    return False
             else:
-                result.add_fail("Cleanup - restore original car", f"Status {response.status_code}: {response.text}")
-        else:
-            # If no original car existed, we could delete the test car, but the endpoint creates/updates
-            # so we'll just leave the test car as is
-            result.add_pass("Cleanup - no original car to restore")
-    except Exception as e:
-        result.add_fail("Cleanup - restore original car", f"Exception: {str(e)}")
-    
-    return result
+                self.log_test(
+                    "POST /api/auth/login",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test(
+                "POST /api/auth/login",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+            return False
 
-def main():
-    """Run all tests"""
-    print("🔧 Oklahoma Car Events - Chunked Garage Photo Upload Tests")
-    print("=" * 60)
-    
-    # Test the chunked garage photo upload system
-    result = test_chunked_garage_photo_upload()
-    
-    # Print final summary
-    print("\n" + "=" * 60)
-    success = result.summary()
-    
-    if success:
-        print("🎉 ALL TESTS PASSED!")
-        sys.exit(0)
-    else:
-        print("💥 SOME TESTS FAILED!")
-        sys.exit(1)
+    def test_events_endpoint(self):
+        """Test GET /api/events - should return ~200 events"""
+        print("📅 Testing Events Endpoint...")
+        
+        try:
+            response = self.session.get(f"{BACKEND_URL}/events")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    event_count = len(data)
+                    # Check for ObjectId serialization issues
+                    has_objectid_issues = False
+                    sample_event = data[0] if data else None
+                    
+                    if sample_event:
+                        # Check if IDs are strings (not ObjectId objects)
+                        event_id = sample_event.get("id")
+                        if not isinstance(event_id, str):
+                            has_objectid_issues = True
+                    
+                    if has_objectid_issues:
+                        self.log_test(
+                            "GET /api/events",
+                            "FAIL",
+                            f"ObjectId serialization issue detected. Event ID type: {type(event_id)}",
+                            sample_event
+                        )
+                    else:
+                        self.log_test(
+                            "GET /api/events",
+                            "PASS",
+                            f"Retrieved {event_count} events. Expected ~200 (188 base + recurring instances). Sample event ID: {event_id}"
+                        )
+                else:
+                    self.log_test(
+                        "GET /api/events",
+                        "FAIL",
+                        f"Expected list, got {type(data)}",
+                        data
+                    )
+            else:
+                self.log_test(
+                    "GET /api/events",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "GET /api/events",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+
+    def test_user_cars_endpoint(self):
+        """Test GET /api/user-cars/user/{admin_user_id} - should return admin's car data"""
+        print("🚗 Testing User Cars Endpoint...")
+        
+        try:
+            response = self.session.get(f"{BACKEND_URL}/user-cars/user/{ADMIN_USER_ID}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Check for ObjectId serialization
+                if data and isinstance(data, dict):
+                    car_id = data.get("id")
+                    if isinstance(car_id, str):
+                        self.log_test(
+                            f"GET /api/user-cars/user/{ADMIN_USER_ID}",
+                            "PASS",
+                            f"Retrieved admin's car data. Car ID: {car_id}, Make: {data.get('make')}, Model: {data.get('model')}"
+                        )
+                    else:
+                        self.log_test(
+                            f"GET /api/user-cars/user/{ADMIN_USER_ID}",
+                            "FAIL",
+                            f"ObjectId serialization issue. Car ID type: {type(car_id)}",
+                            data
+                        )
+                elif data is None:
+                    self.log_test(
+                        f"GET /api/user-cars/user/{ADMIN_USER_ID}",
+                        "PASS",
+                        "Admin has no car registered (null response is valid)"
+                    )
+                else:
+                    self.log_test(
+                        f"GET /api/user-cars/user/{ADMIN_USER_ID}",
+                        "FAIL",
+                        f"Unexpected response format: {type(data)}",
+                        data
+                    )
+            else:
+                self.log_test(
+                    f"GET /api/user-cars/user/{ADMIN_USER_ID}",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                f"GET /api/user-cars/user/{ADMIN_USER_ID}",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+
+    def test_public_cars_endpoint(self):
+        """Test GET /api/user-cars/public - should return 50+ public cars"""
+        print("🏎️ Testing Public Cars Endpoint...")
+        
+        try:
+            response = self.session.get(f"{BACKEND_URL}/user-cars/public")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    car_count = len(data)
+                    # Check ObjectId serialization
+                    has_objectid_issues = False
+                    sample_car = data[0] if data else None
+                    
+                    if sample_car:
+                        car_id = sample_car.get("id")
+                        if not isinstance(car_id, str):
+                            has_objectid_issues = True
+                    
+                    if has_objectid_issues:
+                        self.log_test(
+                            "GET /api/user-cars/public",
+                            "FAIL",
+                            f"ObjectId serialization issue. Car ID type: {type(car_id)}",
+                            sample_car
+                        )
+                    else:
+                        self.log_test(
+                            "GET /api/user-cars/public",
+                            "PASS",
+                            f"Retrieved {car_count} public cars. Expected 50+. Sample car: {sample_car.get('make') if sample_car else 'None'} {sample_car.get('model') if sample_car else ''}"
+                        )
+                else:
+                    self.log_test(
+                        "GET /api/user-cars/public",
+                        "FAIL",
+                        f"Expected list, got {type(data)}",
+                        data
+                    )
+            else:
+                self.log_test(
+                    "GET /api/user-cars/public",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "GET /api/user-cars/public",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+
+    def test_clubs_endpoint(self):
+        """Test GET /api/clubs - should return ~20 approved clubs"""
+        print("🏁 Testing Clubs Endpoint...")
+        
+        try:
+            response = self.session.get(f"{BACKEND_URL}/clubs")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    club_count = len(data)
+                    # Check ObjectId serialization
+                    has_objectid_issues = False
+                    sample_club = data[0] if data else None
+                    
+                    if sample_club:
+                        club_id = sample_club.get("id")
+                        if not isinstance(club_id, str):
+                            has_objectid_issues = True
+                    
+                    if has_objectid_issues:
+                        self.log_test(
+                            "GET /api/clubs",
+                            "FAIL",
+                            f"ObjectId serialization issue. Club ID type: {type(club_id)}",
+                            sample_club
+                        )
+                    else:
+                        self.log_test(
+                            "GET /api/clubs",
+                            "PASS",
+                            f"Retrieved {club_count} clubs. Expected ~20. Sample club: {sample_club.get('name') if sample_club else 'None'}"
+                        )
+                else:
+                    self.log_test(
+                        "GET /api/clubs",
+                        "FAIL",
+                        f"Expected list, got {type(data)}",
+                        data
+                    )
+            else:
+                self.log_test(
+                    "GET /api/clubs",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "GET /api/clubs",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+
+    def test_rsvp_endpoint(self):
+        """Test GET /api/rsvp/user/{admin_user_id} - should return RSVPs"""
+        print("📝 Testing RSVP Endpoint...")
+        
+        try:
+            response = self.session.get(f"{BACKEND_URL}/rsvp/user/{ADMIN_USER_ID}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    rsvp_count = len(data)
+                    # Check ObjectId serialization
+                    has_objectid_issues = False
+                    sample_rsvp = data[0] if data else None
+                    
+                    if sample_rsvp:
+                        rsvp_id = sample_rsvp.get("id")
+                        if not isinstance(rsvp_id, str):
+                            has_objectid_issues = True
+                    
+                    if has_objectid_issues:
+                        self.log_test(
+                            f"GET /api/rsvp/user/{ADMIN_USER_ID}",
+                            "FAIL",
+                            f"ObjectId serialization issue. RSVP ID type: {type(rsvp_id)}",
+                            sample_rsvp
+                        )
+                    else:
+                        self.log_test(
+                            f"GET /api/rsvp/user/{ADMIN_USER_ID}",
+                            "PASS",
+                            f"Retrieved {rsvp_count} RSVPs for admin user"
+                        )
+                else:
+                    self.log_test(
+                        f"GET /api/rsvp/user/{ADMIN_USER_ID}",
+                        "FAIL",
+                        f"Expected list, got {type(data)}",
+                        data
+                    )
+            else:
+                self.log_test(
+                    f"GET /api/rsvp/user/{ADMIN_USER_ID}",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                f"GET /api/rsvp/user/{ADMIN_USER_ID}",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+
+    def test_notifications_endpoint(self):
+        """Test GET /api/notifications/{admin_user_id} - should return notifications"""
+        print("🔔 Testing Notifications Endpoint...")
+        
+        try:
+            response = self.session.get(f"{BACKEND_URL}/notifications/{ADMIN_USER_ID}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    notification_count = len(data)
+                    # Check ObjectId serialization
+                    has_objectid_issues = False
+                    sample_notification = data[0] if data else None
+                    
+                    if sample_notification:
+                        notification_id = sample_notification.get("id")
+                        if not isinstance(notification_id, str):
+                            has_objectid_issues = True
+                    
+                    if has_objectid_issues:
+                        self.log_test(
+                            f"GET /api/notifications/{ADMIN_USER_ID}",
+                            "FAIL",
+                            f"ObjectId serialization issue. Notification ID type: {type(notification_id)}",
+                            sample_notification
+                        )
+                    else:
+                        self.log_test(
+                            f"GET /api/notifications/{ADMIN_USER_ID}",
+                            "PASS",
+                            f"Retrieved {notification_count} notifications for admin user"
+                        )
+                else:
+                    self.log_test(
+                        f"GET /api/notifications/{ADMIN_USER_ID}",
+                        "FAIL",
+                        f"Expected list, got {type(data)}",
+                        data
+                    )
+            else:
+                self.log_test(
+                    f"GET /api/notifications/{ADMIN_USER_ID}",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                f"GET /api/notifications/{ADMIN_USER_ID}",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+
+    def test_performance_runs_endpoint(self):
+        """Test GET /api/performance-runs/user/{admin_user_id} - should return runs"""
+        print("🏁 Testing Performance Runs Endpoint...")
+        
+        try:
+            response = self.session.get(f"{BACKEND_URL}/performance-runs/user/{ADMIN_USER_ID}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    runs_count = len(data)
+                    # Check ObjectId serialization
+                    has_objectid_issues = False
+                    sample_run = data[0] if data else None
+                    
+                    if sample_run:
+                        run_id = sample_run.get("id")
+                        if not isinstance(run_id, str):
+                            has_objectid_issues = True
+                    
+                    if has_objectid_issues:
+                        self.log_test(
+                            f"GET /api/performance-runs/user/{ADMIN_USER_ID}",
+                            "FAIL",
+                            f"ObjectId serialization issue. Run ID type: {type(run_id)}",
+                            sample_run
+                        )
+                    else:
+                        self.log_test(
+                            f"GET /api/performance-runs/user/{ADMIN_USER_ID}",
+                            "PASS",
+                            f"Retrieved {runs_count} performance runs for admin user"
+                        )
+                else:
+                    self.log_test(
+                        f"GET /api/performance-runs/user/{ADMIN_USER_ID}",
+                        "FAIL",
+                        f"Expected list, got {type(data)}",
+                        data
+                    )
+            else:
+                self.log_test(
+                    f"GET /api/performance-runs/user/{ADMIN_USER_ID}",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                f"GET /api/performance-runs/user/{ADMIN_USER_ID}",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+
+    def test_feedback_endpoint(self):
+        """Test GET /api/feedback/user/{admin_user_id} - should return feedback items"""
+        print("💬 Testing Feedback Endpoint...")
+        
+        try:
+            response = self.session.get(f"{BACKEND_URL}/feedback/user/{ADMIN_USER_ID}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    feedback_count = len(data)
+                    # Check ObjectId serialization
+                    has_objectid_issues = False
+                    sample_feedback = data[0] if data else None
+                    
+                    if sample_feedback:
+                        feedback_id = sample_feedback.get("id")
+                        if not isinstance(feedback_id, str):
+                            has_objectid_issues = True
+                    
+                    if has_objectid_issues:
+                        self.log_test(
+                            f"GET /api/feedback/user/{ADMIN_USER_ID}",
+                            "FAIL",
+                            f"ObjectId serialization issue. Feedback ID type: {type(feedback_id)}",
+                            sample_feedback
+                        )
+                    else:
+                        self.log_test(
+                            f"GET /api/feedback/user/{ADMIN_USER_ID}",
+                            "PASS",
+                            f"Retrieved {feedback_count} feedback items for admin user"
+                        )
+                else:
+                    self.log_test(
+                        f"GET /api/feedback/user/{ADMIN_USER_ID}",
+                        "FAIL",
+                        f"Expected list, got {type(data)}",
+                        data
+                    )
+            else:
+                self.log_test(
+                    f"GET /api/feedback/user/{ADMIN_USER_ID}",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                f"GET /api/feedback/user/{ADMIN_USER_ID}",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+
+    def test_comments_endpoint(self):
+        """Test GET /api/comments/event/{event_id} - should return comments or empty array"""
+        print("💭 Testing Comments Endpoint...")
+        
+        # First get an event ID from the events endpoint
+        try:
+            events_response = self.session.get(f"{BACKEND_URL}/events")
+            if events_response.status_code == 200:
+                events = events_response.json()
+                if events and len(events) > 0:
+                    event_id = events[0].get("id")
+                    if not event_id:
+                        self.log_test(
+                            "GET /api/comments/event/{event_id}",
+                            "FAIL",
+                            "Could not get event ID from events endpoint"
+                        )
+                        return
+                else:
+                    # Use the specific event ID from review request
+                    event_id = "69bc81ee27b3bd28c27522fe"
+            else:
+                # Use the specific event ID from review request
+                event_id = "69bc81ee27b3bd28c27522fe"
+            
+            response = self.session.get(f"{BACKEND_URL}/comments/event/{event_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    comments_count = len(data)
+                    # Check ObjectId serialization
+                    has_objectid_issues = False
+                    sample_comment = data[0] if data else None
+                    
+                    if sample_comment:
+                        comment_id = sample_comment.get("id")
+                        if not isinstance(comment_id, str):
+                            has_objectid_issues = True
+                    
+                    if has_objectid_issues:
+                        self.log_test(
+                            f"GET /api/comments/event/{event_id}",
+                            "FAIL",
+                            f"ObjectId serialization issue. Comment ID type: {type(comment_id)}",
+                            sample_comment
+                        )
+                    else:
+                        self.log_test(
+                            f"GET /api/comments/event/{event_id}",
+                            "PASS",
+                            f"Retrieved {comments_count} comments for event {event_id}"
+                        )
+                else:
+                    self.log_test(
+                        f"GET /api/comments/event/{event_id}",
+                        "FAIL",
+                        f"Expected list, got {type(data)}",
+                        data
+                    )
+            else:
+                self.log_test(
+                    f"GET /api/comments/event/{event_id}",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "GET /api/comments/event/{event_id}",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+
+    def test_conversations_endpoint(self):
+        """Test GET /api/messages/conversations/{admin_user_id} - should return conversations"""
+        print("💬 Testing Conversations Endpoint...")
+        
+        try:
+            response = self.session.get(f"{BACKEND_URL}/messages/conversations/{ADMIN_USER_ID}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    conversations_count = len(data)
+                    # Check ObjectId serialization
+                    has_objectid_issues = False
+                    sample_conversation = data[0] if data else None
+                    
+                    if sample_conversation:
+                        partner_id = sample_conversation.get("partnerId")
+                        if not isinstance(partner_id, str):
+                            has_objectid_issues = True
+                    
+                    if has_objectid_issues:
+                        self.log_test(
+                            f"GET /api/messages/conversations/{ADMIN_USER_ID}",
+                            "FAIL",
+                            f"ObjectId serialization issue. Partner ID type: {type(partner_id)}",
+                            sample_conversation
+                        )
+                    else:
+                        self.log_test(
+                            f"GET /api/messages/conversations/{ADMIN_USER_ID}",
+                            "PASS",
+                            f"Retrieved {conversations_count} conversations for admin user"
+                        )
+                else:
+                    self.log_test(
+                        f"GET /api/messages/conversations/{ADMIN_USER_ID}",
+                        "FAIL",
+                        f"Expected list, got {type(data)}",
+                        data
+                    )
+            else:
+                self.log_test(
+                    f"GET /api/messages/conversations/{ADMIN_USER_ID}",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                f"GET /api/messages/conversations/{ADMIN_USER_ID}",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+
+    def test_leaderboard_endpoint(self):
+        """Test GET /api/leaderboard/0-60 - should return leaderboard entries"""
+        print("🏆 Testing Leaderboard Endpoint...")
+        
+        try:
+            response = self.session.get(f"{BACKEND_URL}/leaderboard/0-60")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    leaderboard_count = len(data)
+                    # Check ObjectId serialization
+                    has_objectid_issues = False
+                    sample_entry = data[0] if data else None
+                    
+                    if sample_entry:
+                        entry_id = sample_entry.get("id")
+                        if not isinstance(entry_id, str):
+                            has_objectid_issues = True
+                    
+                    if has_objectid_issues:
+                        self.log_test(
+                            "GET /api/leaderboard/0-60",
+                            "FAIL",
+                            f"ObjectId serialization issue. Entry ID type: {type(entry_id)}",
+                            sample_entry
+                        )
+                    else:
+                        self.log_test(
+                            "GET /api/leaderboard/0-60",
+                            "PASS",
+                            f"Retrieved {leaderboard_count} leaderboard entries for 0-60"
+                        )
+                else:
+                    self.log_test(
+                        "GET /api/leaderboard/0-60",
+                        "FAIL",
+                        f"Expected list, got {type(data)}",
+                        data
+                    )
+            else:
+                self.log_test(
+                    "GET /api/leaderboard/0-60",
+                    "FAIL",
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "GET /api/leaderboard/0-60",
+                "FAIL",
+                f"Exception: {str(e)}"
+            )
+
+    def run_all_tests(self):
+        """Run all production data tests"""
+        print("🚀 Starting Oklahoma Car Events Production Data Testing")
+        print("=" * 60)
+        
+        # Test admin login first
+        if not self.test_admin_login():
+            print("❌ Admin login failed. Cannot proceed with other tests.")
+            return False
+        
+        # Run all endpoint tests
+        self.test_events_endpoint()
+        self.test_user_cars_endpoint()
+        self.test_public_cars_endpoint()
+        self.test_clubs_endpoint()
+        self.test_rsvp_endpoint()
+        self.test_notifications_endpoint()
+        self.test_performance_runs_endpoint()
+        self.test_feedback_endpoint()
+        self.test_comments_endpoint()
+        self.test_conversations_endpoint()
+        self.test_leaderboard_endpoint()
+        
+        # Summary
+        print("=" * 60)
+        print("📊 TEST SUMMARY")
+        print("=" * 60)
+        
+        total_tests = len(self.test_results)
+        passed_tests = len([r for r in self.test_results if r["status"] == "PASS"])
+        failed_tests = total_tests - passed_tests
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed_tests}")
+        print(f"Failed: {failed_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        
+        if failed_tests > 0:
+            print("\n❌ FAILED TESTS:")
+            for result in self.test_results:
+                if result["status"] == "FAIL":
+                    print(f"  - {result['endpoint']}: {result['details']}")
+        
+        return failed_tests == 0
 
 if __name__ == "__main__":
-    main()
+    tester = ProductionDataTester()
+    success = tester.run_all_tests()
+    sys.exit(0 if success else 1)

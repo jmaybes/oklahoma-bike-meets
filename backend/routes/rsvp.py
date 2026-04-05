@@ -4,7 +4,7 @@ from bson import ObjectId
 
 from database import db
 from models import RSVPCreate, RSVPLegacyCreate
-from helpers import send_push_notification, event_helper
+from helpers import send_push_notification, event_helper, _sid
 
 router = APIRouter()
 
@@ -121,14 +121,14 @@ async def get_user_rsvps(user_id: str):
     rsvps = await db.rsvps.find({"userId": user_id}).sort("eventDate", 1).to_list(100)
     return [{
         "id": str(rsvp["_id"]),
-        "userId": rsvp["userId"],
-        "eventId": rsvp["eventId"],
+        "userId": _sid(rsvp["userId"]),
+        "eventId": _sid(rsvp["eventId"]),
         "eventTitle": rsvp.get("eventTitle", ""),
-        "eventDate": rsvp.get("eventDate", ""),
+        "eventDate": str(rsvp["eventDate"]) if rsvp.get("eventDate") else "",
         "eventTime": rsvp.get("eventTime", ""),
         "eventLocation": rsvp.get("eventLocation", ""),
         "reminderSent": rsvp.get("reminderSent", False),
-        "createdAt": rsvp.get("createdAt")
+        "createdAt": str(rsvp["createdAt"]) if rsvp.get("createdAt") else None
     } for rsvp in rsvps]
 
 
@@ -146,8 +146,8 @@ async def get_event_rsvps(event_id: str):
     rsvps = await db.rsvps.find({"eventId": event_id}).to_list(1000)
     return [{
         "id": str(rsvp["_id"]),
-        "userId": rsvp["userId"],
-        "createdAt": rsvp.get("createdAt")
+        "userId": _sid(rsvp["userId"]),
+        "createdAt": str(rsvp["createdAt"]) if rsvp.get("createdAt") else None
     } for rsvp in rsvps]
 
 

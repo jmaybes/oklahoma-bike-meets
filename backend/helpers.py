@@ -76,12 +76,20 @@ def compress_photos_list(photos: list) -> list:
 
 # ==================== Serializer Helpers ====================
 
+def _sid(val):
+    """Safely convert a value to string if it's an ObjectId, else return as-is."""
+    from bson import ObjectId
+    if isinstance(val, ObjectId):
+        return str(val)
+    return val
+
+
 def event_helper(event) -> dict:
     return {
         "id": str(event["_id"]),
         "title": event["title"],
         "description": event["description"],
-        "date": event["date"],
+        "date": str(event["date"]) if event.get("date") else None,
         "time": event["time"],
         "location": event["location"],
         "address": event["address"],
@@ -94,14 +102,14 @@ def event_helper(event) -> dict:
         "eventType": event.get("eventType", "Car Meet"),
         "photos": event.get("photos", []),
         "attendeeCount": event.get("attendeeCount", 0),
-        "userId": event.get("userId"),
+        "userId": _sid(event.get("userId")),
         "isApproved": event.get("isApproved", True),
         "isPopUp": event.get("isPopUp", False),
         "isRecurring": event.get("isRecurring", False),
         "recurrenceDay": event.get("recurrenceDay"),
-        "recurrenceEndDate": event.get("recurrenceEndDate"),
-        "parentEventId": event.get("parentEventId"),
-        "createdAt": event.get("createdAt"),
+        "recurrenceEndDate": str(event["recurrenceEndDate"]) if event.get("recurrenceEndDate") else None,
+        "parentEventId": _sid(event.get("parentEventId")),
+        "createdAt": str(event["createdAt"]) if event.get("createdAt") else None,
         "contactInfo": event.get("contactInfo", ""),
         "website": event.get("website", ""),
     }
@@ -122,14 +130,14 @@ def user_helper(user) -> dict:
         "longitude": user.get("longitude"),
         "pushToken": user.get("pushToken", ""),
         "authProvider": user.get("authProvider", "email"),
-        "createdAt": user["createdAt"],
+        "createdAt": str(user["createdAt"]) if user.get("createdAt") else None,
     }
 
 
 def user_car_helper(car) -> dict:
     return {
         "id": str(car["_id"]),
-        "userId": car["userId"],
+        "userId": _sid(car["userId"]),
         "make": car["make"],
         "model": car["model"],
         "year": car["year"],
@@ -151,30 +159,30 @@ def user_car_helper(car) -> dict:
         "likes": car.get("likes", 0),
         "views": car.get("views", 0),
         "mainPhotoIndex": car.get("mainPhotoIndex", 0),
-        "createdAt": car.get("createdAt"),
-        "updatedAt": car.get("updatedAt"),
+        "createdAt": str(car["createdAt"]) if car.get("createdAt") else None,
+        "updatedAt": str(car["updatedAt"]) if car.get("updatedAt") else None,
     }
 
 
 def event_photo_helper(photo) -> dict:
     return {
         "id": str(photo["_id"]),
-        "eventId": photo["eventId"],
-        "uploaderId": photo["uploaderId"],
+        "eventId": _sid(photo["eventId"]),
+        "uploaderId": _sid(photo["uploaderId"]),
         "uploaderName": photo.get("uploaderName", ""),
         "photo": photo["photo"],
         "caption": photo.get("caption", ""),
         "tags": photo.get("tags", []),
         "likes": photo.get("likes", []),
         "likeCount": photo.get("likeCount", 0),
-        "createdAt": photo.get("createdAt"),
+        "createdAt": str(photo["createdAt"]) if photo.get("createdAt") else None,
     }
 
 
 def feedback_helper(feedback) -> dict:
     return {
         "id": str(feedback["_id"]),
-        "userId": feedback["userId"],
+        "userId": _sid(feedback["userId"]),
         "userName": feedback["userName"],
         "userEmail": feedback["userEmail"],
         "type": feedback["type"],
@@ -182,15 +190,15 @@ def feedback_helper(feedback) -> dict:
         "message": feedback["message"],
         "status": feedback.get("status", "new"),
         "adminResponse": feedback.get("adminResponse"),
-        "createdAt": feedback["createdAt"],
-        "updatedAt": feedback.get("updatedAt"),
+        "createdAt": str(feedback["createdAt"]) if feedback.get("createdAt") else None,
+        "updatedAt": str(feedback["updatedAt"]) if feedback.get("updatedAt") else None,
     }
 
 
 def route_helper(route) -> dict:
     return {
         "id": str(route["_id"]),
-        "userId": route["userId"],
+        "userId": _sid(route["userId"]),
         "userName": route["userName"],
         "name": route["name"],
         "description": route["description"],
@@ -202,8 +210,8 @@ def route_helper(route) -> dict:
         "isPublic": route.get("isPublic", True),
         "likes": route.get("likes", 0),
         "savedBy": route.get("savedBy", []),
-        "createdAt": route["createdAt"],
-        "updatedAt": route.get("updatedAt"),
+        "createdAt": str(route["createdAt"]) if route.get("createdAt") else None,
+        "updatedAt": str(route["updatedAt"]) if route.get("updatedAt") else None,
     }
 
 

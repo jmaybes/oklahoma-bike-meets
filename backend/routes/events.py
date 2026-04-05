@@ -9,7 +9,7 @@ import logging
 
 from database import db
 from models import EventCreate, EventUpdate, OCRRequest, FavoriteCreate, CommentCreate
-from helpers import event_helper, get_ocr_reader, parse_event_details, send_push_notification
+from helpers import event_helper, get_ocr_reader, parse_event_details, send_push_notification, _sid
 from PIL import Image
 
 logger = logging.getLogger(__name__)
@@ -169,7 +169,7 @@ async def get_events(
         else:
             result.append(event_data)
 
-    result.sort(key=lambda x: x.get("date", ""))
+    result.sort(key=lambda x: str(x.get("date", "")))
     return result
 
 
@@ -307,10 +307,10 @@ async def get_event_comments(event_id: str):
     comments = await db.comments.find({"eventId": event_id}).sort("createdAt", -1).to_list(1000)
     return [{
         "id": str(comment["_id"]),
-        "eventId": comment["eventId"],
-        "userId": comment["userId"],
+        "eventId": _sid(comment["eventId"]),
+        "userId": _sid(comment["userId"]),
         "userName": comment["userName"],
         "text": comment["text"],
         "rating": comment.get("rating"),
-        "createdAt": comment["createdAt"]
+        "createdAt": str(comment["createdAt"]) if comment.get("createdAt") else None
     } for comment in comments]
