@@ -106,7 +106,15 @@ export default function LoginScreen() {
       router.replace('/(tabs)/profile');
     } catch (error: any) {
       console.error('Login error:', error);
-      setLoginError('Please check your email and password and try again.');
+      if (error?.response?.status === 401) {
+        setLoginError('Invalid email or password. Please try again.');
+      } else if (error?.response) {
+        setLoginError(`Server error (${error.response.status}). Please try again later.`);
+      } else if (error?.code === 'ECONNABORTED') {
+        setLoginError('Connection timed out. Check your internet connection.');
+      } else {
+        setLoginError('Unable to connect to server. Check your internet connection or try again later.');
+      }
     } finally {
       setLoading(false);
     }
