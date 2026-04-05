@@ -142,12 +142,22 @@ def _sid(val):
     return val
 
 
+def _isodate(val):
+    """Convert a datetime to ISO format string, or return string as-is."""
+    from datetime import datetime as dt
+    if val is None:
+        return None
+    if isinstance(val, dt):
+        return val.isoformat()
+    return str(val)
+
+
 def event_helper(event) -> dict:
     return {
         "id": str(event["_id"]),
         "title": event["title"],
         "description": event["description"],
-        "date": str(event["date"]) if event.get("date") else None,
+        "date": _isodate(event.get("date")),
         "time": event["time"],
         "location": event["location"],
         "address": event["address"],
@@ -165,9 +175,9 @@ def event_helper(event) -> dict:
         "isPopUp": event.get("isPopUp", False),
         "isRecurring": event.get("isRecurring", False),
         "recurrenceDay": event.get("recurrenceDay"),
-        "recurrenceEndDate": str(event["recurrenceEndDate"]) if event.get("recurrenceEndDate") else None,
+        "recurrenceEndDate": _isodate(event.get("recurrenceEndDate")),
         "parentEventId": _sid(event.get("parentEventId")),
-        "createdAt": str(event["createdAt"]) if event.get("createdAt") else None,
+        "createdAt": _isodate(event.get("createdAt")),
         "contactInfo": event.get("contactInfo", ""),
         "website": event.get("website", ""),
     }
@@ -188,7 +198,7 @@ def user_helper(user) -> dict:
         "longitude": user.get("longitude"),
         "pushToken": user.get("pushToken", ""),
         "authProvider": user.get("authProvider", "email"),
-        "createdAt": str(user["createdAt"]) if user.get("createdAt") else None,
+        "createdAt": _isodate(user.get("createdAt")),
     }
 
 
@@ -217,8 +227,8 @@ def user_car_helper(car) -> dict:
         "likes": car.get("likes", 0),
         "views": car.get("views", 0),
         "mainPhotoIndex": car.get("mainPhotoIndex", 0),
-        "createdAt": str(car["createdAt"]) if car.get("createdAt") else None,
-        "updatedAt": str(car["updatedAt"]) if car.get("updatedAt") else None,
+        "createdAt": _isodate(car.get("createdAt")),
+        "updatedAt": _isodate(car.get("updatedAt")),
     }
 
 
@@ -233,7 +243,7 @@ def event_photo_helper(photo) -> dict:
         "tags": photo.get("tags", []),
         "likes": photo.get("likes", []),
         "likeCount": photo.get("likeCount", 0),
-        "createdAt": str(photo["createdAt"]) if photo.get("createdAt") else None,
+        "createdAt": _isodate(photo.get("createdAt")),
     }
 
 
@@ -248,8 +258,8 @@ def feedback_helper(feedback) -> dict:
         "message": feedback["message"],
         "status": feedback.get("status", "new"),
         "adminResponse": feedback.get("adminResponse"),
-        "createdAt": str(feedback["createdAt"]) if feedback.get("createdAt") else None,
-        "updatedAt": str(feedback["updatedAt"]) if feedback.get("updatedAt") else None,
+        "createdAt": _isodate(feedback.get("createdAt")),
+        "updatedAt": _isodate(feedback.get("updatedAt")),
     }
 
 
@@ -268,8 +278,8 @@ def route_helper(route) -> dict:
         "isPublic": route.get("isPublic", True),
         "likes": route.get("likes", 0),
         "savedBy": route.get("savedBy", []),
-        "createdAt": str(route["createdAt"]) if route.get("createdAt") else None,
-        "updatedAt": str(route["updatedAt"]) if route.get("updatedAt") else None,
+        "createdAt": _isodate(route.get("createdAt")),
+        "updatedAt": _isodate(route.get("updatedAt")),
     }
 
 

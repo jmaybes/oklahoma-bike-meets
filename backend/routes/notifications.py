@@ -3,7 +3,7 @@ from datetime import datetime
 from bson import ObjectId
 
 from database import db
-from helpers import _sid
+from helpers import _sid, _isodate
 
 router = APIRouter()
 
@@ -23,7 +23,7 @@ async def get_notifications(user_id: str, unread_only: bool = False):
         "title": notif["title"],
         "message": notif["message"],
         "isRead": notif.get("isRead", False),
-        "createdAt": str(notif["createdAt"]) if notif.get("createdAt") else None
+        "createdAt": _isodate(notif.get("createdAt"))
     } for notif in notifications]
 
 

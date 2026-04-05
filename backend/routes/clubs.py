@@ -5,6 +5,7 @@ from bson import ObjectId
 
 from database import db
 from models import ClubCreate, ClubUpdate
+from helpers import _isodate
 
 router = APIRouter()
 
@@ -59,7 +60,7 @@ async def get_clubs(city: Optional[str] = Query(None), carType: Optional[str] = 
         "website": club.get("website", ""),
         "memberCount": club.get("memberCount", 0),
         "isApproved": club.get("isApproved", True),
-        "createdAt": str(club["createdAt"]) if club.get("createdAt") else None
+        "createdAt": _isodate(club.get("createdAt"))
     } for club in clubs]
 
 
@@ -85,7 +86,7 @@ async def get_club(club_id: str):
         "meetingSchedule": club.get("meetingSchedule", ""),
         "memberCount": club.get("memberCount", ""),
         "photos": club.get("photos", []),
-        "createdAt": str(club["createdAt"]) if club.get("createdAt") else None
+        "createdAt": _isodate(club.get("createdAt"))
     }
 
 

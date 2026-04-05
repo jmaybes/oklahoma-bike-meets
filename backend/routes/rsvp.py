@@ -4,7 +4,7 @@ from bson import ObjectId
 
 from database import db
 from models import RSVPCreate, RSVPLegacyCreate
-from helpers import send_push_notification, event_helper, _sid
+from helpers import send_push_notification, event_helper, _sid, _isodate
 
 router = APIRouter()
 
@@ -124,11 +124,11 @@ async def get_user_rsvps(user_id: str):
         "userId": _sid(rsvp["userId"]),
         "eventId": _sid(rsvp["eventId"]),
         "eventTitle": rsvp.get("eventTitle", ""),
-        "eventDate": str(rsvp["eventDate"]) if rsvp.get("eventDate") else "",
+        "eventDate": _isodate(rsvp.get("eventDate")) if rsvp.get("eventDate") else "",
         "eventTime": rsvp.get("eventTime", ""),
         "eventLocation": rsvp.get("eventLocation", ""),
         "reminderSent": rsvp.get("reminderSent", False),
-        "createdAt": str(rsvp["createdAt"]) if rsvp.get("createdAt") else None
+        "createdAt": _isodate(rsvp.get("createdAt"))
     } for rsvp in rsvps]
 
 
@@ -147,7 +147,7 @@ async def get_event_rsvps(event_id: str):
     return [{
         "id": str(rsvp["_id"]),
         "userId": _sid(rsvp["userId"]),
-        "createdAt": str(rsvp["createdAt"]) if rsvp.get("createdAt") else None
+        "createdAt": _isodate(rsvp.get("createdAt"))
     } for rsvp in rsvps]
 
 

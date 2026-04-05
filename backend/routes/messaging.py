@@ -4,7 +4,7 @@ from bson import ObjectId
 
 from database import db
 from models import MessageCreate
-from helpers import send_push_notification, _sid
+from helpers import send_push_notification, _sid, _isodate
 
 router = APIRouter()
 
@@ -41,7 +41,7 @@ async def send_message(message: MessageCreate):
         "recipientId": _sid(created_message["recipientId"]),
         "content": created_message["content"],
         "isRead": created_message["isRead"],
-        "createdAt": str(created_message["createdAt"]) if created_message.get("createdAt") else None
+        "createdAt": _isodate(created_message.get("createdAt"))
     }
 
 
@@ -79,7 +79,7 @@ async def get_conversations(user_id: str):
                     "partnerName": partner["name"],
                     "partnerNickname": partner.get("nickname", ""),
                     "lastMessage": msg["content"],
-                    "lastMessageTime": str(msg["createdAt"]) if msg.get("createdAt") else None,
+                    "lastMessageTime": _isodate(msg.get("createdAt")),
                     "unreadCount": 0
                 }
 
@@ -112,7 +112,7 @@ async def get_message_thread(user_id: str, partner_id: str):
             "recipientId": _sid(msg["recipientId"]),
             "content": msg["content"],
             "isRead": msg.get("isRead", False),
-            "createdAt": str(msg["createdAt"]) if msg.get("createdAt") else None,
+            "createdAt": _isodate(msg.get("createdAt")),
         }
         if msg.get("isPopupInvite"):
             m["isPopupInvite"] = True

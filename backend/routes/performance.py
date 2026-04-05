@@ -4,7 +4,7 @@ from bson import ObjectId
 
 from database import db
 from models import PerformanceRunCreate, PerformanceRunUpdate
-from helpers import _sid
+from helpers import _sid, _isodate
 
 router = APIRouter()
 
@@ -24,7 +24,7 @@ def serialize_run(run, user=None):
         "topSpeed": run.get("topSpeed"),
         "location": run.get("location", ""),
         "isManualEntry": run.get("isManualEntry", False),
-        "createdAt": str(run["createdAt"]) if run.get("createdAt") else "",
+        "createdAt": _isodate(run.get("createdAt")) if run.get("createdAt") else "",
     }
 
 

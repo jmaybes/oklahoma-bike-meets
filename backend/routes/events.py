@@ -9,7 +9,7 @@ import logging
 
 from database import db
 from models import EventCreate, EventUpdate, OCRRequest, FavoriteCreate, CommentCreate
-from helpers import event_helper, get_ocr_reader, parse_event_details, send_push_notification, _sid
+from helpers import event_helper, get_ocr_reader, parse_event_details, send_push_notification, _sid, _isodate
 from PIL import Image
 
 logger = logging.getLogger(__name__)
@@ -312,5 +312,5 @@ async def get_event_comments(event_id: str):
         "userName": comment["userName"],
         "text": comment["text"],
         "rating": comment.get("rating"),
-        "createdAt": str(comment["createdAt"]) if comment.get("createdAt") else None
+        "createdAt": _isodate(comment.get("createdAt"))
     } for comment in comments]
