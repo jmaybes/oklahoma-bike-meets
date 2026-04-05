@@ -410,12 +410,14 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 0,
+    paddingTop: 8,
   },
   resultCount: {
     color: '#888',
     fontSize: 14,
     marginBottom: 12,
+    paddingHorizontal: 16,
   },
   errorContainer: {
     flex: 1,
@@ -468,10 +470,11 @@ const styles = StyleSheet.create({
   },
   garageCard: {
     backgroundColor: '#1a1a1a',
-    borderRadius: 16,
+    borderRadius: 0,
     overflow: 'hidden',
-    marginBottom: 16,
+    marginBottom: 2,
     position: 'relative',
+    width: '100%',
   },
   rankBadge: {
     position: 'absolute',
