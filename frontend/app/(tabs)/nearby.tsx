@@ -21,6 +21,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 import Slider from '@react-native-community/slider';
 import api from '../../utils/api';
+import { API_URL } from '../../utils/api';
 import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import MapErrorBoundary from '../../components/MapErrorBoundary';
@@ -406,6 +407,7 @@ export default function NearbyScreen() {
           <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Nearby Enthusiasts</Text>
             <Text style={styles.headerSubtitle}>{nearbyUsers.length} users within {radius} miles</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 8, marginTop: 2 }}>{API_URL}</Text>
           </View>
           <View style={styles.headerActions}>
             {nearbyUsers.length > 0 && (
