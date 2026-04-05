@@ -341,11 +341,35 @@ export default function BrowseGaragesScreen() {
                 {filteredGarages.length} garage{filteredGarages.length !== 1 ? 's' : ''} found
               </Text>
               {filteredGarages.map((car, index) => renderGarageCard(car, index))}
-              <View style={{ height: 40 }} />
+              <View style={{ height: 100 }} />
             </>
           )}
         </ScrollView>
       )}
+
+      {/* Bottom Navigation Bar */}
+      <View style={[styles.bottomNav, { paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 12 : 20) }]}>
+        <TouchableOpacity style={styles.navItem} onPress={() => router.replace('/(tabs)/home')}>
+          <Ionicons name="car-sport-outline" size={24} color="#ccc" />
+          <Text style={styles.navLabel}>Events</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => router.replace('/(tabs)/nearby')}>
+          <Ionicons name="location-outline" size={24} color="#ccc" />
+          <Text style={styles.navLabel}>Nearby</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => router.replace('/(tabs)/clubs')}>
+          <Ionicons name="people-outline" size={24} color="#ccc" />
+          <Text style={styles.navLabel}>Clubs</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => router.push('/feeds')}>
+          <Ionicons name="chatbubbles-outline" size={24} color="#ccc" />
+          <Text style={styles.navLabel}>Lounge</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => router.replace('/(tabs)/profile')}>
+          <Ionicons name="person-outline" size={24} color="#ccc" />
+          <Text style={styles.navLabel}>Profile</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -639,5 +663,29 @@ const styles = StyleSheet.create({
     color: '#FF6B35',
     fontSize: 14,
     fontWeight: '600',
+  },
+  bottomNav: {
+    flexDirection: 'row',
+    backgroundColor: '#1a1a1a',
+    borderTopColor: '#444',
+    borderTopWidth: 1,
+    paddingTop: 10,
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+  },
+  navItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  navLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    color: '#ccc',
   },
 });
