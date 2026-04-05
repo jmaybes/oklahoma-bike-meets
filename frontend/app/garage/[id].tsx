@@ -658,7 +658,7 @@ export default function GarageDetailScreen() {
                   </LinearGradient>
                 </Animated.View>
               );
-            }}}
+            }}
           />
 
           {/* Dot indicators */}
