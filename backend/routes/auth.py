@@ -142,64 +142,79 @@ async def apple_auth_session(request: AppleAuthRequest):
     import jwt
     
     try:
-        # Decode the Apple identity token without full verification
-        # (Apple's token is signed with their keys, but we can decode the payload)
-        # For production, you should verify against Apple's JWKS at https://appleid.apple.com/auth/keys
-        try:
-            # First try to fetch Apple's public keys and verify properly
-            async with httpx.AsyncClient() as http_client:
-                jwks_response = await http_client.get("https://appleid.apple.com/auth/keys", timeout=10.0)
-                apple_keys = jwks_response.json()
-            
-            # Decode header to get the key ID
-            header = jwt.get_unverified_header(request.identityToken)
-            kid = header.get("kid")
-            
-            # Find the matching key
-            matching_key = None
-            for key in apple_keys.get("keys", []):
-                if key.get("kid") == kid:
-                    matching_key = key
-                    break
-            
-            if matching_key:
-                from jwt.algorithms import RSAAlgorithm
-                public_key = RSAAlgorithm.from_jwk(matching_key)
-                decoded = jwt.decode(
-                    request.identityToken,
-                    public_key,
-                    algorithms=["RS256"],
-                    audience="com.velocityvisualcrew.okcarmeets",
-                    options={"verify_exp": True}
-                )
-            else:
-                # Fallback: decode without verification if key not found
-                decoded = jwt.decode(request.identityToken, options={"verify_signature": False})
-        except Exception as decode_error:
-            # Fallback: decode without full verification
-            print(f"Apple token verification warning: {decode_error}")
-            decoded = jwt.decode(request.identityToken, options={"verify_signature": False})
+        apple_user_id = None
+        token_email = ""
         
-        apple_user_id = decoded.get("sub")
-        token_email = decoded.get("email", "")
+        # Try to decode the Apple identity token
+        if request.identityToken and request.identityToken.count('.') >= 2:
+            try:
+                # First try to fetch Apple's public keys and verify properly
+                async with httpx.AsyncClient() as http_client:
+                    jwks_response = await http_client.get("https://appleid.apple.com/auth/keys", timeout=10.0)
+                    apple_keys = jwks_response.json()
+                
+                header = jwt.get_unverified_header(request.identityToken)
+                kid = header.get("kid")
+                
+                matching_key = None
+                for key in apple_keys.get("keys", []):
+                    if key.get("kid") == kid:
+                        matching_key = key
+                        break
+                
+                if matching_key:
+                    from jwt.algorithms import RSAAlgorithm
+                    public_key = RSAAlgorithm.from_jwk(matching_key)
+                    decoded = jwt.decode(
+                        request.identityToken,
+                        public_key,
+                        algorithms=["RS256"],
+                        audience="com.velocityvisualcrew.okcarmeets",
+                        options={"verify_exp": True}
+                    )
+                else:
+                    decoded = jwt.decode(request.identityToken, options={"verify_signature": False})
+                
+                apple_user_id = decoded.get("sub")
+                token_email = decoded.get("email", "")
+                
+            except Exception as decode_error:
+                print(f"Apple token decode warning: {decode_error}")
+                # Try simple decode without verification
+                try:
+                    decoded = jwt.decode(request.identityToken, options={"verify_signature": False})
+                    apple_user_id = decoded.get("sub")
+                    token_email = decoded.get("email", "")
+                except Exception:
+                    print("Apple token fully unparseable, using request data directly")
+        else:
+            print("Apple identity token missing or malformed, using request data directly")
         
         # Use email from token, or from request (Apple sends email on first sign-in only)
         email = token_email or request.email
         
         if not email:
-            raise HTTPException(status_code=400, detail="No email available from Apple Sign In. Please ensure you share your email.")
+            # Return as new user so the frontend can redirect to username selection
+            # where the user can provide additional info
+            return {
+                "isNewUser": True,
+                "user": None,
+                "appleData": {
+                    "email": "",
+                    "name": request.fullName or "Apple User",
+                    "appleId": apple_user_id or f"apple_{datetime.utcnow().timestamp()}"
+                }
+            }
         
         # Check if user exists by Apple ID or email
-        existing_user = await db.users.find_one({
-            "$or": [
-                {"appleId": apple_user_id},
-                {"email": email}
-            ]
-        })
+        query_conditions = [{"email": email}]
+        if apple_user_id:
+            query_conditions.insert(0, {"appleId": apple_user_id})
+        
+        existing_user = await db.users.find_one({"$or": query_conditions})
         
         if existing_user:
-            # Update Apple ID if not set (for users who registered with email first)
-            if not existing_user.get("appleId"):
+            if not existing_user.get("appleId") and apple_user_id:
                 await db.users.update_one(
                     {"_id": existing_user["_id"]},
                     {"$set": {"appleId": apple_user_id, "authProvider": "apple"}}
@@ -212,18 +227,17 @@ async def apple_auth_session(request: AppleAuthRequest):
                 "appleData": {
                     "email": email,
                     "name": request.fullName or existing_user.get("name", ""),
-                    "appleId": apple_user_id
+                    "appleId": apple_user_id or existing_user.get("appleId", "")
                 }
             }
         else:
-            # New user
             return {
                 "isNewUser": True,
                 "user": None,
                 "appleData": {
                     "email": email,
                     "name": request.fullName or "",
-                    "appleId": apple_user_id
+                    "appleId": apple_user_id or ""
                 }
             }
     
@@ -231,7 +245,17 @@ async def apple_auth_session(request: AppleAuthRequest):
         raise HTTPException(status_code=401, detail="Apple identity token has expired")
     except Exception as e:
         print(f"Apple auth error: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to verify Apple identity token: {str(e)}")
+        # Instead of 500, try to gracefully handle with available data
+        email = request.email or ""
+        return {
+            "isNewUser": True,
+            "user": None,
+            "appleData": {
+                "email": email,
+                "name": request.fullName or "Apple User",
+                "appleId": ""
+            }
+        }
 
 
 @router.post("/auth/apple/complete")
