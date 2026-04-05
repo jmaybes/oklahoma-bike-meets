@@ -18,6 +18,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import * as WebBrowser from 'expo-web-browser';
+import * as ExpoLinking from 'expo-linking';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -37,6 +40,8 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loadingCredentials, setLoadingCredentials] = useState(true);
   const [loginError, setLoginError] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
 
   useEffect(() => {
     loadSavedCredentials();
@@ -119,6 +124,102 @@ export default function LoginScreen() {
       } catch (error) {
         console.error('Error clearing credentials:', error);
       }
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    try {
+      const currentUrl = Platform.OS === 'web' 
+        ? window.location.origin 
+        : ExpoLinking.createURL('');
+      
+      const callbackUrl = Platform.OS === 'web'
+        ? `${currentUrl}/auth/google-callback`
+        : ExpoLinking.createURL('auth/google-callback');
+      
+      const authServiceUrl = process.env.EXPO_PUBLIC_AUTH_SERVICE_URL || 'https://demobackend.emergentagent.com';
+      const authUrl = `${authServiceUrl}/auth/v1/env/oauth/google?callback_url=${encodeURIComponent(callbackUrl)}`;
+      
+      if (Platform.OS === 'web') {
+        window.location.href = authUrl;
+      } else {
+        const result = await WebBrowser.openAuthSessionAsync(authUrl, callbackUrl);
+        
+        if (result.type === 'success' && result.url) {
+          const url = new URL(result.url);
+          const sessionId = url.searchParams.get('session_id') || 
+                           url.hash.match(/session_id=([^&]+)/)?.[1];
+          
+          if (sessionId) {
+            router.push(`/auth/google-callback?session_id=${sessionId}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      Alert.alert('Error', 'Failed to initiate Google sign-in');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setAppleLoading(true);
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        Alert.alert('Error', 'Failed to get Apple identity token');
+        return;
+      }
+
+      const fullName = credential.fullName
+        ? [credential.fullName.givenName, credential.fullName.familyName]
+            .filter(Boolean)
+            .join(' ')
+        : '';
+
+      const response = await axios.post(`${API_URL}/api/auth/apple/session`, {
+        identityToken: credential.identityToken,
+        fullName: fullName || undefined,
+        email: credential.email || undefined,
+      });
+
+      const { isNewUser, user, appleData } = response.data;
+
+      if (isNewUser) {
+        router.push({
+          pathname: '/auth/google-callback',
+          params: {
+            email: appleData.email,
+            name: appleData.name || 'Apple User',
+            picture: '',
+            googleId: '',
+            appleId: appleData.appleId,
+            authProvider: 'apple',
+          },
+        });
+      } else {
+        await login(user);
+        Alert.alert('Welcome back!', `Signed in as ${user.nickname || user.email}`);
+        router.replace('/(tabs)/profile');
+      }
+    } catch (error: any) {
+      console.error('Apple sign-in error:', error);
+      if (error.code !== 'ERR_REQUEST_CANCELED') {
+        Alert.alert(
+          'Apple Sign In Failed',
+          error.message || 'Could not sign in with Apple. Please try again.'
+        );
+      }
+    } finally {
+      setAppleLoading(false);
     }
   };
 
@@ -253,6 +354,47 @@ export default function LoginScreen() {
                   Credentials will be saved securely
                 </Text>
               </View>
+            )}
+
+            {/* Social Sign-In Divider */}
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or continue with</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Google Sign-In */}
+            <TouchableOpacity
+              style={[styles.socialButton, styles.googleButton, googleLoading && { opacity: 0.6 }]}
+              onPress={handleGoogleSignIn}
+              disabled={googleLoading}
+            >
+              {googleLoading ? (
+                <ActivityIndicator color="#333" />
+              ) : (
+                <>
+                  <Ionicons name="logo-google" size={22} color="#4285F4" />
+                  <Text style={styles.googleButtonText}>Continue with Google</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            {/* Apple Sign-In (iOS only) */}
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity
+                style={[styles.socialButton, styles.appleButton, appleLoading && { opacity: 0.6 }]}
+                onPress={handleAppleSignIn}
+                disabled={appleLoading}
+              >
+                {appleLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="logo-apple" size={22} color="#fff" />
+                    <Text style={styles.appleButtonText}>Continue with Apple</Text>
+                  </>
+                )}
+              </TouchableOpacity>
             )}
 
             <TouchableOpacity
@@ -414,5 +556,47 @@ const styles = StyleSheet.create({
   registerLinkBold: {
     color: '#FF6B35',
     fontWeight: 'bold',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+    gap: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#333',
+  },
+  dividerText: {
+    color: '#666',
+    fontSize: 13,
+  },
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 10,
+    marginBottom: 10,
+  },
+  googleButton: {
+    backgroundColor: '#fff',
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  appleButton: {
+    backgroundColor: '#000',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  appleButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
 });

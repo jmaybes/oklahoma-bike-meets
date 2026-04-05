@@ -267,16 +267,24 @@ export default function GoogleCallbackScreen() {
             
             <Text style={styles.title}>Almost there!</Text>
             <Text style={styles.subtitle}>
-              Welcome, {googleData?.name}! Choose a username for your profile.
+              Welcome, {authProvider === 'apple' ? (appleData?.name || 'there') : (googleData?.name || 'there')}! Choose a username for your profile.
             </Text>
           </View>
 
-          {/* Google Info */}
+          {/* Auth Provider Info */}
           <View style={styles.googleInfoCard}>
-            <Ionicons name="logo-google" size={24} color="#4285F4" />
+            <Ionicons 
+              name={authProvider === 'apple' ? 'logo-apple' : 'logo-google'} 
+              size={24} 
+              color={authProvider === 'apple' ? '#fff' : '#4285F4'} 
+            />
             <View style={styles.googleInfoText}>
-              <Text style={styles.googleEmail}>{googleData?.email}</Text>
-              <Text style={styles.googleNote}>Signed in with Google</Text>
+              <Text style={styles.googleEmail}>
+                {authProvider === 'apple' ? appleData?.email : googleData?.email}
+              </Text>
+              <Text style={styles.googleNote}>
+                Signed in with {authProvider === 'apple' ? 'Apple' : 'Google'}
+              </Text>
             </View>
             <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
           </View>
