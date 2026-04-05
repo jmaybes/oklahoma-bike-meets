@@ -7,7 +7,7 @@ from pymongo.errors import DocumentTooLarge
 
 from database import db
 from models import UserCarCreate, UserCarUpdate
-from helpers import user_car_helper, compress_photos_list, compress_photo_base64
+from helpers import user_car_helper, compress_photos_list, compress_photo_base64, make_thumbnail_base64, MAX_PHOTO_SIZE_BYTES
 
 import logging
 logger = logging.getLogger(__name__)
@@ -106,11 +106,22 @@ async def get_user_car(user_id: str, include_photos: bool = Query(default=False)
     Pass ?include_photos=true to get all photos (for editing)."""
     
     if include_photos:
-        # Full data for editing - loads all photos
+        # Return thumbnails for the profile view - full photos load via /photo/{index} endpoint
         car = await db.user_cars.find_one({"userId": user_id})
         if not car:
             return None
-        return user_car_helper(car)
+        # Generate thumbnails instead of sending full-size photos
+        raw_photos = car.get("photos", [])
+        thumbnails = []
+        for photo in raw_photos:
+            if photo and len(photo) > 100:
+                thumbnails.append(make_thumbnail_base64(photo))
+            else:
+                thumbnails.append(photo or "")
+        car["photos"] = thumbnails
+        result = user_car_helper(car)
+        result["photoCount"] = len(raw_photos)
+        return result
     
     # Lightweight mode: exclude full photos array from MongoDB, but fetch main photo separately
     car = await db.user_cars.find_one({"userId": user_id}, {"photos": 0})
@@ -126,6 +137,10 @@ async def get_user_car(user_id: str, include_photos: bool = Query(default=False)
         {"photos": {"$slice": [main_idx, 1]}, "_id": 0}
     )
     main_photo = photo_doc.get("photos", [None])[0] if photo_doc and photo_doc.get("photos") else None
+    
+    # Compress main photo to thumbnail for lightweight view
+    if main_photo and len(main_photo) > 100:
+        main_photo = make_thumbnail_base64(main_photo)
     
     # Get photo count without loading photos
     count_doc = await db.user_cars.aggregate([
@@ -180,6 +195,10 @@ async def get_public_garages(
         )
         main_photo = photo_doc.get("photos", [None])[0] if photo_doc and photo_doc.get("photos") else None
 
+        # Create thumbnail for browse view (drastically reduces response size)
+        if main_photo and len(main_photo) > 100:
+            main_photo = make_thumbnail_base64(main_photo)
+
         # Get photo count without loading photos
         count_doc = await db.user_cars.aggregate([
             {"$match": {"_id": car["_id"]}},
@@ -198,11 +217,13 @@ async def get_public_garages(
 
 @router.get("/user-cars/{car_id}")
 async def get_car_by_id(car_id: str):
-    """Get a specific car by ID"""
+    """Get a specific car by ID - returns thumbnails to stay under proxy limits.
+    Full-size photos are loaded individually via /user-cars/{car_id}/photo/{index}."""
     if not ObjectId.is_valid(car_id):
         raise HTTPException(status_code=400, detail="Invalid car ID")
 
-    car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    # Load car WITHOUT photos to keep response small
+    car = await db.user_cars.find_one({"_id": ObjectId(car_id)}, {"photos": 0})
     if not car:
         raise HTTPException(status_code=404, detail="Car not found")
 
@@ -211,13 +232,64 @@ async def get_car_by_id(car_id: str):
         {"$inc": {"views": 1}}
     )
 
-    user = await db.users.find_one({"_id": ObjectId(car["userId"])}) if ObjectId.is_valid(car["userId"]) else None
+    user = await db.users.find_one({"_id": ObjectId(car["userId"])}) if ObjectId.is_valid(car.get("userId", "")) else None
+    
     car_data = user_car_helper(car)
     car_data["ownerName"] = user.get("name", "Unknown") if user else "Unknown"
     car_data["ownerNickname"] = user.get("nickname", "") if user else ""
     car_data["likedBy"] = car.get("likedBy", [])
+    
+    # Get photo count
+    count_doc = await db.user_cars.aggregate([
+        {"$match": {"_id": ObjectId(car_id)}},
+        {"$project": {"photoCount": {"$size": {"$ifNull": ["$photos", []]}}}}
+    ]).to_list(1)
+    photo_count = count_doc[0]["photoCount"] if count_doc else 0
+    car_data["photoCount"] = photo_count
+    
+    # Generate thumbnails for all photos (small enough to fit in one response)
+    thumbnails = []
+    if photo_count > 0:
+        photo_doc = await db.user_cars.find_one(
+            {"_id": ObjectId(car_id)},
+            {"photos": 1, "_id": 0}
+        )
+        if photo_doc and photo_doc.get("photos"):
+            for photo in photo_doc["photos"]:
+                if photo and len(photo) > 100:
+                    thumbnails.append(make_thumbnail_base64(photo))
+                else:
+                    thumbnails.append(photo or "")
+    
+    car_data["photos"] = thumbnails
+    car_data["mainPhotoIndex"] = 0
 
     return car_data
+
+
+@router.get("/user-cars/{car_id}/photo/{index}")
+async def get_car_photo(car_id: str, index: int):
+    """Get a single full-size photo by index for lazy loading in the detail view."""
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=400, detail="Invalid car ID")
+    
+    photo_doc = await db.user_cars.find_one(
+        {"_id": ObjectId(car_id)},
+        {"photos": {"$slice": [index, 1]}, "_id": 0}
+    )
+    
+    if not photo_doc or not photo_doc.get("photos"):
+        raise HTTPException(status_code=404, detail="Photo not found")
+    
+    photo = photo_doc["photos"][0] if photo_doc["photos"] else None
+    if not photo:
+        raise HTTPException(status_code=404, detail="Photo not found")
+    
+    # Compress if still oversized (max ~800KB per photo)
+    if len(photo) > MAX_PHOTO_SIZE_BYTES:
+        photo = compress_photo_base64(photo)
+    
+    return {"photo": photo, "index": index}
 
 
 @router.put("/user-cars/{car_id}")

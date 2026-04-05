@@ -7,6 +7,9 @@ import logging
 import httpx
 from PIL import Image
 
+# Increase PIL's decompression bomb limit for large photos
+Image.MAX_IMAGE_PIXELS = 500_000_000
+
 logger = logging.getLogger(__name__)
 
 # ==================== Photo Compression ====================
@@ -14,6 +17,61 @@ logger = logging.getLogger(__name__)
 MAX_PHOTO_DIMENSION = 1200  # Max width or height in pixels
 MAX_PHOTO_SIZE_BYTES = 800_000  # ~800KB per photo after compression
 JPEG_QUALITY = 75
+
+# Thumbnail settings for browse/list views
+THUMBNAIL_DIMENSION = 400  # Max width/height for thumbnails
+THUMBNAIL_MAX_BYTES = 80_000  # ~80KB per thumbnail
+THUMBNAIL_QUALITY = 55
+
+
+def make_thumbnail_base64(photo_b64: str) -> str:
+    """Create a small thumbnail from a base64 photo for list/browse views."""
+    try:
+        if not photo_b64 or len(photo_b64) < 100:
+            return photo_b64
+
+        # Strip data URI prefix if present
+        if ',' in photo_b64 and photo_b64.startswith('data:'):
+            _hdr, raw_b64 = photo_b64.split(',', 1)
+        else:
+            raw_b64 = photo_b64
+
+        img_bytes = base64.b64decode(raw_b64)
+
+        # If already small enough for a thumbnail, return as-is
+        if len(img_bytes) <= THUMBNAIL_MAX_BYTES:
+            return photo_b64
+
+        img = Image.open(io.BytesIO(img_bytes))
+
+        # Convert RGBA to RGB for JPEG
+        if img.mode in ('RGBA', 'P'):
+            img = img.convert('RGB')
+
+        # Resize to thumbnail dimensions
+        w, h = img.size
+        if w > THUMBNAIL_DIMENSION or h > THUMBNAIL_DIMENSION:
+            ratio = min(THUMBNAIL_DIMENSION / w, THUMBNAIL_DIMENSION / h)
+            new_size = (int(w * ratio), int(h * ratio))
+            img = img.resize(new_size, Image.LANCZOS)
+
+        # Compress aggressively
+        buffer = io.BytesIO()
+        quality = THUMBNAIL_QUALITY
+        img.save(buffer, format='JPEG', quality=quality, optimize=True)
+
+        # Further reduce if still too large
+        while buffer.tell() > THUMBNAIL_MAX_BYTES and quality > 20:
+            buffer = io.BytesIO()
+            quality -= 10
+            img.save(buffer, format='JPEG', quality=quality, optimize=True)
+
+        compressed_b64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        return f"data:image/jpeg;base64,{compressed_b64}"
+
+    except Exception as e:
+        logger.warning(f"Thumbnail creation failed: {e}")
+        return ""
 
 def compress_photo_base64(photo_b64: str) -> str:
     """Compress a base64-encoded photo to reduce MongoDB document size.

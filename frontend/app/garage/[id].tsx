@@ -95,6 +95,10 @@ export default function GarageDetailScreen() {
   const isAdmin = user?.isAdmin === true;
   const [showSetLikes, setShowSetLikes] = useState(false);
   const [likesInput, setLikesInput] = useState('');
+  
+  // Lazy-loaded full-size photos (keyed by index)
+  const [fullPhotos, setFullPhotos] = useState<{ [key: number]: string }>({});
+  const [loadingPhoto, setLoadingPhoto] = useState<number | null>(null);
 
   useEffect(() => {
     fetchCar();
@@ -109,6 +113,43 @@ export default function GarageDetailScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fetch full-size photo on demand
+  const fetchFullPhoto = async (index: number) => {
+    if (fullPhotos[index]) return fullPhotos[index];
+    setLoadingPhoto(index);
+    try {
+      const response = await axios.get(`${API_URL}/api/user-cars/${id}/photo/${index}`);
+      const photo = response.data.photo;
+      setFullPhotos(prev => ({ ...prev, [index]: photo }));
+      return photo;
+    } catch (error) {
+      console.error('Error fetching full photo:', error);
+      return null;
+    } finally {
+      setLoadingPhoto(null);
+    }
+  };
+
+  // Pre-fetch adjacent photos when modal opens
+  const openPhotoModal = async (startIndex: number) => {
+    setCarouselIndex(startIndex);
+    scrollX.setValue(startIndex * (CARD_WIDTH + 16));
+    setShowPhotoModal(true);
+    // Pre-fetch the current photo and adjacent ones
+    fetchFullPhoto(startIndex);
+    if (startIndex > 0) fetchFullPhoto(startIndex - 1);
+    if (car && startIndex < car.photos.length - 1) fetchFullPhoto(startIndex + 1);
+  };
+
+  // Get the best available photo for display
+  const getDisplayPhoto = (index: number): string => {
+    const full = fullPhotos[index];
+    if (full) return full.startsWith('data:') ? full : `data:image/jpeg;base64,${full}`;
+    const thumb = car?.photos?.[index];
+    if (thumb) return thumb.startsWith('data:') ? thumb : `data:image/jpeg;base64,${thumb}`;
+    return '';
   };
 
   const handleLike = async () => {
@@ -248,7 +289,7 @@ export default function GarageDetailScreen() {
               {car.photos.map((photo, index) => (
                 <View key={index} style={styles.mainPhotoContainer}>
                   <Image
-                    source={{ uri: photo.startsWith('data:') ? photo : `data:image/jpeg;base64,${photo}` }}
+                    source={{ uri: getDisplayPhoto(index) }}
                     style={styles.mainPhoto}
                     resizeMode="cover"
                   />
@@ -281,11 +322,7 @@ export default function GarageDetailScreen() {
             {car.photos.length > 0 && (
               <TouchableOpacity 
                 style={styles.viewPhotosButton}
-                onPress={() => {
-                  setCarouselIndex(activePhotoIndex);
-                  scrollX.setValue(activePhotoIndex * (CARD_WIDTH + 16));
-                  setShowPhotoModal(true);
-                }}
+                onPress={() => openPhotoModal(activePhotoIndex)}
                 activeOpacity={0.8}
               >
                 <Ionicons name="images-outline" size={18} color="#fff" />
@@ -545,7 +582,12 @@ export default function GarageDetailScreen() {
             )}
             onMomentumScrollEnd={(e) => {
               const idx = Math.round(e.nativeEvent.contentOffset.x / (CARD_WIDTH + 16));
-              setCarouselIndex(Math.max(0, Math.min(idx, (car.photos?.length || 1) - 1)));
+              const newIdx = Math.max(0, Math.min(idx, (car.photos?.length || 1) - 1));
+              setCarouselIndex(newIdx);
+              // Pre-fetch adjacent full photos
+              fetchFullPhoto(newIdx);
+              if (newIdx > 0) fetchFullPhoto(newIdx - 1);
+              if (newIdx < (car.photos?.length || 0) - 1) fetchFullPhoto(newIdx + 1);
             }}
             initialScrollIndex={carouselIndex}
             getItemLayout={(_, index) => ({
@@ -578,6 +620,8 @@ export default function GarageDetailScreen() {
                 extrapolate: 'clamp',
               });
 
+              const photoUri = getDisplayPhoto(index);
+
               return (
                 <Animated.View
                   style={[
@@ -593,10 +637,16 @@ export default function GarageDetailScreen() {
                   ]}
                 >
                   <Image
-                    source={{ uri: photo.startsWith('data:') ? photo : `data:image/jpeg;base64,${photo}` }}
+                    source={{ uri: photoUri }}
                     style={styles.carouselImage}
                     resizeMode="cover"
                   />
+                  {loadingPhoto === index && (
+                    <View style={styles.photoLoadingOverlay}>
+                      <ActivityIndicator size="large" color="#FF6B35" />
+                      <Text style={{ color: '#fff', marginTop: 8, fontSize: 12 }}>Loading HD...</Text>
+                    </View>
+                  )}
                   {/* Photo number overlay */}
                   <LinearGradient
                     colors={['transparent', 'rgba(0,0,0,0.7)']}
@@ -608,7 +658,7 @@ export default function GarageDetailScreen() {
                   </LinearGradient>
                 </Animated.View>
               );
-            }}
+            }}}
           />
 
           {/* Dot indicators */}
@@ -1110,5 +1160,15 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: '#FF6B35',
+  },
+  photoLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
