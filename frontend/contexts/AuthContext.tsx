@@ -142,7 +142,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ]);
       if (userData && typeof userData === 'string') {
         const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
+        
+        // Validate that this user still exists in the current database
+        // This handles cases where the backend database changed (e.g. after a migration)
+        try {
+          const validateRes = await Promise.race([
+            axios.get(`${API_URL}/api/users/${parsedUser.id}`),
+            new Promise<null>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+          ]);
+          if (validateRes && (validateRes as any).status === 200) {
+            setUser(parsedUser);
+          } else {
+            // User not found in current database — clear stale session
+            console.log('Cached user not found in database, clearing session');
+            await AsyncStorage.removeItem('user');
+            setUser(null);
+          }
+        } catch (validateError: any) {
+          if (validateError?.response?.status === 404 || validateError?.response?.status === 400) {
+            // User definitely doesn't exist — clear session
+            console.log('Cached user invalid, clearing session for re-auth');
+            await AsyncStorage.removeItem('user');
+            setUser(null);
+          } else {
+            // Network error or timeout — keep cached user to avoid blocking offline usage
+            console.log('Could not validate user (network issue), keeping cached session');
+            setUser(parsedUser);
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading user:', error);
