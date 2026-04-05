@@ -73,7 +73,7 @@ app.include_router(api_router)
 app.include_router(websocket_router)
 
 # Version marker - change this to verify deployments are picking up new code
-APP_VERSION = "v2.1.0-2026-04-03"
+APP_VERSION = "v2.2.0-fork1-2026-04-05"
 
 # Health check endpoint for Kubernetes probes
 @app.get("/api/health")
