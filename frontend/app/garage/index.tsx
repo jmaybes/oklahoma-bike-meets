@@ -50,13 +50,30 @@ export default function BrowseGaragesScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const fetchGarages = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/user-cars/public?sort=likes`);
-      setGarages(response.data);
-    } catch (error) {
-      console.error('Error fetching garages:', error);
+      setFetchError(null);
+      const response = await axios.get(`${API_URL}/api/user-cars/public?sort=likes`, {
+        timeout: 15000,
+      });
+      const data = response.data;
+      if (Array.isArray(data)) {
+        setGarages(data);
+      } else {
+        console.error('Garage response is not an array:', typeof data);
+        setFetchError('Unexpected response format. Please try again.');
+        setGarages([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching garages:', error?.message || error);
+      const msg = error?.response
+        ? `Server error (${error.response.status})`
+        : error?.code === 'ECONNABORTED'
+        ? 'Request timed out. Check your connection.'
+        : 'Could not load garages. Check your connection.';
+      setFetchError(msg);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -97,32 +114,38 @@ export default function BrowseGaragesScreen() {
   }, [user]);
 
   const getMainPhoto = (car: UserCar): string | null => {
-    if (!car.photos || car.photos.length === 0) return null;
-    const idx = car.mainPhotoIndex && car.mainPhotoIndex < car.photos.length ? car.mainPhotoIndex : 0;
-    const photo = car.photos[idx];
-    if (!photo) return null;
-    // Handle both base64 strings and data URIs
-    if (photo.startsWith('data:')) return photo;
-    if (photo.startsWith('http')) return photo;
-    return `data:image/jpeg;base64,${photo}`;
+    try {
+      if (!car.photos || !Array.isArray(car.photos) || car.photos.length === 0) return null;
+      const idx = car.mainPhotoIndex && car.mainPhotoIndex < car.photos.length ? car.mainPhotoIndex : 0;
+      const photo = car.photos[idx];
+      if (!photo || typeof photo !== 'string' || photo.length < 10) return null;
+      // Handle both base64 strings and data URIs
+      if (photo.startsWith('data:')) return photo;
+      if (photo.startsWith('http')) return photo;
+      return `data:image/jpeg;base64,${photo}`;
+    } catch {
+      return null;
+    }
   };
 
   const filteredGarages = garages.filter(car => {
     if (!searchQuery) return true;
     const searchLower = searchQuery.toLowerCase();
     return (
-      (car.make || '').toLowerCase().includes(searchLower) ||
-      (car.model || '').toLowerCase().includes(searchLower) ||
-      (car.year || '').toLowerCase().includes(searchLower) ||
-      (car.ownerName || '').toLowerCase().includes(searchLower) ||
-      (car.ownerNickname || '').toLowerCase().includes(searchLower)
+      String(car.make || '').toLowerCase().includes(searchLower) ||
+      String(car.model || '').toLowerCase().includes(searchLower) ||
+      String(car.year || '').toLowerCase().includes(searchLower) ||
+      String(car.ownerName || '').toLowerCase().includes(searchLower) ||
+      String(car.ownerNickname || '').toLowerCase().includes(searchLower)
     );
   });
 
   const renderGarageCard = (car: UserCar, index: number) => {
-    const mainPhoto = getMainPhoto(car);
-    const isLiked = user ? car.likedBy?.includes(user.id) : false;
-    const isTopThree = index < 3;
+    try {
+      if (!car || !car.id) return null;
+      const mainPhoto = getMainPhoto(car);
+      const isLiked = user ? car.likedBy?.includes(user.id) : false;
+      const isTopThree = index < 3;
 
     return (
       <TouchableOpacity
@@ -238,6 +261,10 @@ export default function BrowseGaragesScreen() {
         </View>
       </TouchableOpacity>
     );
+    } catch (e) {
+      console.error('Error rendering garage card:', car?.id, e);
+      return null;
+    }
   };
 
   return (
@@ -281,6 +308,16 @@ export default function BrowseGaragesScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF6B35" />
           <Text style={styles.loadingText}>Loading garages...</Text>
+        </View>
+      ) : fetchError ? (
+        <View style={styles.errorContainer}>
+          <Ionicons name="cloud-offline-outline" size={64} color="#FF6B35" />
+          <Text style={styles.errorTitle}>Unable to Load Garages</Text>
+          <Text style={styles.errorText}>{fetchError}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={() => { setLoading(true); fetchGarages(); }}>
+            <Ionicons name="refresh" size={20} color="#fff" />
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <ScrollView
@@ -379,6 +416,39 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 14,
     marginBottom: 12,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 32,
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+    marginTop: 8,
+  },
+  retryText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   emptyContainer: {
     alignItems: 'center',
