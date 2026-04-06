@@ -51,6 +51,40 @@ async def get_car_thumbnail(car_id: str):
     )
 
 
+@router.get("/user-cars/{car_id}/photo/{index}/image.jpg")
+async def get_car_photo_image(car_id: str, index: int):
+    """Serve a single full-size car photo as an actual JPEG image."""
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    photo_doc = await db.user_cars.find_one(
+        {"_id": ObjectId(car_id)},
+        {"photos": {"$slice": [index, 1]}, "_id": 0}
+    )
+    
+    if not photo_doc or not photo_doc.get("photos"):
+        raise HTTPException(status_code=404, detail="Photo not found")
+    
+    photo = photo_doc["photos"][0] if photo_doc["photos"] else None
+    if not photo or len(str(photo)) < 100:
+        raise HTTPException(status_code=404, detail="Photo not found")
+    
+    # Strip data URI prefix if present
+    if "," in photo and photo.startswith("data:"):
+        photo = photo.split(",", 1)[1]
+    
+    try:
+        image_bytes = base64.b64decode(photo)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Invalid image data")
+    
+    return Response(
+        content=image_bytes,
+        media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=3600"}
+    )
+
+
 
 class SinglePhotoUpload(BaseModel):
     photo: str  # single base64 photo
@@ -232,9 +266,8 @@ async def get_public_garages(
 
 
 @router.get("/user-cars/{car_id}")
-async def get_car_by_id(car_id: str):
-    """Get a specific car by ID - returns thumbnails to stay under proxy limits.
-    Full-size photos are loaded individually via /user-cars/{car_id}/photo/{index}."""
+async def get_car_by_id(request: Request, car_id: str):
+    """Get a specific car by ID - returns HTTP image URLs for each photo."""
     if not ObjectId.is_valid(car_id):
         raise HTTPException(status_code=400, detail="Invalid car ID")
 
@@ -263,13 +296,20 @@ async def get_car_by_id(car_id: str):
     photo_count = count_doc[0]["photoCount"] if count_doc else 0
     car_data["photoCount"] = photo_count
     
-    # Use pre-computed thumbnail for all photo slots (no PIL processing!)
-    thumbnail = car.get("thumbnail", "")
+    # Build base URL from request
+    forwarded = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    scheme = request.headers.get("x-forwarded-proto", "https")
+    base_url = f"{scheme}://{forwarded}" if forwarded else str(request.base_url).rstrip("/")
+    
+    # Return unique HTTP URLs for each photo (not duplicated thumbnails!)
     if photo_count > 0:
-        car_data["photos"] = [thumbnail if thumbnail else ""] * photo_count
+        car_data["photos"] = [
+            f"{base_url}/api/user-cars/{car_id}/photo/{i}/image.jpg"
+            for i in range(photo_count)
+        ]
     else:
         car_data["photos"] = []
-    car_data["mainPhotoIndex"] = 0
+    car_data["mainPhotoIndex"] = car.get("mainPhotoIndex", 0)
 
     return car_data
 

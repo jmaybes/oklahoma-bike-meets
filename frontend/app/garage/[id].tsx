@@ -145,10 +145,18 @@ export default function GarageDetailScreen() {
 
   // Get the best available photo for display
   const getDisplayPhoto = (index: number): string => {
+    // Check for lazy-loaded full-size photo first
     const full = fullPhotos[index];
-    if (full) return full.startsWith('data:') ? full : `data:image/jpeg;base64,${full}`;
+    if (full) {
+      if (full.startsWith('http')) return full;
+      return full.startsWith('data:') ? full : `data:image/jpeg;base64,${full}`;
+    }
+    // Fall back to the photo URL from car data (now HTTP URLs)
     const thumb = car?.photos?.[index];
-    if (thumb) return thumb.startsWith('data:') ? thumb : `data:image/jpeg;base64,${thumb}`;
+    if (thumb) {
+      if (thumb.startsWith('http')) return thumb;
+      return thumb.startsWith('data:') ? thumb : `data:image/jpeg;base64,${thumb}`;
+    }
     return '';
   };
 
