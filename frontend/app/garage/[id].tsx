@@ -436,7 +436,7 @@ export default function GarageDetailScreen() {
             >
               <Image 
                 source={require('../../assets/images/message-icon.png')} 
-                style={{ width: 20, height: 20, tintColor: '#fff' }} 
+                style={{ width: 20, height: 20 }} 
                 resizeMode="contain"
               />
               <Text style={styles.commentButtonText}>
