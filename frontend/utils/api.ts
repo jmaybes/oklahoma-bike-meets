@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL
   || process.env.EXPO_PUBLIC_BACKEND_URL
-  || '';
+  || 'https://event-hub-okc-1.preview.emergentagent.com';
 
 // Create axios instance with automatic retry for resilience
 const api = axios.create({
