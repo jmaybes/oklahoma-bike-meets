@@ -1,9 +1,12 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi.responses import Response
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
 from bson import ObjectId
 from pymongo.errors import DocumentTooLarge
+import base64
+import os
 
 from database import db
 from models import UserCarCreate, UserCarUpdate
@@ -13,6 +16,40 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+# Get the public backend URL for generating image URLs
+BACKEND_URL = os.environ.get("BACKEND_PUBLIC_URL", "")
+
+@router.get("/user-cars/{car_id}/thumbnail.jpg")
+async def get_car_thumbnail(car_id: str):
+    """Serve a car's thumbnail as an actual JPEG image."""
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    car = await db.user_cars.find_one(
+        {"_id": ObjectId(car_id)},
+        {"thumbnail": 1}
+    )
+    if not car or not car.get("thumbnail"):
+        raise HTTPException(status_code=404, detail="No thumbnail")
+    
+    thumb = car["thumbnail"]
+    # Strip data URI prefix if present
+    if "," in thumb:
+        thumb = thumb.split(",", 1)[1]
+    
+    try:
+        image_bytes = base64.b64decode(thumb)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Invalid image data")
+    
+    return Response(
+        content=image_bytes,
+        media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=86400"}
+    )
+
 
 
 class SinglePhotoUpload(BaseModel):
@@ -101,31 +138,31 @@ async def create_user_car(car: UserCarCreate):
 
 
 @router.get("/user-cars/user/{user_id}")
-async def get_user_car(user_id: str, include_photos: bool = Query(default=False)):
-    """Get a user's car. Returns NO photos by default to prevent container OOM.
-    Pass ?include_photos=true to get all photos (for editing)."""
+async def get_user_car(request: Request, user_id: str, include_photos: bool = Query(default=False)):
+    """Get a user's car. Returns HTTP thumbnail URLs instead of base64."""
+    
+    # Build base URL from request
+    forwarded = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    scheme = request.headers.get("x-forwarded-proto", "https")
+    base_url = f"{scheme}://{forwarded}" if forwarded else str(request.base_url).rstrip("/")
     
     if include_photos:
-        # Return thumbnails for the profile view - full photos load via /photo/{index} endpoint
         car = await db.user_cars.find_one({"userId": user_id})
         if not car:
             return None
-        # Use pre-computed thumbnail, exclude heavy photos array
         result = user_car_helper(car)
         result["photoCount"] = len(car.get("photos", []))
-        thumbnail = car.get("thumbnail", "")
-        result["photos"] = [thumbnail] if thumbnail else ([""] * len(car.get("photos", [])) if car.get("photos") else [])
+        car_id = result["id"]
+        has_thumbnail = car.get("thumbnail", "")
+        result["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if has_thumbnail else []
         return result
     
-    # Lightweight mode: exclude full photos, use pre-computed thumbnail
     car = await db.user_cars.find_one({"userId": user_id}, {"photos": 0})
     if not car:
         return None
     
     car_data = user_car_helper(car)
-    
-    # Use pre-computed thumbnail (no image processing!)
-    thumbnail = car.get("thumbnail", "")
+    car_id = car_data["id"]
     
     # Get photo count without loading photos
     count_doc = await db.user_cars.aggregate([
@@ -134,7 +171,8 @@ async def get_user_car(user_id: str, include_photos: bool = Query(default=False)
     ]).to_list(1)
     photo_count = count_doc[0]["photoCount"] if count_doc else 0
     
-    car_data["photos"] = [thumbnail] if thumbnail else []
+    has_thumbnail = car.get("thumbnail", "")
+    car_data["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if has_thumbnail else []
     car_data["photoCount"] = photo_count
     car_data["mainPhotoIndex"] = 0
     
@@ -143,11 +181,12 @@ async def get_user_car(user_id: str, include_photos: bool = Query(default=False)
 
 @router.get("/user-cars/public")
 async def get_public_garages(
+    request: Request,
     make: Optional[str] = None,
     limit: int = Query(default=50, le=100),
     sort: str = Query(default="likes", description="Sort by: likes, views, newest")
 ):
-    """Get all public garages with pre-computed thumbnails. No image processing at request time."""
+    """Get all public garages with HTTP thumbnail URLs instead of base64."""
     query = {"$or": [{"isPublic": True}, {"isPublic": "true"}]}
     if make:
         query["make"] = {"$regex": make, "$options": "i"}
@@ -160,8 +199,16 @@ async def get_public_garages(
     else:  # default: likes
         sort_field = [("likes", -1), ("views", -1)]
 
-    # Exclude full photos array - only fetch thumbnail + metadata
-    cars = await db.user_cars.find(query, {"photos": 0}).sort(sort_field).limit(limit).to_list(limit)
+    # Exclude full photos array AND thumbnail blob - only fetch metadata
+    cars = await db.user_cars.find(query, {"photos": 0, "thumbnail": 0}).sort(sort_field).limit(limit).to_list(limit)
+
+    # Build base URL from request
+    base_url = str(request.base_url).rstrip("/")
+    # Use forwarded host if behind proxy
+    forwarded = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    scheme = request.headers.get("x-forwarded-proto", "https")
+    if forwarded:
+        base_url = f"{scheme}://{forwarded}"
 
     result = []
     for car in cars:
@@ -171,9 +218,11 @@ async def get_public_garages(
         car_data["ownerNickname"] = user.get("nickname", "") if user else ""
         car_data["likedBy"] = car.get("likedBy", [])
 
-        # Use pre-computed thumbnail (no image processing!)
-        thumbnail = car.get("thumbnail", "")
-        car_data["photos"] = [thumbnail] if thumbnail else []
+        # Return HTTP URL to thumbnail instead of base64
+        car_id = car_data["id"]
+        has_thumbnail = car.get("photoCount", 0) > 0 or car.get("_has_thumb", False)
+        # Check if thumbnail exists by looking at photoCount
+        car_data["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if car.get("photoCount", 0) > 0 else []
         car_data["photoCount"] = car.get("photoCount", 0)
         car_data["mainPhotoIndex"] = 0
 
