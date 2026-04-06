@@ -7,6 +7,13 @@ import logging
 import httpx
 from PIL import Image
 
+# Register HEIC/HEIF support (Apple photos)
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except ImportError:
+    pass
+
 # Increase PIL's decompression bomb limit for large photos
 Image.MAX_IMAGE_PIXELS = 500_000_000
 
@@ -19,9 +26,9 @@ MAX_PHOTO_SIZE_BYTES = 800_000  # ~800KB per photo after compression
 JPEG_QUALITY = 75
 
 # Thumbnail settings for browse/list views
-THUMBNAIL_DIMENSION = 400  # Max width/height for thumbnails
-THUMBNAIL_MAX_BYTES = 80_000  # ~80KB per thumbnail
-THUMBNAIL_QUALITY = 55
+THUMBNAIL_DIMENSION = 800  # Max width/height for thumbnails (good for full-width cards)
+THUMBNAIL_MAX_BYTES = 300_000  # ~300KB per thumbnail (high quality for car showcase)
+THUMBNAIL_QUALITY = 82
 
 
 def make_thumbnail_base64(photo_b64: str) -> str:

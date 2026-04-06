@@ -19,7 +19,7 @@ import { useFonts, RobotoCondensed_700Bold } from '@expo-google-fonts/roboto-con
 import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function LandingScreen() {
   const [fontsLoaded] = useFonts({

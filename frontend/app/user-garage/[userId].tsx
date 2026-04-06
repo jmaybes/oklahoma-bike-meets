@@ -16,7 +16,7 @@ import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import Garage3DCarousel from '../../components/Garage3DCarousel';
 
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 interface UserCar {
   id: string;

@@ -25,7 +25,7 @@ import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
 
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 interface Event {
   id: string;

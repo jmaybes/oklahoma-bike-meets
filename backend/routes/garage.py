@@ -496,6 +496,19 @@ async def upload_single_photo(car_id: str, body: SinglePhotoUpload, user_id: str
 
     updated_car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
     photo_count = len(updated_car.get("photos", []))
+
+    # Auto-generate thumbnail from the main photo (first photo or newly uploaded)
+    main_idx = updated_car.get("mainPhotoIndex", 0)
+    photos = updated_car.get("photos", [])
+    if photos:
+        source_photo = photos[min(main_idx, len(photos) - 1)]
+        thumbnail = make_thumbnail_base64(source_photo)
+        if thumbnail:
+            await db.user_cars.update_one(
+                {"_id": ObjectId(car_id)},
+                {"$set": {"thumbnail": thumbnail, "photoCount": photo_count}}
+            )
+
     return {
         "success": True,
         "photoCount": photo_count,
