@@ -272,7 +272,7 @@ export default function GarageDetailScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>
+          <Text style={styles.headerTitle} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
             {car.ownerNickname || car.ownerName}'s Garage
           </Text>
           <TouchableOpacity onPress={handleShare}>
@@ -437,10 +437,10 @@ export default function GarageDetailScreen() {
         </View>
 
         {/* Modifications */}
-        {car.modifications && car.modifications.length > 0 && (
+        {((car.modifications && car.modifications.length > 0) || car.modificationNotes) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Modification List</Text>
-            {Object.entries(groupedMods).map(([category, mods]) => (
+            <Text style={styles.sectionTitle}>Modifications</Text>
+            {car.modifications && car.modifications.length > 0 && Object.entries(groupedMods).map(([category, mods]) => (
               <View key={category} style={styles.modCategory}>
                 <View style={styles.modCategoryHeader}>
                   <Ionicons 
@@ -465,7 +465,9 @@ export default function GarageDetailScreen() {
             ))}
             {car.modificationNotes && (
               <View style={styles.modNotes}>
-                <Text style={styles.modNotesTitle}>Additional Notes</Text>
+                <Text style={styles.modNotesTitle}>
+                  {car.modifications && car.modifications.length > 0 ? 'Additional Notes' : 'Build Details'}
+                </Text>
                 <Text style={styles.modNotesText}>{car.modificationNotes}</Text>
               </View>
             )}
