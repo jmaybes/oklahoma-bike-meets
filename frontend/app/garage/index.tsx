@@ -51,6 +51,7 @@ export default function BrowseGaragesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   const fetchGarages = useCallback(async () => {
     try {
@@ -163,13 +164,14 @@ export default function BrowseGaragesScreen() {
 
         {/* Car Image */}
         <View style={styles.imageContainer}>
-          {mainPhoto ? (
+          {mainPhoto && !failedImages.has(car.id) ? (
             <Image
               source={{ uri: mainPhoto }}
               style={styles.carImage}
               resizeMode="cover"
-              onError={() => {}}
-              defaultSource={undefined}
+              onError={() => {
+                setFailedImages(prev => new Set(prev).add(car.id));
+              }}
             />
           ) : (
             <View style={styles.noImageContainer}>
