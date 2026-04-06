@@ -283,10 +283,7 @@ export default function BrowseGaragesScreen() {
           </TouchableOpacity>
           <View style={styles.headerCenter}>
             <Text style={styles.headerTitle}>Public Garages</Text>
-            <Text style={styles.headerSubtitle}>Ranked by likes • v4</Text>
-            <Text style={[styles.headerSubtitle, {fontSize: 9, color: '#FF6B35'}]}>
-              URL: {API_URL ? API_URL.replace('https://', '') : 'NONE'} | Cars: {garages.length} | #1: {garages[0]?.make || '?'} ({garages[0]?.likes ?? '?'} likes)
-            </Text>
+            <Text style={styles.headerSubtitle}>Ranked by likes</Text>
           </View>
           <View style={{ width: 32 }} />
         </View>
