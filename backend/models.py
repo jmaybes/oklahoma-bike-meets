@@ -295,6 +295,13 @@ class CommentCreate(BaseModel):
     rating: Optional[int] = None
 
 
+class GarageCommentCreate(BaseModel):
+    carId: str
+    userId: str
+    userName: str
+    text: str
+
+
 # ==================== Club Models ====================
 
 class ClubCreate(BaseModel):

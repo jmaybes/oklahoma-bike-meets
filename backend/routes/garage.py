@@ -9,8 +9,8 @@ import base64
 import os
 
 from database import db
-from models import UserCarCreate, UserCarUpdate
-from helpers import user_car_helper, compress_photos_list, compress_photo_base64, make_thumbnail_base64, MAX_PHOTO_SIZE_BYTES
+from models import UserCarCreate, UserCarUpdate, GarageCommentCreate
+from helpers import user_car_helper, compress_photos_list, compress_photo_base64, make_thumbnail_base64, MAX_PHOTO_SIZE_BYTES, _sid, _isodate
 
 import logging
 logger = logging.getLogger(__name__)
@@ -630,3 +630,87 @@ async def create_or_update_car_metadata(car: UserCarCreate):
         result = user_car_helper(created)
         result["photoCount"] = 0
         return result
+
+
+# ==================== Garage Comments ====================
+
+@router.post("/garage-comments")
+async def create_garage_comment(comment: GarageCommentCreate):
+    """Add a comment to a car in the public garage."""
+    if not ObjectId.is_valid(comment.carId):
+        raise HTTPException(status_code=400, detail="Invalid car ID")
+    
+    car = await db.user_cars.find_one({"_id": ObjectId(comment.carId)})
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+    
+    comment_dict = comment.dict()
+    comment_dict["createdAt"] = datetime.utcnow().isoformat()
+    
+    result = await db.garage_comments.insert_one(comment_dict)
+    created = await db.garage_comments.find_one({"_id": result.inserted_id})
+    
+    # Send notification to car owner (if commenter is not the owner)
+    car_owner_id = str(car.get("userId", ""))
+    if car_owner_id and car_owner_id != comment.userId:
+        car_label = f"{car.get('year', '')} {car.get('make', '')} {car.get('model', '')}".strip()
+        notification = {
+            "userId": car_owner_id,
+            "type": "garage_comment",
+            "title": "New Comment on Your Ride",
+            "message": f"{comment.userName} commented on your {car_label}: \"{comment.text[:80]}{'...' if len(comment.text) > 80 else ''}\"",
+            "carId": comment.carId,
+            "isRead": False,
+            "createdAt": datetime.utcnow().isoformat()
+        }
+        await db.notifications.insert_one(notification)
+    
+    return {
+        "id": str(created["_id"]),
+        "carId": _sid(created["carId"]),
+        "userId": _sid(created["userId"]),
+        "userName": created["userName"],
+        "text": created["text"],
+        "createdAt": _isodate(created.get("createdAt"))
+    }
+
+
+@router.get("/garage-comments/{car_id}")
+async def get_garage_comments(car_id: str):
+    """Get all comments for a specific car."""
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=400, detail="Invalid car ID")
+    
+    comments = await db.garage_comments.find(
+        {"carId": car_id}
+    ).sort("createdAt", -1).to_list(100)
+    
+    return [{
+        "id": str(c["_id"]),
+        "carId": _sid(c["carId"]),
+        "userId": _sid(c["userId"]),
+        "userName": c["userName"],
+        "text": c["text"],
+        "createdAt": _isodate(c.get("createdAt"))
+    } for c in comments]
+
+
+@router.delete("/garage-comments/{comment_id}")
+async def delete_garage_comment(comment_id: str, user_id: str = Query(...)):
+    """Delete a garage comment (owner of comment or admin only)."""
+    if not ObjectId.is_valid(comment_id):
+        raise HTTPException(status_code=400, detail="Invalid comment ID")
+    
+    comment = await db.garage_comments.find_one({"_id": ObjectId(comment_id)})
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    # Check if user is comment author or admin
+    user = await db.users.find_one({"_id": ObjectId(user_id)}) if ObjectId.is_valid(user_id) else None
+    is_admin = user.get("isAdmin", False) if user else False
+    
+    if str(comment.get("userId", "")) != user_id and not is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
+    
+    await db.garage_comments.delete_one({"_id": ObjectId(comment_id)})
+    return {"message": "Comment deleted"}

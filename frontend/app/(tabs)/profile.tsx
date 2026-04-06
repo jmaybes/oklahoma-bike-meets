@@ -101,9 +101,13 @@ export default function ProfileScreen() {
     message: '',
   });
 
+  // Garage notifications state
+  const [garageNotifications, setGarageNotifications] = useState<any[]>([]);
+
   useEffect(() => {
     if (isAuthenticated && user) {
       fetchUserCar(true);
+      fetchGarageNotifications();
     }
   }, [isAuthenticated, user]);
 
@@ -143,6 +147,27 @@ export default function ProfileScreen() {
       setLoadingCar(false);
     }
   };
+
+  const fetchGarageNotifications = async () => {
+    try {
+      if (!user?.id) return;
+      const response = await axios.get(`${API_URL}/api/notifications/${user.id}`);
+      const garageNotifs = response.data.filter((n: any) => n.type === 'garage_comment');
+      setGarageNotifications(garageNotifs);
+    } catch (error) {
+      console.log('Failed to fetch garage notifications:', error);
+    }
+  };
+
+  const markNotificationRead = async (notifId: string) => {
+    try {
+      await axios.put(`${API_URL}/api/notifications/${notifId}/read`);
+      setGarageNotifications(prev => prev.filter(n => n.id !== notifId));
+    } catch (error) {
+      console.log('Failed to mark notification as read:', error);
+    }
+  };
+
 
   const toggleGaragePublic = async (value: boolean) => {
     setGaragePublic(value);
@@ -660,6 +685,41 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Garage Comment Notifications */}
+        {garageNotifications.length > 0 && (
+          <View style={styles.garageNotifsSection}>
+            <View style={styles.garageNotifsHeader}>
+              <View style={styles.garageNotifsBadge}>
+                <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
+                <Text style={styles.garageNotifsBadgeText}>{garageNotifications.length}</Text>
+              </View>
+              <Text style={styles.garageNotifsTitle}>New Comments</Text>
+            </View>
+            {garageNotifications.slice(0, 5).map((notif) => (
+              <TouchableOpacity
+                key={notif.id}
+                style={styles.garageNotifCard}
+                onPress={() => {
+                  markNotificationRead(notif.id);
+                  if (notif.carId) {
+                    router.push(`/garage/${notif.carId}`);
+                  }
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={styles.garageNotifIcon}>
+                  <Ionicons name="chatbubble" size={18} color="#FF6B35" />
+                </View>
+                <View style={styles.garageNotifContent}>
+                  <Text style={styles.garageNotifTitle}>{notif.title}</Text>
+                  <Text style={styles.garageNotifMessage} numberOfLines={2}>{notif.message}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#666" />
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         {/* View Public Garages Link - prominent placement */}
         <TouchableOpacity 
@@ -1690,6 +1750,72 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontWeight: '600',
   },
+  // Garage Notifications
+  garageNotifsSection: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  garageNotifsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  garageNotifsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  garageNotifsBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  garageNotifsTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  garageNotifCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  garageNotifIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 107, 53, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  garageNotifContent: {
+    flex: 1,
+    marginRight: 8,
+  },
+  garageNotifTitle: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  garageNotifMessage: {
+    color: '#999',
+    fontSize: 12,
+    lineHeight: 16,
+  },
+
   publicGarageLink: {
     marginHorizontal: 16,
     marginTop: 12,

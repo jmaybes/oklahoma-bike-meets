@@ -19,6 +19,7 @@ async def get_notifications(user_id: str, unread_only: bool = False):
         "id": str(notif["_id"]),
         "userId": _sid(notif["userId"]),
         "eventId": _sid(notif.get("eventId")),
+        "carId": _sid(notif.get("carId")),
         "type": notif.get("type", "general"),
         "title": notif["title"],
         "message": notif["message"],

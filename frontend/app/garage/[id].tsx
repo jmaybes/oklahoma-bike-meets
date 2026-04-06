@@ -71,6 +71,15 @@ interface UserCar {
   likedBy?: string[];
 }
 
+interface GarageComment {
+  id: string;
+  carId: string;
+  userId: string;
+  userName: string;
+  text: string;
+  createdAt: string;
+}
+
 const modCategories: { [key: string]: { icon: string; color: string } } = {
   Engine: { icon: 'flash', color: '#F44336' },
   Suspension: { icon: 'git-merge', color: '#2196F3' },
@@ -100,8 +109,15 @@ export default function GarageDetailScreen() {
   const [fullPhotos, setFullPhotos] = useState<{ [key: number]: string }>({});
   const [loadingPhoto, setLoadingPhoto] = useState<number | null>(null);
 
+  // Comments state
+  const [comments, setComments] = useState<GarageComment[]>([]);
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
+
   useEffect(() => {
     fetchCar();
+    fetchComments();
   }, [id]);
 
   const fetchCar = async () => {
@@ -223,6 +239,75 @@ export default function GarageDetailScreen() {
     }
   };
 
+  // Comment functions
+  const fetchComments = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/garage-comments/${id}`);
+      setComments(response.data);
+    } catch (error) {
+      console.log('Failed to fetch comments:', error);
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!user) {
+      Alert.alert('Login Required', 'Please log in to leave a comment.');
+      return;
+    }
+    if (!commentText.trim()) return;
+
+    setSubmittingComment(true);
+    try {
+      await axios.post(`${API_URL}/api/garage-comments`, {
+        carId: id,
+        userId: user.id,
+        userName: user.nickname || user.name,
+        text: commentText.trim(),
+      });
+      setCommentText('');
+      setShowCommentModal(false);
+      fetchComments();
+      Alert.alert('Comment Posted', 'Your comment has been added!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to post comment. Please try again.');
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!user) return;
+    Alert.alert('Delete Comment', 'Are you sure?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete', style: 'destructive', onPress: async () => {
+          try {
+            await axios.delete(`${API_URL}/api/garage-comments/${commentId}?user_id=${user.id}`);
+            fetchComments();
+          } catch (error) {
+            Alert.alert('Error', 'Failed to delete comment.');
+          }
+        }
+      }
+    ]);
+  };
+
+  const formatCommentDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+      if (diffMins < 1) return 'just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+      return date.toLocaleDateString();
+    } catch { return ''; }
+  };
+
   const groupModificationsByCategory = (mods: Modification[]) => {
     const grouped: { [key: string]: Modification[] } = {};
     mods.forEach(mod => {
@@ -337,6 +422,23 @@ export default function GarageDetailScreen() {
                 <Text style={styles.viewPhotosText}>View Photos</Text>
               </TouchableOpacity>
             )}
+            {/* Comment Button */}
+            <TouchableOpacity 
+              style={styles.commentButton}
+              onPress={() => {
+                if (!user) {
+                  Alert.alert('Login Required', 'Please log in to leave a comment.');
+                  return;
+                }
+                setShowCommentModal(true);
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="chatbubble-outline" size={18} color="#fff" />
+              <Text style={styles.commentButtonText}>
+                Comment{comments.length > 0 ? ` (${comments.length})` : ''}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -492,6 +594,40 @@ export default function GarageDetailScreen() {
                 </TouchableOpacity>
               )}
             </View>
+          </View>
+        )}
+
+        {/* Comments Section */}
+        {comments.length > 0 && (
+          <View style={styles.commentsSection}>
+            <View style={styles.commentsSectionHeader}>
+              <Ionicons name="chatbubbles" size={20} color="#FF6B35" />
+              <Text style={styles.commentsSectionTitle}>Comments ({comments.length})</Text>
+            </View>
+            {comments.map((comment) => (
+              <View key={comment.id} style={styles.commentCard}>
+                <View style={styles.commentHeader}>
+                  <View style={styles.commentAvatar}>
+                    <Text style={styles.commentAvatarText}>
+                      {comment.userName.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={styles.commentMeta}>
+                    <Text style={styles.commentAuthor}>{comment.userName}</Text>
+                    <Text style={styles.commentDate}>{formatCommentDate(comment.createdAt)}</Text>
+                  </View>
+                  {user && (user.id === comment.userId || isAdmin) && (
+                    <TouchableOpacity 
+                      style={styles.commentDeleteBtn}
+                      onPress={() => handleDeleteComment(comment.id)}
+                    >
+                      <Ionicons name="trash-outline" size={16} color="#666" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <Text style={styles.commentText}>{comment.text}</Text>
+              </View>
+            ))}
           </View>
         )}
 
@@ -705,6 +841,54 @@ export default function GarageDetailScreen() {
                 />
               );
             })}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Comment Modal */}
+      <Modal
+        visible={showCommentModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCommentModal(false)}
+        statusBarTranslucent
+      >
+        <View style={styles.commentModalOverlay}>
+          <View style={styles.commentModalContent}>
+            <View style={styles.commentModalHeader}>
+              <Text style={styles.commentModalTitle}>Leave a Comment</Text>
+              <TouchableOpacity onPress={() => setShowCommentModal(false)}>
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.commentInput}
+              placeholder="What do you think of this build?"
+              placeholderTextColor="#666"
+              value={commentText}
+              onChangeText={setCommentText}
+              multiline
+              maxLength={500}
+              autoFocus
+            />
+            <Text style={styles.commentCharCount}>{commentText.length}/500</Text>
+            <TouchableOpacity
+              style={[
+                styles.commentSubmitBtn,
+                (!commentText.trim() || submittingComment) && styles.commentSubmitBtnDisabled,
+              ]}
+              onPress={handleSubmitComment}
+              disabled={!commentText.trim() || submittingComment}
+            >
+              {submittingComment ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="send" size={18} color="#fff" />
+                  <Text style={styles.commentSubmitText}>Post Comment</Text>
+                </>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -1180,5 +1364,146 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // Comment Button
+  commentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    gap: 8,
+    marginTop: 8,
+  },
+  commentButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  // Comments Section
+  commentsSection: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  commentsSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  commentsSectionTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  commentCard: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  commentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  commentAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FF6B35',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  commentAvatarText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  commentMeta: {
+    flex: 1,
+  },
+  commentAuthor: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  commentDate: {
+    color: '#888',
+    fontSize: 12,
+    marginTop: 1,
+  },
+  commentDeleteBtn: {
+    padding: 6,
+  },
+  commentText: {
+    color: '#ccc',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  // Comment Modal
+  commentModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
+  },
+  commentModalContent: {
+    backgroundColor: '#1a1a1a',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
+  },
+  commentModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  commentModalTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  commentInput: {
+    backgroundColor: '#252525',
+    borderRadius: 12,
+    padding: 14,
+    color: '#fff',
+    fontSize: 15,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  commentCharCount: {
+    color: '#666',
+    fontSize: 12,
+    textAlign: 'right',
+    marginTop: 6,
+    marginBottom: 12,
+  },
+  commentSubmitBtn: {
+    backgroundColor: '#FF6B35',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  commentSubmitBtnDisabled: {
+    opacity: 0.5,
+  },
+  commentSubmitText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

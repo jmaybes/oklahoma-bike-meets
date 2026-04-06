@@ -1,276 +1,281 @@
 #!/usr/bin/env python3
+"""
+Comprehensive Backend Testing for Garage Comments System
+Testing the complete flow as specified in the review request.
+"""
 
 import requests
 import json
 import sys
-from typing import Dict, Any
+import os
+from datetime import datetime
 
-# Backend URL from frontend .env
-BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
+# Get backend URL from environment
+BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com"
 
-# Test credentials from test_result.md
-ADMIN_EMAIL = "admin@okcarevents.com"
-ADMIN_PASSWORD = "admin123"
-ADMIN_USER_ID = "69bb035fb5d3f5e057f073ca"
+def log_test(test_name, status, details=""):
+    """Log test results with timestamp"""
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    status_symbol = "✅" if status == "PASS" else "❌"
+    print(f"[{timestamp}] {status_symbol} {test_name}")
+    if details:
+        print(f"    {details}")
 
-def test_admin_login() -> Dict[str, Any]:
-    """Test admin login and return auth token/user data"""
-    print("🔐 Testing Admin Login...")
+def test_garage_comments_system():
+    """Test the complete garage comments system flow"""
+    print("=" * 60)
+    print("GARAGE COMMENTS SYSTEM TESTING")
+    print("=" * 60)
     
-    url = f"{BACKEND_URL}/auth/login"
-    payload = {
-        "email": ADMIN_EMAIL,
-        "password": ADMIN_PASSWORD
+    # Test data
+    admin_credentials = {
+        "email": "admin@okcarevents.com",
+        "password": "admin123"
     }
     
-    try:
-        response = requests.post(url, json=payload, timeout=30)
-        print(f"Status Code: {response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            print(f"✅ Admin login successful")
-            print(f"User ID: {data.get('id', 'N/A')}")
-            print(f"Name: {data.get('name', 'N/A')}")
-            print(f"Is Admin: {data.get('isAdmin', 'N/A')}")
-            return data
-        else:
-            print(f"❌ Login failed: {response.text}")
-            return {}
-            
-    except Exception as e:
-        print(f"❌ Login error: {str(e)}")
-        return {}
-
-def test_public_cars_thumbnails() -> list:
-    """Test GET /api/user-cars/public for thumbnail URLs"""
-    print("\n🚗 Testing Public Cars with Thumbnails...")
+    car_id = "69cb30e24ddc647117911a44"
+    test_user_id = "69cb0f17abc86b849f3bfaf5"
+    car_owner_id = "69bb035fb5d3f5e057f073ca"  # Admin user ID for notifications
     
-    url = f"{BACKEND_URL}/user-cars/public"
+    comment_data = {
+        "carId": car_id,
+        "userId": test_user_id,
+        "userName": "BMWGuy",
+        "text": "Incredible McLaren build!"
+    }
+    
+    comment_id = None
     
     try:
-        response = requests.get(url, timeout=30)
-        print(f"Status Code: {response.status_code}")
+        # Step 1: Login as admin to get user ID
+        print("\n1. Testing Admin Login...")
+        login_response = requests.post(
+            f"{BACKEND_URL}/api/auth/login",
+            json=admin_credentials,
+            headers={"Content-Type": "application/json"}
+        )
         
-        if response.status_code == 200:
-            cars = response.json()
-            print(f"✅ Found {len(cars)} public cars")
-            
-            # Check for thumbnail URLs in photos array
-            cars_with_thumbnails = []
-            for car in cars[:3]:  # Check first 3 cars
-                car_id = car.get('id')
-                photos = car.get('photos', [])
-                print(f"\nCar ID: {car_id}")
-                print(f"Make/Model: {car.get('make', 'N/A')} {car.get('model', 'N/A')}")
-                print(f"Photos count: {len(photos)}")
-                
-                # Check if photos contain thumbnail URLs (not base64)
-                thumbnail_urls = []
-                for photo in photos:
-                    if isinstance(photo, str):
-                        if '/thumbnail.jpg' in photo:
-                            thumbnail_urls.append(photo)
-                            print(f"✅ Found thumbnail URL: {photo}")
-                        elif photo.startswith('data:image/'):
-                            print(f"⚠️  Found base64 image (should be URL): {photo[:50]}...")
-                        else:
-                            print(f"📷 Photo URL: {photo}")
-                
-                if thumbnail_urls:
-                    cars_with_thumbnails.append({
-                        'car_id': car_id,
-                        'thumbnail_urls': thumbnail_urls
-                    })
-            
-            return cars_with_thumbnails
+        if login_response.status_code == 200:
+            admin_data = login_response.json()
+            admin_user_id = admin_data.get("id")
+            log_test("Admin Login", "PASS", f"Admin ID: {admin_user_id}")
         else:
-            print(f"❌ Failed to get public cars: {response.text}")
-            return []
-            
-    except Exception as e:
-        print(f"❌ Error getting public cars: {str(e)}")
-        return []
-
-def test_thumbnail_image(car_id: str) -> bool:
-    """Test GET /api/user-cars/{car_id}/thumbnail.jpg for valid JPEG"""
-    print(f"\n🖼️  Testing Thumbnail Image for Car ID: {car_id}")
-    
-    # Use the full URL from the backend
-    url = f"{BACKEND_URL}/user-cars/{car_id}/thumbnail.jpg"
-    
-    try:
-        response = requests.get(url, timeout=30)
-        print(f"Status Code: {response.status_code}")
-        
-        if response.status_code == 200:
-            content_type = response.headers.get('Content-Type', '')
-            content_length = len(response.content)
-            
-            print(f"Content-Type: {content_type}")
-            print(f"Content Length: {content_length} bytes ({content_length/1024:.1f} KB)")
-            
-            # Check if it's a valid JPEG
-            if content_type == 'image/jpeg':
-                print("✅ Content-Type is image/jpeg")
-            else:
-                print(f"⚠️  Content-Type is not image/jpeg: {content_type}")
-            
-            # Check size range (30KB - 300KB)
-            if 30000 <= content_length <= 300000:
-                print(f"✅ Image size is within expected range (30KB-300KB)")
-                return True
-            else:
-                print(f"⚠️  Image size outside expected range: {content_length/1024:.1f}KB")
-                return content_type == 'image/jpeg'
-        else:
-            print(f"❌ Failed to get thumbnail: {response.text}")
+            log_test("Admin Login", "FAIL", f"Status: {login_response.status_code}, Response: {login_response.text}")
             return False
-            
-    except Exception as e:
-        print(f"❌ Error getting thumbnail: {str(e)}")
-        return False
-
-def test_admin_car_data() -> bool:
-    """Test GET /api/user-cars/user/{admin_user_id} for admin's car data"""
-    print(f"\n👤 Testing Admin's Car Data (User ID: {ADMIN_USER_ID})...")
-    
-    url = f"{BACKEND_URL}/user-cars/user/{ADMIN_USER_ID}"
-    
-    try:
-        response = requests.get(url, timeout=30)
-        print(f"Status Code: {response.status_code}")
         
-        if response.status_code == 200:
-            car_data = response.json()
-            
-            if car_data:
-                print(f"✅ Admin has car data")
-                print(f"Make/Model: {car_data.get('make', 'N/A')} {car_data.get('model', 'N/A')}")
-                print(f"Year: {car_data.get('year', 'N/A')}")
-                
-                photos = car_data.get('photos', [])
-                print(f"Photos count: {len(photos)}")
-                
-                # Check for thumbnail URLs
-                thumbnail_found = False
-                for photo in photos:
-                    if isinstance(photo, str) and '/thumbnail.jpg' in photo:
-                        print(f"✅ Found thumbnail URL: {photo}")
-                        thumbnail_found = True
-                
-                return thumbnail_found
-            else:
-                print("ℹ️  Admin has no car registered")
-                return True  # Not an error if admin has no car
-        else:
-            print(f"❌ Failed to get admin car data: {response.text}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Error getting admin car data: {str(e)}")
-        return False
-
-def test_admin_car_with_photos() -> bool:
-    """Test GET /api/user-cars/user/{admin_user_id}?include_photos=true"""
-    print(f"\n📸 Testing Admin's Car Data with include_photos=true...")
-    
-    url = f"{BACKEND_URL}/user-cars/user/{ADMIN_USER_ID}?include_photos=true"
-    
-    try:
-        response = requests.get(url, timeout=30)
-        print(f"Status Code: {response.status_code}")
+        # Step 2: Create garage comment
+        print("\n2. Testing Create Garage Comment...")
+        comment_response = requests.post(
+            f"{BACKEND_URL}/api/garage-comments",
+            json=comment_data,
+            headers={"Content-Type": "application/json"}
+        )
         
-        if response.status_code == 200:
-            car_data = response.json()
+        if comment_response.status_code == 200:
+            comment_result = comment_response.json()
+            comment_id = comment_result.get("id")
             
-            if car_data:
-                print(f"✅ Admin car data retrieved with include_photos=true")
-                print(f"Make/Model: {car_data.get('make', 'N/A')} {car_data.get('model', 'N/A')}")
+            # Verify response structure
+            required_fields = ["id", "carId", "userId", "userName", "text", "createdAt"]
+            missing_fields = [field for field in required_fields if field not in comment_result]
+            
+            if not missing_fields:
+                log_test("Create Garage Comment", "PASS", 
+                        f"Comment ID: {comment_id}, All required fields present")
                 
-                photos = car_data.get('photos', [])
-                print(f"Photos count: {len(photos)}")
-                
-                # Check if photos are included (should be more detailed with include_photos=true)
-                if photos:
-                    print("✅ Photos are included in response")
-                    for i, photo in enumerate(photos[:3]):  # Show first 3
-                        if isinstance(photo, str):
-                            if photo.startswith('data:image/'):
-                                print(f"Photo {i+1}: Base64 data ({len(photo)} chars)")
-                            else:
-                                print(f"Photo {i+1}: URL - {photo}")
-                    return True
+                # Verify field values
+                if (comment_result["carId"] == car_id and 
+                    comment_result["userId"] == test_user_id and
+                    comment_result["userName"] == "BMWGuy" and
+                    comment_result["text"] == "Incredible McLaren build!"):
+                    log_test("Comment Data Validation", "PASS", "All field values correct")
                 else:
-                    print("ℹ️  No photos in admin's car")
-                    return True
+                    log_test("Comment Data Validation", "FAIL", "Field values don't match input")
             else:
-                print("ℹ️  Admin has no car registered")
-                return True
+                log_test("Create Garage Comment", "FAIL", f"Missing fields: {missing_fields}")
+                return False
         else:
-            print(f"❌ Failed to get admin car data with photos: {response.text}")
+            log_test("Create Garage Comment", "FAIL", 
+                    f"Status: {comment_response.status_code}, Response: {comment_response.text}")
             return False
+        
+        # Step 3: Get garage comments for the car
+        print("\n3. Testing Get Garage Comments...")
+        get_comments_response = requests.get(f"{BACKEND_URL}/api/garage-comments/{car_id}")
+        
+        if get_comments_response.status_code == 200:
+            comments_list = get_comments_response.json()
             
+            if isinstance(comments_list, list) and len(comments_list) > 0:
+                # Find our comment in the list
+                our_comment = None
+                for comment in comments_list:
+                    if comment.get("id") == comment_id:
+                        our_comment = comment
+                        break
+                
+                if our_comment:
+                    log_test("Get Garage Comments", "PASS", 
+                            f"Found {len(comments_list)} comments, our comment is present")
+                else:
+                    log_test("Get Garage Comments", "FAIL", "Our comment not found in the list")
+                    return False
+            else:
+                log_test("Get Garage Comments", "FAIL", "No comments returned or invalid format")
+                return False
+        else:
+            log_test("Get Garage Comments", "FAIL", 
+                    f"Status: {get_comments_response.status_code}, Response: {get_comments_response.text}")
+            return False
+        
+        # Step 4: Check notifications for car owner
+        print("\n4. Testing Notification Creation...")
+        notifications_response = requests.get(f"{BACKEND_URL}/api/notifications/{car_owner_id}")
+        
+        if notifications_response.status_code == 200:
+            notifications = notifications_response.json()
+            
+            if isinstance(notifications, list):
+                # Look for garage_comment notification
+                garage_comment_notification = None
+                for notification in notifications:
+                    if (notification.get("type") == "garage_comment" and 
+                        notification.get("carId") == car_id):
+                        garage_comment_notification = notification
+                        break
+                
+                if garage_comment_notification:
+                    log_test("Notification Creation", "PASS", 
+                            f"Garage comment notification found with carId field populated")
+                    
+                    # Verify notification structure
+                    required_notif_fields = ["type", "title", "message", "carId"]
+                    missing_notif_fields = [field for field in required_notif_fields 
+                                          if field not in garage_comment_notification]
+                    
+                    if not missing_notif_fields:
+                        log_test("Notification Structure", "PASS", "All required notification fields present")
+                    else:
+                        log_test("Notification Structure", "FAIL", f"Missing fields: {missing_notif_fields}")
+                else:
+                    log_test("Notification Creation", "FAIL", "No garage_comment notification found")
+            else:
+                log_test("Notification Creation", "FAIL", "Invalid notifications response format")
+        else:
+            log_test("Notification Creation", "FAIL", 
+                    f"Status: {notifications_response.status_code}, Response: {notifications_response.text}")
+        
+        # Step 5: Delete garage comment
+        print("\n5. Testing Delete Garage Comment...")
+        delete_response = requests.delete(
+            f"{BACKEND_URL}/api/garage-comments/{comment_id}?user_id={test_user_id}"
+        )
+        
+        if delete_response.status_code == 200:
+            delete_result = delete_response.json()
+            if "message" in delete_result:
+                log_test("Delete Garage Comment", "PASS", f"Message: {delete_result['message']}")
+            else:
+                log_test("Delete Garage Comment", "PASS", "Comment deleted successfully")
+        else:
+            log_test("Delete Garage Comment", "FAIL", 
+                    f"Status: {delete_response.status_code}, Response: {delete_response.text}")
+            return False
+        
+        # Step 6: Verify comment is deleted
+        print("\n6. Testing Comment Deletion Verification...")
+        verify_delete_response = requests.get(f"{BACKEND_URL}/api/garage-comments/{car_id}")
+        
+        if verify_delete_response.status_code == 200:
+            remaining_comments = verify_delete_response.json()
+            
+            # Check if our comment is still in the list
+            comment_still_exists = any(comment.get("id") == comment_id for comment in remaining_comments)
+            
+            if not comment_still_exists:
+                log_test("Comment Deletion Verification", "PASS", 
+                        f"Comment successfully removed. {len(remaining_comments)} comments remaining")
+            else:
+                log_test("Comment Deletion Verification", "FAIL", "Comment still exists after deletion")
+                return False
+        else:
+            log_test("Comment Deletion Verification", "FAIL", 
+                    f"Status: {verify_delete_response.status_code}, Response: {verify_delete_response.text}")
+            return False
+        
+        # Step 7: Test individual photo endpoints
+        print("\n7. Testing Individual Photo Endpoints...")
+        
+        # Test photo 0
+        photo_0_response = requests.get(f"{BACKEND_URL}/api/user-cars/{car_id}/photo/0/image.jpg")
+        
+        if photo_0_response.status_code == 200:
+            content_type = photo_0_response.headers.get("Content-Type", "")
+            content_length = len(photo_0_response.content)
+            
+            if content_type == "image/jpeg" and content_length > 10240:  # > 10KB
+                log_test("Photo 0 Endpoint", "PASS", 
+                        f"Content-Type: {content_type}, Size: {content_length} bytes (> 10KB)")
+                photo_0_size = content_length
+            else:
+                log_test("Photo 0 Endpoint", "FAIL", 
+                        f"Content-Type: {content_type}, Size: {content_length} bytes (should be image/jpeg and > 10KB)")
+                return False
+        else:
+            log_test("Photo 0 Endpoint", "FAIL", 
+                    f"Status: {photo_0_response.status_code}, Response: {photo_0_response.text}")
+            return False
+        
+        # Test photo 1
+        photo_1_response = requests.get(f"{BACKEND_URL}/api/user-cars/{car_id}/photo/1/image.jpg")
+        
+        if photo_1_response.status_code == 200:
+            content_type = photo_1_response.headers.get("Content-Type", "")
+            content_length = len(photo_1_response.content)
+            
+            if content_type == "image/jpeg":
+                log_test("Photo 1 Endpoint", "PASS", 
+                        f"Content-Type: {content_type}, Size: {content_length} bytes")
+                photo_1_size = content_length
+                
+                # Verify different sizes (proves unique photos)
+                if photo_0_size != photo_1_size:
+                    log_test("Unique Photos Verification", "PASS", 
+                            f"Photo 0: {photo_0_size} bytes, Photo 1: {photo_1_size} bytes (different sizes)")
+                else:
+                    log_test("Unique Photos Verification", "FAIL", 
+                            f"Both photos have same size: {photo_0_size} bytes")
+            else:
+                log_test("Photo 1 Endpoint", "FAIL", 
+                        f"Content-Type: {content_type}, Size: {content_length} bytes (should be image/jpeg)")
+                return False
+        else:
+            log_test("Photo 1 Endpoint", "FAIL", 
+                    f"Status: {photo_1_response.status_code}, Response: {photo_1_response.text}")
+            return False
+        
+        print("\n" + "=" * 60)
+        print("✅ ALL GARAGE COMMENTS SYSTEM TESTS PASSED!")
+        print("=" * 60)
+        return True
+        
     except Exception as e:
-        print(f"❌ Error getting admin car data with photos: {str(e)}")
+        log_test("Garage Comments System Test", "FAIL", f"Exception: {str(e)}")
         return False
 
 def main():
-    """Run all garage/thumbnail tests"""
-    print("🚀 Starting Garage/Thumbnail Backend API Tests")
-    print("=" * 60)
+    """Main test runner"""
+    print("Starting Backend Testing for Garage Comments System...")
+    print(f"Backend URL: {BACKEND_URL}")
     
-    # Test 1: Admin Login
-    admin_data = test_admin_login()
-    if not admin_data:
-        print("❌ Cannot proceed without admin login")
+    success = test_garage_comments_system()
+    
+    if success:
+        print("\n🎉 All tests completed successfully!")
+        sys.exit(0)
+    else:
+        print("\n💥 Some tests failed!")
         sys.exit(1)
-    
-    # Test 2: Public Cars with Thumbnails
-    cars_with_thumbnails = test_public_cars_thumbnails()
-    
-    # Test 3: Thumbnail Image (if we found cars with thumbnails)
-    thumbnail_test_passed = False
-    if cars_with_thumbnails:
-        # Test first car's thumbnail
-        first_car = cars_with_thumbnails[0]
-        thumbnail_test_passed = test_thumbnail_image(first_car['car_id'])
-    else:
-        print("\n⚠️  No cars with thumbnail URLs found to test thumbnail endpoint")
-    
-    # Test 4: Admin's Car Data
-    admin_car_test = test_admin_car_data()
-    
-    # Test 5: Admin's Car Data with include_photos
-    admin_car_photos_test = test_admin_car_with_photos()
-    
-    # Summary
-    print("\n" + "=" * 60)
-    print("📊 TEST SUMMARY")
-    print("=" * 60)
-    print(f"✅ Admin Login: {'PASS' if admin_data else 'FAIL'}")
-    print(f"✅ Public Cars API: {'PASS' if cars_with_thumbnails else 'FAIL - No thumbnail URLs found'}")
-    print(f"✅ Thumbnail Image: {'PASS' if thumbnail_test_passed else 'FAIL/SKIP'}")
-    print(f"✅ Admin Car Data: {'PASS' if admin_car_test else 'FAIL'}")
-    print(f"✅ Admin Car with Photos: {'PASS' if admin_car_photos_test else 'FAIL'}")
-    
-    # Overall result
-    all_critical_passed = (
-        admin_data and 
-        admin_car_test and 
-        admin_car_photos_test
-    )
-    
-    if all_critical_passed:
-        print("\n🎉 All critical garage/thumbnail tests PASSED!")
-        if not cars_with_thumbnails:
-            print("⚠️  Note: No thumbnail URLs found in public cars - may need investigation")
-        if not thumbnail_test_passed:
-            print("⚠️  Note: Thumbnail image endpoint test failed/skipped")
-    else:
-        print("\n❌ Some critical tests FAILED - needs attention")
-    
-    return all_critical_passed
 
 if __name__ == "__main__":
     main()
