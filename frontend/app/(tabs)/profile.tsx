@@ -812,6 +812,18 @@ export default function ProfileScreen() {
 
         <View style={styles.menuSection}>
           <Text style={styles.settingsSectionTitle}>Settings</Text>
+          
+          {/* Debug: Server connection info */}
+          <TouchableOpacity 
+            style={[styles.menuItem, { backgroundColor: '#1a1a2e' }]}
+            onPress={() => Alert.alert('Server Info', `Connected to:\n${API_URL || 'NOT SET'}`)}
+          >
+            <Ionicons name="server" size={24} color="#FF6B35" />
+            <Text style={[styles.menuItemText, { fontSize: 11, color: '#888' }]}>
+              Server: {API_URL ? API_URL.replace('https://', '').split('.')[0] : 'NOT SET'}
+            </Text>
+          </TouchableOpacity>
+
           <View style={styles.menuItem}>
             <Ionicons name="notifications" size={24} color={user?.notificationsEnabled !== false ? '#4CAF50' : '#F44336'} />
             <Text style={styles.menuItemText}>Notifications</Text>
