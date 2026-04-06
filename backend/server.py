@@ -73,7 +73,8 @@ app.include_router(api_router)
 app.include_router(websocket_router)
 
 # Version marker - change this to verify deployments are picking up new code
-APP_VERSION = "v2.2.0-fork1-2026-04-05"
+APP_VERSION = "v2.3.0-fork1-UNIQUE-SERVER-42"
+BUILD_ID = "emergent-event-hub-okc-1-april6"
 
 # Health check endpoint for Kubernetes probes
 @app.get("/api/health")
@@ -83,7 +84,7 @@ async def health_check():
         from database import db
         # Quick DB ping to verify connectivity
         await db.command("ping")
-        return {"status": "ok", "version": APP_VERSION, "db": "connected"}
+        return {"status": "ok", "version": APP_VERSION, "build": BUILD_ID, "db": "connected"}
     except Exception as e:
         logger.error(f"Health check DB failure: {e}")
         return JSONResponse(
@@ -97,7 +98,27 @@ async def health_check_k8s():
 
 @app.get("/api/version")
 async def get_version():
-    return {"version": APP_VERSION, "note": "If you see this, the new code IS deployed"}
+    return {"version": APP_VERSION, "build": BUILD_ID, "server": "event-hub-okc-1"}
+
+@app.get("/api/debug")
+async def debug_info():
+    """Open this URL on your phone browser to verify which server you're hitting."""
+    from database import db
+    car_count = await db.user_cars.count_documents({})
+    user_count = await db.users.count_documents({})
+    top_car = await db.user_cars.find_one(
+        {"$or": [{"isPublic": True}, {"isPublic": "true"}]},
+        {"make": 1, "model": 1, "year": 1, "likes": 1}
+    , sort=[("likes", -1)])
+    return {
+        "server": "event-hub-okc-1",
+        "build": BUILD_ID,
+        "version": APP_VERSION,
+        "database": "test_database",
+        "users": user_count,
+        "cars": car_count,
+        "top_car": f"{top_car.get('year')} {top_car.get('make')} {top_car.get('model')} ({top_car.get('likes')} likes)" if top_car else "none"
+    }
 
 # Global exception handler - catches ALL unhandled exceptions to prevent crashes
 @app.exception_handler(Exception)
