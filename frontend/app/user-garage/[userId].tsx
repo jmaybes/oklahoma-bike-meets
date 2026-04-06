@@ -179,7 +179,11 @@ export default function UserGarageScreen() {
           onPress={() => router.push(`/messages/${car.userId}`)}
           style={styles.messageBtn}
         >
-          <Ionicons name="chatbubble-ellipses" size={20} color="#fff" />
+          <Image 
+            source={require('../../assets/images/message-icon.png')} 
+            style={{ width: 22, height: 22 }} 
+            resizeMode="contain"
+          />
         </TouchableOpacity>
       </LinearGradient>
 
