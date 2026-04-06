@@ -434,7 +434,11 @@ export default function GarageDetailScreen() {
               }}
               activeOpacity={0.8}
             >
-              <Ionicons name="chatbubble-outline" size={18} color="#fff" />
+              <Image 
+                source={require('../../assets/images/message-icon.png')} 
+                style={{ width: 20, height: 20, tintColor: '#fff' }} 
+                resizeMode="contain"
+              />
               <Text style={styles.commentButtonText}>
                 Comment{comments.length > 0 ? ` (${comments.length})` : ''}
               </Text>
