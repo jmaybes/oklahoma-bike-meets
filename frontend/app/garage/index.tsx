@@ -52,11 +52,19 @@ export default function BrowseGaragesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState('likes');
+  const [showSortMenu, setShowSortMenu] = useState(false);
+
+  const sortOptions = [
+    { key: 'likes', label: 'Most Liked', icon: 'heart' as const },
+    { key: 'newest', label: 'Date Added', icon: 'calendar' as const },
+    { key: 'views', label: 'Most Viewed', icon: 'eye' as const },
+  ];
 
   const fetchGarages = useCallback(async () => {
     try {
       setFetchError(null);
-      const response = await axios.get(`${API_URL}/api/user-cars/public?sort=likes`, {
+      const response = await axios.get(`${API_URL}/api/user-cars/public?sort=${sortBy}`, {
         timeout: 15000,
       });
       const data = response.data;
@@ -79,9 +87,10 @@ export default function BrowseGaragesScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [sortBy]);
 
   useEffect(() => {
+    setLoading(true);
     fetchGarages();
   }, [fetchGarages]);
 
@@ -281,13 +290,49 @@ export default function BrowseGaragesScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Public Garages</Text>
-            <Text style={styles.headerSubtitle}>Ranked by likes</Text>
-          </View>
-          <View style={{ width: 32 }} />
+          <Text style={styles.headerTitle}>Public Garages</Text>
+          <TouchableOpacity 
+            onPress={() => setShowSortMenu(!showSortMenu)} 
+            style={styles.sortButton}
+          >
+            <Ionicons name="funnel-outline" size={20} color="#fff" />
+          </TouchableOpacity>
         </View>
       </LinearGradient>
+
+      {/* Sort Dropdown */}
+      {showSortMenu && (
+        <View style={styles.sortDropdown}>
+          {sortOptions.map((option) => (
+            <TouchableOpacity
+              key={option.key}
+              style={[
+                styles.sortOption,
+                sortBy === option.key && styles.sortOptionActive,
+              ]}
+              onPress={() => {
+                setSortBy(option.key);
+                setShowSortMenu(false);
+              }}
+            >
+              <Ionicons 
+                name={option.icon as any} 
+                size={16} 
+                color={sortBy === option.key ? '#FF6B35' : '#888'} 
+              />
+              <Text style={[
+                styles.sortOptionText,
+                sortBy === option.key && styles.sortOptionTextActive,
+              ]}>
+                {option.label}
+              </Text>
+              {sortBy === option.key && (
+                <Ionicons name="checkmark" size={16} color="#FF6B35" />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
@@ -395,18 +440,51 @@ const styles = StyleSheet.create({
     padding: 4,
     width: 32,
   },
-  headerCenter: {
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#fff',
+    flex: 1,
+    marginLeft: 8,
+  },
+  sortButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+  sortDropdown: {
+    backgroundColor: '#1a1a1a',
+    marginHorizontal: 16,
+    marginTop: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#333',
+    overflow: 'hidden',
   },
-  headerSubtitle: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: 2,
+  sortOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#222',
+  },
+  sortOptionActive: {
+    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+  },
+  sortOptionText: {
+    color: '#aaa',
+    fontSize: 15,
+    fontWeight: '500',
+    flex: 1,
+  },
+  sortOptionTextActive: {
+    color: '#FF6B35',
+    fontWeight: '700',
   },
   searchContainer: {
     flexDirection: 'row',
