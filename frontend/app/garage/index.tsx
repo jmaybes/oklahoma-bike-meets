@@ -283,7 +283,7 @@ export default function BrowseGaragesScreen() {
           </TouchableOpacity>
           <View style={styles.headerCenter}>
             <Text style={styles.headerTitle}>Public Garages</Text>
-            <Text style={styles.headerSubtitle}>Ranked by likes</Text>
+            <Text style={styles.headerSubtitle}>Ranked by likes • v3</Text>
           </View>
           <View style={{ width: 32 }} />
         </View>
