@@ -27,7 +27,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import axios from 'axios';
 import { useAuth } from '../../../contexts/AuthContext';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://event-hub-okc-1.preview.emergentagent.com';
+const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
 
 interface Event {
   id: string;

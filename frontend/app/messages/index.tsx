@@ -17,7 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://event-hub-okc-1.preview.emergentagent.com';
+const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
 
 // Get WebSocket URL from API URL
 const getWebSocketUrl = () => {
