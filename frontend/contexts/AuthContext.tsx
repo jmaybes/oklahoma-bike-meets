@@ -151,7 +151,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             new Promise<null>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
           ]);
           if (validateRes && (validateRes as any).status === 200) {
-            setUser(parsedUser);
+            // Use fresh data from API instead of stale cache
+            const freshUser = (validateRes as any).data;
+            const mergedUser = {
+              ...parsedUser,
+              ...freshUser,
+              id: freshUser.id || parsedUser.id,
+            };
+            await AsyncStorage.setItem('user', JSON.stringify(mergedUser));
+            setUser(mergedUser);
           } else {
             // User not found in current database — clear stale session
             console.log('Cached user not found in database, clearing session');
