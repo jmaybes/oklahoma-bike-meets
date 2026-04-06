@@ -245,6 +245,15 @@ async def get_public_garages(
         base_url = f"{scheme}://{forwarded}"
 
     result = []
+    # Batch fetch comment counts for all car IDs
+    car_ids = [str(car["_id"]) for car in cars]
+    comment_counts = {}
+    async for doc in db.garage_comments.aggregate([
+        {"$match": {"carId": {"$in": car_ids}}},
+        {"$group": {"_id": "$carId", "count": {"$sum": 1}}}
+    ]):
+        comment_counts[doc["_id"]] = doc["count"]
+
     for car in cars:
         user = await db.users.find_one({"_id": ObjectId(car["userId"])}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(car.get("userId", "")) else None
         car_data = user_car_helper(car)
@@ -259,6 +268,7 @@ async def get_public_garages(
         car_data["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if car.get("photoCount", 0) > 0 else []
         car_data["photoCount"] = car.get("photoCount", 0)
         car_data["mainPhotoIndex"] = 0
+        car_data["commentCount"] = comment_counts.get(car_id, 0)
 
         result.append(car_data)
 

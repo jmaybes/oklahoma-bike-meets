@@ -41,6 +41,7 @@ interface UserCar {
   description?: string;
   drivetrain?: string;
   photoCount?: number;
+  commentCount?: number;
 }
 
 export default function BrowseGaragesScreen() {
@@ -207,6 +208,16 @@ export default function BrowseGaragesScreen() {
           </View>
         </View>
 
+        {/* View Button - right under photo */}
+        <TouchableOpacity 
+          style={styles.viewUnderPhoto}
+          onPress={() => router.push(`/user-garage/${car.userId}`)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.viewUnderPhotoText}>View</Text>
+          <Ionicons name="chevron-forward" size={14} color="#FF6B35" />
+        </TouchableOpacity>
+
         {/* Car Info */}
         <View style={styles.cardContent}>
           <Text style={styles.carTitle} numberOfLines={1}>
@@ -264,10 +275,16 @@ export default function BrowseGaragesScreen() {
               <Ionicons name="eye-outline" size={16} color="#666" />
               <Text style={styles.viewsText}>{car.views || 0}</Text>
             </View>
-            <View style={styles.viewGarageBtn}>
-              <Text style={styles.viewGarageBtnText}>View</Text>
-              <Ionicons name="chevron-forward" size={14} color="#FF6B35" />
-            </View>
+            <TouchableOpacity 
+              style={styles.commentsLink}
+              onPress={() => router.push(`/user-garage/${car.userId}`)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="chatbubble-outline" size={16} color="#FF6B35" />
+              <Text style={styles.commentsLinkText}>
+                Comments{car.commentCount ? ` (${car.commentCount})` : ''}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </TouchableOpacity>
@@ -742,6 +759,30 @@ const styles = StyleSheet.create({
   viewGarageBtnText: {
     color: '#FF6B35',
     fontSize: 14,
+    fontWeight: '600',
+  },
+  viewUnderPhoto: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FF6B35',
+    paddingVertical: 10,
+    gap: 4,
+  },
+  viewUnderPhotoText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  commentsLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 'auto',
+    gap: 5,
+  },
+  commentsLinkText: {
+    color: '#FF6B35',
+    fontSize: 13,
     fontWeight: '600',
   },
   bottomNav: {
