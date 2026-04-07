@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -601,6 +601,13 @@ export default function FeedsScreen() {
   }, []);
 
   useEffect(() => { fetchPosts(); }, [fetchPosts]);
+
+  // Refetch posts when screen gains focus (navigating back)
+  useFocusEffect(
+    useCallback(() => {
+      fetchPosts(0, false);
+    }, [fetchPosts])
+  );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true); setHasMore(true);
