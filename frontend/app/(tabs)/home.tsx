@@ -546,18 +546,14 @@ export default function HomeScreen() {
     const contentTranslateY = useSharedValue(25);
     const detailsOpacity = useSharedValue(0);
     const detailsTranslateY = useSharedValue(20);
-    const cardLayoutY = useSharedValue(-1);
 
     useEffect(() => {
       if (isVisible) {
-        // Card animation (~200ms - snappy entrance)
         cardOpacity.value = withTiming(1, { duration: 200 });
         cardTranslateY.value = withTiming(0, { duration: 210 });
         cardScale.value = withTiming(1, { duration: 200 });
-        // Content cascades in
         contentOpacity.value = withTiming(1, { duration: 175 });
         contentTranslateY.value = withTiming(0, { duration: 185 });
-        // Details enter last
         detailsOpacity.value = withTiming(1, { duration: 150 });
         detailsTranslateY.value = withTiming(0, { duration: 160 });
       }
@@ -571,29 +567,26 @@ export default function HomeScreen() {
       pressScale.value = withSpring(1, { damping: 15, stiffness: 200 });
     };
 
-    const handleLayout = (e: any) => {
-      cardLayoutY.value = e.nativeEvent.layout.y;
-    };
+    // Scroll-based 3D disappearing effect
+    // Estimate each card's position in the content: header (~420px) + index * card height (~340px)
+    const HEADER_OFFSET = 420;
+    const EST_CARD_HEIGHT = 340;
 
-    // Scroll-based 3D disappearing effect (inspired by the article)
     const cardAnimatedStyle = useAnimatedStyle(() => {
+      const estimatedCardY = HEADER_OFFSET + index * EST_CARD_HEIGHT;
+      const deltaY = estimatedCardY - parentScrollY.value;
+      const FADE_ZONE = EST_CARD_HEIGHT;
+
       let scrollOpacity = 1;
       let scrollTranslateY = 0;
       let scrollScale = 1;
 
-      if (cardLayoutY.value >= 0) {
-        // How far the card is from the top of the visible area
-        const deltaY = cardLayoutY.value - parentScrollY.value;
-        const CARD_HEIGHT = 320; // approximate card height
-        const FADE_ZONE = CARD_HEIGHT * 1.2; // start fading a bit before card reaches top
-
-        if (deltaY < 0) {
-          // Card is scrolling past the top — apply disappearing effect
-          const progress = Math.min(Math.abs(deltaY) / FADE_ZONE, 1); // 0 to 1
-          scrollOpacity = 1 - progress;
-          scrollTranslateY = -progress * 25; // shift upward
-          scrollScale = 1 - progress * 0.08; // slight shrink (perspective effect)
-        }
+      if (deltaY < 0) {
+        // Card is scrolling past the top — apply disappearing effect
+        const progress = Math.min(Math.abs(deltaY) / FADE_ZONE, 1);
+        scrollOpacity = 1 - progress;
+        scrollTranslateY = -progress * 20;
+        scrollScale = 1 - progress * 0.06;
       }
 
       return {
@@ -621,7 +614,7 @@ export default function HomeScreen() {
     }));
 
     return (
-      <Animated.View style={cardAnimatedStyle} onLayout={handleLayout}>
+      <Animated.View style={cardAnimatedStyle}>
         <Pressable
           onPress={() => router.push(`/event/${item.id}`)}
           onPressIn={handlePressIn}
