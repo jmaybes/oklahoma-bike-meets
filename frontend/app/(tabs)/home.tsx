@@ -38,7 +38,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 import { API_URL } from '../utils/api';
 
-const API_URL = "",
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const BASE_HERO_HEIGHT = 300;
@@ -538,7 +537,7 @@ export default function HomeScreen() {
   };
 
   // ===== EVENT CARD COMPONENT (GSAP-style scroll animation) =====
-  const AnimatedEventCard = ({ item, index, isVisible, scrollY: parentScrollY }: { item: Event; index: number; isVisible: boolean; scrollY: Animated.SharedValue<number> }) => {
+  const AnimatedEventCard = ({ item, index, isVisible }: { item: Event; index: number; isVisible: boolean }) => {
     const pressScale = useSharedValue(1);
     const cardOpacity = useSharedValue(0);
     const cardTranslateY = useSharedValue(60);
@@ -568,37 +567,13 @@ export default function HomeScreen() {
       pressScale.value = withSpring(1, { damping: 15, stiffness: 200 });
     };
 
-    // Scroll-based 3D disappearing effect
-    // Estimate each card's position in the content: header (~420px) + index * card height (~340px)
-    const HEADER_OFFSET = 420;
-    const EST_CARD_HEIGHT = 340;
-
-    const cardAnimatedStyle = useAnimatedStyle(() => {
-      const estimatedCardY = HEADER_OFFSET + index * EST_CARD_HEIGHT;
-      const deltaY = estimatedCardY - parentScrollY.value;
-      const FADE_ZONE = EST_CARD_HEIGHT;
-
-      let scrollOpacity = 1;
-      let scrollTranslateY = 0;
-      let scrollScale = 1;
-
-      if (deltaY < 0) {
-        // Card is scrolling past the top — apply disappearing effect
-        const progress = Math.min(Math.abs(deltaY) / FADE_ZONE, 1);
-        scrollOpacity = 1 - progress;
-        scrollTranslateY = -progress * 20;
-        scrollScale = 1 - progress * 0.06;
-      }
-
-      return {
-        opacity: cardOpacity.value * scrollOpacity,
-        transform: [
-          { translateY: cardTranslateY.value + scrollTranslateY },
-          { scale: cardScale.value * pressScale.value * scrollScale },
-          { perspective: 800 },
-        ],
-      };
-    });
+    const cardAnimatedStyle = useAnimatedStyle(() => ({
+      opacity: cardOpacity.value,
+      transform: [
+        { translateY: cardTranslateY.value },
+        { scale: cardScale.value * pressScale.value },
+      ],
+    }));
 
     const contentAnimatedStyle = useAnimatedStyle(() => ({
       opacity: contentOpacity.value,
@@ -704,7 +679,7 @@ export default function HomeScreen() {
   };
 
   const renderEventCard = ({ item, index }: { item: Event; index: number }) => (
-    <AnimatedEventCard item={item} index={index} isVisible={visibleIds.has(item.id)} scrollY={scrollY} />
+    <AnimatedEventCard item={item} index={index} isVisible={visibleIds.has(item.id)} />
   );
 
   // ===== LIST HEADER with parallax hero + filters =====
