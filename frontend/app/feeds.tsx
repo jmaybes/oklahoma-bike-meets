@@ -796,11 +796,11 @@ export default function FeedsScreen() {
   return (
     <ImageBackground 
       source={require('../assets/images/lounge-bg.png')} 
-      style={[s.container, { paddingTop: insets.top }]}
+      style={s.container}
       resizeMode="cover"
     >
-      <StatusBar barStyle="light-content" />
-      <LinearGradient colors={['rgba(255,107,53,0.9)', 'rgba(233,30,99,0.9)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.headerBar}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      <LinearGradient colors={['rgba(255,107,53,0.9)', 'rgba(233,30,99,0.9)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[s.headerBar, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><Ionicons name="arrow-back" size={24} color="#fff" /></TouchableOpacity>
         <Text style={s.headerTitle}>Community Lounge</Text>
         <View style={{ width: 40 }} />
