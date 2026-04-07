@@ -5,8 +5,9 @@ import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import axios from 'axios';
+import { API_URL } from '../utils/api';
 
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+const API_URL = "";
 
 // Configure notification handler
 Notifications.setNotificationHandler({

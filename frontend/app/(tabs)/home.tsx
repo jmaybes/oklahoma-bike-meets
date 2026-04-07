@@ -36,8 +36,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import api from '../../utils/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
+import { API_URL } from '../utils/api';
 
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+const API_URL = "",
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const BASE_HERO_HEIGHT = 300;
