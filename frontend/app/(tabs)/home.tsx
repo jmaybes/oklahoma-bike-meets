@@ -554,20 +554,6 @@ export default function HomeScreen() {
       ],
     }));
 
-    const contentAnimatedStyle = useAnimatedStyle(() => ({
-      opacity: contentOpacity.value,
-      transform: [
-        { translateY: contentTranslateY.value },
-      ],
-    }));
-
-    const detailsAnimatedStyle = useAnimatedStyle(() => ({
-      opacity: detailsOpacity.value,
-      transform: [
-        { translateY: detailsTranslateY.value },
-      ],
-    }));
-
     return (
       <Animated.View style={cardAnimatedStyle}>
         <Pressable
@@ -584,7 +570,7 @@ export default function HomeScreen() {
               />
             )}
             <View style={styles.eventContent}>
-              <Animated.View style={[styles.eventHeader, contentAnimatedStyle]}>
+              <View style={styles.eventHeader}>
                 <View style={styles.eventTypeContainer}>
                   <Ionicons name="car-sport" size={16} color="#FF6B35" />
                   <Text style={styles.eventType}>{item.eventType}</Text>
@@ -607,16 +593,16 @@ export default function HomeScreen() {
                     </Text>
                   )}
                 </View>
-              </Animated.View>
+              </View>
 
-              <Animated.View style={contentAnimatedStyle}>
+              <View>
                 <Text style={styles.eventTitle}>{item.title}</Text>
                 <Text style={styles.eventDescription} numberOfLines={2}>
                   {item.description}
                 </Text>
-              </Animated.View>
+              </View>
 
-              <Animated.View style={[styles.eventDetails, detailsAnimatedStyle]}>
+              <View style={styles.eventDetails}>
                 <View style={styles.detailRow}>
                   <Ionicons name="calendar" size={16} color="#888" />
                   <Text style={styles.detailText}>
@@ -649,7 +635,7 @@ export default function HomeScreen() {
                     />
                   </TouchableOpacity>
                 </View>
-              </Animated.View>
+              </View>
             </View>
           </View>
         </Pressable>
