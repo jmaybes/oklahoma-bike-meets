@@ -551,13 +551,13 @@ export default function HomeScreen() {
     useEffect(() => {
       if (isVisible && !hasAnimated.current) {
         hasAnimated.current = true;
-        cardOpacity.value = withTiming(1, { duration: 113 });
-        cardTranslateY.value = withTiming(0, { duration: 119 });
-        cardScale.value = withTiming(1, { duration: 113 });
-        contentOpacity.value = withTiming(1, { duration: 98 });
-        contentTranslateY.value = withTiming(0, { duration: 104 });
-        detailsOpacity.value = withTiming(1, { duration: 85 });
-        detailsTranslateY.value = withTiming(0, { duration: 90 });
+        cardOpacity.value = withTiming(1, { duration: 85 });
+        cardTranslateY.value = withTiming(0, { duration: 89 });
+        cardScale.value = withTiming(1, { duration: 85 });
+        contentOpacity.value = withTiming(1, { duration: 74 });
+        contentTranslateY.value = withTiming(0, { duration: 78 });
+        detailsOpacity.value = withTiming(1, { duration: 64 });
+        detailsTranslateY.value = withTiming(0, { duration: 68 });
       }
     }, [isVisible]);
 
