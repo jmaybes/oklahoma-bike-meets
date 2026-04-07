@@ -539,27 +539,6 @@ export default function HomeScreen() {
   // ===== EVENT CARD COMPONENT (GSAP-style scroll animation) =====
   const AnimatedEventCard = ({ item, index, isVisible }: { item: Event; index: number; isVisible: boolean }) => {
     const pressScale = useSharedValue(1);
-    const hasAnimated = useRef(false);
-    const cardOpacity = useSharedValue(0);
-    const cardTranslateY = useSharedValue(60);
-    const cardScale = useSharedValue(0.88);
-    const contentOpacity = useSharedValue(0);
-    const contentTranslateY = useSharedValue(25);
-    const detailsOpacity = useSharedValue(0);
-    const detailsTranslateY = useSharedValue(20);
-
-    useEffect(() => {
-      if (isVisible && !hasAnimated.current) {
-        hasAnimated.current = true;
-        cardOpacity.value = withTiming(1, { duration: 43 });
-        cardTranslateY.value = withTiming(0, { duration: 45 });
-        cardScale.value = withTiming(1, { duration: 43 });
-        contentOpacity.value = withTiming(1, { duration: 37 });
-        contentTranslateY.value = withTiming(0, { duration: 39 });
-        detailsOpacity.value = withTiming(1, { duration: 32 });
-        detailsTranslateY.value = withTiming(0, { duration: 34 });
-      }
-    }, [isVisible]);
 
     const handlePressIn = () => {
       pressScale.value = withSpring(0.97, { damping: 15, stiffness: 200 });
@@ -570,10 +549,8 @@ export default function HomeScreen() {
     };
 
     const cardAnimatedStyle = useAnimatedStyle(() => ({
-      opacity: cardOpacity.value,
       transform: [
-        { translateY: cardTranslateY.value },
-        { scale: cardScale.value * pressScale.value },
+        { scale: pressScale.value },
       ],
     }));
 
@@ -936,6 +913,9 @@ export default function HomeScreen() {
         ListHeaderComponent={ListHeaderComponent}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
+        snapToInterval={328}
+        snapToAlignment="start"
+        decelerationRate="fast"
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" />
         }
