@@ -55,6 +55,7 @@ export default function BrowseGaragesScreen() {
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState('likes');
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   const sortOptions = [
     { key: 'likes', label: 'Most Liked', icon: 'heart' as const },
@@ -308,12 +309,23 @@ export default function BrowseGaragesScreen() {
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Public Garages</Text>
-          <TouchableOpacity 
-            onPress={() => setShowSortMenu(!showSortMenu)} 
-            style={styles.sortButton}
-          >
-            <Ionicons name="funnel-outline" size={20} color="#fff" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <TouchableOpacity 
+              onPress={() => {
+                setShowSearch(!showSearch);
+                if (showSearch) setSearchQuery('');
+              }} 
+              style={styles.sortButton}
+            >
+              <Ionicons name={showSearch ? "close" : "search"} size={20} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => setShowSortMenu(!showSortMenu)} 
+              style={styles.sortButton}
+            >
+              <Ionicons name="funnel-outline" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
       </LinearGradient>
 
@@ -351,22 +363,25 @@ export default function BrowseGaragesScreen() {
         </View>
       )}
 
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#888" />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search by make, model, year, or owner..."
-          placeholderTextColor="#666"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={20} color="#666" />
-          </TouchableOpacity>
-        )}
-      </View>
+      {/* Search Bar - Hidden until search icon is tapped */}
+      {showSearch && (
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color="#888" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by make, model, year, or owner..."
+            placeholderTextColor="#666"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoFocus
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={20} color="#666" />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       {loading ? (
         <View style={styles.loadingContainer}>
