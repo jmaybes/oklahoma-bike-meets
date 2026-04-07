@@ -28,6 +28,7 @@ import { useAuth } from '../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import api from '../utils/api';
+import { API_URL } from '../utils/api';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -46,6 +47,7 @@ interface FeedPost {
   userId: string;
   userName: string;
   userAvatar?: string;
+  carThumbnailUrl?: string;
   text: string;
   images: string[];
   imageCount: number;
@@ -483,7 +485,7 @@ const composeModalS = StyleSheet.create({
 
 const BottomNavBar = () => {
   const insets = useSafeAreaInsets();
-  const bottomPadding = Platform.OS === 'ios' ? Math.max(insets.bottom, 12) : Math.max(insets.bottom, 20);
+  const bottomPadding = Platform.OS === 'ios' ? Math.max(insets.bottom, 4) : Math.max(insets.bottom, 8);
 
   const tabs = [
     { name: 'Events', icon: 'car-sport-outline', route: '/(tabs)/home' },
@@ -497,7 +499,7 @@ const BottomNavBar = () => {
       colors={['#FF6B35', '#E91E63']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
-      style={[navS.container, { paddingBottom: bottomPadding, height: 64 + bottomPadding }]}
+      style={[navS.container, { paddingBottom: bottomPadding, height: 50 + bottomPadding, opacity: 0.9 }]}
     >
       {tabs.map((tab) => (
         <TouchableOpacity
@@ -506,7 +508,7 @@ const BottomNavBar = () => {
           onPress={() => router.replace(tab.route as any)}
           activeOpacity={0.7}
         >
-          <Ionicons name={tab.icon as any} size={24} color="rgba(255,255,255,0.85)" />
+          <Ionicons name={tab.icon as any} size={20} color="rgba(255,255,255,0.85)" />
           <Text style={navS.tabLabel}>{tab.name}</Text>
         </TouchableOpacity>
       ))}
@@ -517,16 +519,16 @@ const BottomNavBar = () => {
 const navS = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    paddingTop: 10,
+    paddingTop: 6,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
+    gap: 2,
   },
   tabLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: 'rgba(255,255,255,0.9)',
     letterSpacing: 0.3,
@@ -709,7 +711,9 @@ export default function FeedsScreen() {
     const isAdminUser = (user as any)?.isAdmin === true;
     const isLiked = user ? item.likedBy.includes(user.id) : false;
     const isShortText = countTextLines(item.text) <= 2 && item.text.length <= 80;
-    const avatarUri = item.userAvatar ? ensureUri(item.userAvatar) : null;
+    const avatarUri = item.carThumbnailUrl 
+      ? `${API_URL}${item.carThumbnailUrl}` 
+      : (item.userAvatar ? ensureUri(item.userAvatar) : null);
 
     return (
       <Animated.View style={cardAnim}>

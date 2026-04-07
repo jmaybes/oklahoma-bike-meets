@@ -71,12 +71,31 @@ async def get_feed_posts(
     skip: int = Query(default=0, ge=0),
 ):
     """Get feed posts, newest first. Returns images for display in feed."""
+    from starlette.requests import Request
     posts = await db.feed_posts.find().sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+
+    # Collect unique user IDs to batch-lookup their car thumbnails
+    user_ids = list(set(p.get("userId", "") for p in posts if p.get("userId")))
+    user_thumb_map: dict = {}
+    if user_ids:
+        cars = await db.user_cars.find(
+            {"userId": {"$in": user_ids}, "isPublic": True, "photoCount": {"$gt": 0}},
+            {"userId": 1, "photoCount": 1}
+        ).to_list(500)
+        for car in cars:
+            uid = car.get("userId", "")
+            if uid and uid not in user_thumb_map:
+                car_id = str(car["_id"])
+                user_thumb_map[uid] = f"/api/user-cars/{car_id}/thumbnail.jpg"
+
     result = []
     for p in posts:
         post_data = feed_post_helper(p)
-        # Include image count for UI even if images load lazily
         post_data["imageCount"] = len(post_data.get("images", []))
+        # Enrich with user's car thumbnail URL
+        uid = p.get("userId", "")
+        if uid in user_thumb_map:
+            post_data["carThumbnailUrl"] = user_thumb_map[uid]
         result.append(post_data)
     return result
 

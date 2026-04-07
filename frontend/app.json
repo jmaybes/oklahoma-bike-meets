@@ -15,11 +15,6 @@
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 5000
     },
-    "extra": {
-      "eas": {
-        "projectId": "a936daac-9d2d-4795-aba0-e6e7554f9395"
-      }
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.velocityvisualcrew.okccarmeets",
