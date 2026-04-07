@@ -189,6 +189,10 @@ async def get_user_car(request: Request, user_id: str, include_photos: bool = Qu
         car_id = result["id"]
         has_thumbnail = car.get("thumbnail", "")
         result["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if has_thumbnail else []
+        # Add owner info
+        owner = await db.users.find_one({"_id": ObjectId(user_id)}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(user_id) else None
+        result["ownerName"] = owner.get("name", "Unknown") if owner else "Unknown"
+        result["ownerNickname"] = owner.get("nickname", "") if owner else ""
         return result
     
     car = await db.user_cars.find_one({"userId": user_id}, {"photos": 0})
@@ -209,6 +213,10 @@ async def get_user_car(request: Request, user_id: str, include_photos: bool = Qu
     car_data["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if has_thumbnail else []
     car_data["photoCount"] = photo_count
     car_data["mainPhotoIndex"] = 0
+    # Add owner info
+    owner = await db.users.find_one({"_id": ObjectId(user_id)}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(user_id) else None
+    car_data["ownerName"] = owner.get("name", "Unknown") if owner else "Unknown"
+    car_data["ownerNickname"] = owner.get("nickname", "") if owner else ""
     
     return car_data
 
