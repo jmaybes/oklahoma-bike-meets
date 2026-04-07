@@ -7,6 +7,7 @@ import {
   FlatList,
   TextInput,
   Image,
+  ImageBackground,
   ActivityIndicator,
   Modal,
   Alert,
@@ -793,9 +794,13 @@ export default function FeedsScreen() {
   // ==================== MAIN RENDER ====================
 
   return (
-    <View style={[s.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" />
-      <LinearGradient colors={['#FF6B35', '#E91E63']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.headerBar}>
+    <ImageBackground 
+      source={require('../assets/images/lounge-bg.png')} 
+      style={[s.container, { paddingTop: insets.top }]}
+      resizeMode="cover"
+    >
+      <StatusBar barStyle="light-content" />
+      <LinearGradient colors={['rgba(255,107,53,0.9)', 'rgba(233,30,99,0.9)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.headerBar}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><Ionicons name="arrow-back" size={24} color="#fff" /></TouchableOpacity>
         <Text style={s.headerTitle}>Community Lounge</Text>
         <View style={{ width: 40 }} />
@@ -877,14 +882,14 @@ export default function FeedsScreen() {
           </KeyboardAvoidingView>
         </View>
       </Modal>
-    </View>
+    </ImageBackground>
   );
 }
 
 // ====================== MAIN STYLES ======================
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f2f2f2' },
+  container: { flex: 1, backgroundColor: 'transparent' },
   headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
   backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' },
   headerTitle: { color: '#fff', fontSize: 20, fontWeight: '800' },
@@ -898,7 +903,7 @@ const s = StyleSheet.create({
   triggerPhotoBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFF3ED', justifyContent: 'center', alignItems: 'center' },
 
   // Post Card
-  postCard: { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#ddd', borderBottomWidth: 1, borderBottomColor: '#ddd', marginBottom: 8 },
+  postCard: { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderTopWidth: 1, borderTopColor: '#ccc', borderBottomWidth: 1, borderBottomColor: '#ccc', marginBottom: 8 },
   postHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 8 },
   avatar: { width: 44, height: 44, borderRadius: 6, backgroundColor: '#e8e8e8' },
   avatarPlaceholder: { width: 44, height: 44, borderRadius: 6, backgroundColor: '#FF6B35', justifyContent: 'center', alignItems: 'center' },
