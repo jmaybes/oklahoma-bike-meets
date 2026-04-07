@@ -705,6 +705,7 @@ export default function FeedsScreen() {
     const contentAnim = useAnimatedStyle(() => ({ opacity: contentOpacity.value, transform: [{ translateY: contentTranslateY.value }] }));
 
     const isOwner = user?.id === item.userId;
+    const isAdminUser = (user as any)?.isAdmin === true;
     const isLiked = user ? item.likedBy.includes(user.id) : false;
     const isShortText = countTextLines(item.text) <= 2 && item.text.length <= 80;
     const avatarUri = item.userAvatar ? ensureUri(item.userAvatar) : null;
@@ -719,11 +720,13 @@ export default function FeedsScreen() {
                 <Text style={s.userName}>{item.userName}</Text>
                 <Text style={s.postTime}>{timeAgo(item.createdAt)}{item.edited ? ' · edited' : ''}</Text>
               </View>
-              {isOwner && <TouchableOpacity style={s.moreBtn} onPress={() => Alert.alert('Post Options', '', [
-                { text: 'Edit', onPress: () => openEdit(item) },
-                { text: 'Delete', style: 'destructive', onPress: () => deletePost(item.id) },
-                { text: 'Cancel', style: 'cancel' },
-              ])}><Ionicons name="ellipsis-horizontal" size={20} color="#999" /></TouchableOpacity>}
+              {(isOwner || isAdminUser) && <TouchableOpacity style={s.moreBtn} onPress={() => {
+                const options: any[] = [];
+                if (isOwner) options.push({ text: 'Edit', onPress: () => openEdit(item) });
+                options.push({ text: 'Delete', style: 'destructive', onPress: () => deletePost(item.id) });
+                options.push({ text: 'Cancel', style: 'cancel' });
+                Alert.alert('Post Options', '', options);
+              }}><Ionicons name="ellipsis-horizontal" size={20} color="#999" /></TouchableOpacity>}
             </View>
 
             <Animated.View style={contentAnim}>

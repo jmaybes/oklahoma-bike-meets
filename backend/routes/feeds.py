@@ -156,15 +156,19 @@ async def update_feed_post(post_id: str, update: FeedPostUpdate, user_id: str = 
 
 @router.delete("/feeds/{post_id}")
 async def delete_feed_post(post_id: str, user_id: str = Query(...)):
-    """Delete a feed post and its comments (owner only)."""
+    """Delete a feed post and its comments (owner or admin)."""
     if not ObjectId.is_valid(post_id):
         raise HTTPException(status_code=400, detail="Invalid post ID")
 
     post = await db.feed_posts.find_one({"_id": ObjectId(post_id)})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    if post["userId"] != user_id:
-        raise HTTPException(status_code=403, detail="You can only delete your own posts")
+
+    # Check if user is owner or admin
+    user = await db.users.find_one({"_id": ObjectId(user_id)}) if ObjectId.is_valid(user_id) else None
+    is_admin = user.get("isAdmin", False) if user else False
+    if post["userId"] != user_id and not is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this post")
 
     await db.feed_posts.delete_one({"_id": ObjectId(post_id)})
     await db.feed_comments.delete_many({"postId": post_id})
