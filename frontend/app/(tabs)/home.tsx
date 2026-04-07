@@ -1069,8 +1069,8 @@ const styles = StyleSheet.create({
     marginRight: '7%',
   },
   facebookIcon: {
-    width: 44,
-    height: 44,
+    width: 35,
+    height: 35,
     borderRadius: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
