@@ -729,7 +729,7 @@ export default function HomeScreen() {
               activeOpacity={0.7}
             >
               <Image
-                source={{ uri: 'https://customer-assets.emergentagent.com/job_8376f36e-4319-4936-bd1c-469dba05892e/artifacts/w62t9pko_3d-square-facebook-fb-logo-icon-social-media-701751695134398wf9frtn9ok.png' }}
+                source={require('../../assets/images/facebook-icon.png')}
                 style={styles.facebookIcon}
                 resizeMode="contain"
               />
@@ -1069,8 +1069,8 @@ const styles = StyleSheet.create({
     marginRight: '7%',
   },
   facebookIcon: {
-    width: 35,
-    height: 35,
+    width: 40,
+    height: 40,
     borderRadius: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
