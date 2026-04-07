@@ -8,17 +8,26 @@
       "developmentClient": true,
       "distribution": "internal",
       "channel": "development",
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://event-hub-okc-1.preview.emergentagent.com"
+      },
       "ios": {
         "simulator": false
       }
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://event-hub-okc-1.preview.emergentagent.com"
+      }
     },
     "production": {
       "channel": "production",
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://event-hub-okc-1.preview.emergentagent.com"
+      }
     }
   },
   "submit": {

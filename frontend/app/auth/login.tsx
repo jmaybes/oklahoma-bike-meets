@@ -23,7 +23,7 @@ import * as ExpoLinking from 'expo-linking';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuth } from '../../contexts/AuthContext';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
 
 // Keys for secure storage
 const REMEMBER_ME_KEY = 'rememberMe';

@@ -18,7 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
 const { width } = Dimensions.get('window');
 const PHOTO_SIZE = (width - 48) / 3;
 

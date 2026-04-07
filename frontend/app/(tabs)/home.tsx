@@ -37,7 +37,7 @@ import api from '../../utils/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const BASE_HERO_HEIGHT = 300;
