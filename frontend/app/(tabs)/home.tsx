@@ -537,7 +537,7 @@ export default function HomeScreen() {
   };
 
   // ===== EVENT CARD COMPONENT (GSAP-style scroll animation) =====
-  const AnimatedEventCard = ({ item, index, isVisible }: { item: Event; index: number; isVisible: boolean }) => {
+  const AnimatedEventCard = ({ item, index, isVisible, scrollY: parentScrollY }: { item: Event; index: number; isVisible: boolean; scrollY: Animated.SharedValue<number> }) => {
     const pressScale = useSharedValue(1);
     const cardOpacity = useSharedValue(0);
     const cardTranslateY = useSharedValue(60);
@@ -546,6 +546,7 @@ export default function HomeScreen() {
     const contentTranslateY = useSharedValue(25);
     const detailsOpacity = useSharedValue(0);
     const detailsTranslateY = useSharedValue(20);
+    const cardLayoutY = useSharedValue(-1);
 
     useEffect(() => {
       if (isVisible) {
@@ -570,13 +571,40 @@ export default function HomeScreen() {
       pressScale.value = withSpring(1, { damping: 15, stiffness: 200 });
     };
 
-    const cardAnimatedStyle = useAnimatedStyle(() => ({
-      opacity: cardOpacity.value,
-      transform: [
-        { translateY: cardTranslateY.value },
-        { scale: cardScale.value * pressScale.value },
-      ],
-    }));
+    const handleLayout = (e: any) => {
+      cardLayoutY.value = e.nativeEvent.layout.y;
+    };
+
+    // Scroll-based 3D disappearing effect (inspired by the article)
+    const cardAnimatedStyle = useAnimatedStyle(() => {
+      let scrollOpacity = 1;
+      let scrollTranslateY = 0;
+      let scrollScale = 1;
+
+      if (cardLayoutY.value >= 0) {
+        // How far the card is from the top of the visible area
+        const deltaY = cardLayoutY.value - parentScrollY.value;
+        const CARD_HEIGHT = 320; // approximate card height
+        const FADE_ZONE = CARD_HEIGHT * 1.2; // start fading a bit before card reaches top
+
+        if (deltaY < 0) {
+          // Card is scrolling past the top — apply disappearing effect
+          const progress = Math.min(Math.abs(deltaY) / FADE_ZONE, 1); // 0 to 1
+          scrollOpacity = 1 - progress;
+          scrollTranslateY = -progress * 25; // shift upward
+          scrollScale = 1 - progress * 0.08; // slight shrink (perspective effect)
+        }
+      }
+
+      return {
+        opacity: cardOpacity.value * scrollOpacity,
+        transform: [
+          { translateY: cardTranslateY.value + scrollTranslateY },
+          { scale: cardScale.value * pressScale.value * scrollScale },
+          { perspective: 800 },
+        ],
+      };
+    });
 
     const contentAnimatedStyle = useAnimatedStyle(() => ({
       opacity: contentOpacity.value,
@@ -593,7 +621,7 @@ export default function HomeScreen() {
     }));
 
     return (
-      <Animated.View style={cardAnimatedStyle}>
+      <Animated.View style={cardAnimatedStyle} onLayout={handleLayout}>
         <Pressable
           onPress={() => router.push(`/event/${item.id}`)}
           onPressIn={handlePressIn}
@@ -682,7 +710,7 @@ export default function HomeScreen() {
   };
 
   const renderEventCard = ({ item, index }: { item: Event; index: number }) => (
-    <AnimatedEventCard item={item} index={index} isVisible={visibleIds.has(item.id)} />
+    <AnimatedEventCard item={item} index={index} isVisible={visibleIds.has(item.id)} scrollY={scrollY} />
   );
 
   // ===== LIST HEADER with parallax hero + filters =====
