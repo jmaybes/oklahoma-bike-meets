@@ -7,8 +7,6 @@ import { router } from 'expo-router';
 import axios from 'axios';
 import { API_URL } from '../utils/api';
 
-const API_URL = "";
-
 // Configure notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
