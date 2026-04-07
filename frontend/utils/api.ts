@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Constants from 'expo-constants';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
 
 // Create axios instance with automatic retry for resilience
 const api = axios.create({
