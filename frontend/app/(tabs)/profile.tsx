@@ -739,7 +739,12 @@ export default function ProfileScreen() {
                   <Text style={styles.publicGarageLinkSub}>Browse and like community builds</Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={22} color="#FF6B35" />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={styles.menuItemBadge}>
+                  <Text style={styles.menuItemBadgeText}>NEW</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={22} color="#FF6B35" />
+              </View>
             </View>
           </LinearGradient>
         </TouchableOpacity>
@@ -762,7 +767,12 @@ export default function ProfileScreen() {
                   <Text style={styles.publicGarageLinkSub}>Share posts and connect with the community</Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={22} color="#FF6B35" />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={styles.menuItemBadge}>
+                  <Text style={styles.menuItemBadgeText}>NEW</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={22} color="#FF6B35" />
+              </View>
             </View>
           </LinearGradient>
         </TouchableOpacity>

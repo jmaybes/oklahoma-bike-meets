@@ -540,22 +540,22 @@ export default function HomeScreen() {
   const AnimatedEventCard = ({ item, index, isVisible }: { item: Event; index: number; isVisible: boolean }) => {
     const pressScale = useSharedValue(1);
     const cardOpacity = useSharedValue(0);
-    const cardTranslateY = useSharedValue(30);
-    const cardScale = useSharedValue(0.95);
+    const cardTranslateY = useSharedValue(60);
+    const cardScale = useSharedValue(0.88);
     const contentOpacity = useSharedValue(0);
-    const contentTranslateY = useSharedValue(12);
+    const contentTranslateY = useSharedValue(25);
     const detailsOpacity = useSharedValue(0);
-    const detailsTranslateY = useSharedValue(10);
+    const detailsTranslateY = useSharedValue(20);
 
     useEffect(() => {
       if (isVisible) {
-        cardOpacity.value = withTiming(1, { duration: 120 });
-        cardTranslateY.value = withTiming(0, { duration: 120 });
-        cardScale.value = withTiming(1, { duration: 120 });
-        contentOpacity.value = withTiming(1, { duration: 100 });
-        contentTranslateY.value = withTiming(0, { duration: 100 });
-        detailsOpacity.value = withTiming(1, { duration: 80 });
-        detailsTranslateY.value = withTiming(0, { duration: 80 });
+        cardOpacity.value = withTiming(1, { duration: 200 });
+        cardTranslateY.value = withTiming(0, { duration: 210 });
+        cardScale.value = withTiming(1, { duration: 200 });
+        contentOpacity.value = withTiming(1, { duration: 175 });
+        contentTranslateY.value = withTiming(0, { duration: 185 });
+        detailsOpacity.value = withTiming(1, { duration: 150 });
+        detailsTranslateY.value = withTiming(0, { duration: 160 });
       }
     }, [isVisible]);
 
