@@ -19,6 +19,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 'react-native-reanimated';
+import { useFonts } from '@expo-google-fonts/rock-salt/useFonts';
+import { RockSalt_400Regular } from '@expo-google-fonts/rock-salt/400Regular';
 
 const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
 
@@ -199,6 +201,10 @@ export default function UserGarageScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLiked, setIsLiked] = useState(false);
+
+  const [fontsLoaded] = useFonts({
+    RockSalt_400Regular,
+  });
 
   // Comments state
   const [comments, setComments] = useState<GarageComment[]>([]);
@@ -400,7 +406,7 @@ export default function UserGarageScreen() {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={styles.headerTitle} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
+          <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.5}>
             {car.ownerNickname || car.ownerName}'s Garage
           </Text>
         </View>
