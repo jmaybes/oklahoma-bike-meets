@@ -539,6 +539,7 @@ export default function HomeScreen() {
   // ===== EVENT CARD COMPONENT (GSAP-style scroll animation) =====
   const AnimatedEventCard = ({ item, index, isVisible }: { item: Event; index: number; isVisible: boolean }) => {
     const pressScale = useSharedValue(1);
+    const hasAnimated = useRef(false);
     const cardOpacity = useSharedValue(0);
     const cardTranslateY = useSharedValue(60);
     const cardScale = useSharedValue(0.88);
@@ -548,7 +549,8 @@ export default function HomeScreen() {
     const detailsTranslateY = useSharedValue(20);
 
     useEffect(() => {
-      if (isVisible) {
+      if (isVisible && !hasAnimated.current) {
+        hasAnimated.current = true;
         cardOpacity.value = withTiming(1, { duration: 200 });
         cardTranslateY.value = withTiming(0, { duration: 210 });
         cardScale.value = withTiming(1, { duration: 200 });
