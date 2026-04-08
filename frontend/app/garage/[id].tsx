@@ -14,6 +14,7 @@ import {
   Animated,
   FlatList,
   Platform,
+  KeyboardAvoidingView,
   Alert,
   TextInput,
 } from 'react-native';
@@ -866,44 +867,49 @@ export default function GarageDetailScreen() {
         onRequestClose={() => setShowCommentModal(false)}
         statusBarTranslucent
       >
-        <View style={styles.commentModalOverlay}>
-          <View style={styles.commentModalContent}>
-            <View style={styles.commentModalHeader}>
-              <Text style={styles.commentModalTitle}>Leave a Comment</Text>
-              <TouchableOpacity onPress={() => setShowCommentModal(false)}>
-                <Ionicons name="close" size={24} color="#fff" />
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.commentModalOverlay}>
+            <View style={styles.commentModalContent}>
+              <View style={styles.commentModalHeader}>
+                <Text style={styles.commentModalTitle}>Leave a Comment</Text>
+                <TouchableOpacity onPress={() => setShowCommentModal(false)}>
+                  <Ionicons name="close" size={24} color="#fff" />
+                </TouchableOpacity>
+              </View>
+              <TextInput
+                style={styles.commentInput}
+                placeholder="What do you think of this build?"
+                placeholderTextColor="#666"
+                value={commentText}
+                onChangeText={setCommentText}
+                multiline
+                maxLength={500}
+                autoFocus
+              />
+              <Text style={styles.commentCharCount}>{commentText.length}/500</Text>
+              <TouchableOpacity
+                style={[
+                  styles.commentSubmitBtn,
+                  (!commentText.trim() || submittingComment) && styles.commentSubmitBtnDisabled,
+                ]}
+                onPress={handleSubmitComment}
+                disabled={!commentText.trim() || submittingComment}
+              >
+                {submittingComment ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="send" size={18} color="#fff" />
+                    <Text style={styles.commentSubmitText}>Post Comment</Text>
+                  </>
+                )}
               </TouchableOpacity>
             </View>
-            <TextInput
-              style={styles.commentInput}
-              placeholder="What do you think of this build?"
-              placeholderTextColor="#666"
-              value={commentText}
-              onChangeText={setCommentText}
-              multiline
-              maxLength={500}
-              autoFocus
-            />
-            <Text style={styles.commentCharCount}>{commentText.length}/500</Text>
-            <TouchableOpacity
-              style={[
-                styles.commentSubmitBtn,
-                (!commentText.trim() || submittingComment) && styles.commentSubmitBtnDisabled,
-              ]}
-              onPress={handleSubmitComment}
-              disabled={!commentText.trim() || submittingComment}
-            >
-              {submittingComment ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <>
-                  <Ionicons name="send" size={18} color="#fff" />
-                  <Text style={styles.commentSubmitText}>Post Comment</Text>
-                </>
-              )}
-            </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
