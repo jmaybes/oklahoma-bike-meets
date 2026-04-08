@@ -101,8 +101,10 @@ export default function ProfileScreen() {
     message: '',
   });
 
-  // Garage notifications state
+  // Notifications state
   const [garageNotifications, setGarageNotifications] = useState<any[]>([]);
+  const [allNotifications, setAllNotifications] = useState<any[]>([]);
+  const [showNotifModal, setShowNotifModal] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -152,8 +154,10 @@ export default function ProfileScreen() {
     try {
       if (!user?.id) return;
       const response = await axios.get(`${API_URL}/api/notifications/${user.id}`);
-      const garageNotifs = response.data.filter((n: any) => n.type === 'garage_comment');
+      const allNotifs = response.data;
+      const garageNotifs = allNotifs.filter((n: any) => n.type === 'garage_comment');
       setGarageNotifications(garageNotifs);
+      setAllNotifications(allNotifs.filter((n: any) => !n.isRead));
     } catch (error) {
       console.log('Failed to fetch garage notifications:', error);
     }
@@ -686,24 +690,17 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Garage Notifications Link */}
-        {garageNotifications.length > 0 && (
+        {/* Notifications Link */}
+        {allNotifications.length > 0 && (
           <TouchableOpacity
             style={styles.garageNotifsLink}
-            onPress={() => {
-              // Navigate to first notification's car
-              const firstNotif = garageNotifications[0];
-              if (firstNotif?.carId) {
-                markNotificationRead(firstNotif.id);
-                router.push(`/garage/${firstNotif.carId}`);
-              }
-            }}
+            onPress={() => setShowNotifModal(true)}
             activeOpacity={0.7}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Ionicons name="notifications" size={20} color="#FF6B35" />
               <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>
-                {garageNotifications.length} New Garage Notification{garageNotifications.length > 1 ? 's' : ''}
+                {allNotifications.length} Notification{allNotifications.length > 1 ? 's' : ''}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color="#666" />
