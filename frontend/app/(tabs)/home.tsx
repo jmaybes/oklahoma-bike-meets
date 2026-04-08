@@ -977,7 +977,7 @@ export default function HomeScreen() {
         {(!showAllEvents && selectedType === 'All' && !freeOnly && sortBy === 'date') ? (
           <Text style={styles.resultsText}>
             <Text style={{ color: '#FF6B35', fontWeight: '700' }}>{filteredEvents.length}</Text>
-            {'  '}Events in or near Oklahoma City. Use sort for more.
+            {'  '}Events in or near OKC. Use sort for more.
           </Text>
         ) : (
           <Text style={styles.resultsText}>
