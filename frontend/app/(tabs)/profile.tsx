@@ -167,9 +167,98 @@ export default function ProfileScreen() {
     try {
       await axios.put(`${API_URL}/api/notifications/${notifId}/read`);
       setGarageNotifications(prev => prev.filter(n => n.id !== notifId));
+      setAllNotifications(prev => prev.filter(n => n.id !== notifId));
     } catch (error) {
       console.log('Failed to mark notification as read:', error);
     }
+  };
+
+  const markAllNotificationsRead = async () => {
+    try {
+      if (!user?.id) return;
+      await axios.put(`${API_URL}/api/notifications/user/${user.id}/read-all`);
+      setGarageNotifications([]);
+      setAllNotifications([]);
+    } catch (error) {
+      console.log('Failed to mark all notifications as read:', error);
+    }
+  };
+
+  const handleNotificationTap = async (notif: any) => {
+    await markNotificationRead(notif.id);
+    setShowNotifModal(false);
+    
+    try {
+      if (notif.type === 'garage_comment' && notif.carId) {
+        router.push(`/garage/${notif.carId}`);
+      } else if ((notif.type === 'rsvp_confirmation' || notif.type === 'rsvp_reminder' || notif.type === 'event_reminder') && notif.eventId) {
+        router.push(`/event/${notif.eventId}`);
+      } else if (notif.type === 'popup_event' && notif.eventId) {
+        router.push(`/event/${notif.eventId}`);
+      } else if (notif.type === 'message') {
+        router.push('/messages');
+      } else if (notif.type === 'meetup_invite') {
+        router.push('/(tabs)/nearby');
+      } else if (notif.type === 'feedback_response') {
+        // Stay on profile - the feedback info is in the notification itself
+        Alert.alert(notif.title, notif.message);
+      } else if (notif.type === 'admin_feedback' || notif.type === 'admin_alert') {
+        // Admin notifications - show the full message
+        Alert.alert(notif.title, notif.message);
+      } else {
+        // For unknown types, just show the message
+        Alert.alert(notif.title, notif.message);
+      }
+    } catch (e) {
+      console.log('Navigation from notification failed:', e);
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'garage_comment': return 'chatbubble';
+      case 'rsvp_confirmation': return 'checkmark-circle';
+      case 'rsvp_reminder': return 'calendar';
+      case 'event_reminder': return 'alarm';
+      case 'popup_event': return 'flash';
+      case 'message': return 'mail';
+      case 'meetup_invite': return 'people';
+      case 'feedback_response': return 'megaphone';
+      case 'admin_feedback': return 'bug';
+      case 'admin_alert': return 'alert-circle';
+      default: return 'notifications';
+    }
+  };
+
+  const getNotificationColor = (type: string) => {
+    switch (type) {
+      case 'garage_comment': return '#4FC3F7';
+      case 'rsvp_confirmation': return '#69F0AE';
+      case 'rsvp_reminder': return '#FF6B35';
+      case 'event_reminder': return '#FFD740';
+      case 'popup_event': return '#FF5252';
+      case 'message': return '#69F0AE';
+      case 'meetup_invite': return '#CE93D8';
+      case 'feedback_response': return '#FFB74D';
+      case 'admin_feedback': return '#EF5350';
+      case 'admin_alert': return '#42A5F5';
+      default: return '#90A4AE';
+    }
+  };
+
+  const getTimeAgo = (dateStr: string) => {
+    if (!dateStr) return '';
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
   };
 
 
@@ -1536,9 +1625,153 @@ export default function ProfileScreen() {
         </SafeAreaView>
       </Modal>
 
+      {/* Notifications Modal */}
+      <Modal
+        visible={showNotifModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowNotifModal(false)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#0c0c0c' }}>
+          <View style={notifStyles.header}>
+            <TouchableOpacity onPress={() => setShowNotifModal(false)} style={notifStyles.backBtn}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <Text style={notifStyles.headerTitle}>Notifications</Text>
+            {allNotifications.length > 0 && (
+              <TouchableOpacity onPress={markAllNotificationsRead} style={notifStyles.clearBtn}>
+                <Text style={notifStyles.clearBtnText}>Clear All</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {allNotifications.length === 0 ? (
+            <View style={notifStyles.emptyContainer}>
+              <Ionicons name="notifications-off-outline" size={64} color="#444" />
+              <Text style={notifStyles.emptyTitle}>All Caught Up!</Text>
+              <Text style={notifStyles.emptySubtitle}>No new notifications right now.</Text>
+            </View>
+          ) : (
+            <ScrollView style={notifStyles.list} contentContainerStyle={{ paddingBottom: 40 }}>
+              {allNotifications.map((notif: any) => (
+                <TouchableOpacity
+                  key={notif.id}
+                  style={notifStyles.notifItem}
+                  onPress={() => handleNotificationTap(notif)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[notifStyles.iconCircle, { backgroundColor: getNotificationColor(notif.type) + '22' }]}>
+                    <Ionicons
+                      name={getNotificationIcon(notif.type) as any}
+                      size={22}
+                      color={getNotificationColor(notif.type)}
+                    />
+                  </View>
+                  <View style={notifStyles.notifContent}>
+                    <Text style={notifStyles.notifTitle} numberOfLines={1}>{notif.title}</Text>
+                    <Text style={notifStyles.notifMessage} numberOfLines={2}>{notif.message}</Text>
+                    <Text style={notifStyles.notifTime}>{getTimeAgo(notif.createdAt)}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color="#555" />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </SafeAreaView>
+      </Modal>
+
     </View>
   );
 }
+
+const notifStyles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1a1a1a',
+  },
+  backBtn: {
+    padding: 4,
+    marginRight: 12,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    flex: 1,
+  },
+  clearBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#FF6B3522',
+    borderRadius: 8,
+  },
+  clearBtnText: {
+    color: '#FF6B35',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 16,
+  },
+  emptySubtitle: {
+    color: '#888',
+    fontSize: 14,
+    marginTop: 6,
+    textAlign: 'center',
+  },
+  list: {
+    flex: 1,
+  },
+  notifItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1a1a1a',
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  notifContent: {
+    flex: 1,
+    marginRight: 8,
+  },
+  notifTitle: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 3,
+  },
+  notifMessage: {
+    color: '#aaa',
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  notifTime: {
+    color: '#666',
+    fontSize: 11,
+  },
+});
 
 const styles = StyleSheet.create({
   container: {

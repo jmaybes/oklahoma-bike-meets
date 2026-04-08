@@ -106,11 +106,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = response.notification.request.content.data;
       if (data) {
         try {
-          if (data.type === 'message' && data.senderId) {
+          if (data.type === 'garage_comment' && data.carId) {
+            router.push(`/garage/${data.carId}`);
+          } else if (data.type === 'message' && data.senderId) {
             router.push('/messages');
           } else if (data.type === 'popup_event' && data.eventId) {
             router.push(`/event/${data.eventId}`);
           } else if (data.type === 'event_reminder' && data.eventId) {
+            router.push(`/event/${data.eventId}`);
+          } else if (data.type === 'rsvp_reminder' && data.eventId) {
             router.push(`/event/${data.eventId}`);
           } else if (data.type === 'meetup_invite') {
             router.push('/(tabs)/nearby');

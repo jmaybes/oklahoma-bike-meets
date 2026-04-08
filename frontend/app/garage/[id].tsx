@@ -360,8 +360,11 @@ export default function GarageDetailScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.loadingContainer}>
-          <Ionicons name="alert-circle" size={64} color="#F44336" />
-          <Text style={styles.errorText}>Garage not found</Text>
+          <Ionicons name="car-sport-outline" size={64} color="#666" />
+          <Text style={styles.errorText}>This Ride Is Gone</Text>
+          <Text style={{ color: '#888', fontSize: 14, textAlign: 'center', marginTop: 8, marginHorizontal: 30 }}>
+            This car may have been removed by its owner or is no longer available.
+          </Text>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Text style={styles.backBtnText}>Go Back</Text>
           </TouchableOpacity>
