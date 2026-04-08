@@ -1308,6 +1308,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D32F2F',
     borderRadius: 16,
     gap: 4,
+    marginRight: 10,
   },
   pastButtonText: {
     color: '#fff',
