@@ -763,3 +763,24 @@ async def delete_garage_comment(comment_id: str, user_id: str = Query(...)):
     
     await db.garage_comments.delete_one({"_id": ObjectId(comment_id)})
     return {"message": "Comment deleted"}
+
+
+
+@router.put("/garage-comments/{comment_id}")
+async def edit_garage_comment(comment_id: str, user_id: str = Query(...), text: str = Query(...)):
+    """Edit a garage comment (owner only)."""
+    if not ObjectId.is_valid(comment_id):
+        raise HTTPException(status_code=400, detail="Invalid comment ID")
+    
+    comment = await db.garage_comments.find_one({"_id": ObjectId(comment_id)})
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    if str(comment.get("userId", "")) != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this comment")
+    
+    await db.garage_comments.update_one(
+        {"_id": ObjectId(comment_id)},
+        {"$set": {"text": text.strip(), "edited": True, "updatedAt": datetime.utcnow()}}
+    )
+    return {"message": "Comment updated"}

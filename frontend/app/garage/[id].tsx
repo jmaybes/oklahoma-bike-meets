@@ -302,6 +302,24 @@ export default function GarageDetailScreen() {
     ]);
   };
 
+  // Comment edit state
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editCommentText, setEditCommentText] = useState('');
+
+  const handleEditComment = async (commentId: string) => {
+    if (!editCommentText.trim()) return;
+    try {
+      await axios.put(
+        `${API_URL}/api/garage-comments/${commentId}?user_id=${user?.id}&text=${encodeURIComponent(editCommentText.trim())}`
+      );
+      setEditingCommentId(null);
+      setEditCommentText('');
+      fetchComments();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update comment');
+    }
+  };
+
   const formatCommentDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
@@ -628,8 +646,21 @@ export default function GarageDetailScreen() {
                   </View>
                   <View style={styles.commentMeta}>
                     <Text style={styles.commentAuthor}>{comment.userName}</Text>
-                    <Text style={styles.commentDate}>{formatCommentDate(comment.createdAt)}</Text>
+                    <Text style={styles.commentDate}>
+                      {formatCommentDate(comment.createdAt)}{comment.edited ? ' (edited)' : ''}
+                    </Text>
                   </View>
+                  {user && user.id === comment.userId && (
+                    <TouchableOpacity 
+                      style={styles.commentEditBtn}
+                      onPress={() => {
+                        setEditingCommentId(comment.id);
+                        setEditCommentText(comment.text);
+                      }}
+                    >
+                      <Ionicons name="pencil-outline" size={16} color="#FF6B35" />
+                    </TouchableOpacity>
+                  )}
                   {user && (user.id === comment.userId || isAdmin) && (
                     <TouchableOpacity 
                       style={styles.commentDeleteBtn}
@@ -639,7 +670,35 @@ export default function GarageDetailScreen() {
                     </TouchableOpacity>
                   )}
                 </View>
-                <Text style={styles.commentText}>{comment.text}</Text>
+                {editingCommentId === comment.id ? (
+                  <View style={styles.editCommentContainer}>
+                    <TextInput
+                      style={styles.editCommentInput}
+                      value={editCommentText}
+                      onChangeText={setEditCommentText}
+                      multiline
+                      maxLength={500}
+                      autoFocus
+                    />
+                    <View style={styles.editCommentActions}>
+                      <TouchableOpacity 
+                        style={styles.editCancelBtn}
+                        onPress={() => { setEditingCommentId(null); setEditCommentText(''); }}
+                      >
+                        <Text style={styles.editCancelText}>Cancel</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.editSaveBtn}
+                        onPress={() => handleEditComment(comment.id)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#fff" />
+                        <Text style={styles.editSaveText}>Save</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ) : (
+                  <Text style={styles.commentText}>{comment.text}</Text>
+                )}
               </View>
             ))}
           </View>
@@ -1460,6 +1519,55 @@ const styles = StyleSheet.create({
   },
   commentDeleteBtn: {
     padding: 6,
+  },
+  commentEditBtn: {
+    padding: 6,
+    marginRight: 2,
+  },
+  editCommentContainer: {
+    marginTop: 8,
+  },
+  editCommentInput: {
+    backgroundColor: '#1a1a1a',
+    color: '#fff',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: '#333',
+    minHeight: 60,
+    textAlignVertical: 'top',
+  },
+  editCommentActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 8,
+  },
+  editCancelBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 6,
+    backgroundColor: '#333',
+  },
+  editCancelText: {
+    color: '#999',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  editSaveBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 6,
+    backgroundColor: '#FF6B35',
+  },
+  editSaveText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
   },
   commentText: {
     color: '#ccc',
