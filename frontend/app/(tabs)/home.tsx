@@ -977,7 +977,7 @@ export default function HomeScreen() {
         <View style={styles.resultsRowHighlight}>
           <Text style={styles.resultsTextHighlight}>
             <Text style={{ color: '#FF6B35', fontWeight: '800' }}>{filteredEvents.length}</Text>
-            {'  '}Events in or near OKC. Use sort for more.
+            {'  '}Events in or near OKC. Use sort for options.
           </Text>
         </View>
       ) : (
