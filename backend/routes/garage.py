@@ -21,28 +21,30 @@ router = APIRouter()
 # Get the public backend URL for generating image URLs
 BACKEND_URL = os.environ.get("BACKEND_PUBLIC_URL", "")
 
+# 1x1 gray placeholder JPEG (prevents 404/500 from breaking the app)
+PLACEHOLDER_JPEG = base64.b64decode("/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AKwA//9k=")
+
 @router.get("/user-cars/{car_id}/thumbnail.jpg")
 async def get_car_thumbnail(car_id: str):
     """Serve a car's thumbnail as an actual JPEG image."""
     if not ObjectId.is_valid(car_id):
-        raise HTTPException(status_code=404, detail="Not found")
+        return Response(content=PLACEHOLDER_JPEG, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=60"})
     
     car = await db.user_cars.find_one(
         {"_id": ObjectId(car_id)},
         {"thumbnail": 1}
     )
     if not car or not car.get("thumbnail"):
-        raise HTTPException(status_code=404, detail="No thumbnail")
+        return Response(content=PLACEHOLDER_JPEG, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=60"})
     
     thumb = car["thumbnail"]
-    # Strip data URI prefix if present
     if "," in thumb:
         thumb = thumb.split(",", 1)[1]
     
     try:
         image_bytes = base64.b64decode(thumb)
     except Exception:
-        raise HTTPException(status_code=500, detail="Invalid image data")
+        return Response(content=PLACEHOLDER_JPEG, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=60"})
     
     return Response(
         content=image_bytes,
@@ -55,7 +57,7 @@ async def get_car_thumbnail(car_id: str):
 async def get_car_photo_image(car_id: str, index: int):
     """Serve a single full-size car photo as an actual JPEG image."""
     if not ObjectId.is_valid(car_id):
-        raise HTTPException(status_code=404, detail="Not found")
+        return Response(content=PLACEHOLDER_JPEG, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=60"})
     
     photo_doc = await db.user_cars.find_one(
         {"_id": ObjectId(car_id)},
@@ -63,11 +65,15 @@ async def get_car_photo_image(car_id: str, index: int):
     )
     
     if not photo_doc or not photo_doc.get("photos"):
-        raise HTTPException(status_code=404, detail="Photo not found")
+        return Response(content=PLACEHOLDER_JPEG, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=60"})
     
     photo = photo_doc["photos"][0] if photo_doc["photos"] else None
     if not photo or len(str(photo)) < 100:
-        raise HTTPException(status_code=404, detail="Photo not found")
+        return Response(content=PLACEHOLDER_JPEG, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=60"})
+    
+    # Skip URL-type photos
+    if photo.startswith("http"):
+        return Response(content=PLACEHOLDER_JPEG, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=60"})
     
     # Strip data URI prefix if present
     if "," in photo and photo.startswith("data:"):
@@ -76,7 +82,7 @@ async def get_car_photo_image(car_id: str, index: int):
     try:
         image_bytes = base64.b64decode(photo)
     except Exception:
-        raise HTTPException(status_code=500, detail="Invalid image data")
+        return Response(content=PLACEHOLDER_JPEG, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=60"})
     
     return Response(
         content=image_bytes,
