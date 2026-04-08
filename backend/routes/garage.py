@@ -259,13 +259,21 @@ async def get_public_garages(
 
     if sort == "random":
         # Top 3 by likes stay fixed, rest is randomized
-        top3 = await db.user_cars.find(query, {"photos": 0, "thumbnail": 0}).sort([("likes", -1)]).limit(3).to_list(3)
+        # Use aggregation to dynamically count photos
+        top3 = await db.user_cars.aggregate([
+            {"$match": query},
+            {"$addFields": {"_photoCount": {"$size": {"$ifNull": ["$photos", []]}}, "_hasThumbnail": {"$gt": [{"$strLenBytes": {"$ifNull": ["$thumbnail", ""]}}, 50]}}},
+            {"$project": {"photos": 0, "thumbnail": 0}},
+            {"$sort": {"likes": -1}},
+            {"$limit": 3}
+        ]).to_list(3)
         top3_ids = [car["_id"] for car in top3]
         
         # Get the rest randomly, excluding top 3
         rest_query = {**query, "_id": {"$nin": top3_ids}}
         pipeline = [
             {"$match": rest_query},
+            {"$addFields": {"_photoCount": {"$size": {"$ifNull": ["$photos", []]}}, "_hasThumbnail": {"$gt": [{"$strLenBytes": {"$ifNull": ["$thumbnail", ""]}}, 50]}}},
             {"$project": {"photos": 0, "thumbnail": 0}},
             {"$sample": {"size": max(limit - 3, 0)}}
         ]
@@ -274,16 +282,23 @@ async def get_public_garages(
     else:
         # Sort options
         if sort == "views":
-            sort_field = [("views", -1), ("likes", -1)]
+            sort_field = {"views": -1, "likes": -1}
         elif sort == "newest":
-            sort_field = [("createdAt", -1)]
+            sort_field = {"createdAt": -1}
         else:  # likes
-            sort_field = [("likes", -1), ("views", -1)]
+            sort_field = {"likes": -1, "views": -1}
 
-        cars = await db.user_cars.find(query, {"photos": 0, "thumbnail": 0}).sort(sort_field).limit(limit).to_list(limit)
+        cars = await db.user_cars.aggregate([
+            {"$match": query},
+            {"$addFields": {"_photoCount": {"$size": {"$ifNull": ["$photos", []]}}, "_hasThumbnail": {"$gt": [{"$strLenBytes": {"$ifNull": ["$thumbnail", ""]}}, 50]}}},
+            {"$project": {"photos": 0, "thumbnail": 0}},
+            {"$sort": sort_field},
+            {"$limit": limit}
+        ]).to_list(limit)
 
     # Build base URL from request
     base_url = get_base_url(request)
+    logger.info(f"Public garages: base_url={base_url}, total_cars={len(cars)}")
 
     result = []
     # Batch fetch comment counts for all car IDs
@@ -295,6 +310,7 @@ async def get_public_garages(
     ]):
         comment_counts[doc["_id"]] = doc["count"]
 
+    photos_found = 0
     for car in cars:
         try:
             user = await db.users.find_one({"_id": ObjectId(car["userId"])}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(car.get("userId", "")) else None
@@ -305,12 +321,15 @@ async def get_public_garages(
 
             # Return HTTP URL to thumbnail instead of base64
             car_id = car_data["id"]
-            has_thumbnail = car.get("photoCount", 0) > 0 or car.get("_has_thumb", False)
-            # Check if thumbnail exists by looking at photoCount
-            car_data["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if car.get("photoCount", 0) > 0 else []
-            car_data["photoCount"] = car.get("photoCount", 0)
+            pc = car.get("_photoCount", 0)
+            ht = car.get("_hasThumbnail", False)
+            has_photos = pc > 0 or ht
+            car_data["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if has_photos else []
+            car_data["photoCount"] = pc
             car_data["mainPhotoIndex"] = 0
             car_data["commentCount"] = comment_counts.get(car_id, 0)
+            if has_photos:
+                photos_found += 1
 
             result.append(car_data)
         except Exception as e:
@@ -318,6 +337,7 @@ async def get_public_garages(
             logging.getLogger(__name__).error(f"Skipping broken car {car.get('_id')}: {e}")
             continue
 
+    logger.info(f"Public garages: returning {len(result)} cars, {photos_found} with photos")
     return result
 
 
