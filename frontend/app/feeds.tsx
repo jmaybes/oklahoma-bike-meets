@@ -34,6 +34,9 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   withSpring,
+  useAnimatedScrollHandler,
+  interpolate,
+  Extrapolation,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -795,15 +798,38 @@ export default function FeedsScreen() {
     );
   }
 
+  const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+  const scrollY = useSharedValue(0);
+  const parallaxScrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const parallaxStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: interpolate(scrollY.value, [0, 1000], [0, -300], Extrapolation.CLAMP) },
+    ],
+  }));
+
   // ==================== MAIN RENDER ====================
 
   return (
-    <ImageBackground 
-      source={require('../assets/images/lounge-bg.png')} 
-      style={{ flex: 1 }}
-      imageStyle={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.6 }}
-      resizeMode="cover"
-    >
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
+      {/* Parallax Background Image */}
+      <Animated.Image
+        source={require('../assets/images/lounge-bg.png')}
+        style={[{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          width: SCREEN_WIDTH,
+          height: SCREEN_HEIGHT + 300,
+          opacity: 0.6,
+        }, parallaxStyle]}
+        resizeMode="cover"
+      />
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       <LinearGradient colors={['rgba(255,107,53,0.9)', 'rgba(233,30,99,0.9)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[s.headerBar, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><Ionicons name="arrow-back" size={24} color="#fff" /></TouchableOpacity>
@@ -811,13 +837,15 @@ export default function FeedsScreen() {
         <View style={{ width: 40 }} />
       </LinearGradient>
 
-      <FlatList
+      <Animated.FlatList
         data={posts}
         keyExtractor={(item) => item.id}
         renderItem={renderPost}
         ListHeaderComponent={ComposeTrigger}
         contentContainerStyle={s.listContent}
         showsVerticalScrollIndicator={false}
+        onScroll={parallaxScrollHandler}
+        scrollEventThrottle={16}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" colors={['#FF6B35']} />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
@@ -887,7 +915,7 @@ export default function FeedsScreen() {
           </KeyboardAvoidingView>
         </View>
       </Modal>
-    </ImageBackground>
+    </View>
   );
 }
 
