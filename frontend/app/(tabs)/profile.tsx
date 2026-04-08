@@ -1634,8 +1634,13 @@ export default function ProfileScreen() {
       >
         <SafeAreaView style={{ flex: 1, backgroundColor: '#0c0c0c' }}>
           <View style={notifStyles.header}>
-            <TouchableOpacity onPress={() => setShowNotifModal(false)} style={notifStyles.backBtn}>
-              <Ionicons name="arrow-back" size={24} color="#fff" />
+            <TouchableOpacity 
+              onPress={() => setShowNotifModal(false)} 
+              style={notifStyles.backBtn}
+              hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+              activeOpacity={0.5}
+            >
+              <Ionicons name="arrow-back" size={26} color="#fff" />
             </TouchableOpacity>
             <Text style={notifStyles.headerTitle}>Notifications</Text>
             {allNotifications.length > 0 && (
@@ -1694,8 +1699,9 @@ const notifStyles = StyleSheet.create({
     borderBottomColor: '#1a1a1a',
   },
   backBtn: {
-    padding: 4,
-    marginRight: 12,
+    padding: 12,
+    marginRight: 8,
+    marginLeft: -4,
   },
   headerTitle: {
     fontSize: 20,
