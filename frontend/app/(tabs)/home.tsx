@@ -1248,7 +1248,8 @@ const styles = StyleSheet.create({
   filterRow2: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingLeft: 10,
+    paddingRight: 45,
     marginBottom: 11,
     marginTop: -2,
     gap: 8,
@@ -1308,7 +1309,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#D32F2F',
     borderRadius: 16,
     gap: 4,
-    marginRight: 35,
   },
   pastButtonText: {
     color: '#fff',
