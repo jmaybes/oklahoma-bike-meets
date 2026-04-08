@@ -21,7 +21,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 'react-native-reanimated';
 import { useFonts, RockSalt_400Regular } from '@expo-google-fonts/rock-salt';
 
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+import { API_URL } from '../../utils/api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SLIDESHOW_HEIGHT = 320;

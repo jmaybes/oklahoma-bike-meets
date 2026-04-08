@@ -20,7 +20,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../../contexts/AuthContext';
 import axios from 'axios';
 
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+import { API_URL } from '../../../utils/api';
 
 interface EventForm {
   title: string;

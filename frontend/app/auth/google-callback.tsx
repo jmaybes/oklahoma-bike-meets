@@ -17,7 +17,7 @@ import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+import { API_URL } from '../../utils/api';
 
 interface GoogleData {
   email: string;

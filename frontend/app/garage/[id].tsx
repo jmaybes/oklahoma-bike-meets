@@ -25,7 +25,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+import { API_URL } from '../../utils/api';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const width = SCREEN_WIDTH;
 

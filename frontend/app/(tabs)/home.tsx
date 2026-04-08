@@ -35,7 +35,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import api from '../../utils/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
-import { API_URL } from '../utils/api';
+import { API_URL } from '../../utils/api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

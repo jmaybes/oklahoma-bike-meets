@@ -21,7 +21,7 @@ import axios from 'axios';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+import { API_URL } from '../utils/api';
 
 interface MyEvent {
   id: string;

@@ -36,7 +36,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 
 const { width } = Dimensions.get('window');
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+import { API_URL } from '../../utils/api';
 const SPEEDO_SIZE = Math.min(width * 0.62, 260);
 const QUARTER_MILE_METERS = 402.336;
 

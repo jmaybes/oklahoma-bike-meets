@@ -23,7 +23,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as Location from 'expo-location';
 
-const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
+import { API_URL } from '../../utils/api';
 
 export default function AddEventScreen() {
   const { user, isAuthenticated } = useAuth();
