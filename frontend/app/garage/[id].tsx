@@ -124,6 +124,15 @@ export default function GarageDetailScreen() {
     try {
       const response = await axios.get(`${API_URL}/api/user-cars/${id}`);
       setCar(response.data);
+      // Check if backend flagged any broken photos
+      if (response.data.brokenPhotos && response.data.brokenPhotos.length > 0) {
+        const count = response.data.brokenPhotos.length;
+        Alert.alert(
+          'Photo Issue Detected',
+          `${count} of your photos ${count === 1 ? 'has' : 'have'} a problem and may not display correctly. Please re-upload ${count === 1 ? 'it' : 'them'} from your garage edit page.`,
+          [{ text: 'OK' }]
+        );
+      }
     } catch (error) {
       console.error('Error fetching car:', error);
     } finally {

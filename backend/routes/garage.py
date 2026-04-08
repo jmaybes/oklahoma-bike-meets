@@ -331,6 +331,26 @@ async def get_car_by_id(request: Request, car_id: str):
             f"{base_url}/api/user-cars/{car_id}/photo/{i}/image.jpg"
             for i in range(photo_count)
         ]
+        # Check photo integrity for the owner
+        full_car = await db.user_cars.find_one({"_id": ObjectId(car_id)}, {"photos": 1})
+        broken_indices = []
+        if full_car and full_car.get("photos"):
+            for i, photo in enumerate(full_car["photos"]):
+                if not photo or len(str(photo)) < 100:
+                    broken_indices.append(i)
+                elif isinstance(photo, str) and photo.startswith("http"):
+                    broken_indices.append(i)
+                else:
+                    # Quick decode test
+                    test_data = photo
+                    if "," in test_data and test_data.startswith("data:"):
+                        test_data = test_data.split(",", 1)[1]
+                    try:
+                        base64.b64decode(test_data[:100])
+                    except Exception:
+                        broken_indices.append(i)
+        if broken_indices:
+            car_data["brokenPhotos"] = broken_indices
     else:
         car_data["photos"] = []
     car_data["mainPhotoIndex"] = car.get("mainPhotoIndex", 0)
