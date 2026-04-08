@@ -407,3 +407,89 @@ async def broadcast_message(
         "pushNotificationsSent": push_count,
         "totalUsers": len(users),
     }
+
+
+
+# ==================== Admin Garage Cleanup ====================
+
+@router.delete("/admin/garage/{car_id}")
+async def admin_delete_car(car_id: str, admin_id: str = Query(...)):
+    """Admin endpoint to delete a car from the garage (production cleanup)."""
+    if not ObjectId.is_valid(admin_id) or not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=400, detail="Invalid ID")
+
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+
+    car = await db.user_cars.find_one({"_id": ObjectId(car_id)}, {"make": 1, "model": 1, "userId": 1})
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    # Delete the car and its comments
+    await db.user_cars.delete_one({"_id": ObjectId(car_id)})
+    deleted_comments = await db.garage_comments.delete_many({"carId": car_id})
+
+    logger.info(f"Admin {admin_id} deleted car {car_id} ({car.get('make', '?')} {car.get('model', '?')}), {deleted_comments.deleted_count} comments removed")
+
+    return {
+        "success": True,
+        "deleted": car_id,
+        "car": f"{car.get('make', '?')} {car.get('model', '?')}",
+        "commentsDeleted": deleted_comments.deleted_count
+    }
+
+
+@router.get("/admin/garage/list")
+async def admin_list_all_cars(admin_id: str = Query(...)):
+    """Admin endpoint to list all cars for cleanup - shows which have corrupted data."""
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+
+    admin = await db.users.find_one({"_id": ObjectId(admin_id)})
+    if not admin or not admin.get("isAdmin", False):
+        raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+
+    cars = await db.user_cars.find(
+        {},
+        {"make": 1, "model": 1, "year": 1, "userId": 1, "isPublic": 1, "createdAt": 1}
+    ).to_list(500)
+
+    result = []
+    for car in cars:
+        car_id = str(car["_id"])
+        # Check photo health via aggregation
+        try:
+            agg = await db.user_cars.aggregate([
+                {"$match": {"_id": car["_id"]}},
+                {"$project": {
+                    "photosIsArray": {"$isArray": "$photos"},
+                    "photoCount": {"$cond": {"if": {"$isArray": "$photos"}, "then": {"$size": "$photos"}, "else": -1}},
+                    "hasThumbnail": {"$cond": {"if": {"$and": [{"$ne": ["$thumbnail", None]}, {"$ne": ["$thumbnail", ""]}]}, "then": True, "else": False}},
+                }}
+            ]).to_list(1)
+            health = agg[0] if agg else {}
+        except Exception:
+            health = {"photosIsArray": False, "photoCount": -1, "hasThumbnail": False}
+
+        # Look up owner name
+        owner = await db.users.find_one({"_id": ObjectId(car.get("userId", "000000000000000000000000"))}, {"name": 1, "email": 1}) if ObjectId.is_valid(car.get("userId", "")) else None
+
+        result.append({
+            "id": car_id,
+            "make": car.get("make", "?"),
+            "model": car.get("model", "?"),
+            "year": car.get("year", "?"),
+            "owner": owner.get("name", owner.get("email", "Unknown")) if owner else "Unknown/Deleted User",
+            "isPublic": car.get("isPublic", False),
+            "photoCount": health.get("photoCount", -1),
+            "photosIsArray": health.get("photosIsArray", False),
+            "hasThumbnail": health.get("hasThumbnail", False),
+            "corrupted": not health.get("photosIsArray", True) or health.get("photoCount", 0) == -1,
+            "createdAt": str(car.get("createdAt", ""))
+        })
+
+    # Sort: corrupted first, then by creation date
+    result.sort(key=lambda x: (not x["corrupted"], x.get("createdAt", "")))
+
+    return result

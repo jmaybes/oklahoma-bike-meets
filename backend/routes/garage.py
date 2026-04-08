@@ -259,38 +259,69 @@ async def get_public_garages(
 
     if sort == "random":
         # Top 3 by likes stay fixed, rest is randomized
-        # Use aggregation to dynamically count photos
+        # Use $cond + $isArray to survive corrupted non-array photos fields
         top3 = await db.user_cars.aggregate([
             {"$match": query},
-            {"$addFields": {"_photoCount": {"$size": {"$ifNull": ["$photos", []]}}, "_hasThumbnail": {"$gt": [{"$strLenBytes": {"$ifNull": ["$thumbnail", ""]}}, 50]}}},
+            {"$addFields": {
+                "_photoCount": {"$cond": {
+                    "if": {"$isArray": "$photos"},
+                    "then": {"$size": "$photos"},
+                    "else": 0
+                }},
+                "_hasThumbnail": {"$cond": {
+                    "if": {"$and": [{"$ne": ["$thumbnail", None]}, {"$ne": ["$thumbnail", ""]}]},
+                    "then": True,
+                    "else": False
+                }}
+            }},
             {"$project": {"photos": 0, "thumbnail": 0}},
             {"$sort": {"likes": -1}},
             {"$limit": 3}
         ]).to_list(3)
         top3_ids = [car["_id"] for car in top3]
         
-        # Get the rest randomly, excluding top 3
         rest_query = {**query, "_id": {"$nin": top3_ids}}
         pipeline = [
             {"$match": rest_query},
-            {"$addFields": {"_photoCount": {"$size": {"$ifNull": ["$photos", []]}}, "_hasThumbnail": {"$gt": [{"$strLenBytes": {"$ifNull": ["$thumbnail", ""]}}, 50]}}},
+            {"$addFields": {
+                "_photoCount": {"$cond": {
+                    "if": {"$isArray": "$photos"},
+                    "then": {"$size": "$photos"},
+                    "else": 0
+                }},
+                "_hasThumbnail": {"$cond": {
+                    "if": {"$and": [{"$ne": ["$thumbnail", None]}, {"$ne": ["$thumbnail", ""]}]},
+                    "then": True,
+                    "else": False
+                }}
+            }},
             {"$project": {"photos": 0, "thumbnail": 0}},
             {"$sample": {"size": max(limit - 3, 0)}}
         ]
         rest = await db.user_cars.aggregate(pipeline).to_list(max(limit - 3, 0))
         cars = top3 + rest
     else:
-        # Sort options
         if sort == "views":
             sort_field = {"views": -1, "likes": -1}
         elif sort == "newest":
             sort_field = {"createdAt": -1}
-        else:  # likes
+        else:
             sort_field = {"likes": -1, "views": -1}
 
         cars = await db.user_cars.aggregate([
             {"$match": query},
-            {"$addFields": {"_photoCount": {"$size": {"$ifNull": ["$photos", []]}}, "_hasThumbnail": {"$gt": [{"$strLenBytes": {"$ifNull": ["$thumbnail", ""]}}, 50]}}},
+            {"$addFields": {
+                "_photoCount": {"$cond": {
+                    "if": {"$isArray": "$photos"},
+                    "then": {"$size": "$photos"},
+                    "else": 0
+                }},
+                "_hasThumbnail": {"$cond": {
+                    "if": {"$and": [{"$ne": ["$thumbnail", None]}, {"$ne": ["$thumbnail", ""]}]},
+                    "then": True,
+                    "else": False
+                }}
+            }},
             {"$project": {"photos": 0, "thumbnail": 0}},
             {"$sort": sort_field},
             {"$limit": limit}

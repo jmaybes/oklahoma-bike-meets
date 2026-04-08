@@ -216,10 +216,49 @@ async def startup_scheduler():
     logger.info(f"========== APP STARTING: {APP_VERSION} ==========")
     logger.info(f"========== BUILD ID: deploy-fix-april3-v8 ==========")
     
+    # Auto-cleanup corrupted car records that crash the garage endpoint
+    await cleanup_corrupted_cars()
+    
     # Run photo migration to fix cars missing photoCount/thumbnail
     await migrate_photo_counts()
     
     logger.info("App started successfully (RSVP scheduler disabled for stability)")
+
+
+async def cleanup_corrupted_cars():
+    """
+    Startup cleanup: Finds and removes car records with corrupted data
+    (non-array photos, missing required fields) that crash the public garages endpoint.
+    """
+    from database import db
+    
+    try:
+        # Find cars where photos field exists but is NOT an array
+        corrupted_cars = await db.user_cars.find({
+            "$or": [
+                {"photos": {"$exists": True, "$not": {"$type": "array"}}},
+                {"make": {"$exists": False}},
+                {"model": {"$exists": False}},
+            ]
+        }, {"make": 1, "model": 1, "userId": 1}).to_list(100)
+        
+        if corrupted_cars:
+            car_ids = [car["_id"] for car in corrupted_cars]
+            names = [f"{c.get('make','?')} {c.get('model','?')}" for c in corrupted_cars]
+            
+            # Delete corrupted cars
+            result = await db.user_cars.delete_many({"_id": {"$in": car_ids}})
+            
+            # Also delete their comments
+            car_id_strs = [str(cid) for cid in car_ids]
+            await db.garage_comments.delete_many({"carId": {"$in": car_id_strs}})
+            
+            logger.warning(f"CLEANUP: Removed {result.deleted_count} corrupted cars: {names}")
+        else:
+            logger.info("Cleanup: No corrupted car records found")
+            
+    except Exception as e:
+        logger.error(f"Cleanup error (non-fatal): {e}")
 
 
 async def migrate_photo_counts():
