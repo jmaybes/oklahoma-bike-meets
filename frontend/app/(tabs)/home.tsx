@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   ActivityIndicator,
   RefreshControl,
   Image,
@@ -49,6 +48,11 @@ const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1559669334-b6a5cee989ae?w=800&q=80',
 ];
 
+// OKC center coordinates (for default 20-mile radius filter)
+const OKC_LAT = 35.4676;
+const OKC_LON = -97.5164;
+const DEFAULT_RADIUS_MILES = 20;
+
 interface Event {
   id: string;
   title: string;
@@ -88,13 +92,13 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [fetchError, setFetchError] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('All');
   const [freeOnly, setFreeOnly] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
   const [sortBy, setSortBy] = useState<'date' | 'distance'>('date');
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showAllEvents, setShowAllEvents] = useState(false);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [clubsCount, setClubsCount] = useState(0);
@@ -188,7 +192,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     filterEvents();
-  }, [events, searchQuery, selectedType, freeOnly, userLocation, sortBy]);
+  }, [events, selectedType, freeOnly, userLocation, sortBy, showAllEvents]);
 
   const getUserLocation = async () => {
     try {
@@ -214,18 +218,26 @@ export default function HomeScreen() {
       const response = await api.get('/events');
       if (!isMountedRef.current) return;
       const eventsWithDistance = response.data.map((event: Event) => {
+        const result = { ...event };
+        // Calculate distance from user if available
         if (userLocation && event.latitude && event.longitude) {
-          return {
-            ...event,
-            distance: calculateDistance(
-              userLocation.lat,
-              userLocation.lon,
-              event.latitude,
-              event.longitude
-            ),
-          };
+          result.distance = calculateDistance(
+            userLocation.lat,
+            userLocation.lon,
+            event.latitude,
+            event.longitude
+          );
         }
-        return event;
+        // Always calculate distance from OKC center for radius filtering
+        if (event.latitude && event.longitude) {
+          (result as any).okcDistance = calculateDistance(
+            OKC_LAT,
+            OKC_LON,
+            event.latitude,
+            event.longitude
+          );
+        }
+        return result;
       });
       setEvents(eventsWithDistance);
       setFetchError(false);
@@ -288,17 +300,25 @@ export default function HomeScreen() {
       }
     });
 
-    if (selectedType !== 'All') {
-      filtered = filtered.filter((event) => event.eventType === selectedType);
+    // OKC radius filter (default: within 20 miles of OKC, unless "All Events" selected)
+    if (!showAllEvents) {
+      filtered = filtered.filter((event) => {
+        // If event has coordinates, check distance from OKC center
+        if ((event as any).okcDistance !== undefined) {
+          return (event as any).okcDistance <= DEFAULT_RADIUS_MILES;
+        }
+        // If no coordinates, check city name for OKC references
+        const city = (event.city || '').toLowerCase();
+        return city.includes('oklahoma city') || city.includes('okc') || 
+               city.includes('edmond') || city.includes('moore') || 
+               city.includes('norman') || city.includes('midwest city') ||
+               city.includes('del city') || city.includes('yukon') ||
+               city.includes('mustang') || city.includes('bethany');
+      });
     }
 
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (event) =>
-          event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          event.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          event.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    if (selectedType !== 'All') {
+      filtered = filtered.filter((event) => event.eventType === selectedType);
     }
 
     if (freeOnly) {
@@ -417,7 +437,7 @@ export default function HomeScreen() {
   useEffect(() => {
     seenIdsRef.current = new Set();
     setVisibleIds(new Set());
-  }, [selectedType, searchQuery, freeOnly, sortBy]);
+  }, [selectedType, freeOnly, sortBy, showAllEvents]);
 
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 20,
@@ -759,6 +779,8 @@ export default function HomeScreen() {
           <Ionicons name={showSortMenu ? 'chevron-up' : 'chevron-down'} size={14} color="#FF6B35" />
         </TouchableOpacity>
 
+        <View style={{ flex: 1 }} />
+
         <TouchableOpacity style={styles.pastButton} onPress={() => router.push('/events/past')}>
           <Ionicons name="time" size={14} color="#fff" />
           <Text style={styles.pastButtonText}>Past</Text>
@@ -768,6 +790,35 @@ export default function HomeScreen() {
       {/* Sort Dropdown Menu */}
       {showSortMenu && (
         <View style={styles.sortDropdown}>
+          {/* All Events option */}
+          <TouchableOpacity
+            style={[
+              styles.sortDropdownItem,
+              showAllEvents && styles.sortDropdownItemActive,
+            ]}
+            onPress={() => {
+              setShowAllEvents(!showAllEvents);
+              setShowSortMenu(false);
+            }}
+          >
+            <Ionicons
+              name={showAllEvents ? 'globe' : 'globe-outline'}
+              size={18}
+              color={showAllEvents ? '#4FC3F7' : '#999'}
+            />
+            <Text
+              style={[
+                styles.sortDropdownText,
+                showAllEvents && { color: '#4FC3F7', fontWeight: '600' },
+              ]}
+            >
+              All Events
+            </Text>
+            {showAllEvents && (
+              <Ionicons name="checkmark" size={18} color="#4FC3F7" style={{ marginLeft: 'auto' }} />
+            )}
+          </TouchableOpacity>
+
           {sortOptions.map((option) => (
             <TouchableOpacity
               key={option.value}
@@ -830,21 +881,12 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Search Box */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search events or cities..."
-          placeholderTextColor="#666"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={20} color="#666" />
-          </TouchableOpacity>
-        )}
+      {/* Info text replacing search bar */}
+      <View style={styles.infoTextContainer}>
+        <Ionicons name="location" size={16} color="#FF6B35" />
+        <Text style={styles.infoText}>
+          Events in or near Oklahoma City. Use sort for more.
+        </Text>
       </View>
 
       {/* Location Warning */}
@@ -862,7 +904,7 @@ export default function HomeScreen() {
         </Text>
       </View>
     </View>
-  ), [events, filteredEvents, selectedType, freeOnly, sortBy, showSortMenu, searchQuery, userLocation, insets.top, heroImageLoaded, heroImageStyle, heroOverlayStyle, heroContentStyle]);
+  ), [events, filteredEvents, selectedType, freeOnly, sortBy, showSortMenu, showAllEvents, userLocation, insets.top, heroImageLoaded, heroImageStyle, heroOverlayStyle, heroContentStyle]);
 
   if (loading) {
     return (
@@ -1117,34 +1159,33 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // ===== SEARCH =====
-  searchContainer: {
+  // ===== INFO TEXT (replaces search) =====
+  infoTextContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1a1a1a',
     marginHorizontal: 0,
     paddingHorizontal: 16,
+    paddingVertical: 14,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: '#2a2a2a',
+    gap: 10,
   },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
+  infoText: {
     flex: 1,
-    height: 48,
-    color: '#fff',
-    fontSize: 16,
+    color: '#999',
+    fontSize: 14,
+    fontStyle: 'italic',
   },
 
   // ===== FILTERS =====
   filterWrapper: {
-    marginBottom: 12,
-    paddingVertical: 4,
+    marginBottom: 4,
+    paddingVertical: 2,
     paddingHorizontal: 5,
-    marginTop: 8,
+    marginTop: 2,
   },
   filterContent: {
     flexDirection: 'row',
@@ -1177,11 +1218,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 5,
-    marginBottom: 12,
-    gap: 12,
+    marginBottom: 8,
+    marginTop: 4,
+    gap: 8,
   },
   sortByButton: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1236,7 +1277,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#D32F2F',
     borderRadius: 16,
     gap: 4,
-    marginLeft: 'auto',
   },
   pastButtonText: {
     color: '#fff',
