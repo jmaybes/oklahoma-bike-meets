@@ -63,6 +63,12 @@
       "./plugins/withNoRoutingApp",
       "expo-apple-authentication",
       [
+        "expo-font",
+        {
+          "fonts": ["./node_modules/@expo-google-fonts/rock-salt/400Regular/RockSalt_400Regular.ttf"]
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",

@@ -19,8 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 'react-native-reanimated';
-import { useFonts } from '@expo-google-fonts/rock-salt/useFonts';
-import { RockSalt_400Regular } from '@expo-google-fonts/rock-salt/400Regular';
+import { useFonts, RockSalt_400Regular } from '@expo-google-fonts/rock-salt';
 
 const API_URL = 'https://event-hub-okc-1.preview.emergentagent.com';
 
