@@ -972,27 +972,18 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Info text replacing search bar */}
-      <View style={styles.infoTextContainer}>
-        <Ionicons name="location" size={16} color="#FF6B35" />
-        <Text style={styles.infoText}>
-          Events in or near Oklahoma City. Use sort for more.
-        </Text>
-      </View>
-
-      {/* Location Warning */}
-      {sortBy === 'distance' && !userLocation && (
-        <View style={styles.locationWarning}>
-          <Ionicons name="warning" size={14} color="#FFC107" />
-          <Text style={styles.locationWarningText}>Enable location to sort by distance</Text>
-        </View>
-      )}
-
-      {/* Results count */}
+      {/* Results count with contextual info */}
       <View style={styles.resultsRow}>
-        <Text style={styles.resultsText}>
-          {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''} found
-        </Text>
+        {(!showAllEvents && selectedType === 'All' && !freeOnly && sortBy === 'date') ? (
+          <Text style={styles.resultsText}>
+            <Text style={{ color: '#FF6B35', fontWeight: '700' }}>{filteredEvents.length}</Text>
+            {'  '}Events in or near Oklahoma City. Use sort for more.
+          </Text>
+        ) : (
+          <Text style={styles.resultsText}>
+            {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''} found
+          </Text>
+        )}
       </View>
     </View>
   ), [events, filteredEvents, selectedType, freeOnly, sortBy, showSortMenu, showAllEvents, userLocation, insets.top, heroImageLoaded, heroImageStyle, heroOverlayStyle, heroContentStyle, favoriteIds, clubsCount]);
@@ -1250,27 +1241,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // ===== INFO TEXT (replaces search) =====
-  infoTextContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    marginHorizontal: 0,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#2a2a2a',
-    gap: 10,
-  },
-  infoText: {
-    flex: 1,
-    color: '#999',
-    fontSize: 14,
-    fontStyle: 'italic',
-  },
-
   // ===== FILTERS =====
   // ===== FILTERS =====
   filterRow2: {
@@ -1367,7 +1337,7 @@ const styles = StyleSheet.create({
   },
   resultsText: {
     color: '#666',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '500',
   },
   resultsDate: {
