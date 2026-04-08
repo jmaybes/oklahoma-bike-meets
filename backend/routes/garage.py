@@ -18,6 +18,26 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+def get_base_url(request: Request) -> str:
+    """
+    Reliably construct the public base URL from request headers.
+    Falls back to EXPO_PUBLIC_BACKEND_URL env var if headers are missing.
+    This prevents broken photo URLs on native deployments behind proxies.
+    """
+    forwarded = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    scheme = request.headers.get("x-forwarded-proto", "https")
+    
+    if forwarded and "localhost" not in forwarded and "0.0.0.0" not in forwarded:
+        return f"{scheme}://{forwarded}"
+    
+    # Fallback to env var (set by deployment process)
+    env_url = os.environ.get("PUBLIC_BASE_URL") or os.environ.get("EXPO_PUBLIC_BACKEND_URL")
+    if env_url:
+        return env_url.rstrip("/")
+    
+    return str(request.base_url).rstrip("/")
+
+
 # Get the public backend URL for generating image URLs
 BACKEND_URL = os.environ.get("BACKEND_PUBLIC_URL", "")
 
@@ -182,9 +202,7 @@ async def get_user_car(request: Request, user_id: str, include_photos: bool = Qu
     """Get a user's car. Returns HTTP thumbnail URLs instead of base64."""
     
     # Build base URL from request
-    forwarded = request.headers.get("x-forwarded-host") or request.headers.get("host")
-    scheme = request.headers.get("x-forwarded-proto", "https")
-    base_url = f"{scheme}://{forwarded}" if forwarded else str(request.base_url).rstrip("/")
+    base_url = get_base_url(request)
     
     if include_photos:
         car = await db.user_cars.find_one({"userId": user_id})
@@ -265,12 +283,7 @@ async def get_public_garages(
         cars = await db.user_cars.find(query, {"photos": 0, "thumbnail": 0}).sort(sort_field).limit(limit).to_list(limit)
 
     # Build base URL from request
-    base_url = str(request.base_url).rstrip("/")
-    # Use forwarded host if behind proxy
-    forwarded = request.headers.get("x-forwarded-host") or request.headers.get("host")
-    scheme = request.headers.get("x-forwarded-proto", "https")
-    if forwarded:
-        base_url = f"{scheme}://{forwarded}"
+    base_url = get_base_url(request)
 
     result = []
     # Batch fetch comment counts for all car IDs
@@ -340,9 +353,7 @@ async def get_car_by_id(request: Request, car_id: str):
     car_data["photoCount"] = photo_count
     
     # Build base URL from request
-    forwarded = request.headers.get("x-forwarded-host") or request.headers.get("host")
-    scheme = request.headers.get("x-forwarded-proto", "https")
-    base_url = f"{scheme}://{forwarded}" if forwarded else str(request.base_url).rstrip("/")
+    base_url = get_base_url(request)
     
     # Return unique HTTP URLs for each photo (not duplicated thumbnails!)
     if photo_count > 0:

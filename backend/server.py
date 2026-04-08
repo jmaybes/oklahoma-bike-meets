@@ -212,10 +212,71 @@ async def rsvp_reminder_scheduler():
 
 @app.on_event("startup")
 async def startup_scheduler():
-    """App startup - scheduler disabled to reduce container memory/stability issues."""
+    """App startup - run database migrations and initialize."""
     logger.info(f"========== APP STARTING: {APP_VERSION} ==========")
     logger.info(f"========== BUILD ID: deploy-fix-april3-v8 ==========")
+    
+    # Run photo migration to fix cars missing photoCount/thumbnail
+    await migrate_photo_counts()
+    
     logger.info("App started successfully (RSVP scheduler disabled for stability)")
+
+
+async def migrate_photo_counts():
+    """
+    Database migration: Ensures every car with photos has correct photoCount 
+    and thumbnail fields. Fixes the root cause of 'no photos on native' bug.
+    """
+    from database import db
+    from helpers import make_thumbnail_base64
+    
+    try:
+        # Find all cars that have photos array with items
+        cars_with_photos = await db.user_cars.find(
+            {"photos": {"$exists": True, "$ne": []}},
+            {"photos": 1, "photoCount": 1, "thumbnail": 1, "make": 1, "model": 1}
+        ).to_list(500)
+        
+        fixed = 0
+        for car in cars_with_photos:
+            car_id = car["_id"]
+            actual_count = len(car.get("photos", []))
+            stored_count = car.get("photoCount")
+            has_thumbnail = bool(car.get("thumbnail"))
+            
+            updates = {}
+            
+            # Fix photoCount if missing or wrong
+            if stored_count is None or stored_count != actual_count:
+                updates["photoCount"] = actual_count
+            
+            # Generate thumbnail if missing
+            if not has_thumbnail and actual_count > 0:
+                try:
+                    first_photo = car["photos"][0]
+                    if first_photo and len(str(first_photo)) > 100:
+                        thumb = make_thumbnail_base64(first_photo)
+                        if thumb:
+                            updates["thumbnail"] = thumb
+                except Exception as e:
+                    logger.warning(f"Could not generate thumbnail for car {car_id}: {e}")
+            
+            if updates:
+                await db.user_cars.update_one(
+                    {"_id": car_id},
+                    {"$set": updates}
+                )
+                fixed += 1
+                name = f"{car.get('make', '?')} {car.get('model', '?')}"
+                logger.info(f"  Fixed car '{name}' ({car_id}): {list(updates.keys())}")
+        
+        if fixed > 0:
+            logger.info(f"Photo migration: Fixed {fixed} cars")
+        else:
+            logger.info("Photo migration: All cars OK, no fixes needed")
+            
+    except Exception as e:
+        logger.error(f"Photo migration error (non-fatal): {e}")
 
 
 @app.on_event("shutdown")
