@@ -1248,7 +1248,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     marginBottom: 8,
-    marginTop: -1,
+    marginTop: -2,
     gap: 8,
   },
   sortByButton: {
