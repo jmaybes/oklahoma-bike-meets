@@ -1246,9 +1246,9 @@ const styles = StyleSheet.create({
   filterRow2: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 5,
+    paddingHorizontal: 10,
     marginBottom: 8,
-    marginTop: 4,
+    marginTop: -1,
     gap: 8,
   },
   sortByButton: {
