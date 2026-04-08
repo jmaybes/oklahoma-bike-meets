@@ -973,18 +973,20 @@ export default function HomeScreen() {
       )}
 
       {/* Results count with contextual info */}
-      <View style={styles.resultsRow}>
-        {(!showAllEvents && selectedType === 'All' && !freeOnly && sortBy === 'date') ? (
-          <Text style={styles.resultsText}>
-            <Text style={{ color: '#FF6B35', fontWeight: '700' }}>{filteredEvents.length}</Text>
+      {(!showAllEvents && selectedType === 'All' && !freeOnly && sortBy === 'date') ? (
+        <View style={styles.resultsRowHighlight}>
+          <Text style={styles.resultsTextHighlight}>
+            <Text style={{ color: '#FF6B35', fontWeight: '800' }}>{filteredEvents.length}</Text>
             {'  '}Events in or near OKC. Use sort for more.
           </Text>
-        ) : (
+        </View>
+      ) : (
+        <View style={styles.resultsRow}>
           <Text style={styles.resultsText}>
             {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''} found
           </Text>
-        )}
-      </View>
+        </View>
+      )}
     </View>
   ), [events, filteredEvents, selectedType, freeOnly, sortBy, showSortMenu, showAllEvents, userLocation, insets.top, heroImageLoaded, heroImageStyle, heroOverlayStyle, heroContentStyle, favoriteIds, clubsCount]);
 
@@ -1334,6 +1336,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 5,
     marginBottom: 8,
+  },
+  resultsRowHighlight: {
+    backgroundColor: 'rgba(255,107,53,0.2)',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255,107,53,0.4)',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+  resultsTextHighlight: {
+    color: '#ccc',
+    fontSize: 15,
+    fontWeight: '500',
   },
   resultsText: {
     color: '#666',
