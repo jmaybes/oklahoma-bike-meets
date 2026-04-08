@@ -49,19 +49,25 @@ async def get_clubs(city: Optional[str] = Query(None), carType: Optional[str] = 
         query["carTypes"] = {"$regex": carType, "$options": "i"}
 
     clubs = await db.clubs.find(query).sort("name", 1).to_list(1000)
-    return [{
-        "id": str(club["_id"]),
-        "name": club["name"],
-        "description": club.get("description", ""),
-        "location": club.get("location", ""),
-        "focus": club.get("focus", ""),
-        "meetingSchedule": club.get("meetingSchedule", ""),
-        "contactEmail": club.get("contactEmail", ""),
-        "website": club.get("website", ""),
-        "memberCount": club.get("memberCount", 0),
-        "isApproved": club.get("isApproved", True),
-        "createdAt": _isodate(club.get("createdAt"))
-    } for club in clubs]
+    result = []
+    for club in clubs:
+        try:
+            result.append({
+                "id": str(club["_id"]),
+                "name": club["name"],
+                "description": club.get("description", ""),
+                "location": club.get("location", ""),
+                "focus": club.get("focus", ""),
+                "meetingSchedule": club.get("meetingSchedule", ""),
+                "contactEmail": club.get("contactEmail", ""),
+                "website": club.get("website", ""),
+                "memberCount": club.get("memberCount", 0),
+                "isApproved": club.get("isApproved", True),
+                "createdAt": _isodate(club.get("createdAt"))
+            })
+        except Exception:
+            continue
+    return result
 
 
 @router.get("/clubs/{club_id}")

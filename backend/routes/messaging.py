@@ -106,18 +106,21 @@ async def get_message_thread(user_id: str, partner_id: str):
 
     result = []
     for msg in messages:
-        m = {
-            "id": str(msg["_id"]),
-            "senderId": _sid(msg["senderId"]),
-            "recipientId": _sid(msg["recipientId"]),
-            "content": msg["content"],
-            "isRead": msg.get("isRead", False),
-            "createdAt": _isodate(msg.get("createdAt")),
-        }
-        if msg.get("isPopupInvite"):
-            m["isPopupInvite"] = True
-            m["locationShareId"] = msg.get("locationShareId", None)
-        result.append(m)
+        try:
+            m = {
+                "id": str(msg["_id"]),
+                "senderId": _sid(msg["senderId"]),
+                "recipientId": _sid(msg["recipientId"]),
+                "content": msg["content"],
+                "isRead": msg.get("isRead", False),
+                "createdAt": _isodate(msg.get("createdAt")),
+            }
+            if msg.get("isPopupInvite"):
+                m["isPopupInvite"] = True
+                m["locationShareId"] = msg.get("locationShareId", None)
+            result.append(m)
+        except Exception:
+            continue
     return result
 
 

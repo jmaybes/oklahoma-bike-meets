@@ -126,7 +126,13 @@ async def get_quarter_mile_leaderboard(limit: int = 100):
 @router.get("/performance-runs/user/{user_id}")
 async def get_user_performance_runs(user_id: str):
     runs = await db.performance_runs.find({"userId": user_id}).sort("createdAt", -1).to_list(1000)
-    return [serialize_run(run) for run in runs]
+    result = []
+    for run in runs:
+        try:
+            result.append(serialize_run(run))
+        except Exception:
+            continue
+    return result
 
 
 @router.delete("/admin/performance-runs/{run_id}")

@@ -143,31 +143,36 @@ async def get_events(
     weeks_ahead = 12
 
     for event in events:
-        event_data = event_helper(event)
+        try:
+            event_data = event_helper(event)
 
-        if event.get("isRecurring") and event.get("recurrenceDay") is not None:
-            frontend_day = event.get("recurrenceDay")
-            python_weekday = (frontend_day + 6) % 7
+            if event.get("isRecurring") and event.get("recurrenceDay") is not None:
+                frontend_day = event.get("recurrenceDay")
+                python_weekday = (frontend_day + 6) % 7
 
-            end_date_str = event.get("recurrenceEndDate")
-            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date() if end_date_str else today + timedelta(weeks=weeks_ahead)
+                end_date_str = event.get("recurrenceEndDate")
+                end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date() if end_date_str else today + timedelta(weeks=weeks_ahead)
 
-            current_date = today
-            days_until_recurrence = (python_weekday - current_date.weekday() + 7) % 7
-            if days_until_recurrence == 0:
-                next_occurrence = current_date
+                current_date = today
+                days_until_recurrence = (python_weekday - current_date.weekday() + 7) % 7
+                if days_until_recurrence == 0:
+                    next_occurrence = current_date
+                else:
+                    next_occurrence = current_date + timedelta(days=days_until_recurrence)
+
+                while next_occurrence <= end_date:
+                    instance = event_data.copy()
+                    instance["date"] = next_occurrence.strftime("%Y-%m-%d")
+                    instance["id"] = f"{event_data['id']}__{next_occurrence.strftime('%Y%m%d')}"
+                    instance["parentEventId"] = event_data["id"]
+                    result.append(instance)
+                    next_occurrence += timedelta(weeks=1)
             else:
-                next_occurrence = current_date + timedelta(days=days_until_recurrence)
-
-            while next_occurrence <= end_date:
-                instance = event_data.copy()
-                instance["date"] = next_occurrence.strftime("%Y-%m-%d")
-                instance["id"] = f"{event_data['id']}__{next_occurrence.strftime('%Y%m%d')}"
-                instance["parentEventId"] = event_data["id"]
-                result.append(instance)
-                next_occurrence += timedelta(weeks=1)
-        else:
-            result.append(event_data)
+                result.append(event_data)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Skipping broken event {event.get('_id')}: {e}")
+            continue
 
     result.sort(key=lambda x: str(x.get("date", "")))
     return result
@@ -177,7 +182,13 @@ async def get_events(
 async def get_user_events(user_id: str):
     """Get all events created by a specific user (approved or pending)."""
     events = await db.events.find({"userId": user_id}).sort("date", -1).to_list(1000)
-    return [event_helper(event) for event in events]
+    result = []
+    for event in events:
+        try:
+            result.append(event_helper(event))
+        except Exception:
+            continue
+    return result
 
 
 
@@ -269,7 +280,13 @@ async def get_user_favorites(user_id: str):
     event_ids = [ObjectId(fav["eventId"]) for fav in favorites if ObjectId.is_valid(fav["eventId"])]
 
     events = await db.events.find({"_id": {"$in": event_ids}}).to_list(1000)
-    return [event_helper(event) for event in events]
+    result = []
+    for event in events:
+        try:
+            result.append(event_helper(event))
+        except Exception:
+            continue
+    return result
 
 
 @router.delete("/favorites/{user_id}/{event_id}")

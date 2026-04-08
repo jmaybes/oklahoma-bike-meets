@@ -15,17 +15,23 @@ async def get_notifications(user_id: str, unread_only: bool = False):
         query["isRead"] = False
 
     notifications = await db.notifications.find(query).sort("createdAt", -1).limit(50).to_list(50)
-    return [{
-        "id": str(notif["_id"]),
-        "userId": _sid(notif["userId"]),
-        "eventId": _sid(notif.get("eventId")),
-        "carId": _sid(notif.get("carId")),
-        "type": notif.get("type", "general"),
-        "title": notif["title"],
-        "message": notif["message"],
-        "isRead": notif.get("isRead", False),
-        "createdAt": _isodate(notif.get("createdAt"))
-    } for notif in notifications]
+    result = []
+    for notif in notifications:
+        try:
+            result.append({
+                "id": str(notif["_id"]),
+                "userId": _sid(notif["userId"]),
+                "eventId": _sid(notif.get("eventId")),
+                "carId": _sid(notif.get("carId")),
+                "type": notif.get("type", "general"),
+                "title": notif["title"],
+                "message": notif["message"],
+                "isRead": notif.get("isRead", False),
+                "createdAt": _isodate(notif.get("createdAt"))
+            })
+        except Exception:
+            continue
+    return result
 
 
 @router.put("/notifications/{notification_id}/read")

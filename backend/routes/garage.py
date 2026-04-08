@@ -269,22 +269,27 @@ async def get_public_garages(
         comment_counts[doc["_id"]] = doc["count"]
 
     for car in cars:
-        user = await db.users.find_one({"_id": ObjectId(car["userId"])}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(car.get("userId", "")) else None
-        car_data = user_car_helper(car)
-        car_data["ownerName"] = user.get("name", "Unknown") if user else "Unknown"
-        car_data["ownerNickname"] = user.get("nickname", "") if user else ""
-        car_data["likedBy"] = car.get("likedBy", [])
+        try:
+            user = await db.users.find_one({"_id": ObjectId(car["userId"])}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(car.get("userId", "")) else None
+            car_data = user_car_helper(car)
+            car_data["ownerName"] = user.get("name", "Unknown") if user else "Unknown"
+            car_data["ownerNickname"] = user.get("nickname", "") if user else ""
+            car_data["likedBy"] = car.get("likedBy", [])
 
-        # Return HTTP URL to thumbnail instead of base64
-        car_id = car_data["id"]
-        has_thumbnail = car.get("photoCount", 0) > 0 or car.get("_has_thumb", False)
-        # Check if thumbnail exists by looking at photoCount
-        car_data["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if car.get("photoCount", 0) > 0 else []
-        car_data["photoCount"] = car.get("photoCount", 0)
-        car_data["mainPhotoIndex"] = 0
-        car_data["commentCount"] = comment_counts.get(car_id, 0)
+            # Return HTTP URL to thumbnail instead of base64
+            car_id = car_data["id"]
+            has_thumbnail = car.get("photoCount", 0) > 0 or car.get("_has_thumb", False)
+            # Check if thumbnail exists by looking at photoCount
+            car_data["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if car.get("photoCount", 0) > 0 else []
+            car_data["photoCount"] = car.get("photoCount", 0)
+            car_data["mainPhotoIndex"] = 0
+            car_data["commentCount"] = comment_counts.get(car_id, 0)
 
-        result.append(car_data)
+            result.append(car_data)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Skipping broken car {car.get('_id')}: {e}")
+            continue
 
     return result
 

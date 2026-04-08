@@ -34,7 +34,13 @@ async def get_public_routes(
         query["difficulty"] = difficulty
 
     routes = await db.routes.find(query).sort("createdAt", -1).limit(limit).to_list(limit)
-    return [route_helper(r) for r in routes]
+    result = []
+    for r in routes:
+        try:
+            result.append(route_helper(r))
+        except Exception:
+            continue
+    return result
 
 
 @router.get("/routes/user/{user_id}")
@@ -44,7 +50,13 @@ async def get_user_routes(user_id: str):
         raise HTTPException(status_code=400, detail="Invalid user ID")
 
     routes = await db.routes.find({"userId": user_id}).sort("createdAt", -1).to_list(100)
-    return [route_helper(r) for r in routes]
+    result = []
+    for r in routes:
+        try:
+            result.append(route_helper(r))
+        except Exception:
+            continue
+    return result
 
 
 @router.get("/routes/saved/{user_id}")
@@ -54,7 +66,13 @@ async def get_saved_routes(user_id: str):
         raise HTTPException(status_code=400, detail="Invalid user ID")
 
     routes = await db.routes.find({"savedBy": user_id}).sort("createdAt", -1).to_list(100)
-    return [route_helper(r) for r in routes]
+    result = []
+    for r in routes:
+        try:
+            result.append(route_helper(r))
+        except Exception:
+            continue
+    return result
 
 
 @router.get("/routes/{route_id}")

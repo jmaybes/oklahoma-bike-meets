@@ -90,13 +90,18 @@ async def get_feed_posts(
 
     result = []
     for p in posts:
-        post_data = feed_post_helper(p)
-        post_data["imageCount"] = len(post_data.get("images", []))
-        # Enrich with user's car thumbnail URL
-        uid = p.get("userId", "")
-        if uid in user_thumb_map:
-            post_data["carThumbnailUrl"] = user_thumb_map[uid]
-        result.append(post_data)
+        try:
+            post_data = feed_post_helper(p)
+            post_data["imageCount"] = len(post_data.get("images", []))
+            # Enrich with user's car thumbnail URL
+            uid = p.get("userId", "")
+            if uid in user_thumb_map:
+                post_data["carThumbnailUrl"] = user_thumb_map[uid]
+            result.append(post_data)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Skipping broken feed post {p.get('_id')}: {e}")
+            continue
     return result
 
 
