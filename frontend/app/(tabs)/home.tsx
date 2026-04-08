@@ -107,12 +107,6 @@ export default function HomeScreen() {
 
   const scrollY = useSharedValue(0);
 
-  const eventTypes = [
-    { label: 'All', value: 'All' },
-    { label: 'Meets', value: 'Car Meet' },
-    { label: 'Shows', value: 'Car Show' },
-    { label: 'Cruise', value: 'Cruise' },
-  ];
   const sortOptions = [
     { label: 'Date', value: 'date', icon: 'calendar' },
     { label: 'Distance', value: 'distance', icon: 'navigate' },
@@ -749,33 +743,14 @@ export default function HomeScreen() {
         </Animated.View>
       </View>
 
-      {/* Filter Row 1: Event Types */}
-      <View style={styles.filterWrapper}>
-        <View style={styles.filterContent}>
-          {eventTypes.map((item) => (
-            <TouchableOpacity
-              key={item.value}
-              style={[styles.filterChip, selectedType === item.value && styles.filterChipActive]}
-              onPress={() => setSelectedType(item.value)}
-            >
-              <Text
-                style={[styles.filterChipText, selectedType === item.value && styles.filterChipTextActive]}
-              >
-                {item.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Filter Row 2: Sort & Past */}
+      {/* Sort & Past Row */}
       <View style={styles.filterRow2}>
         <TouchableOpacity
           style={styles.sortByButton}
           onPress={() => setShowSortMenu(!showSortMenu)}
         >
-          <Ionicons name="swap-vertical" size={16} color="#FF6B35" />
-          <Text style={styles.sortByButtonText}>SORT BY</Text>
+          <Ionicons name="options" size={16} color="#FF6B35" />
+          <Text style={styles.sortByButtonText}>SORT / FILTER</Text>
           <Ionicons name={showSortMenu ? 'chevron-up' : 'chevron-down'} size={14} color="#FF6B35" />
         </TouchableOpacity>
 
@@ -787,70 +762,186 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Sort Dropdown Menu */}
+      {/* Sort/Filter Dropdown Menu */}
       {showSortMenu && (
         <View style={styles.sortDropdown}>
-          {/* All Events option */}
+          {/* All - shows all events, all types, all locations */}
           <TouchableOpacity
             style={[
               styles.sortDropdownItem,
-              showAllEvents && styles.sortDropdownItemActive,
+              (showAllEvents && selectedType === 'All') && styles.sortDropdownItemActive,
             ]}
             onPress={() => {
-              setShowAllEvents(!showAllEvents);
+              setShowAllEvents(true);
+              setSelectedType('All');
               setShowSortMenu(false);
             }}
           >
             <Ionicons
-              name={showAllEvents ? 'globe' : 'globe-outline'}
+              name="globe"
               size={18}
-              color={showAllEvents ? '#4FC3F7' : '#999'}
+              color={(showAllEvents && selectedType === 'All') ? '#4FC3F7' : '#999'}
             />
             <Text
               style={[
                 styles.sortDropdownText,
-                showAllEvents && { color: '#4FC3F7', fontWeight: '600' },
+                (showAllEvents && selectedType === 'All') && { color: '#4FC3F7', fontWeight: '600' },
               ]}
             >
-              All Events
+              All
             </Text>
-            {showAllEvents && (
+            {(showAllEvents && selectedType === 'All') && (
               <Ionicons name="checkmark" size={18} color="#4FC3F7" style={{ marginLeft: 'auto' }} />
             )}
           </TouchableOpacity>
 
-          {sortOptions.map((option) => (
-            <TouchableOpacity
-              key={option.value}
+          {/* OKC Only - within 20 miles of OKC */}
+          <TouchableOpacity
+            style={[
+              styles.sortDropdownItem,
+              (!showAllEvents && selectedType === 'All') && styles.sortDropdownItemActive,
+            ]}
+            onPress={() => {
+              setShowAllEvents(false);
+              setSelectedType('All');
+              setShowSortMenu(false);
+            }}
+          >
+            <Ionicons
+              name="location"
+              size={18}
+              color={(!showAllEvents && selectedType === 'All') ? '#FF6B35' : '#999'}
+            />
+            <Text
               style={[
-                styles.sortDropdownItem,
-                sortBy === option.value && styles.sortDropdownItemActive,
+                styles.sortDropdownText,
+                (!showAllEvents && selectedType === 'All') && styles.sortDropdownTextActive,
               ]}
-              onPress={() => {
-                setSortBy(option.value as 'date' | 'distance');
-                setShowSortMenu(false);
-              }}
             >
-              <Ionicons
-                name={option.icon as any}
-                size={18}
-                color={sortBy === option.value ? '#FF6B35' : '#999'}
-              />
-              <Text
-                style={[
-                  styles.sortDropdownText,
-                  sortBy === option.value && styles.sortDropdownTextActive,
-                ]}
-              >
-                {option.label}
-              </Text>
-              {sortBy === option.value && (
-                <Ionicons name="checkmark" size={18} color="#FF6B35" style={{ marginLeft: 'auto' }} />
-              )}
-            </TouchableOpacity>
-          ))}
+              OKC Only
+            </Text>
+            {(!showAllEvents && selectedType === 'All') && (
+              <Ionicons name="checkmark" size={18} color="#FF6B35" style={{ marginLeft: 'auto' }} />
+            )}
+          </TouchableOpacity>
 
-          {/* Free Events toggle inside dropdown */}
+          {/* Meets */}
+          <TouchableOpacity
+            style={[
+              styles.sortDropdownItem,
+              selectedType === 'Car Meet' && styles.sortDropdownItemActive,
+            ]}
+            onPress={() => {
+              setSelectedType(selectedType === 'Car Meet' ? 'All' : 'Car Meet');
+              setShowSortMenu(false);
+            }}
+          >
+            <Ionicons
+              name="car-sport"
+              size={18}
+              color={selectedType === 'Car Meet' ? '#FF6B35' : '#999'}
+            />
+            <Text
+              style={[
+                styles.sortDropdownText,
+                selectedType === 'Car Meet' && styles.sortDropdownTextActive,
+              ]}
+            >
+              Meets
+            </Text>
+            {selectedType === 'Car Meet' && (
+              <Ionicons name="checkmark" size={18} color="#FF6B35" style={{ marginLeft: 'auto' }} />
+            )}
+          </TouchableOpacity>
+
+          {/* Shows */}
+          <TouchableOpacity
+            style={[
+              styles.sortDropdownItem,
+              selectedType === 'Car Show' && styles.sortDropdownItemActive,
+            ]}
+            onPress={() => {
+              setSelectedType(selectedType === 'Car Show' ? 'All' : 'Car Show');
+              setShowSortMenu(false);
+            }}
+          >
+            <Ionicons
+              name="trophy"
+              size={18}
+              color={selectedType === 'Car Show' ? '#FF6B35' : '#999'}
+            />
+            <Text
+              style={[
+                styles.sortDropdownText,
+                selectedType === 'Car Show' && styles.sortDropdownTextActive,
+              ]}
+            >
+              Shows
+            </Text>
+            {selectedType === 'Car Show' && (
+              <Ionicons name="checkmark" size={18} color="#FF6B35" style={{ marginLeft: 'auto' }} />
+            )}
+          </TouchableOpacity>
+
+          {/* Cruises */}
+          <TouchableOpacity
+            style={[
+              styles.sortDropdownItem,
+              selectedType === 'Cruise' && styles.sortDropdownItemActive,
+            ]}
+            onPress={() => {
+              setSelectedType(selectedType === 'Cruise' ? 'All' : 'Cruise');
+              setShowSortMenu(false);
+            }}
+          >
+            <Ionicons
+              name="speedometer"
+              size={18}
+              color={selectedType === 'Cruise' ? '#FF6B35' : '#999'}
+            />
+            <Text
+              style={[
+                styles.sortDropdownText,
+                selectedType === 'Cruise' && styles.sortDropdownTextActive,
+              ]}
+            >
+              Cruises
+            </Text>
+            {selectedType === 'Cruise' && (
+              <Ionicons name="checkmark" size={18} color="#FF6B35" style={{ marginLeft: 'auto' }} />
+            )}
+          </TouchableOpacity>
+
+          {/* Distance sort */}
+          <TouchableOpacity
+            style={[
+              styles.sortDropdownItem,
+              sortBy === 'distance' && styles.sortDropdownItemActive,
+            ]}
+            onPress={() => {
+              setSortBy(sortBy === 'distance' ? 'date' : 'distance');
+              setShowSortMenu(false);
+            }}
+          >
+            <Ionicons
+              name="navigate"
+              size={18}
+              color={sortBy === 'distance' ? '#4FC3F7' : '#999'}
+            />
+            <Text
+              style={[
+                styles.sortDropdownText,
+                sortBy === 'distance' && { color: '#4FC3F7', fontWeight: '600' },
+              ]}
+            >
+              Distance
+            </Text>
+            {sortBy === 'distance' && (
+              <Ionicons name="checkmark" size={18} color="#4FC3F7" style={{ marginLeft: 'auto' }} />
+            )}
+          </TouchableOpacity>
+
+          {/* No Cost */}
           <TouchableOpacity
             style={[
               styles.sortDropdownItem,
@@ -872,7 +963,7 @@ export default function HomeScreen() {
                 freeOnly && { color: '#4CAF50', fontWeight: '600' },
               ]}
             >
-              Free Events
+              No Cost
             </Text>
             {freeOnly && (
               <Ionicons name="checkmark" size={18} color="#4CAF50" style={{ marginLeft: 'auto' }} />
@@ -904,7 +995,7 @@ export default function HomeScreen() {
         </Text>
       </View>
     </View>
-  ), [events, filteredEvents, selectedType, freeOnly, sortBy, showSortMenu, showAllEvents, userLocation, insets.top, heroImageLoaded, heroImageStyle, heroOverlayStyle, heroContentStyle]);
+  ), [events, filteredEvents, selectedType, freeOnly, sortBy, showSortMenu, showAllEvents, userLocation, insets.top, heroImageLoaded, heroImageStyle, heroOverlayStyle, heroContentStyle, favoriteIds, clubsCount]);
 
   if (loading) {
     return (
@@ -1181,39 +1272,7 @@ const styles = StyleSheet.create({
   },
 
   // ===== FILTERS =====
-  filterWrapper: {
-    marginBottom: 4,
-    paddingVertical: 2,
-    paddingHorizontal: 5,
-    marginTop: 2,
-  },
-  filterContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  filterChip: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 10,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  filterChipActive: {
-    backgroundColor: '#FF6B35',
-    borderColor: '#FF6B35',
-  },
-  filterChipText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  filterChipTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
+  // ===== FILTERS =====
   filterRow2: {
     flexDirection: 'row',
     alignItems: 'center',
