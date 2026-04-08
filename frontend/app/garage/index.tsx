@@ -53,11 +53,12 @@ export default function BrowseGaragesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy] = useState('likes');
+  const [sortBy, setSortBy] = useState('random');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 
   const sortOptions = [
+    { key: 'random', label: 'Random', icon: 'shuffle' as const },
     { key: 'likes', label: 'Most Liked', icon: 'heart' as const },
     { key: 'newest', label: 'Date Added', icon: 'calendar' as const },
     { key: 'views', label: 'Most Viewed', icon: 'eye' as const },

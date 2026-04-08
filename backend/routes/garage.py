@@ -232,23 +232,37 @@ async def get_public_garages(
     request: Request,
     make: Optional[str] = None,
     limit: int = Query(default=50, le=100),
-    sort: str = Query(default="likes", description="Sort by: likes, views, newest")
+    sort: str = Query(default="random", description="Sort by: likes, views, newest, random")
 ):
     """Get all public garages with HTTP thumbnail URLs instead of base64."""
     query = {"$or": [{"isPublic": True}, {"isPublic": "true"}]}
     if make:
         query["make"] = {"$regex": make, "$options": "i"}
 
-    # Sort options
-    if sort == "views":
-        sort_field = [("views", -1), ("likes", -1)]
-    elif sort == "newest":
-        sort_field = [("createdAt", -1)]
-    else:  # default: likes
-        sort_field = [("likes", -1), ("views", -1)]
+    if sort == "random":
+        # Top 3 by likes stay fixed, rest is randomized
+        top3 = await db.user_cars.find(query, {"photos": 0, "thumbnail": 0}).sort([("likes", -1)]).limit(3).to_list(3)
+        top3_ids = [car["_id"] for car in top3]
+        
+        # Get the rest randomly, excluding top 3
+        rest_query = {**query, "_id": {"$nin": top3_ids}}
+        pipeline = [
+            {"$match": rest_query},
+            {"$project": {"photos": 0, "thumbnail": 0}},
+            {"$sample": {"size": max(limit - 3, 0)}}
+        ]
+        rest = await db.user_cars.aggregate(pipeline).to_list(max(limit - 3, 0))
+        cars = top3 + rest
+    else:
+        # Sort options
+        if sort == "views":
+            sort_field = [("views", -1), ("likes", -1)]
+        elif sort == "newest":
+            sort_field = [("createdAt", -1)]
+        else:  # likes
+            sort_field = [("likes", -1), ("views", -1)]
 
-    # Exclude full photos array AND thumbnail blob - only fetch metadata
-    cars = await db.user_cars.find(query, {"photos": 0, "thumbnail": 0}).sort(sort_field).limit(limit).to_list(limit)
+        cars = await db.user_cars.find(query, {"photos": 0, "thumbnail": 0}).sort(sort_field).limit(limit).to_list(limit)
 
     # Build base URL from request
     base_url = str(request.base_url).rstrip("/")
