@@ -244,8 +244,11 @@ const styles = StyleSheet.create({
     borderBottomColor: '#1a1a1a',
   },
   backButton: {
-    padding: 4,
-    marginRight: 12,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
   },
   headerContent: {
     flex: 1,

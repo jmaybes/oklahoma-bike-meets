@@ -372,7 +372,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   backButton: {
-    padding: 4,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   welcomeSection: {
     alignItems: 'center',

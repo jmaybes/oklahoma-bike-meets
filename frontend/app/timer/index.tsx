@@ -1033,7 +1033,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButton: {
-    padding: 4,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 22,

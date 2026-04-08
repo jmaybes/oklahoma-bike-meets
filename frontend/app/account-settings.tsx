@@ -299,8 +299,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#333',
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -466,7 +466,10 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   backButton: {
-    padding: 4,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollView: {
     flex: 1,

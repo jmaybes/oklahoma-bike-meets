@@ -348,8 +348,11 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   backButton: {
-    marginRight: 12,
-    padding: 4,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
   },
   headerContent: {
     flex: 1,
