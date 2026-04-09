@@ -1793,10 +1793,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#0c0c0c',
   },
   headerGradient: {
-    paddingBottom: 10,
+    paddingBottom: 0,
     paddingHorizontal: 20,
     overflow: 'hidden',
-    boxShadow: 'inset 0px 1px 20px 1px #000000',
+    boxShadow: 'inset 2px 6px 19px 8px #000000',
   },
   headerRow: {
     flexDirection: 'row',
