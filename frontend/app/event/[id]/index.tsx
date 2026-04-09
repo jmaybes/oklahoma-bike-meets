@@ -191,7 +191,7 @@ export default function EventDetailScreen() {
   if (loading) {
     return (
       <View style={[styles.centerContainer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+        <ActivityIndicator size="large" color="#E1FF00" />
       </View>
     );
   }
@@ -217,7 +217,7 @@ export default function EventDetailScreen() {
                 onPress={() => router.push(`/admin/edit-event/${id}`)}
                 style={styles.editButton}
               >
-                <Ionicons name="create-outline" size={24} color="#FF6B35" />
+                <Ionicons name="create-outline" size={24} color="#E1FF00" />
               </TouchableOpacity>
               <TouchableOpacity 
                 onPress={() => {
@@ -259,7 +259,7 @@ export default function EventDetailScreen() {
           style={styles.header}
         >
           <View style={styles.typeTag}>
-            <Ionicons name="car-sport" size={16} color="#FF6B35" />
+            <Ionicons name="car-sport" size={16} color="#E1FF00" />
             <Text style={styles.typeText}>{event.eventType}</Text>
           </View>
           <Text style={styles.title}>{event.title}</Text>
@@ -270,7 +270,7 @@ export default function EventDetailScreen() {
           style={styles.infoSection}
         >
           <View style={styles.infoRow}>
-            <Ionicons name="calendar" size={24} color="#FF6B35" />
+            <Ionicons name="calendar" size={24} color="#E1FF00" />
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Date & Time</Text>
               <Text style={styles.infoText}>{event.date}</Text>
@@ -279,7 +279,7 @@ export default function EventDetailScreen() {
           </View>
 
           <View style={styles.infoRow}>
-            <Ionicons name="location" size={24} color="#FF6B35" />
+            <Ionicons name="location" size={24} color="#E1FF00" />
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Location</Text>
               <Text style={styles.infoText}>{event.location || 'TBD'}</Text>
@@ -290,7 +290,7 @@ export default function EventDetailScreen() {
 
           {event.organizer && (
             <View style={styles.infoRow}>
-              <Ionicons name="person" size={24} color="#FF6B35" />
+              <Ionicons name="person" size={24} color="#E1FF00" />
               <View style={styles.infoContent}>
                 <Text style={styles.infoLabel}>Organizer</Text>
                 <Text style={styles.infoText}>{event.organizer}</Text>
@@ -300,7 +300,7 @@ export default function EventDetailScreen() {
 
           {event.entryFee && (
             <View style={styles.infoRow}>
-              <Ionicons name="cash" size={24} color="#FF6B35" />
+              <Ionicons name="cash" size={24} color="#E1FF00" />
               <View style={styles.infoContent}>
                 <Text style={styles.infoLabel}>Entry Fee</Text>
                 <Text style={styles.infoText}>{event.entryFee}</Text>
@@ -309,7 +309,7 @@ export default function EventDetailScreen() {
           )}
 
           <View style={styles.infoRow}>
-            <Ionicons name="people" size={24} color="#FF6B35" />
+            <Ionicons name="people" size={24} color="#E1FF00" />
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Attendees</Text>
               <Text style={styles.infoText}>{event.attendeeCount} going</Text>
@@ -407,7 +407,7 @@ export default function EventDetailScreen() {
           <Ionicons
             name={isFavorited ? 'heart' : 'heart-outline'}
             size={24}
-            color="#FF6B35"
+            color="#E1FF00"
           />
         </TouchableOpacity>
         <TouchableOpacity
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   typeText: {
-    color: '#FF6B35',
+    color: '#E1FF00',
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   tagText: {
-    color: '#FF6B35',
+    color: '#E1FF00',
     fontSize: 13,
   },
   contactText: {
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -654,7 +654,7 @@ const styles = StyleSheet.create({
     width: 56,
   },
   rsvpButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     flex: 1,
     flexDirection: 'row',
   },

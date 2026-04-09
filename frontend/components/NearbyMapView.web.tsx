@@ -15,7 +15,7 @@ export default function NearbyMapView({ location, radius }: NearbyMapViewProps) 
   return (
     <View style={styles.mapPlaceholder}>
       <View style={styles.mapPlaceholderInner}>
-        <Ionicons name="map" size={48} color="#FF6B35" />
+        <Ionicons name="map" size={48} color="#E1FF00" />
         <Text style={styles.mapPlaceholderTitle}>Your Location</Text>
         <Text style={styles.mapPlaceholderCoords}>
           {location ? `${location.latitude.toFixed(4)}°N, ${Math.abs(location.longitude).toFixed(4)}°W` : 'Loading...'}

@@ -206,7 +206,7 @@ export default function EventSearchScreen() {
   if (authLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+        <ActivityIndicator size="large" color="#E1FF00" />
       </View>
     );
   }
@@ -215,7 +215,7 @@ export default function EventSearchScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.errorContainer}>
-          <Ionicons name="lock-closed" size={48} color="#FF6B35" />
+          <Ionicons name="lock-closed" size={48} color="#E1FF00" />
           <Text style={styles.errorText}>Admin access required</Text>
           <TouchableOpacity
             style={styles.backButton}
@@ -257,7 +257,7 @@ export default function EventSearchScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#FF6B35"
+            tintColor="#E1FF00"
           />
         }
       >
@@ -324,7 +324,7 @@ export default function EventSearchScreen() {
 
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#FF6B35" />
+            <ActivityIndicator size="large" color="#E1FF00" />
             <Text style={styles.loadingText}>Loading pending events...</Text>
           </View>
         ) : pendingEvents.length === 0 ? (
@@ -361,17 +361,17 @@ export default function EventSearchScreen() {
                 
                 <View style={styles.eventMeta}>
                   <View style={styles.metaItem}>
-                    <Ionicons name="calendar" size={14} color="#FF6B35" />
+                    <Ionicons name="calendar" size={14} color="#E1FF00" />
                     <Text style={styles.metaText}>{formatDate(event.date)}</Text>
                   </View>
                   <View style={styles.metaItem}>
-                    <Ionicons name="time" size={14} color="#FF6B35" />
+                    <Ionicons name="time" size={14} color="#E1FF00" />
                     <Text style={styles.metaText}>{event.time || 'TBD'}</Text>
                   </View>
                 </View>
                 
                 <View style={styles.metaItem}>
-                  <Ionicons name="location" size={14} color="#FF6B35" />
+                  <Ionicons name="location" size={14} color="#E1FF00" />
                   <Text style={styles.metaText} numberOfLines={1}>
                     {event.city || event.location}
                   </Text>
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   eventTypeBadge: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     alignSelf: 'flex-start',
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   backButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

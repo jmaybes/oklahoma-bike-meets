@@ -191,7 +191,7 @@ export default function MyEventsScreen() {
           {/* Header row */}
           <View style={styles.cardHeader}>
             <View style={styles.cardTypeRow}>
-              <Ionicons name="car-sport" size={16} color="#FF6B35" />
+              <Ionicons name="car-sport" size={16} color="#E1FF00" />
               <Text style={styles.cardType}>{item.eventType}</Text>
             </View>
             <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
@@ -223,8 +223,8 @@ export default function MyEventsScreen() {
             ) : null}
             {item.isRecurring && item.recurrenceDay !== undefined && (
               <View style={styles.detailRow}>
-                <Ionicons name="repeat" size={15} color="#FF6B35" />
-                <Text style={[styles.detailText, { color: '#FF6B35' }]}>
+                <Ionicons name="repeat" size={15} color="#E1FF00" />
+                <Text style={[styles.detailText, { color: '#E1FF00' }]}>
                   Every {getDayName(item.recurrenceDay)}
                 </Text>
               </View>
@@ -254,7 +254,7 @@ export default function MyEventsScreen() {
               onPress={() => router.push(`/event/${item.id}`)}
               activeOpacity={0.7}
             >
-              <Ionicons name="eye-outline" size={18} color="#FF6B35" />
+              <Ionicons name="eye-outline" size={18} color="#E1FF00" />
               <Text style={styles.viewButtonText}>View</Text>
             </TouchableOpacity>
           </View>
@@ -267,7 +267,7 @@ export default function MyEventsScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF6B35" />
+          <ActivityIndicator size="large" color="#E1FF00" />
         </View>
       </View>
     );
@@ -310,7 +310,7 @@ export default function MyEventsScreen() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E1FF00" />
           }
         />
       )}
@@ -335,7 +335,7 @@ export default function MyEventsScreen() {
               <Text style={styles.modalTitle}>Edit Event</Text>
               <TouchableOpacity onPress={handleSaveEdit} disabled={saving}>
                 {saving ? (
-                  <ActivityIndicator size="small" color="#FF6B35" />
+                  <ActivityIndicator size="small" color="#E1FF00" />
                 ) : (
                   <Text style={styles.modalSave}>Save</Text>
                 )}
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   cardType: {
-    color: '#FF6B35',
+    color: '#E1FF00',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -639,7 +639,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   viewButtonText: {
-    color: '#FF6B35',
+    color: '#E1FF00',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -667,7 +667,7 @@ const styles = StyleSheet.create({
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
@@ -704,7 +704,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   modalSave: {
-    color: '#FF6B35',
+    color: '#E1FF00',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -757,8 +757,8 @@ const styles = StyleSheet.create({
     borderColor: '#2a2a2a',
   },
   typeChipActive: {
-    backgroundColor: '#FF6B35',
-    borderColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
+    borderColor: '#E1FF00',
   },
   typeChipText: {
     color: '#999',

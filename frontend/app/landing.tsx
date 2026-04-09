@@ -75,7 +75,7 @@ export default function LandingScreen() {
       icon: 'car-sport',
       title: 'My Garage',
       description: 'Showcase your ride with photos and specs',
-      color: '#FF6B35',
+      color: '#E1FF00',
     },
     {
       icon: 'trophy',
@@ -112,7 +112,7 @@ export default function LandingScreen() {
   if (!fontsLoaded) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+        <ActivityIndicator size="large" color="#E1FF00" />
       </View>
     );
   }
@@ -131,7 +131,7 @@ export default function LandingScreen() {
           <View style={styles.heroOverlay}>
             <View style={styles.heroContent}>
               <View style={styles.logoContainer}>
-                <Ionicons name="car-sport" size={60} color="#FF6B35" />
+                <Ionicons name="car-sport" size={60} color="#E1FF00" />
               </View>
               <Text style={styles.heroTitle}>Oklahoma Car Events</Text>
               <Text style={styles.heroTitleSub}>& Clubs</Text>
@@ -139,7 +139,7 @@ export default function LandingScreen() {
                 Your Ultimate Car Community Hub
               </Text>
               <View style={styles.taglineContainer}>
-                <Ionicons name="flame" size={20} color="#FF6B35" />
+                <Ionicons name="flame" size={20} color="#E1FF00" />
                 <Text style={styles.tagline}>
                   Meets • Shows • Cruises • Races
                 </Text>
@@ -242,7 +242,7 @@ export default function LandingScreen() {
             onPress={handleSignUp}
           >
             <LinearGradient
-              colors={['#FF6B35', '#E91E63']}
+              colors={['#E1FF00', '#E91E63']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.gradientButton}
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   heroTitleSub: {
     fontSize: 32,
     fontFamily: 'RobotoCondensed_700Bold',
-    color: '#FF6B35',
+    color: '#E1FF00',
     textAlign: 'center',
     marginBottom: 8,
     textShadowColor: 'rgba(0,0,0,0.8)',
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   },
   tagline: {
     fontSize: 14,
-    color: '#FF6B35',
+    color: '#E1FF00',
     fontWeight: '600',
   },
   scrollView: {
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 36,
     fontFamily: 'RobotoCondensed_700Bold',
-    color: '#FF6B35',
+    color: '#E1FF00',
     marginBottom: 4,
   },
   statLabel: {

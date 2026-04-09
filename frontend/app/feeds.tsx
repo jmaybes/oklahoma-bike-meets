@@ -217,7 +217,7 @@ const viewerStyles = StyleSheet.create({
   arrowLeft: { left: 12 }, arrowRight: { right: 12 },
   dots: { position: 'absolute', flexDirection: 'row', gap: 8 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.4)' },
-  dotActive: { backgroundColor: '#FF6B35', width: 20 },
+  dotActive: { backgroundColor: '#E1FF00', width: 20 },
   counter: { position: 'absolute', left: 20 },
   counterText: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '600' },
 });
@@ -274,7 +274,7 @@ const CommentsModal = ({ visible, postId, onClose, userId, userName, onCommentCo
             <Text style={cmtS.headerTitle}>Comments</Text>
             <TouchableOpacity onPress={onClose} style={cmtS.closeBtn}><Ionicons name="close" size={22} color="#333" /></TouchableOpacity>
           </View>
-          {loading ? <ActivityIndicator color="#FF6B35" style={{ marginTop: 40 }} /> : (
+          {loading ? <ActivityIndicator color="#E1FF00" style={{ marginTop: 40 }} /> : (
             <FlatList data={comments} keyExtractor={(item) => item.id} contentContainerStyle={{ padding: 16, paddingBottom: 8 }}
               ListEmptyComponent={<View style={{ alignItems: 'center', paddingTop: 40 }}><Ionicons name="chatbubble-outline" size={40} color="#ccc" /><Text style={cmtS.emptyText}>No comments yet</Text><Text style={cmtS.emptySubText}>Start the conversation!</Text></View>}
               renderItem={({ item }) => (
@@ -314,14 +314,14 @@ const cmtS = StyleSheet.create({
   emptyText: { color: '#999', textAlign: 'center', marginTop: 12, fontSize: 16, fontWeight: '600' },
   emptySubText: { color: '#bbb', textAlign: 'center', marginTop: 4, fontSize: 13 },
   commentItem: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  commentAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#FF6B35', justifyContent: 'center', alignItems: 'center' },
+  commentAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#E1FF00', justifyContent: 'center', alignItems: 'center' },
   commentAvatarText: { color: '#fff', fontWeight: '700', fontSize: 13 },
   commentName: { color: '#1a1a1a', fontWeight: '700', fontSize: 13 },
   commentTime: { color: '#999', fontSize: 11 },
   commentText: { color: '#444', fontSize: 14, lineHeight: 19, marginTop: 2 },
   inputRow: { flexDirection: 'row', alignItems: 'flex-end', padding: 12, borderTopWidth: 1, borderTopColor: '#f0f0f0', gap: 10 },
   input: { flex: 1, backgroundColor: '#f5f5f5', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, color: '#1a1a1a', fontSize: 14, maxHeight: 100 },
-  sendBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#FF6B35', justifyContent: 'center', alignItems: 'center' },
+  sendBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#E1FF00', justifyContent: 'center', alignItems: 'center' },
 });
 
 // ====================== COMPOSE MODAL ======================
@@ -448,7 +448,7 @@ const ComposeModal = ({ visible, onClose, onPostCreated, user, userCarPhoto }: {
           {/* Bottom toolbar */}
           <View style={[composeModalS.toolbar, { paddingBottom: insets.bottom + 8 }]}>
             <TouchableOpacity style={composeModalS.toolbarBtn} onPress={pickImages} disabled={images.length >= 4}>
-              <Ionicons name="image" size={24} color={images.length >= 4 ? '#ccc' : '#FF6B35'} />
+              <Ionicons name="image" size={24} color={images.length >= 4 ? '#ccc' : '#E1FF00'} />
               <Text style={[composeModalS.toolbarText, images.length >= 4 && { color: '#ccc' }]}>
                 Photo {images.length > 0 ? `(${images.length}/4)` : ''}
               </Text>
@@ -466,7 +466,7 @@ const composeModalS = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   cancelText: { color: '#666', fontSize: 16, fontWeight: '500' },
   title: { color: '#1a1a1a', fontSize: 18, fontWeight: '700' },
-  postBtn: { backgroundColor: '#FF6B35', paddingHorizontal: 20, paddingVertical: 8, borderRadius: 18 },
+  postBtn: { backgroundColor: '#E1FF00', paddingHorizontal: 20, paddingVertical: 8, borderRadius: 18 },
   postBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   scrollContent: { flex: 1, paddingHorizontal: 16 },
   userRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: 16, paddingBottom: 12 },
@@ -480,7 +480,7 @@ const composeModalS = StyleSheet.create({
   imageRemove: { position: 'absolute', top: -8, right: -8 },
   toolbar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#f0f0f0', backgroundColor: '#fff' },
   toolbarBtn: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  toolbarText: { color: '#FF6B35', fontSize: 15, fontWeight: '600' },
+  toolbarText: { color: '#E1FF00', fontSize: 15, fontWeight: '600' },
   charCount: { color: '#bbb', fontSize: 13 },
 });
 
@@ -499,7 +499,7 @@ const BottomNavBar = () => {
 
   return (
     <LinearGradient
-      colors={['#FF6B35', '#E91E63']}
+      colors={['#E1FF00', '#E91E63']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={[navS.container, { paddingBottom: bottomPadding, height: 50 + bottomPadding, opacity: 0.9 }]}
@@ -749,7 +749,7 @@ export default function FeedsScreen() {
                 {item.likes > 0 && <Text style={[s.actionCount, isLiked && { color: '#FF4444' }]}>{item.likes}</Text>}
               </TouchableOpacity>
               <TouchableOpacity style={s.commentActionBtn} onPress={() => openComments(item.id)} activeOpacity={0.7}>
-                <Ionicons name="chatbubble-outline" size={20} color="#FF6B35" />
+                <Ionicons name="chatbubble-outline" size={20} color="#E1FF00" />
                 <Text style={s.commentActionText}>{item.commentCount > 0 ? `${item.commentCount} Comment${item.commentCount > 1 ? 's' : ''}` : 'Comment'}</Text>
               </TouchableOpacity>
             </Animated.View>
@@ -771,7 +771,7 @@ export default function FeedsScreen() {
       <TouchableOpacity style={s.composeTrigger} onPress={() => setShowCompose(true)} activeOpacity={0.8}>
         {avatarSource ? <Image source={{ uri: avatarSource }} style={s.triggerAvatar} /> : <View style={s.triggerAvatarPlaceholder}><Ionicons name="person" size={16} color="#999" /></View>}
         <Text style={s.triggerText}>Share your thoughts...</Text>
-        <View style={s.triggerPhotoBtn}><Ionicons name="image" size={18} color="#FF6B35" /></View>
+        <View style={s.triggerPhotoBtn}><Ionicons name="image" size={18} color="#E1FF00" /></View>
       </TouchableOpacity>
     );
   };
@@ -782,7 +782,7 @@ export default function FeedsScreen() {
     return (
       <View style={[s.container, { paddingTop: insets.top }]}>
         <StatusBar barStyle="dark-content" />
-        <LinearGradient colors={['#FF6B35', '#E91E63']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.headerBar}>
+        <LinearGradient colors={['#E1FF00', '#E91E63']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.headerBar}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><Ionicons name="arrow-back" size={24} color="#fff" /></TouchableOpacity>
           <Text style={s.headerTitle}>Community Lounge</Text>
           <View style={{ width: 40 }} />
@@ -846,12 +846,12 @@ export default function FeedsScreen() {
         showsVerticalScrollIndicator={false}
         onScroll={parallaxScrollHandler}
         scrollEventThrottle={16}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" colors={['#FF6B35']} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E1FF00" colors={['#E1FF00']} />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        ListFooterComponent={loadingMore ? <ActivityIndicator color="#FF6B35" style={{ marginVertical: 20 }} /> : null}
+        ListFooterComponent={loadingMore ? <ActivityIndicator color="#E1FF00" style={{ marginVertical: 20 }} /> : null}
         ListEmptyComponent={!loading ? (
           <View style={s.emptyContainer}>
             <Ionicons name="newspaper-outline" size={48} color="#ccc" />
@@ -862,7 +862,7 @@ export default function FeedsScreen() {
         initialNumToRender={5} maxToRenderPerBatch={5} windowSize={7}
       />
 
-      {loading && posts.length === 0 && <View style={s.loadingOverlay}><ActivityIndicator size="large" color="#FF6B35" /></View>}
+      {loading && posts.length === 0 && <View style={s.loadingOverlay}><ActivityIndicator size="large" color="#E1FF00" /></View>}
 
       <BottomNavBar />
 
@@ -908,7 +908,7 @@ export default function FeedsScreen() {
             </ScrollView>
             <View style={[composeModalS.toolbar, { paddingBottom: insets.bottom + 8 }]}>
               <TouchableOpacity style={composeModalS.toolbarBtn} onPress={pickEditImages} disabled={editImages.length >= 4}>
-                <Ionicons name="image" size={24} color={editImages.length >= 4 ? '#ccc' : '#FF6B35'} />
+                <Ionicons name="image" size={24} color={editImages.length >= 4 ? '#ccc' : '#E1FF00'} />
                 <Text style={[composeModalS.toolbarText, editImages.length >= 4 && { color: '#ccc' }]}>Photo ({editImages.length}/4)</Text>
               </TouchableOpacity>
             </View>
@@ -939,7 +939,7 @@ const s = StyleSheet.create({
   postCard: { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderTopWidth: 1, borderTopColor: '#ccc', borderBottomWidth: 1, borderBottomColor: '#ccc', marginBottom: 8 },
   postHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 8 },
   avatar: { width: 44, height: 44, borderRadius: 6, backgroundColor: '#e8e8e8' },
-  avatarPlaceholder: { width: 44, height: 44, borderRadius: 6, backgroundColor: '#FF6B35', justifyContent: 'center', alignItems: 'center' },
+  avatarPlaceholder: { width: 44, height: 44, borderRadius: 6, backgroundColor: '#E1FF00', justifyContent: 'center', alignItems: 'center' },
   avatarText: { color: '#fff', fontSize: 18, fontWeight: '700' },
   userName: { color: '#1a1a1a', fontSize: 15, fontWeight: '700' },
   postTime: { color: '#999', fontSize: 12, marginTop: 1 },
@@ -950,7 +950,7 @@ const s = StyleSheet.create({
   actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 },
   actionCount: { color: '#999', fontSize: 14, fontWeight: '600' },
   commentActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4, paddingHorizontal: 12, backgroundColor: '#FFF3ED', borderRadius: 16 },
-  commentActionText: { color: '#FF6B35', fontSize: 13, fontWeight: '600' },
+  commentActionText: { color: '#E1FF00', fontSize: 13, fontWeight: '600' },
 
   // Empty / Auth
   emptyContainer: { alignItems: 'center', paddingTop: 60, paddingHorizontal: 40 },
@@ -959,7 +959,7 @@ const s = StyleSheet.create({
   authPrompt: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40 },
   authTitle: { color: '#1a1a1a', fontSize: 22, fontWeight: '800', marginTop: 20 },
   authSub: { color: '#999', fontSize: 15, marginTop: 8 },
-  authButton: { backgroundColor: '#FF6B35', paddingHorizontal: 40, paddingVertical: 14, borderRadius: 25, marginTop: 24 },
+  authButton: { backgroundColor: '#E1FF00', paddingHorizontal: 40, paddingVertical: 14, borderRadius: 25, marginTop: 24 },
   authButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f2f2f2' },
 });

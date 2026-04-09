@@ -196,7 +196,7 @@ export default function MyRoutesScreen() {
             style={styles.actionButton}
             onPress={() => handleLikeRoute(route.id)}
           >
-            <Ionicons name="heart-outline" size={20} color="#FF6B35" />
+            <Ionicons name="heart-outline" size={20} color="#E1FF00" />
             <Text style={styles.actionText}>{route.likes}</Text>
           </TouchableOpacity>
           
@@ -207,7 +207,7 @@ export default function MyRoutesScreen() {
             <Ionicons 
               name={isSaved ? "bookmark" : "bookmark-outline"} 
               size={20} 
-              color={isSaved ? "#FF6B35" : "#888"} 
+              color={isSaved ? "#E1FF00" : "#888"} 
             />
           </TouchableOpacity>
 
@@ -247,7 +247,7 @@ export default function MyRoutesScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#FF6B35', '#E91E63']}
+        colors={['#E1FF00', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -300,14 +300,14 @@ export default function MyRoutesScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF6B35" />
+          <ActivityIndicator size="large" color="#E1FF00" />
         </View>
       ) : (
         <ScrollView
           style={styles.content}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E1FF00" />
           }
         >
           {getCurrentRoutes().length === 0 ? (
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeTab: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
   },
   tabText: {
     color: '#888',
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   highlightText: {
-    color: '#FF6B35',
+    color: '#E1FF00',
     fontSize: 11,
   },
   cardActions: {

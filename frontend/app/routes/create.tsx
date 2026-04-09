@@ -179,7 +179,7 @@ export default function CreateRouteScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <LinearGradient
-        colors={['#FF6B35', '#E91E63']}
+        colors={['#E1FF00', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -334,7 +334,7 @@ export default function CreateRouteScreen() {
             <View key={index} style={styles.highlightTag}>
               <Text style={styles.highlightTagText}>{highlight}</Text>
               <TouchableOpacity onPress={() => removeHighlight(index)}>
-                <Ionicons name="close" size={16} color="#FF6B35" />
+                <Ionicons name="close" size={16} color="#E1FF00" />
               </TouchableOpacity>
             </View>
           ))}
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   loginButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     paddingHorizontal: 32,
     paddingVertical: 12,
     borderRadius: 8,
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   addWaypointButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     paddingHorizontal: 12,
     borderRadius: 8,
     gap: 6,
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   addHighlightButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     width: 48,
     borderRadius: 8,
     justifyContent: 'center',
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   highlightTagText: {
-    color: '#FF6B35',
+    color: '#E1FF00',
     fontSize: 13,
   },
   publicToggle: {
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     padding: 16,
     borderRadius: 12,
     gap: 8,

@@ -204,7 +204,7 @@ export default function AdminEditEventScreen() {
   if (authLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+        <ActivityIndicator size="large" color="#E1FF00" />
       </View>
     );
   }
@@ -231,7 +231,7 @@ export default function AdminEditEventScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#FF6B35" />
+          <ActivityIndicator size="large" color="#E1FF00" />
           <Text style={styles.loadingText}>Loading event...</Text>
         </View>
       </View>
@@ -241,7 +241,7 @@ export default function AdminEditEventScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#FF6B35', '#f44336']}
+        colors={['#E1FF00', '#f44336']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -282,7 +282,7 @@ export default function AdminEditEventScreen() {
                 </View>
               ))}
               <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
-                <Ionicons name="add" size={32} color="#FF6B35" />
+                <Ionicons name="add" size={32} color="#E1FF00" />
                 <Text style={styles.addPhotoText}>Add Photo</Text>
               </TouchableOpacity>
             </ScrollView>
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FF6B35',
+    color: '#E1FF00',
     marginBottom: 16,
   },
   label: {

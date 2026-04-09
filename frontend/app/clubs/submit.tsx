@@ -105,7 +105,7 @@ export default function SubmitClubScreen() {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {!isAuthenticated && (
             <View style={styles.authNotice}>
-              <Ionicons name="information-circle" size={20} color="#FF6B35" />
+              <Ionicons name="information-circle" size={20} color="#E1FF00" />
               <Text style={styles.authNoticeText}>
                 You can submit clubs as a guest, or login for more features
               </Text>

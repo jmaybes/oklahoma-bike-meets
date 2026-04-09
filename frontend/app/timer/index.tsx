@@ -120,7 +120,7 @@ export default function TimerScreen() {
   const pbBounce = useSharedValue(1);
 
   const modes: { type: RunType; label: string; target: number; icon: string; color: string }[] = [
-    { type: '0-60', label: '0-60 MPH', target: 60, icon: 'speedometer', color: '#FF6B35' },
+    { type: '0-60', label: '0-60 MPH', target: 60, icon: 'speedometer', color: '#E1FF00' },
     { type: '0-100', label: '0-100 MPH', target: 100, icon: 'rocket', color: '#E91E63' },
     { type: 'quarter-mile', label: '1/4 Mile', target: 0, icon: 'flag', color: '#9C27B0' },
   ];
@@ -479,7 +479,7 @@ export default function TimerScreen() {
   const getSpeedColor = () => {
     if (currentSpeed < 30) return '#4CAF50';
     if (currentSpeed < 60) return '#FF9800';
-    if (currentSpeed < 100) return '#FF6B35';
+    if (currentSpeed < 100) return '#E1FF00';
     return '#E91E63';
   };
 
@@ -543,7 +543,7 @@ export default function TimerScreen() {
     }
   };
 
-  const selectedModeColor = modes.find((m) => m.type === selectedMode)?.color || '#FF6B35';
+  const selectedModeColor = modes.find((m) => m.type === selectedMode)?.color || '#E1FF00';
   const isActive = waitingForStartRef.current || isRunningRef.current || countdown !== null;
 
   // Generate tick marks for speedometer
@@ -558,7 +558,7 @@ export default function TimerScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <LinearGradient
-          colors={['#FF6B35', '#E91E63']}
+          colors={['#E1FF00', '#E91E63']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.headerGradient}
@@ -583,7 +583,7 @@ export default function TimerScreen() {
         {/* Car Selection */}
         {garageCars.length > 0 && (
           <TouchableOpacity style={styles.carSelector} onPress={() => setShowCarPicker(true)}>
-            <Ionicons name="car-sport" size={18} color="#FF6B35" />
+            <Ionicons name="car-sport" size={18} color="#E1FF00" />
             <Text style={styles.carSelectorText} numberOfLines={1}>
               {selectedCar || 'Select your car'}
             </Text>
@@ -630,7 +630,7 @@ export default function TimerScreen() {
           <View style={styles.pbStrip}>
             <View style={styles.pbItem}>
               <Text style={styles.pbLabel}>0-60 PB</Text>
-              <Text style={[styles.pbValue, { color: '#FF6B35' }]}>
+              <Text style={[styles.pbValue, { color: '#E1FF00' }]}>
                 {personalBests.zeroToSixty?.toFixed(2) || '--'}s
               </Text>
             </View>
@@ -742,7 +742,7 @@ export default function TimerScreen() {
           {(isRunningRef.current || result) && (
             <View style={styles.runStats}>
               <View style={styles.runStatItem}>
-                <Ionicons name="flash" size={14} color="#FF6B35" />
+                <Ionicons name="flash" size={14} color="#E1FF00" />
                 <Text style={styles.runStatText}>Top: {topSpeed.toFixed(1)} MPH</Text>
               </View>
               {result?.type === 'quarter-mile' && result.quarterMileSpeed && (
@@ -802,7 +802,7 @@ export default function TimerScreen() {
           {result && (
             <View style={styles.resultButtons}>
               <TouchableOpacity style={[styles.resultBtn, { flex: 2 }]} onPress={resetTimer}>
-                <LinearGradient colors={['#FF6B35', '#E91E63']} style={styles.resultBtnGradient}>
+                <LinearGradient colors={['#E1FF00', '#E91E63']} style={styles.resultBtnGradient}>
                   <Ionicons name="refresh" size={24} color="#fff" />
                   <Text style={styles.resultBtnText}>TRY AGAIN</Text>
                 </LinearGradient>
@@ -876,9 +876,9 @@ export default function TimerScreen() {
                       setShowCarPicker(false);
                     }}
                   >
-                    <Ionicons name="car-sport" size={20} color={isSelected ? '#FF6B35' : '#888'} />
-                    <Text style={[styles.carOptionText, isSelected && { color: '#FF6B35' }]}>{label}</Text>
-                    {isSelected && <Ionicons name="checkmark-circle" size={20} color="#FF6B35" />}
+                    <Ionicons name="car-sport" size={20} color={isSelected ? '#E1FF00' : '#888'} />
+                    <Text style={[styles.carOptionText, isSelected && { color: '#E1FF00' }]}>{label}</Text>
+                    {isSelected && <Ionicons name="checkmark-circle" size={20} color="#E1FF00" />}
                   </TouchableOpacity>
                 );
               })}
@@ -1473,7 +1473,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#2a2a2a',
   },
   carOptionSelected: {
-    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+    backgroundColor: 'rgba(225, 255, 0, 0.1)',
   },
   carOptionText: {
     flex: 1,

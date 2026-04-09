@@ -178,7 +178,7 @@ export default function AdminPendingScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+        <ActivityIndicator size="large" color="#E1FF00" />
       </View>
     );
   }
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderWidth: 2,
-    borderColor: '#FF6B35',
+    borderColor: '#E1FF00',
   },
   eventHeader: {
     flexDirection: 'row',
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   eventBadge: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#E1FF00',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
