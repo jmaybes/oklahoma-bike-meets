@@ -1380,7 +1380,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderTopWidth: 5,
     borderBottomWidth: 5,
-    borderColor: 'rgba(255, 185, 0, 0.20)',
+    borderTopColor: 'rgba(255, 185, 0, 0.60)',
+    borderBottomColor: 'rgba(255, 185, 0, 0.60)',
   },
   eventImage: {
     width: '100%',
