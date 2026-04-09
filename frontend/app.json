@@ -108,6 +108,7 @@
       "eas": {
         "projectId": "a936daac-9d2d-4795-aba0-e6e7554f9395"
       }
-    }
+    },
+    "runtimeVersion": "1.0"
   }
 }
