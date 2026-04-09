@@ -977,7 +977,7 @@ export default function HomeScreen() {
         <View style={styles.resultsRowHighlight}>
           <Text style={styles.resultsTextHighlight}>
             <Text style={{ color: '#E1FF00', fontWeight: '800' }}>{filteredEvents.length}</Text>
-            {'  '}Events in or near OKC! Use sort for options.
+            {'  '}Events in or near OKC!  Use sort for options.
           </Text>
         </View>
       ) : (
@@ -1264,7 +1264,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     backgroundColor: '#1a1a1a',
-    borderRadius: 20,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E1FF00',
     gap: 6,
@@ -1310,7 +1310,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     backgroundColor: '#D32F2F',
-    borderRadius: 16,
+    borderRadius: 8,
     gap: 4,
   },
   pastButtonText: {
