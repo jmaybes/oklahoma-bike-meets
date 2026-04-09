@@ -1170,11 +1170,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 8,
+    boxShadow: 'inset 0px 1px 0px 3px #ffffff',
   },
   heroSubtitle: {
     fontSize: 15,
