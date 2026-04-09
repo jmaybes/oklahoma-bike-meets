@@ -1378,8 +1378,9 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     marginBottom: 8,
     overflow: 'hidden',
-    borderBottomWidth: 1,
-    borderColor: '#222',
+    borderTopWidth: 5,
+    borderBottomWidth: 5,
+    borderColor: 'rgba(255, 185, 0, 0.20)',
   },
   eventImage: {
     width: '100%',
