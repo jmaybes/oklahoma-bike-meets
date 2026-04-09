@@ -26,6 +26,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import Garage3DCarousel from '../../components/Garage3DCarousel';
+import { useFonts, RockSalt_400Regular } from '@expo-google-fonts/rock-salt';
 
 import { API_URL } from '../../utils/api';
 
@@ -62,6 +63,7 @@ interface UserCar {
 export default function ProfileScreen() {
   const { user, isAuthenticated, logout, login } = useAuth();
   const insets = useSafeAreaInsets();
+  const [fontsLoaded] = useFonts({ RockSalt_400Regular });
   const [userCar, setUserCar] = useState<UserCar | null>(null);
   const [loadingCar, setLoadingCar] = useState(false);
   const [showCarModal, setShowCarModal] = useState(false);
@@ -627,7 +629,7 @@ export default function ProfileScreen() {
           end={{ x: 1, y: 0 }}
           style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
         >
-          <Text style={styles.headerTitle}>My Garage</Text>
+          <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]}>My Garage</Text>
           <Text style={styles.headerSubtitle}>Showcase your ride</Text>
         </LinearGradient>
         
@@ -667,7 +669,7 @@ export default function ProfileScreen() {
         >
           <View style={styles.headerRow}>
             <View>
-              <Text style={styles.headerTitle}>My Garage</Text>
+              <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]}>My Garage</Text>
               <Text style={styles.headerSubtitle}>{user?.name}</Text>
             </View>
             <TouchableOpacity onPress={() => { fetchUserCar(true); setShowCarModal(true); }}>
@@ -1787,6 +1789,8 @@ const styles = StyleSheet.create({
   headerGradient: {
     paddingBottom: 20,
     paddingHorizontal: 20,
+    overflow: 'hidden',
+    boxShadow: 'inset 0px 1px 20px 1px #000000',
   },
   headerRow: {
     flexDirection: 'row',
@@ -1794,9 +1798,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
+    textShadow: '3px 2px 3px #000000c2',
   },
   headerSubtitle: {
     fontSize: 14,
