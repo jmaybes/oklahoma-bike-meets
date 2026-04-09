@@ -86,6 +86,7 @@ export default function TabLayout() {
           fontSize: 11,
           fontWeight: '700',
           letterSpacing: 0.3,
+          textShadow: '-1px 20px 20px #ff6',
         },
         tabBarIconStyle: {
           marginBottom: -2,
