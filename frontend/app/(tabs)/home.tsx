@@ -1135,6 +1135,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     lineHeight: 42,
     letterSpacing: -0.5,
+    textShadow: '1px 5px #000',
   },
   droppingContainer: {
     height: 46,
