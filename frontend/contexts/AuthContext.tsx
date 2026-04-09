@@ -151,27 +151,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           const validateRes = await Promise.race([
             axios.get(`${API_URL}/api/users/${parsedUser.id}`),
-            new Promise<null>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+            new Promise<null>((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
           ]);
           if (validateRes && (validateRes as any).status === 200) {
-            // Use fresh data from API instead of stale cache
+            // Use fresh data from API — the endpoint now returns full user data
             const freshUser = (validateRes as any).data;
-            const mergedUser = {
-              ...parsedUser,
-              ...freshUser,
-              id: freshUser.id || parsedUser.id,
-            };
-            await AsyncStorage.setItem('user', JSON.stringify(mergedUser));
-            setUser(mergedUser);
+            // Only merge if we got valid data back
+            if (freshUser && freshUser.id) {
+              await AsyncStorage.setItem('user', JSON.stringify(freshUser));
+              setUser(freshUser);
+            } else {
+              // Unexpected response format — keep cached user
+              setUser(parsedUser);
+            }
           } else {
-            // User not found in current database — clear stale session
+            // User not found in current database — clear stale session silently
             console.log('Cached user not found in database, clearing session');
             await AsyncStorage.removeItem('user');
             setUser(null);
           }
         } catch (validateError: any) {
           if (validateError?.response?.status === 404 || validateError?.response?.status === 400) {
-            // User definitely doesn't exist — clear session
+            // User definitely doesn't exist — clear session silently (no error alerts)
             console.log('Cached user invalid, clearing session for re-auth');
             await AsyncStorage.removeItem('user');
             setUser(null);

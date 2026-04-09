@@ -366,7 +366,7 @@ async def search_users(q: str = Query(..., min_length=1)):
 
 @router.get("/users/{user_id}")
 async def get_user(user_id: str):
-    """Get user details by ID"""
+    """Get user details by ID - returns full user data for session validation"""
     if not ObjectId.is_valid(user_id):
         raise HTTPException(status_code=400, detail="Invalid user ID")
 
@@ -374,12 +374,7 @@ async def get_user(user_id: str):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return {
-        "id": str(user["_id"]),
-        "name": user.get("name", ""),
-        "nickname": user.get("nickname", ""),
-        "email": user.get("email", "")
-    }
+    return user_helper(user)
 
 
 # ==================== Account Deletion ====================

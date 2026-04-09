@@ -107,13 +107,15 @@ export default function LoginScreen() {
     } catch (error: any) {
       console.error('Login error:', error);
       if (error?.response?.status === 401) {
-        setLoginError('Invalid email or password. Please try again.');
+        setLoginError('Invalid email or password. If you recently created an account and it\'s not working, you may need to re-register.');
+      } else if (error?.response?.status >= 500) {
+        setLoginError('The server is temporarily unavailable. Please try again in a moment.');
       } else if (error?.response) {
-        setLoginError(`Server error (${error.response.status}). Please try again later.`);
-      } else if (error?.code === 'ECONNABORTED') {
-        setLoginError('Connection timed out. Check your internet connection.');
+        setLoginError(`Connection issue (${error.response.status}). Please try again.`);
+      } else if (error?.code === 'ECONNABORTED' || error?.message?.includes('timeout')) {
+        setLoginError('Connection timed out. Check your internet connection and try again.');
       } else {
-        setLoginError('Unable to connect to server. Check your internet connection or try again later.');
+        setLoginError('Unable to reach the server. Please check your internet connection and try again.');
       }
     } finally {
       setLoading(false);

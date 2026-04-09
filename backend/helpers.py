@@ -193,8 +193,8 @@ def event_helper(event) -> dict:
 def user_helper(user) -> dict:
     return {
         "id": str(user["_id"]),
-        "email": user["email"],
-        "name": user["name"],
+        "email": user.get("email", ""),
+        "name": user.get("name", ""),
         "nickname": user.get("nickname", ""),
         "profilePic": user.get("profilePic", ""),
         "isAdmin": user.get("isAdmin", False),
