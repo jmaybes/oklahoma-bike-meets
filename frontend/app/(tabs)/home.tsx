@@ -977,7 +977,7 @@ export default function HomeScreen() {
         <View style={styles.resultsRowHighlight}>
           <Text style={styles.resultsTextHighlight}>
             <Text style={{ color: '#E1FF00', fontWeight: '800' }}>{filteredEvents.length}</Text>
-            {'  '}Events in or near OKC. Use sort for options.
+            {'  '}Events in or near OKC! Use sort for options.
           </Text>
         </View>
       ) : (
@@ -1339,10 +1339,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   resultsRowHighlight: {
-    backgroundColor: 'rgba(255,107,53,0.2)',
+    backgroundColor: 'rgba(255, 185, 0, 0.2)',
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: 'rgba(255,107,53,0.4)',
+    borderColor: 'rgba(255, 185, 0, 0.4)',
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
