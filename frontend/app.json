@@ -10,7 +10,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "updates": {
-      "enabled": false,
+      "enabled": true,
       "url": "https://u.expo.dev/a936daac-9d2d-4795-aba0-e6e7554f9395",
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
@@ -94,7 +94,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-updates"
     ],
     "experiments": {
       "typedRoutes": true
@@ -108,6 +109,7 @@
       "eas": {
         "projectId": "a936daac-9d2d-4795-aba0-e6e7554f9395"
       }
-    }
+    },
+    "runtimeVersion": "1.0"
   }
 }
