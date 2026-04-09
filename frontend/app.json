@@ -9,9 +9,8 @@
     "owner": "jbmsurfs",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "runtimeVersion": "1.0",
     "updates": {
-      "enabled": true,
+      "enabled": false,
       "url": "https://u.expo.dev/a936daac-9d2d-4795-aba0-e6e7554f9395",
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0

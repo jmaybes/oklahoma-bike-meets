@@ -26,7 +26,8 @@
       "channel": "production",
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://event-hub-okc-1.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://event-hub-okc-1.preview.emergentagent.com",
+        "RUNTIME_VERSION": "1.0"
       }
     }
   },
