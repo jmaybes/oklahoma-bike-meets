@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "okccarmeets",
+    "owner": "jbmsurfs",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "runtimeVersion": "1.0",
@@ -79,7 +80,6 @@
           "backgroundColor": "#000000"
         }
       ],
-      "expo-font",
       [
         "expo-location",
         {
@@ -95,7 +95,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-updates"
     ],
     "experiments": {
       "typedRoutes": true
@@ -103,6 +104,12 @@
     "notification": {
       "icon": "./assets/images/icon.png",
       "color": "#FF6B35"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a936daac-9d2d-4795-aba0-e6e7554f9395"
+      }
     }
   }
 }
