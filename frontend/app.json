@@ -95,8 +95,7 @@
         }
       ],
       "expo-secure-store",
-      "expo-web-browser",
-      "expo-updates"
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
