@@ -17,6 +17,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import { useFonts, RockSalt_400Regular } from '@expo-google-fonts/rock-salt';
 
 import { API_URL } from '../../utils/api';
 
@@ -47,6 +48,7 @@ interface UserCar {
 export default function BrowseGaragesScreen() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
+  const [fontsLoaded] = useFonts({ RockSalt_400Regular });
   const [garages, setGarages] = useState<UserCar[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -309,7 +311,7 @@ export default function BrowseGaragesScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Public Garages</Text>
+          <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]}>Public Garages</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <TouchableOpacity 
               onPress={() => {
@@ -463,6 +465,8 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 16,
     paddingHorizontal: 20,
+    overflow: 'hidden',
+    boxShadow: 'inset 0px 1px 20px 1px #000000',
   },
   header: {
     flexDirection: 'row',
@@ -476,11 +480,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '800',
     color: '#fff',
     flex: 1,
     marginLeft: 8,
+    textShadow: '3px 2px 3px #000000c2',
   },
   sortButton: {
     width: 40,

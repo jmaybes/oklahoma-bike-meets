@@ -24,6 +24,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import { useFonts, RockSalt_400Regular } from '@expo-google-fonts/rock-salt';
 
 import { API_URL } from '../../utils/api';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -96,6 +97,7 @@ export default function GarageDetailScreen() {
   const { id } = useLocalSearchParams();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
+  const [fontsLoaded] = useFonts({ RockSalt_400Regular });
   const [car, setCar] = useState<UserCar | null>(null);
   const [loading, setLoading] = useState(true);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
@@ -388,7 +390,7 @@ export default function GarageDetailScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
+          <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.5}>
             {car.ownerNickname || car.ownerName}'s Garage
           </Text>
           <TouchableOpacity onPress={handleShare}>
@@ -1007,6 +1009,8 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 16,
     paddingHorizontal: 20,
+    overflow: 'hidden',
+    boxShadow: 'inset 0px 1px 20px 1px #000000',
   },
   header: {
     flexDirection: 'row',
@@ -1017,12 +1021,13 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
     flex: 1,
     textAlign: 'center',
     marginHorizontal: 8,
+    textShadow: '3px 2px 3px #000000c2',
   },
   content: {
     flex: 1,

@@ -683,6 +683,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 14,
+    overflow: 'hidden',
+    boxShadow: 'inset 0px 1px 20px 1px #000000',
   },
   backBtn: {
     width: 40,
@@ -695,11 +697,12 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
     flex: 1,
     textAlign: 'center',
+    textShadow: '3px 2px 3px #000000c2',
   },
   messageBtn: {
     width: 40,
