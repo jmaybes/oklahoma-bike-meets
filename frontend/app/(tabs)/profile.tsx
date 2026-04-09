@@ -1793,7 +1793,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0c0c0c',
   },
   headerGradient: {
-    paddingBottom: 20,
+    paddingBottom: 10,
     paddingHorizontal: 20,
     overflow: 'hidden',
     boxShadow: 'inset 0px 1px 20px 1px #000000',
@@ -1804,15 +1804,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-    textShadow: '3px 2px 3px #000000c2',
+    letterSpacing: 2,
+    textShadow: '0px 3px 4px #000000cc',
   },
   headerSubtitle: {
     fontSize: 14,
-    color: 'rgba(255,255,255,0.9)',
-    marginTop: 2,
+    color: 'rgba(65, 59, 59, 0.9)',
+    marginTop: -5,
+    marginBottom: 5,
   },
   guestContainer: {
     flex: 1,
