@@ -618,18 +618,18 @@ export default function HomeScreen() {
 
               <View style={styles.eventDetails}>
                 <View style={styles.detailRow}>
-                  <Ionicons name="calendar" size={16} color="#888" />
+                  <Ionicons name="calendar" size={16} color="#E1FF00" />
                   <Text style={styles.detailText}>
                     {item.date} at {item.time}
                   </Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Ionicons name="location" size={16} color="#888" />
+                  <Ionicons name="location" size={16} color="#FF5252" />
                   <Text style={styles.detailText}>{item.city}</Text>
                 </View>
                 <View style={styles.detailRowSpaced}>
                   <View style={styles.detailRow}>
-                    <Ionicons name="people" size={16} color="#888" />
+                    <Ionicons name="people" size={16} color="#4FC3F7" />
                     <Text style={styles.detailText}>
                       {item.attendeeCount > 0 ? item.attendeeCount : '??'} attending
                     </Text>
