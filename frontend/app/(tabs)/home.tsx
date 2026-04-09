@@ -1023,6 +1023,9 @@ export default function HomeScreen() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         ListHeaderComponent={ListHeaderComponent}
+        ItemSeparatorComponent={() => (
+          <View style={{ height: 8, backgroundColor: 'rgba(255, 185, 0, 0.20)' }} />
+        )}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         snapToInterval={328}
@@ -1376,12 +1379,8 @@ const styles = StyleSheet.create({
   eventCard: {
     backgroundColor: '#1a1a1a',
     borderRadius: 0,
-    marginBottom: 8,
+    marginBottom: 0,
     overflow: 'hidden',
-    borderTopWidth: 5,
-    borderBottomWidth: 5,
-    borderTopColor: 'rgba(255, 185, 0, 0.60)',
-    borderBottomColor: 'rgba(255, 185, 0, 0.60)',
   },
   eventImage: {
     width: '100%',
