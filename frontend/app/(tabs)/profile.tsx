@@ -672,9 +672,32 @@ export default function ProfileScreen() {
               <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]}>My Garage</Text>
               <Text style={styles.headerSubtitle}>{user?.name}</Text>
             </View>
-            <TouchableOpacity onPress={() => { fetchUserCar(true); setShowCarModal(true); }}>
-              <Ionicons name="settings-outline" size={24} color="#fff" />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+              <TouchableOpacity onPress={() => setShowNotifModal(true)} style={{ position: 'relative' }}>
+                <Ionicons name="notifications-outline" size={24} color="#fff" />
+                {allNotifications.length > 0 && (
+                  <View style={{
+                    position: 'absolute',
+                    top: -6,
+                    right: -8,
+                    backgroundColor: '#FF5252',
+                    borderRadius: 10,
+                    minWidth: 18,
+                    height: 18,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 4,
+                  }}>
+                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>
+                      {allNotifications.length}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => { fetchUserCar(true); setShowCarModal(true); }}>
+                <Ionicons name="settings-outline" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
           </View>
         </LinearGradient>
         
@@ -780,23 +803,6 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           )}
         </View>
-
-        {/* Notifications Link */}
-        {allNotifications.length > 0 && (
-          <TouchableOpacity
-            style={styles.garageNotifsLink}
-            onPress={() => setShowNotifModal(true)}
-            activeOpacity={0.7}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Ionicons name="notifications" size={20} color="#E1FF00" />
-              <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>
-                {allNotifications.length} Notification{allNotifications.length > 1 ? 's' : ''}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#666" />
-          </TouchableOpacity>
-        )}
 
         {/* View Public Garages Link - prominent placement */}
         <TouchableOpacity 
