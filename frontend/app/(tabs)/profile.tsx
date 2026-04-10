@@ -985,6 +985,30 @@ export default function ProfileScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
+        {/* Instant Add Event */}
+        <TouchableOpacity
+          style={styles.publicGarageLink}
+          onPress={() => router.push('/instant-add-event')}
+        >
+          <LinearGradient
+            colors={['#1a1a2e', '#16213e']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.publicGarageLinkGradient}
+          >
+            <View style={styles.publicGarageLinkContent}>
+              <View style={styles.publicGarageLinkLeft}>
+                <Ionicons name="camera" size={24} color="#E15500" />
+                <View>
+                  <Text style={styles.publicGarageLinkTitle}>Instant Add Event</Text>
+                  <Text style={styles.publicGarageLinkSub}>Use your camera to add an event</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color="#666" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
         {/* Menu Sections */}
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/messages')}>
