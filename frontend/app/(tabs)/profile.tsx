@@ -2268,7 +2268,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 10,
     marginRight: 8,
-    marginTop: -5,
+    marginTop: -10,
   },
   menuItemBadgeText: {
     color: '#fff',
