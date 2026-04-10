@@ -172,20 +172,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } catch (validateError: any) {
           if (validateError?.response?.status === 404 || validateError?.response?.status === 400) {
-            // User definitely doesn't exist — clear session silently (no error alerts)
-            console.log('Cached user invalid, clearing session for re-auth');
-            await AsyncStorage.removeItem('user');
-            setUser(null);
-          } else if (validateError?.message === 'timeout' || !validateError?.response) {
-            // Network error or timeout — clear session so user can re-login with correct server
-            console.log('Could not reach server to validate cached user, clearing session');
+            // User definitely doesn't exist in new database — clear session, show login
+            console.log('Cached user not found on server, clearing session');
             await AsyncStorage.removeItem('user');
             setUser(null);
           } else {
-            // Other error — clear session to be safe
-            console.log('Unexpected validation error, clearing session');
-            await AsyncStorage.removeItem('user');
-            setUser(null);
+            // Network error, timeout, or server hiccup — keep cached user logged in
+            // They'll validate successfully on the next launch when connection is stable
+            console.log('Temporary validation issue, keeping user logged in');
+            setUser(parsedUser);
           }
         }
       }
