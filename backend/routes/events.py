@@ -27,8 +27,8 @@ async def create_event(event: EventCreate):
     event_dict = event.dict()
     event_dict["createdAt"] = datetime.utcnow().isoformat()
 
-    # Auto-approve all user event submissions
-    event_dict["isApproved"] = True
+    # User-submitted events require admin approval
+    event_dict["isApproved"] = False
 
     event_dict["attendeeCount"] = 0
 
