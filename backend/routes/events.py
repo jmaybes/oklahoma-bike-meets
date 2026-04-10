@@ -451,18 +451,27 @@ Return ONLY a valid JSON array of events found. Return [] if none."""
             user_message = UserMessage(text=prompt)
             response = await chat.send_message(user_message)
 
-            # Parse GPT response
+            # Parse GPT response - response is a string directly
             import json
-            response_text = response.text.strip()
+            response_text = response.strip()
             if response_text.startswith("```"):
-                response_text = response_text.split("\n", 1)[1] if "\n" in response_text else response_text
-                response_text = response_text.rsplit("```", 1)[0]
+                response_text = response_text.split("```")[1]
+                if response_text.startswith("json"):
+                    response_text = response_text[4:]
             response_text = response_text.strip()
 
+            # Find JSON array in response
+            start_idx = response_text.find('[')
+            end_idx = response_text.rfind(']') + 1
+
             try:
-                parsed_events = json.loads(response_text)
-                if isinstance(parsed_events, list):
-                    all_events.extend(parsed_events)
+                if start_idx != -1 and end_idx > start_idx:
+                    json_str = response_text[start_idx:end_idx]
+                    parsed_events = json.loads(json_str)
+                    if isinstance(parsed_events, list):
+                        all_events.extend(parsed_events)
+                else:
+                    logger.warning(f"No JSON array found in batch {i}")
             except json.JSONDecodeError:
                 logger.warning(f"Failed to parse GPT response for batch {i}: {response_text[:200]}")
                 continue
