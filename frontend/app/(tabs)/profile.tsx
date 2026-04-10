@@ -624,7 +624,7 @@ export default function ProfileScreen() {
     return (
       <View style={styles.container}>
         <LinearGradient
-          colors={['#E15500', '#E91E63']}
+          colors={['#FFE707', '#E91E63']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -662,7 +662,7 @@ export default function ProfileScreen() {
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <LinearGradient
-          colors={['#E15500', '#E91E63']}
+          colors={['#FFE707', '#E91E63']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
