@@ -51,7 +51,8 @@ export default function AdminPendingScreen() {
       const response = await axios.get(`${API_URL}/api/admin/events/pending`, {
         params: { admin_id: user?.id }
       });
-      setPendingEvents(response.data);
+      const data = response.data;
+      setPendingEvents(Array.isArray(data) ? data : data.events || []);
     } catch (error) {
       console.error('Error fetching pending events:', error);
       Alert.alert('Error', 'Failed to load pending events');
