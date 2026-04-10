@@ -376,13 +376,17 @@ async def import_facebook_posts(data: FacebookPostImport):
     """
     Accept Apify-scraped Facebook group posts, use GPT to identify
     car events, and create them in the database (pending admin approval).
+    Uses the standard OpenAI Python SDK (AsyncOpenAI) for VPS compatibility.
     """
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        from openai import AsyncOpenAI
+        import json
 
-        api_key = os.getenv("EMERGENT_LLM_KEY")
+        api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            raise HTTPException(status_code=500, detail="LLM key not configured")
+            raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+
+        client = AsyncOpenAI(api_key=api_key)
 
         posts = data.posts
         if not posts:
@@ -401,17 +405,7 @@ async def import_facebook_posts(data: FacebookPostImport):
         if not post_texts:
             return {"message": "No text content found in posts", "eventsCreated": 0, "eventsSkipped": 0}
 
-        # Process in batches of 10 posts to stay within token limits
-        all_events = []
-        batch_size = 10
-        for i in range(0, len(post_texts), batch_size):
-            batch = post_texts[i:i + batch_size]
-            combined_text = "\n\n---POST SEPARATOR---\n\n".join(batch)
-
-            chat = LlmChat(
-                api_key=api_key,
-                session_id=f"fb_import_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{i}",
-                system_message="""You are an expert at identifying car event announcements in Facebook group posts.
+        system_message = """You are an expert at identifying car event announcements in Facebook group posts.
 Analyze each post and determine if it's announcing a car-related event (car show, car meet, cruise, drag race, swap meet, etc.).
 
 IGNORE posts that are:
@@ -440,7 +434,13 @@ IMPORTANT:
 - Return ONLY a valid JSON array of event objects
 - If NO events found in any posts, return []
 - Do NOT fabricate events - only extract what's clearly announced"""
-            ).with_model("openai", "gpt-4.1")
+
+        # Process in batches of 10 posts to stay within token limits
+        all_events = []
+        batch_size = 10
+        for i in range(0, len(post_texts), batch_size):
+            batch = post_texts[i:i + batch_size]
+            combined_text = "\n\n---POST SEPARATOR---\n\n".join(batch)
 
             prompt = f"""Analyze these Facebook group posts and extract any car event announcements:
 
@@ -448,12 +448,16 @@ IMPORTANT:
 
 Return ONLY a valid JSON array of events found. Return [] if none."""
 
-            user_message = UserMessage(text=prompt)
-            response = await chat.send_message(user_message)
+            response = await client.chat.completions.create(
+                model="gpt-4.1",
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+            )
 
-            # Parse GPT response - response is a string directly
-            import json
-            response_text = response.strip()
+            response_text = response.choices[0].message.content.strip()
             if response_text.startswith("```"):
                 response_text = response_text.split("```")[1]
                 if response_text.startswith("json"):

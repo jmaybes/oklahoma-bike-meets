@@ -114,20 +114,21 @@ def get_event_image(event_type: str, title: str) -> str:
 
 async def parse_events_with_llm(raw_text: str, source_info: str = "") -> List[Dict]:
     """
-    Use LLM to extract structured event data from raw text
+    Use LLM to extract structured event data from raw text.
+    Uses the standard OpenAI Python SDK (AsyncOpenAI) for VPS compatibility.
     """
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        
-        api_key = os.getenv("EMERGENT_LLM_KEY")
+        from openai import AsyncOpenAI
+        import json
+
+        api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            logger.error("EMERGENT_LLM_KEY not configured")
+            logger.error("OPENAI_API_KEY not configured")
             return []
-        
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"event_parser_{datetime.now().strftime('%Y%m%d%H%M%S')}",
-            system_message="""You are an expert at extracting car event information from text.
+
+        client = AsyncOpenAI(api_key=api_key)
+
+        system_message = """You are an expert at extracting car event information from text.
 Extract all car-related events (car shows, meets, cruises, etc.) from the provided text.
 
 For each event, return a JSON array with objects containing:
@@ -150,30 +151,33 @@ IMPORTANT:
 - Return ONLY valid JSON array, no other text
 - If no events found, return []
 - Dates should be in 2025 or 2026"""
-        ).with_model("openai", "gpt-4.1")
-        
+
         prompt = f"""Extract all Oklahoma car events from this text:
 
 Source: {source_info}
 
 Text:
-{raw_text[:8000]}  # Limit text length
+{raw_text[:8000]}
 
 Return ONLY a valid JSON array of events."""
 
-        user_message = UserMessage(text=prompt)
-        response = await chat.send_message(user_message)
-        
-        # Parse JSON response
-        import json
-        
+        response = await client.chat.completions.create(
+            model="gpt-4.1",
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+        )
+
+        response_text = response.choices[0].message.content.strip()
+
         # Clean response - extract JSON array
-        response_text = response.strip()
         if response_text.startswith("```"):
             response_text = response_text.split("```")[1]
             if response_text.startswith("json"):
                 response_text = response_text[4:]
-        
+
         # Find JSON array in response
         start_idx = response_text.find('[')
         end_idx = response_text.rfind(']') + 1
@@ -181,9 +185,9 @@ Return ONLY a valid JSON array of events."""
             json_str = response_text[start_idx:end_idx]
             events = json.loads(json_str)
             return events if isinstance(events, list) else []
-        
+
         return []
-        
+
     except Exception as e:
         logger.error(f"LLM parsing error: {e}")
         return []
