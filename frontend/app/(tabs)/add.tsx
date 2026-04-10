@@ -305,7 +305,7 @@ export default function AddEventScreen() {
       >
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <LinearGradient
-            colors={['#E15500', '#E91E63']}
+            colors={['#FF5500', '#E91E63']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -323,7 +323,7 @@ export default function AddEventScreen() {
 
           {!isAuthenticated && (
             <View style={styles.authNotice}>
-              <Ionicons name="information-circle" size={20} color="#E15500" />
+              <Ionicons name="information-circle" size={20} color="#FF5500" />
               <Text style={styles.authNoticeText}>
                 You can add events as a guest, or login for more features
               </Text>
@@ -594,7 +594,7 @@ export default function AddEventScreen() {
 
             <Text style={styles.label}>Event Photos (Max 5)</Text>
             <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-              <Ionicons name="images" size={24} color="#E15500" />
+              <Ionicons name="images" size={24} color="#FF5500" />
               <Text style={styles.uploadButtonText}>Upload Photos</Text>
             </TouchableOpacity>
 
@@ -739,7 +739,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   typeChipActive: {
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
   },
   typeChipText: {
     color: '#888',
@@ -757,7 +757,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   submitButton: {
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -783,11 +783,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#E15500',
+    borderColor: '#FF5500',
     borderStyle: 'dashed',
   },
   uploadButtonText: {
-    color: '#E15500',
+    color: '#FF5500',
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,

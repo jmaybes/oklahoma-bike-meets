@@ -347,7 +347,7 @@ export default function EventGalleryScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#E15500', '#E91E63']}
+        colors={['#FF5500', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -370,13 +370,13 @@ export default function EventGalleryScreen() {
 
       {/* Photo count */}
       <View style={styles.countBar}>
-        <Ionicons name="images-outline" size={18} color="#E15500" />
+        <Ionicons name="images-outline" size={18} color="#FF5500" />
         <Text style={styles.countText}>{photos.length} photos</Text>
       </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#E15500" />
+          <ActivityIndicator size="large" color="#FF5500" />
           <Text style={styles.loadingText}>Loading gallery...</Text>
         </View>
       ) : (
@@ -387,7 +387,7 @@ export default function EventGalleryScreen() {
           numColumns={3}
           contentContainerStyle={styles.photoGrid}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E15500" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF5500" />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -409,7 +409,7 @@ export default function EventGalleryScreen() {
       {isAuthenticated && photos.length > 0 && (
         <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + 20 }]} onPress={pickImage}>
           <LinearGradient
-            colors={['#E15500', '#E91E63']}
+            colors={['#FF5500', '#E91E63']}
             style={styles.fabGradient}
           >
             <Ionicons name="add" size={28} color="#fff" />
@@ -466,7 +466,7 @@ export default function EventGalleryScreen() {
                 <Text style={styles.tagsTitle}>Tagged Cars:</Text>
                 {selectedPhoto.tags.map((tag, index) => (
                   <View key={index} style={styles.tagItem}>
-                    <Ionicons name="car-sport" size={16} color="#E15500" />
+                    <Ionicons name="car-sport" size={16} color="#FF5500" />
                     <Text style={styles.tagText}>{tag.carInfo}</Text>
                     {tag.userId === user?.id && (
                       <TouchableOpacity onPress={() => removeTag(tag.carId)}>
@@ -520,7 +520,7 @@ export default function EventGalleryScreen() {
             </View>
 
             {loadingCars ? (
-              <ActivityIndicator size="large" color="#E15500" style={{ marginVertical: 40 }} />
+              <ActivityIndicator size="large" color="#FF5500" style={{ marginVertical: 40 }} />
             ) : userCars.length === 0 ? (
               <View style={styles.noCarsContainer}>
                 <Ionicons name="car-outline" size={48} color="#444" />
@@ -542,7 +542,7 @@ export default function EventGalleryScreen() {
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                   <TouchableOpacity style={styles.carOption} onPress={() => tagCar(item)}>
-                    <Ionicons name="car-sport" size={24} color="#E15500" />
+                    <Ionicons name="car-sport" size={24} color="#FF5500" />
                     <Text style={styles.carOptionText}>
                       {item.year} {item.make} {item.model}
                     </Text>
@@ -583,7 +583,7 @@ export default function EventGalleryScreen() {
                 disabled={uploading}
               >
                 {uploading ? (
-                  <ActivityIndicator size="small" color="#E15500" />
+                  <ActivityIndicator size="small" color="#FF5500" />
                 ) : (
                   <Text style={styles.uploadShareText}>Share</Text>
                 )}
@@ -742,7 +742,7 @@ const styles = StyleSheet.create({
   uploadFirstButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 25,
@@ -861,7 +861,7 @@ const styles = StyleSheet.create({
   tagButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
@@ -907,7 +907,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   addCarButton: {
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 20,
@@ -958,7 +958,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   uploadShareText: {
-    color: '#E15500',
+    color: '#FF5500',
     fontSize: 16,
     fontWeight: '600',
   },

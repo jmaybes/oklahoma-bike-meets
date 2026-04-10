@@ -126,7 +126,7 @@ export default function TaggedPhotosScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#E15500', '#E91E63']}
+        colors={['#FF5500', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -153,7 +153,7 @@ export default function TaggedPhotosScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#E15500" />
+          <ActivityIndicator size="large" color="#FF5500" />
           <Text style={styles.loadingText}>Loading your tagged photos...</Text>
         </View>
       ) : (
@@ -164,7 +164,7 @@ export default function TaggedPhotosScreen() {
           numColumns={3}
           contentContainerStyle={styles.photoGrid}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E15500" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF5500" />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -211,7 +211,7 @@ export default function TaggedPhotosScreen() {
                   router.push(`/event/${selectedPhoto.eventId}/gallery`);
                 }
               }}>
-                <Ionicons name="images-outline" size={24} color="#E15500" />
+                <Ionicons name="images-outline" size={24} color="#FF5500" />
               </TouchableOpacity>
             </View>
 
@@ -232,7 +232,7 @@ export default function TaggedPhotosScreen() {
                 <Text style={styles.taggedCarsTitle}>Your Tagged Cars:</Text>
                 {selectedPhoto.userTags.map((tag, index) => (
                   <View key={index} style={styles.taggedCarItem}>
-                    <Ionicons name="car-sport" size={18} color="#E15500" />
+                    <Ionicons name="car-sport" size={18} color="#FF5500" />
                     <Text style={styles.taggedCarText}>{tag.carInfo}</Text>
                   </View>
                 ))}
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
   browseEventsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 25,
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(225, 85, 0, 0.1)',
   },
   taggedCarsTitle: {
-    color: '#E15500',
+    color: '#FF5500',
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 8,

@@ -589,7 +589,7 @@ export default function HomeScreen() {
             <View style={styles.eventContent}>
               <View style={styles.eventHeader}>
                 <View style={styles.eventTypeContainer}>
-                  <Ionicons name="car-sport" size={16} color="#E15500" />
+                  <Ionicons name="car-sport" size={16} color="#FF5500" />
                   <Text style={styles.eventType}>{item.eventType}</Text>
                 </View>
                 <View style={styles.eventBadges}>
@@ -621,7 +621,7 @@ export default function HomeScreen() {
 
               <View style={styles.eventDetails}>
                 <View style={styles.detailRow}>
-                  <Ionicons name="calendar" size={16} color="#E15500" />
+                  <Ionicons name="calendar" size={16} color="#FF5500" />
                   <Text style={styles.detailText}>
                     {item.date} at {item.time}
                   </Text>
@@ -692,7 +692,7 @@ export default function HomeScreen() {
         {/* Hero text content with parallax */}
         <Animated.View style={[styles.heroContent, heroContentStyle, { paddingTop: insets.top + 16 }]}>
           <View style={styles.heroBadge}>
-            <Ionicons name="flame" size={14} color="#E15500" />
+            <Ionicons name="flame" size={14} color="#FF5500" />
             <Text style={styles.heroBadgeText}>OKC's #1 Car Community</Text>
           </View>
           <View style={styles.heroTitleRow}>
@@ -752,9 +752,9 @@ export default function HomeScreen() {
           style={styles.sortByButton}
           onPress={() => setShowSortMenu(!showSortMenu)}
         >
-          <Ionicons name="options" size={16} color="#E15500" />
+          <Ionicons name="options" size={16} color="#FF5500" />
           <Text style={styles.sortByButtonText}>SORT / FILTER</Text>
-          <Ionicons name={showSortMenu ? 'chevron-up' : 'chevron-down'} size={14} color="#E15500" />
+          <Ionicons name={showSortMenu ? 'chevron-up' : 'chevron-down'} size={14} color="#FF5500" />
         </TouchableOpacity>
 
         <View style={{ flex: 1 }} />
@@ -813,7 +813,7 @@ export default function HomeScreen() {
             <Ionicons
               name="location"
               size={18}
-              color={(!showAllEvents && selectedType === 'All') ? '#E15500' : '#999'}
+              color={(!showAllEvents && selectedType === 'All') ? '#FF5500' : '#999'}
             />
             <Text
               style={[
@@ -824,7 +824,7 @@ export default function HomeScreen() {
               OKC Only
             </Text>
             {(!showAllEvents && selectedType === 'All') && (
-              <Ionicons name="checkmark" size={18} color="#E15500" style={{ marginLeft: 'auto' }} />
+              <Ionicons name="checkmark" size={18} color="#FF5500" style={{ marginLeft: 'auto' }} />
             )}
           </TouchableOpacity>
 
@@ -842,7 +842,7 @@ export default function HomeScreen() {
             <Ionicons
               name="car-sport"
               size={18}
-              color={selectedType === 'Car Meet' ? '#E15500' : '#999'}
+              color={selectedType === 'Car Meet' ? '#FF5500' : '#999'}
             />
             <Text
               style={[
@@ -853,7 +853,7 @@ export default function HomeScreen() {
               Meets
             </Text>
             {selectedType === 'Car Meet' && (
-              <Ionicons name="checkmark" size={18} color="#E15500" style={{ marginLeft: 'auto' }} />
+              <Ionicons name="checkmark" size={18} color="#FF5500" style={{ marginLeft: 'auto' }} />
             )}
           </TouchableOpacity>
 
@@ -871,7 +871,7 @@ export default function HomeScreen() {
             <Ionicons
               name="trophy"
               size={18}
-              color={selectedType === 'Car Show' ? '#E15500' : '#999'}
+              color={selectedType === 'Car Show' ? '#FF5500' : '#999'}
             />
             <Text
               style={[
@@ -882,7 +882,7 @@ export default function HomeScreen() {
               Shows
             </Text>
             {selectedType === 'Car Show' && (
-              <Ionicons name="checkmark" size={18} color="#E15500" style={{ marginLeft: 'auto' }} />
+              <Ionicons name="checkmark" size={18} color="#FF5500" style={{ marginLeft: 'auto' }} />
             )}
           </TouchableOpacity>
 
@@ -900,7 +900,7 @@ export default function HomeScreen() {
             <Ionicons
               name="speedometer"
               size={18}
-              color={selectedType === 'Cruise' ? '#E15500' : '#999'}
+              color={selectedType === 'Cruise' ? '#FF5500' : '#999'}
             />
             <Text
               style={[
@@ -911,7 +911,7 @@ export default function HomeScreen() {
               Cruises
             </Text>
             {selectedType === 'Cruise' && (
-              <Ionicons name="checkmark" size={18} color="#E15500" style={{ marginLeft: 'auto' }} />
+              <Ionicons name="checkmark" size={18} color="#FF5500" style={{ marginLeft: 'auto' }} />
             )}
           </TouchableOpacity>
 
@@ -979,7 +979,7 @@ export default function HomeScreen() {
       {(!showAllEvents && selectedType === 'All' && !freeOnly && sortBy === 'date') ? (
         <View style={styles.resultsRowHighlight}>
           <Text style={styles.resultsTextHighlight}>
-            <Text style={{ color: '#E15500', fontWeight: '800' }}>{filteredEvents.length}</Text>
+            <Text style={{ color: '#FF5500', fontWeight: '800' }}>{filteredEvents.length}</Text>
             {'  '}Events in or near OKC!  Use sort for options.
           </Text>
         </View>
@@ -996,7 +996,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={[styles.centerContainer, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color="#E15500" />
+        <ActivityIndicator size="large" color="#FF5500" />
       </View>
     );
   }
@@ -1010,7 +1010,7 @@ export default function HomeScreen() {
           style={StyleSheet.absoluteFillObject}
         />
         <View style={styles.stickyHeaderContent}>
-          <Ionicons name="car-sport" size={22} color="#E15500" />
+          <Ionicons name="car-sport" size={22} color="#FF5500" />
           <Text style={styles.stickyHeaderTitle}>Oklahoma Car Events</Text>
           <View style={styles.stickyHeaderBadge}>
             <Text style={styles.stickyHeaderCount}>{filteredEvents.length}</Text>
@@ -1035,7 +1035,7 @@ export default function HomeScreen() {
         snapToAlignment="start"
         decelerationRate="fast"
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E15500" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF5500" />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -1127,7 +1127,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   heroBadgeText: {
-    color: '#E15500',
+    color: '#FF5500',
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.5,
@@ -1150,7 +1150,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
     letterSpacing: -0.5,
-    textShadowColor: '#E15500',
+    textShadowColor: '#FF5500',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 12,
   },
@@ -1196,7 +1196,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   heroStatNumber: {
-    color: '#E15500',
+    color: '#FF5500',
     fontSize: 18,
     fontWeight: '800',
   },
@@ -1235,7 +1235,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   stickyHeaderBadge: {
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -1266,11 +1266,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E15500',
+    borderColor: '#FF5500',
     gap: 6,
   },
   sortByButtonText: {
-    color: '#E15500',
+    color: '#FF5500',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -1301,7 +1301,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   sortDropdownTextActive: {
-    color: '#E15500',
+    color: '#FF5500',
     fontWeight: '600',
   },
   pastButton: {
@@ -1361,7 +1361,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   resultsDate: {
-    color: '#E15500',
+    color: '#FF5500',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -1401,7 +1401,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   eventType: {
-    color: '#E15500',
+    color: '#FF5500',
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
@@ -1489,7 +1489,7 @@ const styles = StyleSheet.create({
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 25,

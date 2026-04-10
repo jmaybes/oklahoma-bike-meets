@@ -184,7 +184,7 @@ export default function AdminEditClubScreen() {
   if (authLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#E15500" />
+        <ActivityIndicator size="large" color="#FF5500" />
       </View>
     );
   }

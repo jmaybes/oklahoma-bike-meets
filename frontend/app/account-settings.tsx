@@ -112,7 +112,7 @@ export default function AccountSettingsScreen() {
           {/* Log Out Section */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Ionicons name="log-out-outline" size={24} color="#E15500" />
+              <Ionicons name="log-out-outline" size={24} color="#FF5500" />
               <Text style={styles.sectionTitle}>Log Out</Text>
             </View>
             <Text style={styles.sectionDescription}>
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     borderRadius: 12,
     padding: 16,
     gap: 8,

@@ -186,7 +186,7 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.content}>
-            <Ionicons name="car-sport" size={64} color="#E15500" />
+            <Ionicons name="car-sport" size={64} color="#FF5500" />
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join the car community</Text>
 
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   registerButton: {
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginLinkBold: {
-    color: '#E15500',
+    color: '#FF5500',
     fontWeight: 'bold',
   },
 });

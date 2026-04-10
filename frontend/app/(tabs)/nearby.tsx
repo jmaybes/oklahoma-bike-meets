@@ -332,7 +332,7 @@ export default function NearbyScreen() {
         </TouchableOpacity>
       )}
       <View style={styles.userAvatar}>
-        <Ionicons name="person" size={24} color="#E15500" />
+        <Ionicons name="person" size={24} color="#FF5500" />
       </View>
       <View style={styles.userInfo}>
         <Text style={styles.userName}>{nearbyUser.nickname || nearbyUser.name}</Text>
@@ -344,7 +344,7 @@ export default function NearbyScreen() {
             style={styles.garageButton}
             onPress={() => router.push(`/user-garage/${nearbyUser.id}`)}
           >
-            <Ionicons name="car-sport" size={18} color="#E15500" />
+            <Ionicons name="car-sport" size={18} color="#FF5500" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.messageButton}
@@ -363,7 +363,7 @@ export default function NearbyScreen() {
     return (
       <View style={styles.container}>
         <LinearGradient
-          colors={['#E15500', '#E91E63']}
+          colors={['#FF5500', '#E91E63']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -385,7 +385,7 @@ export default function NearbyScreen() {
     return (
       <View style={styles.container}>
         <View style={[styles.centerContainer, { paddingTop: insets.top }]}>
-          <ActivityIndicator size="large" color="#E15500" />
+          <ActivityIndicator size="large" color="#FF5500" />
           <Text style={styles.loadingText}>Getting your location...</Text>
         </View>
       </View>
@@ -398,7 +398,7 @@ export default function NearbyScreen() {
     <View style={styles.container}>
       {/* Header */}
       <LinearGradient
-        colors={['#E15500', '#E91E63']}
+        colors={['#FF5500', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -484,7 +484,7 @@ export default function NearbyScreen() {
             </MapErrorBoundary>
           ) : (
             <View style={styles.mapFallback}>
-              <Ionicons name="map-outline" size={48} color="#E15500" />
+              <Ionicons name="map-outline" size={48} color="#FF5500" />
               <Text style={styles.mapFallbackTitle}>Map Not Available</Text>
               <Text style={styles.mapFallbackText}>
                 Switch to list view to browse nearby users
@@ -506,9 +506,9 @@ export default function NearbyScreen() {
             step={1}
             value={radius}
             onValueChange={setRadius}
-            minimumTrackTintColor="#E15500"
+            minimumTrackTintColor="#FF5500"
             maximumTrackTintColor="#444"
-            thumbTintColor="#E15500"
+            thumbTintColor="#FF5500"
           />
           <View style={styles.sliderMarks}>
             <Text style={styles.sliderMark}>1 mi</Text>
@@ -631,7 +631,7 @@ export default function NearbyScreen() {
                   >
                     <Text style={styles.messageOptionText}>{msg}</Text>
                     {selectedMessage === msg && (
-                      <Ionicons name="checkmark-circle" size={20} color="#E15500" />
+                      <Ionicons name="checkmark-circle" size={20} color="#FF5500" />
                     )}
                   </TouchableOpacity>
                 ))}
@@ -709,7 +709,7 @@ export default function NearbyScreen() {
             {popupStep === 1 && (
               <View style={styles.stepContent}>
                 <View style={styles.stepIconContainer}>
-                  <Ionicons name="flash" size={48} color="#E15500" />
+                  <Ionicons name="flash" size={48} color="#FF5500" />
                 </View>
                 <Text style={styles.stepQuestion}>
                   Would you like to send invites for a pop-up event?
@@ -784,7 +784,7 @@ export default function NearbyScreen() {
                     style={styles.stepButtonOutline}
                     onPress={() => handlePopupStep2(false)}
                   >
-                    <Ionicons name="location-outline" size={20} color="#E15500" />
+                    <Ionicons name="location-outline" size={20} color="#FF5500" />
                     <Text style={styles.stepButtonOutlineText}>No, skip this</Text>
                   </TouchableOpacity>
                 </View>
@@ -801,7 +801,7 @@ export default function NearbyScreen() {
                 {/* Preview Banner */}
                 <View style={styles.previewBanner}>
                   <LinearGradient
-                    colors={['#E15500', '#E91E63']}
+                    colors={['#FF5500', '#E91E63']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.previewGradient}
@@ -843,7 +843,7 @@ export default function NearbyScreen() {
                 <View style={styles.summaryCard}>
                   <Text style={styles.summaryTitle}>Invite Summary</Text>
                   <View style={styles.summaryRow}>
-                    <Ionicons name="people" size={16} color="#E15500" />
+                    <Ionicons name="people" size={16} color="#FF5500" />
                     <Text style={styles.summaryText}>{selectedUsers.size} recipient{selectedUsers.size !== 1 ? 's' : ''}</Text>
                   </View>
                   {wantsLocationShare && (
@@ -965,7 +965,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   selectAllText: {
-    color: '#E15500',
+    color: '#FF5500',
     fontSize: 15,
     fontWeight: '600',
   },
@@ -989,8 +989,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   checkboxChecked: {
-    backgroundColor: '#E15500',
-    borderColor: '#E15500',
+    backgroundColor: '#FF5500',
+    borderColor: '#FF5500',
   },
 
   // Privacy
@@ -1033,7 +1033,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   radiusValue: {
-    color: '#E15500',
+    color: '#FF5500',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -1082,7 +1082,7 @@ const styles = StyleSheet.create({
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 25,
@@ -1107,7 +1107,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   userCardSelected: {
-    borderColor: '#E15500',
+    borderColor: '#FF5500',
     backgroundColor: '#1a1520',
   },
   userAvatar: {
@@ -1135,7 +1135,7 @@ const styles = StyleSheet.create({
   messageButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
@@ -1178,7 +1178,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     paddingVertical: 16,
     borderRadius: 12,
     gap: 8,
@@ -1238,7 +1238,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   toggleOptionActive: {
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
   },
   toggleText: {
     color: '#888',
@@ -1263,7 +1263,7 @@ const styles = StyleSheet.create({
   },
   messageOptionActive: {
     backgroundColor: '#333',
-    borderColor: '#E15500',
+    borderColor: '#FF5500',
     borderWidth: 1,
   },
   messageOptionText: {
@@ -1286,7 +1286,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     paddingVertical: 16,
     borderRadius: 12,
     gap: 8,
@@ -1324,7 +1324,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
   },
   stepDotActive: {
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
   },
 
   // Step Content
@@ -1368,7 +1368,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     paddingVertical: 16,
     borderRadius: 14,
     gap: 8,
@@ -1396,11 +1396,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#E15500',
+    borderColor: '#FF5500',
     gap: 8,
   },
   stepButtonOutlineText: {
-    color: '#E15500',
+    color: '#FF5500',
     fontSize: 16,
     fontWeight: '700',
   },

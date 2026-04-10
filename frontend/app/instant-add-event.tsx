@@ -181,7 +181,7 @@ export default function InstantAddEventScreen() {
         <View style={styles.captureContainer}>
           <View style={styles.captureIconWrap}>
             <LinearGradient
-              colors={['#E15500', '#E91E63']}
+              colors={['#FF5500', '#E91E63']}
               style={styles.captureIconGradient}
             >
               <Ionicons name="camera" size={48} color="#fff" />
@@ -194,7 +194,7 @@ export default function InstantAddEventScreen() {
 
           <TouchableOpacity style={styles.captureBtn} onPress={takePhoto} activeOpacity={0.8}>
             <LinearGradient
-              colors={['#E15500', '#E91E63']}
+              colors={['#FF5500', '#E91E63']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.captureBtnGradient}
@@ -206,8 +206,8 @@ export default function InstantAddEventScreen() {
 
           <TouchableOpacity style={styles.captureBtn} onPress={pickFromGallery} activeOpacity={0.8}>
             <View style={styles.captureBtnOutline}>
-              <Ionicons name="images" size={24} color="#E15500" />
-              <Text style={[styles.captureBtnText, { color: '#E15500' }]}>Choose from Gallery</Text>
+              <Ionicons name="images" size={24} color="#FF5500" />
+              <Text style={[styles.captureBtnText, { color: '#FF5500' }]}>Choose from Gallery</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -232,7 +232,7 @@ export default function InstantAddEventScreen() {
             <Image source={{ uri: imageUri }} style={styles.scanningImage} resizeMode="contain" />
           )}
           <View style={styles.scanningOverlay}>
-            <ActivityIndicator size="large" color="#E15500" />
+            <ActivityIndicator size="large" color="#FF5500" />
             <Text style={styles.scanningText}>Reading your flyer...</Text>
             <Text style={styles.scanningSubtext}>Extracting event details</Text>
           </View>
@@ -275,7 +275,7 @@ export default function InstantAddEventScreen() {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#E15500', '#E91E63']}
+              colors={['#FF5500', '#E91E63']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.captureBtnGradient}
@@ -291,7 +291,7 @@ export default function InstantAddEventScreen() {
             activeOpacity={0.8}
           >
             <View style={styles.captureBtnOutline}>
-              <Text style={[styles.captureBtnText, { color: '#E15500' }]}>Back to Profile</Text>
+              <Text style={[styles.captureBtnText, { color: '#FF5500' }]}>Back to Profile</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -481,7 +481,7 @@ export default function InstantAddEventScreen() {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#E15500', '#E91E63']}
+              colors={['#FF5500', '#E91E63']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.submitGradient}
@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#E15500',
+    borderColor: '#FF5500',
     gap: 10,
   },
   captureBtnText: {
@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
   },
   chipSelected: {
     backgroundColor: 'rgba(225, 85, 0, 0.2)',
-    borderColor: '#E15500',
+    borderColor: '#FF5500',
   },
   chipText: {
     color: '#999',
@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   chipTextSelected: {
-    color: '#E15500',
+    color: '#FF5500',
   },
 
   // Submit bar

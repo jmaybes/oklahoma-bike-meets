@@ -237,7 +237,7 @@ export default function LoginScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#E15500" />
+          <ActivityIndicator size="large" color="#FF5500" />
         </View>
       </View>
     );
@@ -257,7 +257,7 @@ export default function LoginScreen() {
 
         <View style={styles.content}>
           <Animated.View entering={FadeInDown.delay(100).springify()}>
-            <Ionicons name="car-sport" size={64} color="#E15500" />
+            <Ionicons name="car-sport" size={64} color="#FF5500" />
           </Animated.View>
           <Animated.Text 
             entering={FadeInDown.delay(200).springify()}
@@ -501,8 +501,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   checkboxChecked: {
-    backgroundColor: '#E15500',
-    borderColor: '#E15500',
+    backgroundColor: '#FF5500',
+    borderColor: '#FF5500',
   },
   rememberMeText: {
     color: '#fff',
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
     marginLeft: 34,
   },
   loginButton: {
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   registerLinkBold: {
-    color: '#E15500',
+    color: '#FF5500',
     fontWeight: 'bold',
   },
   dividerContainer: {

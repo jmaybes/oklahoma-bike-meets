@@ -85,7 +85,7 @@ export default function BroadcastScreen() {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Info Card */}
           <View style={styles.infoCard}>
-            <Ionicons name="megaphone" size={24} color="#E15500" />
+            <Ionicons name="megaphone" size={24} color="#FF5500" />
             <Text style={styles.infoText}>
               Send a message to every user from your admin account. They'll see it in their Messages inbox and receive a push notification if enabled.
             </Text>
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#E1550030',
+    borderColor: '#FF550030',
   },
   infoText: {
     flex: 1,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: '#E15500',
+    backgroundColor: '#FF5500',
     borderRadius: 14,
     paddingVertical: 16,
   },
