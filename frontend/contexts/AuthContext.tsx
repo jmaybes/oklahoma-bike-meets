@@ -176,10 +176,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.log('Cached user invalid, clearing session for re-auth');
             await AsyncStorage.removeItem('user');
             setUser(null);
+          } else if (validateError?.message === 'timeout' || !validateError?.response) {
+            // Network error or timeout — clear session so user can re-login with correct server
+            console.log('Could not reach server to validate cached user, clearing session');
+            await AsyncStorage.removeItem('user');
+            setUser(null);
           } else {
-            // Network error or timeout — keep cached user to avoid blocking offline usage
-            console.log('Could not validate user (network issue), keeping cached session');
-            setUser(parsedUser);
+            // Other error — clear session to be safe
+            console.log('Unexpected validation error, clearing session');
+            await AsyncStorage.removeItem('user');
+            setUser(null);
           }
         }
       }
