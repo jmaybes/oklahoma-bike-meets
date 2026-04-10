@@ -577,12 +577,13 @@ export default function HomeScreen() {
         >
           <View style={styles.eventCard}>
             <Image
-              source={item.photos && item.photos.length > 0
+              source={item.photos && item.photos.length > 0 && item.photos[0]
                 ? { uri: item.photos[0] }
                 : { uri: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' }
               }
               style={styles.eventImage}
               resizeMode="cover"
+              defaultSource={{ uri: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' }}
             />
             <View style={styles.eventContent}>
               <View style={styles.eventHeader}>
