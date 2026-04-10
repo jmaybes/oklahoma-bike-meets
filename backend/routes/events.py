@@ -149,24 +149,56 @@ async def get_events(
             if event.get("isRecurring") and event.get("recurrenceDay") is not None:
                 frontend_day = event.get("recurrenceDay")
                 python_weekday = (frontend_day + 6) % 7
+                recurrence_week = event.get("recurrenceWeek")  # e.g., 1 = first, 2 = second, None = every week
 
                 end_date_str = event.get("recurrenceEndDate")
                 end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date() if end_date_str else today + timedelta(weeks=weeks_ahead)
 
-                current_date = today
-                days_until_recurrence = (python_weekday - current_date.weekday() + 7) % 7
-                if days_until_recurrence == 0:
-                    next_occurrence = current_date
+                if recurrence_week:
+                    # Nth weekday of each month (e.g., 1st Saturday)
+                    from calendar import monthrange
+                    current_month = today.replace(day=1)
+                    while current_month <= end_date:
+                        # Find the nth occurrence of the weekday in this month
+                        day = 1
+                        count = 0
+                        days_in_month = monthrange(current_month.year, current_month.month)[1]
+                        found_date = None
+                        while day <= days_in_month:
+                            d = current_month.replace(day=day)
+                            if d.weekday() == python_weekday:
+                                count += 1
+                                if count == recurrence_week:
+                                    found_date = d
+                                    break
+                            day += 1
+                        if found_date and found_date >= today and found_date <= end_date:
+                            instance = event_data.copy()
+                            instance["date"] = found_date.strftime("%Y-%m-%d")
+                            instance["id"] = f"{event_data['id']}__{found_date.strftime('%Y%m%d')}"
+                            instance["parentEventId"] = event_data["id"]
+                            result.append(instance)
+                        # Move to next month
+                        if current_month.month == 12:
+                            current_month = current_month.replace(year=current_month.year + 1, month=1)
+                        else:
+                            current_month = current_month.replace(month=current_month.month + 1)
                 else:
-                    next_occurrence = current_date + timedelta(days=days_until_recurrence)
+                    # Every week
+                    current_date = today
+                    days_until_recurrence = (python_weekday - current_date.weekday() + 7) % 7
+                    if days_until_recurrence == 0:
+                        next_occurrence = current_date
+                    else:
+                        next_occurrence = current_date + timedelta(days=days_until_recurrence)
 
-                while next_occurrence <= end_date:
-                    instance = event_data.copy()
-                    instance["date"] = next_occurrence.strftime("%Y-%m-%d")
-                    instance["id"] = f"{event_data['id']}__{next_occurrence.strftime('%Y%m%d')}"
-                    instance["parentEventId"] = event_data["id"]
-                    result.append(instance)
-                    next_occurrence += timedelta(weeks=1)
+                    while next_occurrence <= end_date:
+                        instance = event_data.copy()
+                        instance["date"] = next_occurrence.strftime("%Y-%m-%d")
+                        instance["id"] = f"{event_data['id']}__{next_occurrence.strftime('%Y%m%d')}"
+                        instance["parentEventId"] = event_data["id"]
+                        result.append(instance)
+                        next_occurrence += timedelta(weeks=1)
             else:
                 result.append(event_data)
         except Exception as e:
