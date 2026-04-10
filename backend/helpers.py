@@ -234,6 +234,7 @@ def user_car_helper(car) -> dict:
         "likes": car.get("likes", 0),
         "views": car.get("views", 0),
         "mainPhotoIndex": car.get("mainPhotoIndex", 0),
+        "isActive": car.get("isActive", True),
         "createdAt": _isodate(car.get("createdAt")),
         "updatedAt": _isodate(car.get("updatedAt")),
     }

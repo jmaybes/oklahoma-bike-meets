@@ -65,6 +65,8 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const [fontsLoaded] = useFonts({ RockSalt_400Regular });
   const [userCar, setUserCar] = useState<UserCar | null>(null);
+  const [userCars, setUserCars] = useState<UserCar[]>([]);
+  const [editingCarId, setEditingCarId] = useState<string | null>(null);
   const [loadingCar, setLoadingCar] = useState(false);
   const [showCarModal, setShowCarModal] = useState(false);
   const [savingCar, setSavingCar] = useState(false);
@@ -124,6 +126,7 @@ export default function ProfileScreen() {
       const response = await axios.get(url);
       if (response.data) {
         setUserCar(response.data);
+        setEditingCarId(response.data.id);
         setCarForm({
           make: response.data.make || '',
           model: response.data.model || '',
@@ -145,11 +148,61 @@ export default function ProfileScreen() {
         setVideoUrls(response.data.videos || []);
         setGaragePublic(response.data.isPublic !== false);
       }
+      // Also fetch all cars for the car switcher
+      const allCarsRes = await axios.get(`${API_URL}/api/user-cars/user/${user?.id}/all`);
+      if (allCarsRes.data && Array.isArray(allCarsRes.data)) {
+        setUserCars(allCarsRes.data);
+      }
     } catch (error) {
       console.error('Error fetching user car:', error);
     } finally {
       setLoadingCar(false);
     }
+  };
+
+  const handleSetActiveCar = async (carId: string) => {
+    try {
+      await axios.put(`${API_URL}/api/user-cars/${carId}/set-active`);
+      fetchUserCar(true);
+      Alert.alert('Success', 'Active car switched!');
+    } catch (error) {
+      console.error('Error switching active car:', error);
+      Alert.alert('Error', 'Failed to switch active car');
+    }
+  };
+
+  const handleAddSecondCar = () => {
+    // Reset form for new car creation
+    setEditingCarId(null);
+    setCarForm({
+      make: '', model: '', year: '', color: '', trim: '',
+      engine: '', horsepower: '', torque: '', transmission: '',
+      drivetrain: '', description: '', modificationNotes: '',
+      instagramHandle: '', youtubeChannel: '',
+    });
+    setCarPhotos([]);
+    setMainPhotoIndex(0);
+    setVideoUrls([]);
+    setGaragePublic(true);
+    setShowCarModal(true);
+  };
+
+  const handleEditCar = (car: any) => {
+    setEditingCarId(car.id);
+    setCarForm({
+      make: car.make || '', model: car.model || '', year: car.year || '',
+      color: car.color || '', trim: car.trim || '', engine: car.engine || '',
+      horsepower: car.horsepower?.toString() || '', torque: car.torque?.toString() || '',
+      transmission: car.transmission || '', drivetrain: car.drivetrain || '',
+      description: car.description || '', modificationNotes: car.modificationNotes || '',
+      instagramHandle: car.instagramHandle || '', youtubeChannel: car.youtubeChannel || '',
+    });
+    setCarPhotos(car.photos || []);
+    setMainPhotoIndex(car.mainPhotoIndex || 0);
+    setVideoUrls(car.videos || []);
+    setGaragePublic(car.isPublic !== false);
+    fetchUserCar(true); // Reload with photos for current active
+    setShowCarModal(true);
   };
 
   const fetchGarageNotifications = async () => {
@@ -472,6 +525,7 @@ export default function ProfileScreen() {
         instagramHandle: carForm.instagramHandle,
         youtubeChannel: carForm.youtubeChannel,
         mainPhotoIndex: Math.min(mainPhotoIndex, Math.max(0, carPhotos.length - 1)),
+        carId: editingCarId || undefined,  // Pass carId when editing existing car
       };
 
       setPhotoUploadProgress('Saving car info...');
@@ -780,11 +834,80 @@ export default function ProfileScreen() {
                 )}
               </View>
               
-              <TouchableOpacity style={styles.editCarButton} onPress={() => { fetchUserCar(true); setShowCarModal(true); }}>
+              <TouchableOpacity style={styles.editCarButton} onPress={() => { setEditingCarId(userCar.id); fetchUserCar(true); setShowCarModal(true); }}>
                 <Ionicons name="pencil" size={16} color="#E15500" />
                 <Text style={styles.editCarButtonText}>Edit Car & Photos</Text>
               </TouchableOpacity>
             </View>
+
+            {/* Car Switcher - show all cars */}
+            {userCars.length > 0 && (
+              <View style={{ marginTop: 12, gap: 8 }}>
+                {userCars.length > 1 && (
+                  <View style={{ gap: 6 }}>
+                    {userCars.map((car) => (
+                      <TouchableOpacity 
+                        key={car.id}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: car.isActive ? 'rgba(225, 85, 0, 0.15)' : '#1a1a1a',
+                          borderRadius: 10,
+                          padding: 12,
+                          borderWidth: car.isActive ? 1 : 0,
+                          borderColor: '#E15500',
+                        }}
+                        onPress={() => {
+                          if (!car.isActive) {
+                            handleSetActiveCar(car.id);
+                          }
+                        }}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                          <Ionicons name="car-sport" size={20} color={car.isActive ? '#E15500' : '#666'} />
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>
+                              {car.year} {car.make} {car.model}
+                            </Text>
+                            <Text style={{ color: '#888', fontSize: 11 }}>
+                              {car.isActive ? 'Active - Displayed in your garage' : 'Tap to set as active'}
+                            </Text>
+                          </View>
+                        </View>
+                        {car.isActive ? (
+                          <View style={{ backgroundColor: '#E15500', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3 }}>
+                            <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>ACTIVE</Text>
+                          </View>
+                        ) : (
+                          <Ionicons name="swap-horizontal" size={18} color="#666" />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+                {userCars.length < 2 && (
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#1a1a1a',
+                      borderRadius: 10,
+                      padding: 12,
+                      borderWidth: 1,
+                      borderColor: '#333',
+                      borderStyle: 'dashed',
+                      gap: 8,
+                    }}
+                    onPress={handleAddSecondCar}
+                  >
+                    <Ionicons name="add-circle-outline" size={20} color="#E15500" />
+                    <Text style={{ color: '#E15500', fontWeight: '600', fontSize: 14 }}>Add 2nd Car</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
           ) : (
             <TouchableOpacity style={styles.addCarCard} onPress={() => setShowCarModal(true)}>
               <View style={styles.nudgeBadge}>

@@ -199,15 +199,21 @@ async def create_user_car(car: UserCarCreate):
 
 @router.get("/user-cars/user/{user_id}")
 async def get_user_car(request: Request, user_id: str, include_photos: bool = Query(default=False)):
-    """Get a user's car. Returns HTTP thumbnail URLs instead of base64."""
+    """Get a user's ACTIVE car. Returns HTTP thumbnail URLs instead of base64."""
     
     # Build base URL from request
     base_url = get_base_url(request)
     
-    if include_photos:
+    # Find the active car (or the first car if none is marked active)
+    car = await db.user_cars.find_one({"userId": user_id, "isActive": True})
+    if not car:
+        # Fallback: find any car for this user (backwards compatibility)
         car = await db.user_cars.find_one({"userId": user_id})
-        if not car:
-            return None
+    
+    if not car:
+        return None
+    
+    if include_photos:
         result = user_car_helper(car)
         result["photoCount"] = len(car.get("photos", []))
         car_id = result["id"]
@@ -219,16 +225,12 @@ async def get_user_car(request: Request, user_id: str, include_photos: bool = Qu
         result["ownerNickname"] = owner.get("nickname", "") if owner else ""
         return result
     
-    car = await db.user_cars.find_one({"userId": user_id}, {"photos": 0})
-    if not car:
-        return None
-    
     car_data = user_car_helper(car)
     car_id = car_data["id"]
     
     # Get photo count without loading photos
     count_doc = await db.user_cars.aggregate([
-        {"$match": {"userId": user_id}},
+        {"$match": {"_id": car["_id"]}},
         {"$project": {"photoCount": {"$size": {"$ifNull": ["$photos", []]}}}}
     ]).to_list(1)
     photo_count = count_doc[0]["photoCount"] if count_doc else 0
@@ -238,6 +240,67 @@ async def get_user_car(request: Request, user_id: str, include_photos: bool = Qu
     car_data["photoCount"] = photo_count
     car_data["mainPhotoIndex"] = 0
     # Add owner info
+    owner = await db.users.find_one({"_id": ObjectId(user_id)}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(user_id) else None
+    car_data["ownerName"] = owner.get("name", "Unknown") if owner else "Unknown"
+    car_data["ownerNickname"] = owner.get("nickname", "") if owner else ""
+    return car_data
+
+
+@router.get("/user-cars/user/{user_id}/all")
+async def get_user_all_cars(request: Request, user_id: str):
+    """Get ALL cars for a user (max 2). Used for car picker modal."""
+    base_url = get_base_url(request)
+    
+    cars = await db.user_cars.find({"userId": user_id}, {"photos": 0}).to_list(10)
+    if not cars:
+        return []
+    
+    result = []
+    for car in cars:
+        car_data = user_car_helper(car)
+        car_id = car_data["id"]
+        has_thumbnail = car.get("thumbnail", "")
+        car_data["thumbnailUrl"] = f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg" if has_thumbnail else ""
+        car_data["isActive"] = car.get("isActive", True)
+        
+        # Get photo count
+        count_doc = await db.user_cars.aggregate([
+            {"$match": {"_id": car["_id"]}},
+            {"$project": {"photoCount": {"$size": {"$ifNull": ["$photos", []]}}}}
+        ]).to_list(1)
+        car_data["photoCount"] = count_doc[0]["photoCount"] if count_doc else 0
+        result.append(car_data)
+    
+    # Add owner info
+    owner = await db.users.find_one({"_id": ObjectId(user_id)}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(user_id) else None
+    owner_name = owner.get("name", "Unknown") if owner else "Unknown"
+    owner_nickname = owner.get("nickname", "") if owner else ""
+    for car_data in result:
+        car_data["ownerName"] = owner_name
+        car_data["ownerNickname"] = owner_nickname
+    
+    return result
+
+
+@router.put("/user-cars/{car_id}/set-active")
+async def set_active_car(car_id: str):
+    """Set a car as the active/displayed car. Deactivates all other cars for that user."""
+    if not ObjectId.is_valid(car_id):
+        raise HTTPException(status_code=400, detail="Invalid car ID")
+    
+    car = await db.user_cars.find_one({"_id": ObjectId(car_id)})
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+    
+    user_id = car["userId"]
+    
+    # Deactivate all cars for this user
+    await db.user_cars.update_many({"userId": user_id}, {"$set": {"isActive": False}})
+    
+    # Activate the selected car
+    await db.user_cars.update_one({"_id": ObjectId(car_id)}, {"$set": {"isActive": True}})
+    
+    return {"message": "Car set as active", "carId": car_id}
     owner = await db.users.find_one({"_id": ObjectId(user_id)}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(user_id) else None
     car_data["ownerName"] = owner.get("name", "Unknown") if owner else "Unknown"
     car_data["ownerNickname"] = owner.get("nickname", "") if owner else ""
@@ -723,16 +786,22 @@ async def remove_photo_by_index(car_id: str, photo_index: int, user_id: str = Qu
 async def create_or_update_car_metadata(car: UserCarCreate):
     """Create or update a car's metadata WITHOUT photos.
     Photos should be uploaded separately via the chunked upload endpoint.
-    This avoids large payloads that get rejected by the proxy."""
+    Supports up to 2 cars per user. Only one can be active at a time."""
     car_dict = car.dict()
+    
+    # Extract carId if provided (for updating a specific car)
+    car_id = car_dict.pop("carId", None)
     
     # Remove photos from the metadata save — they'll be uploaded separately
     photos_to_save = car_dict.pop("photos", None)
     car_dict["updatedAt"] = datetime.utcnow().isoformat()
 
-    existing = await db.user_cars.find_one({"userId": car.userId})
-    if existing:
-        # Preserve existing photos if none provided
+    if car_id and ObjectId.is_valid(car_id):
+        # Update a specific car by ID
+        existing = await db.user_cars.find_one({"_id": ObjectId(car_id), "userId": car.userId})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Car not found")
+        
         if not photos_to_save:
             car_dict.pop("photos", None)
         
@@ -745,8 +814,22 @@ async def create_or_update_car_metadata(car: UserCarCreate):
         result["photoCount"] = len(updated.get("photos", []))
         return result
     else:
+        # Check how many cars the user already has
+        user_cars = await db.user_cars.find({"userId": car.userId}).to_list(10)
+        
+        if len(user_cars) >= 2:
+            raise HTTPException(status_code=400, detail="Maximum of 2 cars allowed per user")
+        
+        if len(user_cars) == 1:
+            # Adding a second car — make it inactive by default (first car stays active)
+            car_dict["isActive"] = False
+        else:
+            # First car — make it active
+            car_dict["isActive"] = True
+        
         car_dict["likes"] = 0
         car_dict["views"] = 0
+        car_dict["likedBy"] = []
         car_dict["createdAt"] = datetime.utcnow().isoformat()
         car_dict["photos"] = []  # Start empty, photos uploaded separately
         

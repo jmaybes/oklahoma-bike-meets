@@ -162,6 +162,8 @@ class UserCarCreate(BaseModel):
     instagramHandle: str = ""
     youtubeChannel: str = ""
     mainPhotoIndex: int = 0
+    isActive: bool = True  # Whether this car is the active/displayed car
+    carId: Optional[str] = None  # If provided, update this specific car
 
 
 class UserCarUpdate(BaseModel):
