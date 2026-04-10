@@ -551,8 +551,12 @@ export default function HomeScreen() {
   };
 
   // ===== EVENT CARD COMPONENT (GSAP-style scroll animation) =====
+  const DEFAULT_CAR_IMAGE = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80';
+  
   const AnimatedEventCard = ({ item, index, isVisible }: { item: Event; index: number; isVisible: boolean }) => {
     const pressScale = useSharedValue(1);
+    const hasValidPhoto = item.photos && item.photos.length > 0 && item.photos[0] && item.photos[0].length > 5;
+    const [eventImgUri, setEventImgUri] = React.useState(hasValidPhoto ? item.photos[0] : DEFAULT_CAR_IMAGE);
 
     const handlePressIn = () => {
       pressScale.value = withSpring(0.97, { damping: 15, stiffness: 200 });
@@ -577,12 +581,10 @@ export default function HomeScreen() {
         >
           <View style={styles.eventCard}>
             <Image
-              source={item.photos && item.photos.length > 0 && item.photos[0]
-                ? { uri: item.photos[0] }
-                : { uri: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' }
-              }
+              source={{ uri: eventImgUri }}
               style={styles.eventImage}
               resizeMode="cover"
+              onError={() => setEventImgUri(DEFAULT_CAR_IMAGE)}
             />
             <View style={styles.eventContent}>
               <View style={styles.eventHeader}>
