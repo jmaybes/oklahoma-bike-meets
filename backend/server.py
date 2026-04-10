@@ -1,9 +1,10 @@
 from fastapi import FastAPI, APIRouter, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 import asyncio
 import logging
+import os
 
 from database import client
 
@@ -95,6 +96,15 @@ async def health_check():
 @app.get("/healthz")
 async def health_check_k8s():
     return {"status": "ok", "version": APP_VERSION}
+
+@app.get("/api/download-db")
+async def download_db():
+    """Temporary endpoint to download database export"""
+    file_path = os.path.join(os.path.dirname(__file__), "db_export.tar.gz")
+    if os.path.exists(file_path):
+        return FileResponse(file_path, filename="db_export.tar.gz", media_type="application/gzip")
+    return JSONResponse(status_code=404, content={"detail": "No export found"})
+
 
 @app.get("/api/version")
 async def get_version():

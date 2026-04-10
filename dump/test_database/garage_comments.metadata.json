@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"71632f58719f4261b62e31a95c03f0d4","collectionName":"garage_comments","type":"collection"}
