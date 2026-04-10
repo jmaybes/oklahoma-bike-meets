@@ -2,7 +2,7 @@
   "expo": {
     "name": "Oklahoma Car Meets",
     "slug": "oklahoma-city-car-meets",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "okccarmeets",
@@ -18,7 +18,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.velocityvisualcrew.okcarmeets",
-      "buildNumber": "2",
+      "buildNumber": "1",
       "usesAppleSignIn": true,
       "config": {
         "googleMapsApiKey": "AIzaSyDekipz2kW6nfOpd_c6Ku_NLwgc5N9AsUI"
