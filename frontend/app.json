@@ -17,7 +17,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.velocityvisualcrew.okccarmeets",
+      "bundleIdentifier": "com.velocityvisualcrew.okcarmeets",
       "buildNumber": "2",
       "usesAppleSignIn": true,
       "config": {
