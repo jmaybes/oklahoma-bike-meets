@@ -215,10 +215,18 @@ async def get_user_car(request: Request, user_id: str, include_photos: bool = Qu
     
     if include_photos:
         result = user_car_helper(car)
-        result["photoCount"] = len(car.get("photos", []))
+        photo_count = len(car.get("photos", []))
+        result["photoCount"] = photo_count
         car_id = result["id"]
-        has_thumbnail = car.get("thumbnail", "")
-        result["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if has_thumbnail else []
+        # Return HTTP URLs for ALL photos, not just thumbnail
+        if photo_count > 0:
+            result["photos"] = [
+                f"{base_url}/api/user-cars/{car_id}/photo/{i}/image.jpg"
+                for i in range(photo_count)
+            ]
+        else:
+            has_thumbnail = car.get("thumbnail", "")
+            result["photos"] = [f"{base_url}/api/user-cars/{car_id}/thumbnail.jpg"] if has_thumbnail else []
         # Add owner info
         owner = await db.users.find_one({"_id": ObjectId(user_id)}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(user_id) else None
         result["ownerName"] = owner.get("name", "Unknown") if owner else "Unknown"
