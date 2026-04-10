@@ -2023,7 +2023,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   carShowcaseSection: {
-    paddingVertical: 20,
+    paddingTop: 5,
+    paddingBottom: 20,
     paddingHorizontal: 0,
   },
   carCard: {
