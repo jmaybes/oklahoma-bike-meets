@@ -576,13 +576,14 @@ export default function HomeScreen() {
           onPressOut={handlePressOut}
         >
           <View style={styles.eventCard}>
-            {item.photos && item.photos.length > 0 && (
-              <Image
-                source={{ uri: item.photos[0] }}
-                style={styles.eventImage}
-                resizeMode="cover"
-              />
-            )}
+            <Image
+              source={item.photos && item.photos.length > 0
+                ? { uri: item.photos[0] }
+                : { uri: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' }
+              }
+              style={styles.eventImage}
+              resizeMode="cover"
+            />
             <View style={styles.eventContent}>
               <View style={styles.eventHeader}>
                 <View style={styles.eventTypeContainer}>
