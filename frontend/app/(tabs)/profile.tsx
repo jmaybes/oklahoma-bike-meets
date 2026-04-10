@@ -1109,6 +1109,14 @@ export default function ProfileScreen() {
               <Text style={styles.menuItemText}>Broadcast Message</Text>
               <Ionicons name="chevron-forward" size={24} color="#666" />
             </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.menuItem, styles.adminMenuItem]} 
+              onPress={() => router.push('/admin/facebook-import')}
+            >
+              <Ionicons name="logo-facebook" size={24} color="#1877F2" />
+              <Text style={styles.menuItemText}>Facebook Import</Text>
+              <Ionicons name="chevron-forward" size={24} color="#666" />
+            </TouchableOpacity>
           </View>
         )}
 
