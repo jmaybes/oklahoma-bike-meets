@@ -1181,7 +1181,7 @@ const styles = StyleSheet.create({
   heroStats: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 10,
     backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 16,
     padding: 12,
@@ -1251,7 +1251,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 45,
     marginBottom: 11,
-    marginTop: -2,
+    marginTop: -12,
     gap: 8,
   },
   sortByButton: {
