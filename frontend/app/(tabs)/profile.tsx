@@ -25,7 +25,6 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
-import Garage3DCarousel from '../../components/Garage3DCarousel';
 import { useFonts, RockSalt_400Regular } from '@expo-google-fonts/rock-salt';
 
 import { API_URL } from '../../utils/api';
@@ -766,7 +765,11 @@ export default function ProfileScreen() {
             <View style={styles.carCard}>
               {userCar.photos && userCar.photos.length > 0 ? (
                 <View style={styles.carMainPhotoContainer}>
-                  <Garage3DCarousel photos={userCar.photos} />
+                  <Image 
+                    source={{ uri: userCar.photos[0] }} 
+                    style={{ width: '100%', height: 260 }} 
+                    resizeMode="cover" 
+                  />
                   <LinearGradient
                     colors={['transparent', 'rgba(0,0,0,0.6)']}
                     style={styles.carPhotoGradient}
