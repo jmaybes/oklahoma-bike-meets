@@ -18,98 +18,32 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 'react-native-reanimated';
 import { useFonts, RockSalt_400Regular } from '@expo-google-fonts/rock-salt';
 
 import { API_URL } from '../../utils/api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SLIDESHOW_HEIGHT = 320;
-const SLIDE_DURATION = 2000;
-const FADE_DURATION = 800;
 
-// Crossfade Slideshow Component
+// Static Photo Display Component (no animation)
 const CrossfadeSlideshow = ({ carId, photoCount }: { carId: string; photoCount: number }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const opacity1 = useSharedValue(1);
-  const opacity2 = useSharedValue(0);
-  const [frontIndex, setFrontIndex] = useState(0);
-  const [backIndex, setBackIndex] = useState(1 % photoCount);
-  const isFrontActive = useRef(true);
-
   // Build all photo URLs
   const photoUrls = Array.from({ length: photoCount }, (_, i) =>
     `${API_URL}/api/user-cars/${carId}/photo/${i}/image.jpg`
   );
 
-  useEffect(() => {
-    if (photoCount <= 1) return;
-
-    const advanceSlide = () => {
-      if (isFrontActive.current) {
-        // Front is showing, fade to back
-        const nextIdx = (backIndex + 1) % photoCount;
-        opacity2.value = withTiming(1, { duration: FADE_DURATION });
-        opacity1.value = withTiming(0, { duration: FADE_DURATION });
-        // After fade completes, update the hidden layer
-        setTimeout(() => {
-          setFrontIndex(nextIdx);
-          opacity1.value = 0;
-          isFrontActive.current = false;
-        }, FADE_DURATION + 50);
-      } else {
-        // Back is showing, fade to front
-        const nextIdx = (frontIndex + 1) % photoCount;
-        opacity1.value = withTiming(1, { duration: FADE_DURATION });
-        opacity2.value = withTiming(0, { duration: FADE_DURATION });
-        setTimeout(() => {
-          setBackIndex(nextIdx);
-          opacity2.value = 0;
-          isFrontActive.current = true;
-        }, FADE_DURATION + 50);
-      }
-    };
-
-    const interval = setInterval(advanceSlide, SLIDE_DURATION + FADE_DURATION);
-    return () => clearInterval(interval);
-  }, [photoCount, frontIndex, backIndex]);
-
-  const animStyle1 = useAnimatedStyle(() => ({
-    opacity: opacity1.value,
-  }));
-
-  const animStyle2 = useAnimatedStyle(() => ({
-    opacity: opacity2.value,
-  }));
-
   if (photoCount === 0) return null;
-
-  if (photoCount === 1) {
-    return (
-      <View style={slideshowStyles.container}>
-        <Image source={{ uri: photoUrls[0] }} style={slideshowStyles.image} resizeMode="cover" />
-        <LinearGradient colors={['transparent', 'rgba(12,12,12,0.85)']} style={slideshowStyles.gradient} />
-      </View>
-    );
-  }
 
   return (
     <View style={slideshowStyles.container}>
-      {/* Back layer */}
-      <Animated.View style={[slideshowStyles.layer, animStyle2]}>
-        <Image source={{ uri: photoUrls[backIndex] }} style={slideshowStyles.image} resizeMode="cover" />
-      </Animated.View>
-      {/* Front layer */}
-      <Animated.View style={[slideshowStyles.layer, animStyle1]}>
-        <Image source={{ uri: photoUrls[frontIndex] }} style={slideshowStyles.image} resizeMode="cover" />
-      </Animated.View>
-      {/* Gradient overlay */}
+      <Image source={{ uri: photoUrls[0] }} style={slideshowStyles.image} resizeMode="cover" />
       <LinearGradient colors={['transparent', 'rgba(12,12,12,0.85)']} style={slideshowStyles.gradient} />
-      {/* Photo counter */}
-      <View style={slideshowStyles.counter}>
-        <Ionicons name="images" size={14} color="#fff" />
-        <Text style={slideshowStyles.counterText}>{photoCount} photos</Text>
-      </View>
+      {photoCount > 1 && (
+        <View style={slideshowStyles.counter}>
+          <Ionicons name="images" size={14} color="#fff" />
+          <Text style={slideshowStyles.counterText}>{photoCount} photos</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -120,9 +54,6 @@ const slideshowStyles = StyleSheet.create({
     height: SLIDESHOW_HEIGHT,
     backgroundColor: '#111',
     overflow: 'hidden',
-  },
-  layer: {
-    ...StyleSheet.absoluteFillObject,
   },
   image: {
     width: '100%',
