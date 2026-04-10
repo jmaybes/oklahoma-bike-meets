@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
 from bson import ObjectId
@@ -363,3 +364,165 @@ async def get_event_comments(event_id: str):
         "rating": comment.get("rating"),
         "createdAt": _isodate(comment.get("createdAt"))
     } for comment in comments]
+
+
+# ─── Facebook Post Import (Apify Integration) ───
+
+class FacebookPostImport(BaseModel):
+    posts: list  # Array of Apify scraped post objects
+
+@router.post("/events/import-facebook-posts")
+async def import_facebook_posts(data: FacebookPostImport):
+    """
+    Accept Apify-scraped Facebook group posts, use GPT to identify
+    car events, and create them in the database (pending admin approval).
+    """
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+        api_key = os.getenv("EMERGENT_LLM_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="LLM key not configured")
+
+        posts = data.posts
+        if not posts:
+            return {"message": "No posts provided", "eventsCreated": 0, "eventsSkipped": 0}
+
+        # Combine all post texts into batches for efficiency
+        post_texts = []
+        for p in posts:
+            text = p.get("text") or p.get("message") or p.get("postText") or ""
+            group = p.get("groupName") or p.get("group_name") or "Unknown Group"
+            url = p.get("url") or p.get("postUrl") or ""
+            timestamp = p.get("timestamp") or p.get("time") or p.get("date") or ""
+            if text.strip():
+                post_texts.append(f"[Group: {group} | Posted: {timestamp} | URL: {url}]\n{text}")
+
+        if not post_texts:
+            return {"message": "No text content found in posts", "eventsCreated": 0, "eventsSkipped": 0}
+
+        # Process in batches of 10 posts to stay within token limits
+        all_events = []
+        batch_size = 10
+        for i in range(0, len(post_texts), batch_size):
+            batch = post_texts[i:i + batch_size]
+            combined_text = "\n\n---POST SEPARATOR---\n\n".join(batch)
+
+            chat = LlmChat(
+                api_key=api_key,
+                session_id=f"fb_import_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{i}",
+                system_message="""You are an expert at identifying car event announcements in Facebook group posts.
+Analyze each post and determine if it's announcing a car-related event (car show, car meet, cruise, drag race, swap meet, etc.).
+
+IGNORE posts that are:
+- Just showing off someone's car
+- Selling car parts
+- General discussion/questions
+- Memes or photos without event info
+
+For each REAL EVENT found, extract:
+- title: Event name
+- description: Brief description (2-3 sentences)
+- date: Date in YYYY-MM-DD format. If a post says "this Saturday" or relative dates, estimate based on the post timestamp. Use 2026 for upcoming events.
+- time: Start time (e.g., "8:00 AM"). Use "TBD" if not mentioned.
+- location: Venue name
+- address: Full address if available, otherwise city and state
+- city: City name
+- eventType: One of: Car Show, Car Meet, Car Cruise, Drag Race, Swap Meet, Auction, Other
+- entryFee: Entry fee (e.g., "Free", "$20", "TBD")
+- organizer: Organizing group/person if mentioned
+- website: URL if mentioned
+- carTypes: Array of car types (e.g., ["All"], ["Classic", "Muscle"])
+- sourceUrl: The Facebook post URL if available
+
+IMPORTANT:
+- Focus on Oklahoma events, but include nearby states if clearly car events
+- Return ONLY a valid JSON array of event objects
+- If NO events found in any posts, return []
+- Do NOT fabricate events - only extract what's clearly announced"""
+            ).with_model("openai", "gpt-4.1")
+
+            prompt = f"""Analyze these Facebook group posts and extract any car event announcements:
+
+{combined_text[:12000]}
+
+Return ONLY a valid JSON array of events found. Return [] if none."""
+
+            user_message = UserMessage(text=prompt)
+            response = await chat.send_message(user_message)
+
+            # Parse GPT response
+            import json
+            response_text = response.text.strip()
+            if response_text.startswith("```"):
+                response_text = response_text.split("\n", 1)[1] if "\n" in response_text else response_text
+                response_text = response_text.rsplit("```", 1)[0]
+            response_text = response_text.strip()
+
+            try:
+                parsed_events = json.loads(response_text)
+                if isinstance(parsed_events, list):
+                    all_events.extend(parsed_events)
+            except json.JSONDecodeError:
+                logger.warning(f"Failed to parse GPT response for batch {i}: {response_text[:200]}")
+                continue
+
+        # Insert events, checking for duplicates
+        created = 0
+        skipped = 0
+        created_events = []
+
+        for ev in all_events:
+            title = ev.get("title", "").strip()
+            if not title:
+                skipped += 1
+                continue
+
+            # Check for duplicates by similar title
+            existing = await db.events.find_one({
+                "title": {"$regex": f"^{title}$", "$options": "i"}
+            })
+            if existing:
+                skipped += 1
+                continue
+
+            event_doc = {
+                "title": title,
+                "description": ev.get("description", ""),
+                "date": ev.get("date", "TBD"),
+                "time": ev.get("time", "TBD"),
+                "location": ev.get("location", ""),
+                "address": ev.get("address", ""),
+                "city": ev.get("city", "Oklahoma City"),
+                "eventType": ev.get("eventType", "Car Meet"),
+                "entryFee": ev.get("entryFee", "TBD"),
+                "organizer": ev.get("organizer", ""),
+                "website": ev.get("website", ""),
+                "carTypes": ev.get("carTypes", ["All"]),
+                "source": "facebook",
+                "sourceUrl": ev.get("sourceUrl", ""),
+                "isApproved": False,
+                "attendeeCount": 0,
+                "createdAt": datetime.utcnow().isoformat(),
+                "discoveredAt": datetime.utcnow().isoformat(),
+                "photos": [],
+            }
+
+            result = await db.events.insert_one(event_doc)
+            event_doc["id"] = str(result.inserted_id)
+            created_events.append({"id": event_doc["id"], "title": title, "date": ev.get("date", "TBD")})
+            created += 1
+
+        return {
+            "message": f"Import complete. {created} events created, {skipped} skipped (duplicates or empty).",
+            "eventsCreated": created,
+            "eventsSkipped": skipped,
+            "events": created_events,
+            "totalPostsAnalyzed": len(post_texts),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Facebook import error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
