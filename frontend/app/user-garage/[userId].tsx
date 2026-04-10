@@ -340,7 +340,7 @@ export default function UserGarageScreen() {
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#E1FF00" />
+          <ActivityIndicator size="large" color="#E15500" />
         </View>
       </View>
     );
@@ -396,7 +396,7 @@ export default function UserGarageScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <LinearGradient
-        colors={['#E1FF00', '#E91E63']}
+        colors={['#E15500', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -509,35 +509,35 @@ export default function UserGarageScreen() {
               <View style={styles.specsGrid}>
                 {car.engine ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="speedometer" size={18} color="#E1FF00" />
+                    <Ionicons name="speedometer" size={18} color="#E15500" />
                     <Text style={styles.specLabel}>Engine</Text>
                     <Text style={styles.specValue}>{car.engine}</Text>
                   </View>
                 ) : null}
                 {car.horsepower ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="flash" size={18} color="#E1FF00" />
+                    <Ionicons name="flash" size={18} color="#E15500" />
                     <Text style={styles.specLabel}>Horsepower</Text>
                     <Text style={styles.specValue}>{car.horsepower} HP</Text>
                   </View>
                 ) : null}
                 {car.torque ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="sync" size={18} color="#E1FF00" />
+                    <Ionicons name="sync" size={18} color="#E15500" />
                     <Text style={styles.specLabel}>Torque</Text>
                     <Text style={styles.specValue}>{car.torque} lb-ft</Text>
                   </View>
                 ) : null}
                 {car.transmission ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="cog" size={18} color="#E1FF00" />
+                    <Ionicons name="cog" size={18} color="#E15500" />
                     <Text style={styles.specLabel}>Transmission</Text>
                     <Text style={styles.specValue}>{car.transmission}</Text>
                   </View>
                 ) : null}
                 {car.drivetrain ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="git-branch" size={18} color="#E1FF00" />
+                    <Ionicons name="git-branch" size={18} color="#E15500" />
                     <Text style={styles.specLabel}>Drivetrain</Text>
                     <Text style={styles.specValue}>{car.drivetrain}</Text>
                   </View>
@@ -562,7 +562,7 @@ export default function UserGarageScreen() {
               </Text>
               {car.modifications && car.modifications.length > 0 && car.modifications.map((mod: any, idx: number) => (
                 <View key={idx} style={styles.modRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#E1FF00" />
+                  <Ionicons name="checkmark-circle" size={16} color="#E15500" />
                   <Text style={styles.modText}>
                     {typeof mod === 'string' ? mod : `${mod.brand ? mod.brand + ' ' : ''}${mod.name || ''}`}
                   </Text>
@@ -580,7 +580,7 @@ export default function UserGarageScreen() {
           {comments.length > 0 && (
             <View style={styles.section}>
               <View style={styles.commentsSectionHeader}>
-                <Ionicons name="chatbubbles" size={20} color="#E1FF00" />
+                <Ionicons name="chatbubbles" size={20} color="#E15500" />
                 <Text style={styles.sectionTitle}>Comments ({comments.length})</Text>
               </View>
               {comments.map((comment) => (
@@ -757,7 +757,7 @@ const styles = StyleSheet.create({
   },
   carTrim: {
     fontSize: 15,
-    color: '#E1FF00',
+    color: '#E15500',
     fontWeight: '600',
     marginTop: 2,
   },
@@ -858,7 +858,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
@@ -911,7 +911,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -985,7 +985,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   commentSubmitBtn: {
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

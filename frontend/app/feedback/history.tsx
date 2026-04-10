@@ -75,7 +75,7 @@ export default function FeedbackHistoryScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <LinearGradient
-        colors={['#E1FF00', '#E91E63']}
+        colors={['#E15500', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -91,7 +91,7 @@ export default function FeedbackHistoryScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#E1FF00" />
+          <ActivityIndicator size="large" color="#E15500" />
         </View>
       ) : feedbackList.length === 0 ? (
         <View style={styles.emptyContainer}>
@@ -110,7 +110,7 @@ export default function FeedbackHistoryScreen() {
                   <Ionicons 
                     name={typeIcons[feedback.type] as any || 'chatbubble'} 
                     size={20} 
-                    color="#E1FF00" 
+                    color="#E15500" 
                   />
                   <Text style={styles.typeText}>
                     {feedback.type.charAt(0).toUpperCase() + feedback.type.slice(1)}
@@ -133,7 +133,7 @@ export default function FeedbackHistoryScreen() {
               {feedback.adminResponse && (
                 <View style={styles.adminResponseSection}>
                   <View style={styles.responseHeader}>
-                    <Ionicons name="shield-checkmark" size={16} color="#E1FF00" />
+                    <Ionicons name="shield-checkmark" size={16} color="#E15500" />
                     <Text style={styles.responseLabel}>Admin Response</Text>
                   </View>
                   <Text style={styles.responseText}>{feedback.adminResponse}</Text>
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   typeText: {
-    color: '#E1FF00',
+    color: '#E15500',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   responseLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#E1FF00',
+    color: '#E15500',
   },
   responseText: {
     fontSize: 14,

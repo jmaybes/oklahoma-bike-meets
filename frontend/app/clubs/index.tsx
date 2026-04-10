@@ -87,7 +87,7 @@ export default function ClubsScreen() {
     <View style={styles.clubCard}>
       <View style={styles.clubHeader}>
         <View style={styles.clubIcon}>
-          <Ionicons name="people-circle" size={40} color="#E1FF00" />
+          <Ionicons name="people-circle" size={40} color="#E15500" />
         </View>
         <View style={styles.clubHeaderInfo}>
           <Text style={styles.clubName}>{item.name}</Text>
@@ -109,7 +109,7 @@ export default function ClubsScreen() {
         <View style={styles.carTypesContainer}>
           {item.carTypes.map((type, index) => (
             <View key={index} style={styles.carTypeChip}>
-              <Ionicons name="car-sport" size={12} color="#E1FF00" />
+              <Ionicons name="car-sport" size={12} color="#E15500" />
               <Text style={styles.carTypeText}>{type}</Text>
             </View>
           ))}
@@ -164,7 +164,7 @@ export default function ClubsScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#E1FF00" />
+        <ActivityIndicator size="large" color="#E15500" />
       </View>
     );
   }
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   carTypeText: {
-    color: '#E1FF00',
+    color: '#E15500',
     fontSize: 12,
     fontWeight: '600',
   },

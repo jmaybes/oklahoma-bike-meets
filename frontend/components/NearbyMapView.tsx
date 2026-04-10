@@ -74,7 +74,7 @@ export default function NearbyMapView({
   if (!MapView || !Marker || !Circle || mapLoadError) {
     return (
       <View style={styles.mapPlaceholder}>
-        <Ionicons name="map-outline" size={48} color="#E1FF00" />
+        <Ionicons name="map-outline" size={48} color="#E15500" />
         <Text style={styles.mapPlaceholderTitle}>Map Unavailable</Text>
         <Text style={styles.mapPlaceholderText}>
           {mapLoadError 
@@ -207,8 +207,8 @@ export default function NearbyMapView({
             longitude: location.longitude,
           }}
           radius={radiusInMeters}
-          fillColor="rgba(225, 255, 0, 0.08)"
-          strokeColor="rgba(225, 255, 0, 0.3)"
+          fillColor="rgba(225, 85, 0, 0.08)"
+          strokeColor="rgba(225, 85, 0, 0.3)"
           strokeWidth={1}
         />
 
@@ -243,16 +243,16 @@ export default function NearbyMapView({
       {/* Map overlay controls */}
       <View style={styles.mapControls}>
         <TouchableOpacity style={styles.mapControlButton} onPress={handleCenterOnUser}>
-          <Ionicons name="locate" size={22} color="#E1FF00" />
+          <Ionicons name="locate" size={22} color="#E15500" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.mapControlButton} onPress={handleZoomIn}>
-          <Ionicons name="add" size={22} color="#E1FF00" />
+          <Ionicons name="add" size={22} color="#E15500" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.mapControlButton} onPress={handleZoomOut}>
-          <Ionicons name="remove" size={22} color="#E1FF00" />
+          <Ionicons name="remove" size={22} color="#E15500" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.mapControlButton} onPress={onRefresh}>
-          <Ionicons name="refresh" size={22} color="#E1FF00" />
+          <Ionicons name="refresh" size={22} color="#E15500" />
         </TouchableOpacity>
       </View>
 
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 12,
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 16,
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     top: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(225, 255, 0, 0.9)',
+    backgroundColor: 'rgba(225, 85, 0, 0.9)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   userMarker: {
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
   calloutMessageBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 16,

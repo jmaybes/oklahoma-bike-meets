@@ -229,7 +229,7 @@ export default function PastEventsScreen() {
                   style={styles.viewDetailsButton}
                   onPress={() => router.push(`/event/${item.id}`)}
                 >
-                  <Ionicons name="information-circle-outline" size={18} color="#E1FF00" />
+                  <Ionicons name="information-circle-outline" size={18} color="#E15500" />
                   <Text style={styles.viewDetailsText}>View Details</Text>
                 </TouchableOpacity>
                 
@@ -297,7 +297,7 @@ export default function PastEventsScreen() {
 
       {/* Info Banner */}
       <View style={styles.infoBanner}>
-        <Ionicons name="information-circle" size={18} color="#E1FF00" />
+        <Ionicons name="information-circle" size={18} color="#E15500" />
         <Text style={styles.infoBannerText}>
           Share your photos from events you attended!
         </Text>
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(225, 255, 0, 0.15)',
+    backgroundColor: 'rgba(225, 85, 0, 0.15)',
     marginHorizontal: 16,
     marginBottom: 12,
     padding: 12,
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   infoBannerText: {
-    color: '#E1FF00',
+    color: '#E15500',
     fontSize: 13,
     flex: 1,
   },
@@ -489,13 +489,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(225, 255, 0, 0.15)',
+    backgroundColor: 'rgba(225, 85, 0, 0.15)',
     paddingVertical: 10,
     borderRadius: 10,
     gap: 6,
   },
   viewDetailsText: {
-    color: '#E1FF00',
+    color: '#E15500',
     fontSize: 13,
     fontWeight: '600',
   },

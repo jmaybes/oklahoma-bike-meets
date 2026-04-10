@@ -49,7 +49,7 @@ const AnimatedTabIcon = ({
       <Ionicons 
         name={name as any} 
         size={size + 2} 
-        color={focused ? '#E1FF00' : '#ccc'} 
+        color={focused ? '#E15500' : '#ccc'} 
       />
     </Animated.View>
   );
@@ -67,7 +67,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#E1FF00',
+        tabBarActiveTintColor: '#E15500',
         tabBarInactiveTintColor: '#ccc',
         tabBarStyle: {
           backgroundColor: '#1a1a1a',

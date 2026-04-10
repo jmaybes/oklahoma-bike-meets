@@ -35,7 +35,7 @@ class MapErrorBoundary extends React.Component<MapErrorBoundaryProps, MapErrorBo
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
-          <Ionicons name="map-outline" size={48} color="#E1FF00" />
+          <Ionicons name="map-outline" size={48} color="#E15500" />
           <Text style={styles.title}>Map Unavailable</Text>
           <Text style={styles.message}>
             {this.props.fallbackMessage || 'The map could not be loaded. Use the list view to browse nearby users.'}
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,

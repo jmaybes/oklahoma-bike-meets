@@ -178,7 +178,7 @@ export default function MyRSVPsScreen() {
             <View style={styles.eventContent}>
               <View style={styles.eventHeader}>
                 <View style={styles.eventTypeContainer}>
-                  <Ionicons name="car-sport" size={16} color="#E1FF00" />
+                  <Ionicons name="car-sport" size={16} color="#E15500" />
                   <Text style={styles.eventType}>{item.eventType}</Text>
                 </View>
                 {!upcoming && (
@@ -200,16 +200,16 @@ export default function MyRSVPsScreen() {
 
               <View style={styles.eventDetails}>
                 <View style={styles.detailRow}>
-                  <Ionicons name="calendar-outline" size={14} color="#E1FF00" />
+                  <Ionicons name="calendar-outline" size={14} color="#E15500" />
                   <Text style={styles.detailText}>{formatDate(item.date)}</Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Ionicons name="time-outline" size={14} color="#E1FF00" />
+                  <Ionicons name="time-outline" size={14} color="#E15500" />
                   <Text style={styles.detailText}>{item.time}</Text>
                 </View>
                 {(item.location || item.city) && (
                   <View style={styles.detailRow}>
-                    <Ionicons name="location-outline" size={14} color="#E1FF00" />
+                    <Ionicons name="location-outline" size={14} color="#E15500" />
                     <Text style={styles.detailText} numberOfLines={1}>
                       {item.location || item.city}
                     </Text>
@@ -276,7 +276,7 @@ export default function MyRSVPsScreen() {
 
       {loading ? (
         <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color="#E1FF00" />
+          <ActivityIndicator size="large" color="#E15500" />
         </View>
       ) : events.length === 0 ? (
         <View style={styles.emptyContainer}>
@@ -303,8 +303,8 @@ export default function MyRSVPsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#E1FF00"
-              colors={['#E1FF00']}
+              tintColor="#E15500"
+              colors={['#E15500']}
             />
           }
           ListHeaderComponent={
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#E1FF00',
+    color: '#E15500',
   },
   statLabel: {
     fontSize: 12,
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   eventType: {
-    color: '#E1FF00',
+    color: '#E15500',
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   },
   browseButton: {
     marginTop: 24,
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     marginTop: 24,
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,

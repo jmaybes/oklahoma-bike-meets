@@ -37,7 +37,7 @@ interface Feedback {
 }
 
 const statusColors: Record<string, string> = {
-  new: '#E1FF00',
+  new: '#E15500',
   in_progress: '#2196F3',
   resolved: '#4CAF50',
   closed: '#888',
@@ -157,7 +157,7 @@ export default function AdminFeedbackScreen() {
   if (authLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#E1FF00" />
+        <ActivityIndicator size="large" color="#E15500" />
       </View>
     );
   }
@@ -182,7 +182,7 @@ export default function AdminFeedbackScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <LinearGradient
-        colors={['#E1FF00', '#E91E63']}
+        colors={['#E15500', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -204,8 +204,8 @@ export default function AdminFeedbackScreen() {
           <Text style={styles.statNumber}>{stats.total}</Text>
           <Text style={styles.statLabel}>Total</Text>
         </View>
-        <View style={[styles.statCard, { borderColor: '#E1FF00' }]}>
-          <Text style={[styles.statNumber, { color: '#E1FF00' }]}>{stats.new}</Text>
+        <View style={[styles.statCard, { borderColor: '#E15500' }]}>
+          <Text style={[styles.statNumber, { color: '#E15500' }]}>{stats.new}</Text>
           <Text style={styles.statLabel}>New</Text>
         </View>
         <View style={[styles.statCard, { borderColor: '#2196F3' }]}>
@@ -244,13 +244,13 @@ export default function AdminFeedbackScreen() {
       {/* Feedback List */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#E1FF00" />
+          <ActivityIndicator size="large" color="#E15500" />
         </View>
       ) : (
         <ScrollView
           style={styles.listContainer}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E1FF00" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E15500" />
           }
         >
           {feedbackList.length === 0 ? (
@@ -360,7 +360,7 @@ export default function AdminFeedbackScreen() {
               {/* User Info */}
               <Text style={styles.detailLabel}>From</Text>
               <View style={styles.userInfoBox}>
-                <Ionicons name="person-circle" size={24} color="#E1FF00" />
+                <Ionicons name="person-circle" size={24} color="#E15500" />
                 <View>
                   <Text style={styles.userName}>{selectedFeedback.userName}</Text>
                   <Text style={styles.userEmail}>{selectedFeedback.userEmail}</Text>
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   filterButtonActive: {
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
   },
   filterButtonText: {
     color: '#888',
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   backButton: {
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -741,8 +741,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
   },
   statusActionButtonActive: {
-    backgroundColor: '#E1FF00',
-    borderColor: '#E1FF00',
+    backgroundColor: '#E15500',
+    borderColor: '#E15500',
   },
   statusActionText: {
     fontSize: 13,

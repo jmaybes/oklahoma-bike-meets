@@ -352,7 +352,7 @@ export default function GarageDetailScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#E1FF00" />
+          <ActivityIndicator size="large" color="#E15500" />
         </View>
       </View>
     );
@@ -381,7 +381,7 @@ export default function GarageDetailScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <LinearGradient
-        colors={['#E1FF00', '#E91E63']}
+        colors={['#E15500', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -493,7 +493,7 @@ export default function GarageDetailScreen() {
         {/* Stats Cards */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Ionicons name="heart" size={24} color="#E1FF00" />
+            <Ionicons name="heart" size={24} color="#E15500" />
             <Text style={styles.statValue}>{car.likes || 0}</Text>
             <Text style={styles.statLabel}>Likes</Text>
           </View>
@@ -532,42 +532,42 @@ export default function GarageDetailScreen() {
           <View style={styles.specsGrid}>
             {car.engine && (
               <View style={styles.specItem}>
-                <Ionicons name="speedometer" size={20} color="#E1FF00" />
+                <Ionicons name="speedometer" size={20} color="#E15500" />
                 <Text style={styles.specLabel}>Engine</Text>
                 <Text style={styles.specValue}>{car.engine}</Text>
               </View>
             )}
             {car.horsepower && (
               <View style={styles.specItem}>
-                <Ionicons name="flash" size={20} color="#E1FF00" />
+                <Ionicons name="flash" size={20} color="#E15500" />
                 <Text style={styles.specLabel}>Horsepower</Text>
                 <Text style={styles.specValue}>{car.horsepower} HP</Text>
               </View>
             )}
             {car.torque && (
               <View style={styles.specItem}>
-                <Ionicons name="sync" size={20} color="#E1FF00" />
+                <Ionicons name="sync" size={20} color="#E15500" />
                 <Text style={styles.specLabel}>Torque</Text>
                 <Text style={styles.specValue}>{car.torque} lb-ft</Text>
               </View>
             )}
             {car.transmission && (
               <View style={styles.specItem}>
-                <Ionicons name="cog" size={20} color="#E1FF00" />
+                <Ionicons name="cog" size={20} color="#E15500" />
                 <Text style={styles.specLabel}>Transmission</Text>
                 <Text style={styles.specValue}>{car.transmission}</Text>
               </View>
             )}
             {car.drivetrain && (
               <View style={styles.specItem}>
-                <Ionicons name="git-branch" size={20} color="#E1FF00" />
+                <Ionicons name="git-branch" size={20} color="#E15500" />
                 <Text style={styles.specLabel}>Drivetrain</Text>
                 <Text style={styles.specValue}>{car.drivetrain}</Text>
               </View>
             )}
             {car.color && (
               <View style={styles.specItem}>
-                <Ionicons name="color-palette" size={20} color="#E1FF00" />
+                <Ionicons name="color-palette" size={20} color="#E15500" />
                 <Text style={styles.specLabel}>Color</Text>
                 <Text style={styles.specValue}>{car.color}</Text>
               </View>
@@ -638,7 +638,7 @@ export default function GarageDetailScreen() {
         {comments.length > 0 && (
           <View style={styles.commentsSection}>
             <View style={styles.commentsSectionHeader}>
-              <Ionicons name="chatbubbles" size={20} color="#E1FF00" />
+              <Ionicons name="chatbubbles" size={20} color="#E15500" />
               <Text style={styles.commentsSectionTitle}>Comments ({comments.length})</Text>
             </View>
             {comments.map((comment) => (
@@ -663,7 +663,7 @@ export default function GarageDetailScreen() {
                         setEditCommentText(comment.text);
                       }}
                     >
-                      <Ionicons name="pencil-outline" size={16} color="#E1FF00" />
+                      <Ionicons name="pencil-outline" size={16} color="#E15500" />
                     </TouchableOpacity>
                   )}
                   {user && (user.id === comment.userId || isAdmin) && (
@@ -867,7 +867,7 @@ export default function GarageDetailScreen() {
                   />
                   {loadingPhoto === index && (
                     <View style={styles.photoLoadingOverlay}>
-                      <ActivityIndicator size="large" color="#E1FF00" />
+                      <ActivityIndicator size="large" color="#E15500" />
                       <Text style={{ color: '#fff', marginTop: 8, fontSize: 12 }}>Loading HD...</Text>
                     </View>
                   )}
@@ -995,7 +995,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   backBtn: {
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -1101,7 +1101,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#222',
   },
   carYear: {
-    color: '#E1FF00',
+    color: '#E15500',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -1235,7 +1235,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   modNotesTitle: {
-    color: '#E1FF00',
+    color: '#E15500',
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
@@ -1270,7 +1270,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     padding: 16,
     borderRadius: 12,
     gap: 8,
@@ -1363,7 +1363,7 @@ const styles = StyleSheet.create({
     left: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(225, 255, 0, 0.9)',
+    backgroundColor: 'rgba(225, 85, 0, 0.9)',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 24,
@@ -1399,7 +1399,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     ...Platform.select({
       ios: {
-        shadowColor: '#E1FF00',
+        shadowColor: '#E15500',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.3,
         shadowRadius: 16,
@@ -1439,7 +1439,7 @@ const styles = StyleSheet.create({
   carouselDot: {
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
   },
   photoLoadingOverlay: {
     position: 'absolute',
@@ -1502,7 +1502,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -1570,7 +1570,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 6,
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
   },
   editSaveText: {
     color: '#fff',
@@ -1625,7 +1625,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   commentSubmitBtn: {
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

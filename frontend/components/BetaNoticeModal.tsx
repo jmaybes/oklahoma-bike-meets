@@ -118,7 +118,7 @@ export default function BetaNoticeModal() {
     >
       <View style={[styles.overlay, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
         <LinearGradient
-          colors={['#E1FF00', '#E91E63', '#9C27B0', '#E1FF00']}
+          colors={['#E15500', '#E91E63', '#9C27B0', '#E15500']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.gradientBorder}
@@ -133,7 +133,7 @@ export default function BetaNoticeModal() {
             >
               {/* Header */}
               <LinearGradient
-                colors={['#E1FF00', '#E91E63']}
+                colors={['#E15500', '#E91E63']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.header}
@@ -163,7 +163,7 @@ export default function BetaNoticeModal() {
                 {/* Feedback Box */}
                 <View style={styles.featureBox}>
                   <View style={styles.featureHeader}>
-                    <Ionicons name="chatbubble-ellipses" size={18} color="#E1FF00" />
+                    <Ionicons name="chatbubble-ellipses" size={18} color="#E15500" />
                     <Text style={styles.featureTitle}>Your Feedback Matters!</Text>
                   </View>
                   <Text style={styles.featureText}>
@@ -247,9 +247,9 @@ export default function BetaNoticeModal() {
                   style={styles.scrollHintGradient}
                 >
                   <Animated.View style={[styles.scrollHintContent, bounceStyle]}>
-                    <Ionicons name="chevron-down" size={20} color="#E1FF00" />
+                    <Ionicons name="chevron-down" size={20} color="#E15500" />
                     <Text style={styles.scrollHintText}>Scroll down for more</Text>
-                    <Ionicons name="chevron-down" size={20} color="#E1FF00" />
+                    <Ionicons name="chevron-down" size={20} color="#E15500" />
                   </Animated.View>
                 </LinearGradient>
               </Animated.View>
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   highlight: {
-    color: '#E1FF00',
+    color: '#E15500',
     fontWeight: '600',
   },
   featureBox: {
@@ -433,8 +433,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   checkboxChecked: {
-    backgroundColor: '#E1FF00',
-    borderColor: '#E1FF00',
+    backgroundColor: '#E15500',
+    borderColor: '#E15500',
   },
   checkboxLabel: {
     flex: 1,
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   continueButton: {
-    backgroundColor: '#E1FF00',
+    backgroundColor: '#E15500',
     borderRadius: 12,
     padding: 14,
     flexDirection: 'row',
@@ -490,13 +490,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(225, 255, 0, 0.15)',
+    backgroundColor: 'rgba(225, 85, 0, 0.15)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
   scrollHintText: {
-    color: '#E1FF00',
+    color: '#E15500',
     fontSize: 13,
     fontWeight: '600',
   },

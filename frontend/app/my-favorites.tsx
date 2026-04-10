@@ -96,7 +96,7 @@ export default function MyFavoritesScreen() {
       <View style={styles.eventContent}>
         <View style={styles.eventHeader}>
           <View style={styles.typeBadge}>
-            <Ionicons name="car-sport" size={14} color="#E1FF00" />
+            <Ionicons name="car-sport" size={14} color="#E15500" />
             <Text style={styles.typeText}>{item.eventType}</Text>
           </View>
           <TouchableOpacity
@@ -123,7 +123,7 @@ export default function MyFavoritesScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#E91E63', '#E1FF00']}
+        colors={['#E91E63', '#E15500']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   typeText: {
-    color: '#E1FF00',
+    color: '#E15500',
     fontSize: 12,
     fontWeight: '600',
   },

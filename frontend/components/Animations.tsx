@@ -282,7 +282,7 @@ interface GlowProps {
 export const GlowView: React.FC<GlowProps> = ({
   children,
   style,
-  color = '#E1FF00',
+  color = '#E15500',
 }) => {
   const opacity = useSharedValue(0.5);
 
@@ -395,7 +395,7 @@ interface AnimatedProgressProps {
 
 export const AnimatedProgress: React.FC<AnimatedProgressProps> = ({
   progress,
-  color = '#E1FF00',
+  color = '#E15500',
   height = 4,
   style,
 }) => {
@@ -431,7 +431,7 @@ interface RippleProps {
 export const RippleButton: React.FC<RippleProps> = ({
   children,
   onPress,
-  color = 'rgba(225, 255, 0, 0.3)',
+  color = 'rgba(225, 85, 0, 0.3)',
   style,
 }) => {
   const rippleScale = useSharedValue(0);
