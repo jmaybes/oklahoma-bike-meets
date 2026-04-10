@@ -820,45 +820,11 @@ export default function GarageDetailScreen() {
               index,
             })}
             renderItem={({ item: photo, index }) => {
-              const inputRange = [
-                (index - 1) * (CARD_WIDTH + 16),
-                index * (CARD_WIDTH + 16),
-                (index + 1) * (CARD_WIDTH + 16),
-              ];
-
-              const scale = scrollX.interpolate({
-                inputRange,
-                outputRange: [0.85, 1, 0.85],
-                extrapolate: 'clamp',
-              });
-
-              const opacity = scrollX.interpolate({
-                inputRange,
-                outputRange: [0.5, 1, 0.5],
-                extrapolate: 'clamp',
-              });
-
-              const rotateY = scrollX.interpolate({
-                inputRange,
-                outputRange: ['8deg', '0deg', '-8deg'],
-                extrapolate: 'clamp',
-              });
-
               const photoUri = getDisplayPhoto(index);
 
               return (
-                <Animated.View
-                  style={[
-                    styles.carouselCard,
-                    {
-                      transform: [
-                        { scale },
-                        { perspective: 1000 },
-                        { rotateY },
-                      ],
-                      opacity,
-                    },
-                  ]}
+                <View
+                  style={styles.carouselCard}
                 >
                   <Image
                     source={{ uri: photoUri }}
@@ -880,45 +846,25 @@ export default function GarageDetailScreen() {
                       {index + 1} / {car.photos?.length}
                     </Text>
                   </LinearGradient>
-                </Animated.View>
+                </View>
               );
             }}
           />
 
           {/* Dot indicators */}
           <View style={styles.carouselDots}>
-            {(car.photos || []).map((_, index) => {
-              const dotInputRange = [
-                (index - 1) * (CARD_WIDTH + 16),
-                index * (CARD_WIDTH + 16),
-                (index + 1) * (CARD_WIDTH + 16),
-              ];
-
-              const dotWidth = scrollX.interpolate({
-                inputRange: dotInputRange,
-                outputRange: [8, 24, 8],
-                extrapolate: 'clamp',
-              });
-
-              const dotOpacity = scrollX.interpolate({
-                inputRange: dotInputRange,
-                outputRange: [0.4, 1, 0.4],
-                extrapolate: 'clamp',
-              });
-
-              return (
-                <Animated.View
-                  key={index}
-                  style={[
-                    styles.carouselDot,
-                    {
-                      width: dotWidth,
-                      opacity: dotOpacity,
-                    },
-                  ]}
-                />
-              );
-            })}
+            {(car.photos || []).map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.carouselDot,
+                  {
+                    width: index === carouselIndex ? 24 : 8,
+                    opacity: index === carouselIndex ? 1 : 0.4,
+                  },
+                ]}
+              />
+            ))}
           </View>
         </View>
       </Modal>
