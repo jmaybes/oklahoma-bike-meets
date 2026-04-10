@@ -182,6 +182,23 @@ interface UserCar {
   ownerNickname: string;
 }
 
+interface CarSummary {
+  id: string;
+  userId: string;
+  year: string;
+  make: string;
+  model: string;
+  trim: string;
+  color: string;
+  thumbnailUrl: string;
+  isActive: boolean;
+  photoCount: number;
+  likes: number;
+  views: number;
+  ownerName: string;
+  ownerNickname: string;
+}
+
 interface GarageComment {
   id: string;
   carId: string;
@@ -205,6 +222,10 @@ export default function UserGarageScreen() {
     RockSalt_400Regular,
   });
 
+  // Multi-car state
+  const [allCars, setAllCars] = useState<CarSummary[]>([]);
+  const [showCarSelectionModal, setShowCarSelectionModal] = useState(false);
+
   // Comments state
   const [comments, setComments] = useState<GarageComment[]>([]);
   const [showCommentModal, setShowCommentModal] = useState(false);
@@ -213,21 +234,54 @@ export default function UserGarageScreen() {
 
   useEffect(() => {
     if (userId) {
-      fetchUserGarage();
+      fetchAllCarsAndDecide();
     }
   }, [userId]);
 
-  const fetchUserGarage = async () => {
+  const fetchAllCarsAndDecide = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${API_URL}/api/user-cars/user/${userId}?include_photos=true`);
+      // First, fetch all cars for this user
+      const allRes = await axios.get(`${API_URL}/api/user-cars/user/${userId}/all`);
+      const cars: CarSummary[] = allRes.data || [];
+      setAllCars(cars);
+
+      if (cars.length === 0) {
+        setError('no_garage');
+        setLoading(false);
+        return;
+      }
+
+      if (cars.length > 1) {
+        // Multiple cars — show the selection modal
+        setShowCarSelectionModal(true);
+        setLoading(false);
+        return;
+      }
+
+      // Single car — load it directly
+      await loadCarById(cars[0].id);
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        setError('no_garage');
+      } else {
+        setError('error');
+      }
+      setLoading(false);
+    }
+  };
+
+  const loadCarById = async (carId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get(`${API_URL}/api/user-cars/${carId}`);
       if (response.data) {
         setCar(response.data);
         if (user?.id && response.data.likedBy) {
           setIsLiked(response.data.likedBy.includes(user.id));
         }
-        // Fetch comments for this car
         fetchComments(response.data.id);
       } else {
         setError('no_garage');
@@ -241,6 +295,11 @@ export default function UserGarageScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCarSelection = (carId: string) => {
+    setShowCarSelectionModal(false);
+    loadCarById(carId);
   };
 
   const fetchComments = async (carId: string) => {
@@ -329,7 +388,7 @@ export default function UserGarageScreen() {
     return `data:image/jpeg;base64,${photo}`;
   };
 
-  if (loading) {
+  if (loading && !showCarSelectionModal) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.header}>
@@ -342,6 +401,113 @@ export default function UserGarageScreen() {
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#E15500" />
         </View>
+      </View>
+    );
+  }
+
+  // Show car selection modal when multiple cars exist and none selected yet
+  if (showCarSelectionModal && !car) {
+    const ownerName = allCars.length > 0 ? (allCars[0].ownerNickname || allCars[0].ownerName) : 'User';
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{ownerName}'s Garage</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        <Modal
+          visible={showCarSelectionModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => router.back()}
+          statusBarTranslucent
+        >
+          <View style={carPickerStyles.overlay}>
+            <View style={carPickerStyles.container}>
+              {/* Header */}
+              <View style={carPickerStyles.header}>
+                <View style={carPickerStyles.headerIcon}>
+                  <Ionicons name="car-sport" size={28} color="#E15500" />
+                </View>
+                <Text style={carPickerStyles.title}>Choose a Ride</Text>
+                <Text style={carPickerStyles.subtitle}>
+                  {ownerName} has {allCars.length} cars in their garage
+                </Text>
+              </View>
+
+              {/* Car Cards */}
+              <View style={carPickerStyles.carList}>
+                {allCars.map((c) => (
+                  <TouchableOpacity
+                    key={c.id}
+                    style={carPickerStyles.carCard}
+                    onPress={() => handleCarSelection(c.id)}
+                    activeOpacity={0.7}
+                  >
+                    {/* Thumbnail */}
+                    <View style={carPickerStyles.thumbContainer}>
+                      {c.thumbnailUrl ? (
+                        <Image
+                          source={{ uri: c.thumbnailUrl }}
+                          style={carPickerStyles.thumb}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View style={carPickerStyles.thumbPlaceholder}>
+                          <Ionicons name="car-sport" size={32} color="#555" />
+                        </View>
+                      )}
+                      {c.isActive && (
+                        <View style={carPickerStyles.activeBadge}>
+                          <Ionicons name="star" size={10} color="#fff" />
+                          <Text style={carPickerStyles.activeBadgeText}>Active</Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Car Info */}
+                    <View style={carPickerStyles.carInfo}>
+                      <Text style={carPickerStyles.carName} numberOfLines={1}>
+                        {c.year} {c.make} {c.model}
+                      </Text>
+                      {c.trim ? (
+                        <Text style={carPickerStyles.carTrim} numberOfLines={1}>{c.trim}</Text>
+                      ) : null}
+                      <View style={carPickerStyles.carStats}>
+                        <View style={carPickerStyles.statChip}>
+                          <Ionicons name="images-outline" size={12} color="#999" />
+                          <Text style={carPickerStyles.statChipText}>{c.photoCount}</Text>
+                        </View>
+                        <View style={carPickerStyles.statChip}>
+                          <Ionicons name="heart-outline" size={12} color="#999" />
+                          <Text style={carPickerStyles.statChipText}>{c.likes}</Text>
+                        </View>
+                        <View style={carPickerStyles.statChip}>
+                          <Ionicons name="eye-outline" size={12} color="#999" />
+                          <Text style={carPickerStyles.statChipText}>{c.views}</Text>
+                        </View>
+                      </View>
+                    </View>
+
+                    {/* Arrow */}
+                    <Ionicons name="chevron-forward" size={22} color="#555" />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Close button */}
+              <TouchableOpacity
+                style={carPickerStyles.closeBtn}
+                onPress={() => router.back()}
+              >
+                <Text style={carPickerStyles.closeBtnText}>Go Back</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     );
   }
@@ -409,16 +575,26 @@ export default function UserGarageScreen() {
             {car.ownerNickname || car.ownerName}'s Garage
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={() => router.push(`/messages/${car.userId}`)}
-          style={styles.messageBtn}
-        >
-          <Image 
-            source={require('../../assets/images/message-icon.png')} 
-            style={{ width: 22, height: 22 }} 
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          {allCars.length > 1 && (
+            <TouchableOpacity
+              onPress={() => setShowCarSelectionModal(true)}
+              style={styles.switchCarBtn}
+            >
+              <Ionicons name="swap-horizontal" size={20} color="#fff" />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            onPress={() => router.push(`/messages/${car.userId}`)}
+            style={styles.messageBtn}
+          >
+            <Image 
+              source={require('../../assets/images/message-icon.png')} 
+              style={{ width: 22, height: 22 }} 
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -614,6 +790,94 @@ export default function UserGarageScreen() {
         <View style={{ height: 40 }} />
       </ScrollView>
 
+      {/* Car Selection Modal (for switching between cars) */}
+      {allCars.length > 1 && (
+        <Modal
+          visible={showCarSelectionModal && !!car}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowCarSelectionModal(false)}
+          statusBarTranslucent
+        >
+          <View style={carPickerStyles.overlay}>
+            <View style={carPickerStyles.container}>
+              <View style={carPickerStyles.header}>
+                <View style={carPickerStyles.headerIcon}>
+                  <Ionicons name="car-sport" size={28} color="#E15500" />
+                </View>
+                <Text style={carPickerStyles.title}>Switch Ride</Text>
+                <Text style={carPickerStyles.subtitle}>
+                  Viewing {car?.ownerNickname || car?.ownerName}'s garage
+                </Text>
+              </View>
+
+              <View style={carPickerStyles.carList}>
+                {allCars.map((c) => {
+                  const isCurrentCar = car?.id === c.id;
+                  return (
+                    <TouchableOpacity
+                      key={c.id}
+                      style={[carPickerStyles.carCard, isCurrentCar && carPickerStyles.carCardSelected]}
+                      onPress={() => {
+                        if (!isCurrentCar) handleCarSelection(c.id);
+                        else setShowCarSelectionModal(false);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <View style={carPickerStyles.thumbContainer}>
+                        {c.thumbnailUrl ? (
+                          <Image
+                            source={{ uri: c.thumbnailUrl }}
+                            style={carPickerStyles.thumb}
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View style={carPickerStyles.thumbPlaceholder}>
+                            <Ionicons name="car-sport" size={32} color="#555" />
+                          </View>
+                        )}
+                        {isCurrentCar && (
+                          <View style={[carPickerStyles.activeBadge, { backgroundColor: '#E15500' }]}>
+                            <Ionicons name="eye" size={10} color="#fff" />
+                            <Text style={carPickerStyles.activeBadgeText}>Viewing</Text>
+                          </View>
+                        )}
+                      </View>
+                      <View style={carPickerStyles.carInfo}>
+                        <Text style={carPickerStyles.carName} numberOfLines={1}>
+                          {c.year} {c.make} {c.model}
+                        </Text>
+                        {c.trim ? (
+                          <Text style={carPickerStyles.carTrim} numberOfLines={1}>{c.trim}</Text>
+                        ) : null}
+                        <View style={carPickerStyles.carStats}>
+                          <View style={carPickerStyles.statChip}>
+                            <Ionicons name="images-outline" size={12} color="#999" />
+                            <Text style={carPickerStyles.statChipText}>{c.photoCount}</Text>
+                          </View>
+                          <View style={carPickerStyles.statChip}>
+                            <Ionicons name="heart-outline" size={12} color="#999" />
+                            <Text style={carPickerStyles.statChipText}>{c.likes}</Text>
+                          </View>
+                        </View>
+                      </View>
+                      <Ionicons name={isCurrentCar ? 'checkmark-circle' : 'chevron-forward'} size={22} color={isCurrentCar ? '#E15500' : '#555'} />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <TouchableOpacity
+                style={carPickerStyles.closeBtn}
+                onPress={() => setShowCarSelectionModal(false)}
+              >
+                <Text style={carPickerStyles.closeBtnText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
+
       {/* Comment Modal */}
       <Modal
         visible={showCommentModal}
@@ -705,6 +969,14 @@ const styles = StyleSheet.create({
     textShadow: '3px 2px 3px #000000c2',
   },
   messageBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  switchCarBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -1000,5 +1272,141 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '700',
+  },
+});
+
+
+const carPickerStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  container: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  headerIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(225, 85, 0, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+  },
+  carList: {
+    gap: 12,
+  },
+  carCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#252525',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  carCardSelected: {
+    borderColor: '#E15500',
+    backgroundColor: 'rgba(225, 85, 0, 0.08)',
+  },
+  thumbContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#111',
+  },
+  thumb: {
+    width: '100%',
+    height: '100%',
+  },
+  thumbPlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#222',
+  },
+  activeBadge: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    backgroundColor: '#4CAF50',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    gap: 3,
+  },
+  activeBadgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  carInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  carName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  carTrim: {
+    fontSize: 13,
+    color: '#E15500',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  carStats: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 6,
+  },
+  statChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statChipText: {
+    fontSize: 12,
+    color: '#999',
+  },
+  closeBtn: {
+    marginTop: 16,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: '#333',
+  },
+  closeBtnText: {
+    color: '#ccc',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

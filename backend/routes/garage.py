@@ -301,11 +301,6 @@ async def set_active_car(car_id: str):
     await db.user_cars.update_one({"_id": ObjectId(car_id)}, {"$set": {"isActive": True}})
     
     return {"message": "Car set as active", "carId": car_id}
-    owner = await db.users.find_one({"_id": ObjectId(user_id)}, {"name": 1, "nickname": 1}) if ObjectId.is_valid(user_id) else None
-    car_data["ownerName"] = owner.get("name", "Unknown") if owner else "Unknown"
-    car_data["ownerNickname"] = owner.get("nickname", "") if owner else ""
-    
-    return car_data
 
 
 @router.get("/user-cars/public")

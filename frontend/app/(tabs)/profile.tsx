@@ -762,6 +762,7 @@ export default function ProfileScreen() {
               <ActivityIndicator size="large" color="#E15500" />
             </View>
           ) : userCar ? (
+            <>
             <View style={styles.carCard}>
               {userCar.photos && userCar.photos.length > 0 ? (
                 <View style={styles.carMainPhotoContainer}>
@@ -908,6 +909,7 @@ export default function ProfileScreen() {
                 )}
               </View>
             )}
+            </>
           ) : (
             <TouchableOpacity style={styles.addCarCard} onPress={() => setShowCarModal(true)}>
               <View style={styles.nudgeBadge}>

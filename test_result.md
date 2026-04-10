@@ -549,7 +549,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Garage Comments System Testing - COMPLETED"
+    - "Multi-Car Garage Backend Testing - COMPLETED"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -1516,6 +1516,19 @@ agent_communication:
           comment: "GARAGE/THUMBNAIL BACKEND ENDPOINTS TESTING COMPLETED SUCCESSFULLY! ✅ ALL 5 REQUESTED TESTS PASSED (100% success rate): (1) Admin login working perfectly (admin@okcarevents.com/admin123) with proper authentication and isAdmin=true flag. (2) GET /api/user-cars/public returns 50 public cars with proper thumbnail HTTP URLs in photos array - URLs are in format https://event-hub-okc-1.preview.emergentagent.com/api/user-cars/{car_id}/thumbnail.jpg (NOT base64 strings). (3) GET /api/user-cars/{car_id}/thumbnail.jpg returns valid JPEG images with Content-Type: image/jpeg and proper size range (tested 258.7KB and 186.5KB, both within 30KB-300KB range). (4) GET /api/user-cars/user/69bb035fb5d3f5e057f073ca returns admin's McLaren 570s MSO-X 2018 car data with thumbnail URL properly included. (5) GET /api/user-cars/user/69bb035fb5d3f5e057f073ca?include_photos=true works correctly with include_photos parameter returning photos in response. ✅ IMAGE QUALITY IMPROVEMENTS VERIFIED: Thumbnails are now served as HTTP URLs instead of base64 data, improving performance and user experience. ✅ ERROR HANDLING: Proper 404 responses with {'detail': 'No thumbnail'} for cars without thumbnails. The thumbnail system is working perfectly after image quality improvements."
 
 
+  - task: "Multi-Car Garage Endpoints (2nd Car Feature)"
+    implemented: true
+    working: "NA"
+    file: "routes/garage.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented multi-car support: GET /api/user-cars/user/{user_id}/all returns all cars for a user (max 2), POST /api/user-cars/create-or-update-metadata creates up to 2 cars per user with isActive flags, PUT /api/user-cars/{car_id}/set-active toggles active car. Frontend public garage page now shows car selection modal when user has multiple cars."
+
+
 
 agent_communication:
     - agent: "main"
@@ -1537,3 +1550,19 @@ agent_communication:
 
     - agent: "testing"
       message: "GARAGE/THUMBNAIL BACKEND ENDPOINTS TESTING COMPLETED SUCCESSFULLY! ✅ ALL 5 REQUESTED TESTS PASSED (100% success rate): (1) Admin login working perfectly (admin@okcarevents.com/admin123) with proper authentication and isAdmin=true flag. (2) GET /api/user-cars/public returns 50 public cars with proper thumbnail HTTP URLs in photos array - URLs are in format https://event-hub-okc-1.preview.emergentagent.com/api/user-cars/{car_id}/thumbnail.jpg (NOT base64 strings). (3) GET /api/user-cars/{car_id}/thumbnail.jpg returns valid JPEG images with Content-Type: image/jpeg and proper size range (tested 258.7KB and 186.5KB, both within 30KB-300KB range). (4) GET /api/user-cars/user/69bb035fb5d3f5e057f073ca returns admin's McLaren 570s MSO-X 2018 car data with thumbnail URL properly included. (5) GET /api/user-cars/user/69bb035fb5d3f5e057f073ca?include_photos=true works correctly with include_photos parameter returning photos in response. ✅ IMAGE QUALITY IMPROVEMENTS VERIFIED: Thumbnails are now served as HTTP URLs instead of base64 data, improving performance and user experience. ✅ ERROR HANDLING: Proper 404 responses with {'detail': 'No thumbnail'} for cars without thumbnails. The thumbnail system is working perfectly after image quality improvements."
+
+
+  - task: "Multi-Car Garage Backend Testing"
+    implemented: true
+    working: true
+    file: "routes/garage.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "MULTI-CAR GARAGE BACKEND TESTING COMPLETED SUCCESSFULLY! ✅ ALL 9 TEST SCENARIOS PASSED (100% success rate): (1) Admin authentication working (admin@okcarevents.com/admin123) with isAdmin=true verification, (2) GET /api/user-cars/user/{user_id}/all returns proper array with thumbnailUrl and isActive fields for each car, (3) POST /api/user-cars/create-or-update-metadata successfully creates second car with isActive=false (first car remains active), (4) Verified user now has exactly 2 cars with proper active/inactive status distribution, (5) PUT /api/user-cars/{car_id}/set-active successfully toggles new car as active and deactivates previous car, (6) Verified active car switch - Toyota Supra becomes active while original McLaren becomes inactive, (7) Car limit enforcement working perfectly - POST request for 3rd car correctly returns 400 error with 'Maximum of 2 cars allowed per user' message, (8) DELETE /api/user-cars/{car_id} successfully removes test car with proper user authorization, (9) Restoration of original car as active working correctly. ✅ COMPREHENSIVE WORKFLOW: Complete multi-car garage functionality tested end-to-end including car creation, active status management, limit enforcement, and cleanup. ✅ FIELD VALIDATION: All required fields (thumbnailUrl, isActive, car metadata) properly included in API responses. ✅ BUSINESS LOGIC: Only one car can be active at a time, maximum 2 cars per user enforced, proper user authorization for car operations. The multi-car garage backend is production-ready and fully functional as specified in the review request."
+
+    - agent: "testing"
+      message: "Multi-Car Garage Backend Testing completed successfully with 100% pass rate (9/9 tests). All endpoints working correctly: GET /api/user-cars/user/{user_id}/all (returns array with thumbnailUrl/isActive fields), POST /api/user-cars/create-or-update-metadata (creates cars with proper active status), PUT /api/user-cars/{car_id}/set-active (toggles active car), DELETE /api/user-cars/{car_id} (removes cars with authorization). Car limit enforcement working (max 2 cars per user). Admin authentication confirmed (admin@okcarevents.com/admin123). All business logic functioning as expected - only one active car at a time, proper user authorization, complete CRUD operations. The multi-car garage backend is ready for production use."
