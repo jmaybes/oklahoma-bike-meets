@@ -86,10 +86,27 @@ export default function GoogleCallbackScreen() {
 
   const processGoogleAuth = async () => {
     try {
-      // Get session_id from URL params or hash
+      // New flow: Google data comes directly as params from login/register
+      if (params.isNewUser === 'true' && params.email) {
+        const gData: GoogleData = {
+          email: params.email as string,
+          name: (params.name as string) || 'Google User',
+          picture: (params.picture as string) || '',
+          googleId: (params.googleId as string) || '',
+        };
+        setGoogleData(gData);
+        const suggestedNickname = gData.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '')
+          .slice(0, 15);
+        setNickname(suggestedNickname);
+        setLoading(false);
+        return;
+      }
+
+      // Legacy flow: session_id from Emergent (backward compatibility)
       let sessionId = params.session_id as string;
       
-      // Also check URL hash for web
       if (!sessionId && typeof window !== 'undefined') {
         const hash = window.location.hash;
         const match = hash.match(/session_id=([^&]+)/);
@@ -99,12 +116,11 @@ export default function GoogleCallbackScreen() {
       }
 
       if (!sessionId) {
-        Alert.alert('Error', 'No session ID found');
+        Alert.alert('Error', 'Authentication data not found');
         router.replace('/auth/login');
         return;
       }
 
-      // Exchange session_id for user data
       const response = await axios.post(`${API_URL}/api/auth/google/session`, {
         session_id: sessionId,
       });
@@ -112,13 +128,10 @@ export default function GoogleCallbackScreen() {
       const { isNewUser, user, googleData: gData } = response.data;
 
       if (!isNewUser && user) {
-        // Existing user - log them in directly
         await login(user);
         router.replace('/(tabs)/profile');
       } else {
-        // New user - need to set username
         setGoogleData(gData);
-        // Suggest a username based on their name
         const suggestedNickname = gData.name
           .toLowerCase()
           .replace(/[^a-z0-9]/g, '')

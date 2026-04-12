@@ -19,11 +19,18 @@ import { router } from 'expo-router';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import * as ExpoLinking from 'expo-linking';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuth } from '../../contexts/AuthContext';
 
 import { API_URL } from '../../utils/api';
+
+WebBrowser.maybeCompleteAuthSession();
+
+// Google OAuth Client IDs - Replace with your own from Google Cloud Console
+const GOOGLE_WEB_CLIENT_ID = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_IOS_CLIENT_ID = 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com';
 
 // Keys for secure storage
 const REMEMBER_ME_KEY = 'rememberMe';
@@ -43,9 +50,28 @@ export default function LoginScreen() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
 
+  // Google Auth setup
+  const [googleRequest, googleResponse, googlePromptAsync] = Google.useAuthRequest({
+    webClientId: GOOGLE_WEB_CLIENT_ID,
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
+  });
+
   useEffect(() => {
     loadSavedCredentials();
   }, []);
+
+  // Handle Google Auth response
+  useEffect(() => {
+    if (googleResponse?.type === 'success') {
+      const { id_token } = googleResponse.params;
+      if (id_token) {
+        handleGoogleToken(id_token);
+      }
+    } else if (googleResponse?.type === 'error') {
+      setGoogleLoading(false);
+      Alert.alert('Error', 'Google sign-in failed');
+    }
+  }, [googleResponse]);
 
   const loadSavedCredentials = async () => {
     try {
@@ -140,35 +166,43 @@ export default function LoginScreen() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
-      const currentUrl = Platform.OS === 'web' 
-        ? window.location.origin 
-        : ExpoLinking.createURL('');
-      
-      const callbackUrl = Platform.OS === 'web'
-        ? `${currentUrl}/auth/google-callback`
-        : ExpoLinking.createURL('auth/google-callback');
-      
-      const authServiceUrl = process.env.EXPO_PUBLIC_AUTH_SERVICE_URL || 'https://demobackend.emergentagent.com';
-      const authUrl = `${authServiceUrl}/auth/v1/env/oauth/google?callback_url=${encodeURIComponent(callbackUrl)}`;
-      
-      if (Platform.OS === 'web') {
-        window.location.href = authUrl;
-      } else {
-        const result = await WebBrowser.openAuthSessionAsync(authUrl, callbackUrl);
-        
-        if (result.type === 'success' && result.url) {
-          const url = new URL(result.url);
-          const sessionId = url.searchParams.get('session_id') || 
-                           url.hash.match(/session_id=([^&]+)/)?.[1];
-          
-          if (sessionId) {
-            router.push(`/auth/google-callback?session_id=${sessionId}`);
-          }
-        }
-      }
+      await googlePromptAsync();
     } catch (error) {
       console.error('Google sign-in error:', error);
       Alert.alert('Error', 'Failed to initiate Google sign-in');
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleToken = async (idToken: string) => {
+    try {
+      // Send the Google ID token directly to our backend for verification
+      const response = await axios.post(`${API_URL}/api/auth/google/verify-token`, {
+        id_token: idToken,
+      });
+
+      const { isNewUser, user, googleData } = response.data;
+
+      if (isNewUser) {
+        // New user — redirect to complete registration with a username
+        router.push({
+          pathname: '/auth/google-callback',
+          params: {
+            email: googleData.email,
+            name: googleData.name,
+            picture: googleData.picture || '',
+            googleId: googleData.googleId,
+            isNewUser: 'true',
+          },
+        });
+      } else {
+        // Existing user — log them in directly
+        await login(user);
+        router.replace('/(tabs)/home');
+      }
+    } catch (error: any) {
+      console.error('Google token verification error:', error);
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to sign in with Google');
     } finally {
       setGoogleLoading(false);
     }

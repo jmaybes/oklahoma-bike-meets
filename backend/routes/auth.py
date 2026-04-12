@@ -48,9 +48,67 @@ async def login_user(credentials: UserLogin):
 
 # ==================== Google OAuth ====================
 
+@router.post("/auth/google/verify-token")
+async def google_verify_token(data: dict):
+    """Verify Google ID token directly with Google's API (no Emergent dependency)."""
+    try:
+        id_token = data.get("id_token")
+        if not id_token:
+            raise HTTPException(status_code=400, detail="Missing id_token")
+
+        # Verify the token with Google's tokeninfo endpoint
+        async with httpx.AsyncClient() as http_client:
+            response = await http_client.get(
+                f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}",
+                timeout=10.0
+            )
+
+            if response.status_code != 200:
+                raise HTTPException(status_code=401, detail="Invalid Google token")
+
+            google_data = response.json()
+
+            # Extract user info from verified token
+            email = google_data.get("email", "").lower().strip()
+            name = google_data.get("name", "")
+            picture = google_data.get("picture", "")
+            google_id = google_data.get("sub", "")
+
+            if not email:
+                raise HTTPException(status_code=400, detail="No email in Google token")
+
+            existing_user = await db.users.find_one({"email": email})
+
+            if existing_user:
+                return {
+                    "isNewUser": False,
+                    "user": user_helper(existing_user),
+                    "googleData": {
+                        "email": email,
+                        "name": name,
+                        "picture": picture,
+                        "googleId": google_id
+                    }
+                }
+            else:
+                return {
+                    "isNewUser": True,
+                    "user": None,
+                    "googleData": {
+                        "email": email,
+                        "name": name,
+                        "picture": picture,
+                        "googleId": google_id
+                    }
+                }
+
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=500, detail=f"Failed to verify Google token: {str(e)}")
+
+
 @router.post("/auth/google/session")
 async def google_auth_session(request: GoogleAuthRequest):
-    """Exchange Google OAuth session_id for user data from Emergent Auth."""
+    """Legacy: Exchange Google OAuth session_id for user data (kept for backward compatibility)."""
     try:
         async with httpx.AsyncClient() as http_client:
             response = await http_client.get(
