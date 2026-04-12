@@ -542,38 +542,40 @@ export default function ProfileScreen() {
       }
 
       // Step 2: Figure out which photos need to be uploaded
-      // Existing photos (already in DB) start with "data:image" and are from the server
-      // We need to determine which photos are NEW vs already stored
-      const existingPhotoCount = carResponse.data?.photoCount || 0;
-      
-      // If the user hasn't changed photos (same count, no new ones), skip upload
+      // HTTP URLs = already stored on server (don't re-upload)
+      // Base64/data URIs = new photos from camera/gallery (need upload)
       const newPhotos = carPhotos.filter(p => p && p.length > 0);
+      const isHttpUrl = (p: string) => p.startsWith('http://') || p.startsWith('https://');
+      const actualNewPhotos = newPhotos.filter(p => !isHttpUrl(p));
+      const existingServerPhotos = newPhotos.filter(p => isHttpUrl(p));
       
-      if (newPhotos.length > 0) {
-        // Clear existing photos first, then upload all current ones fresh
-        // This ensures the photo order matches what the user sees
+      if (actualNewPhotos.length > 0) {
+        // We have genuinely new photos to upload
         setPhotoUploadProgress('Preparing photos...');
         
-        // Delete all existing photos by setting to empty array, then upload fresh
-        try {
-          await axios.put(`${API_URL}/api/user-cars/${savedCarId}`, {
-            photos: [],
-            mainPhotoIndex: 0,
-          });
-        } catch (clearErr) {
-          console.log('Note: Could not clear old photos, continuing with upload');
+        if (existingServerPhotos.length === 0) {
+          // ALL photos are new — clear existing and upload fresh
+          try {
+            await axios.put(`${API_URL}/api/user-cars/${savedCarId}`, {
+              photos: [],
+              mainPhotoIndex: 0,
+            });
+          } catch (clearErr) {
+            console.log('Note: Could not clear old photos, continuing with upload');
+          }
         }
+        // If there are existing server photos, DON'T clear — just append new ones
 
-        // Step 3: Upload each photo individually (chunked - bypasses proxy limits)
+        // Step 3: Upload each NEW photo individually (chunked - bypasses proxy limits)
         let uploadedCount = 0;
         let failedCount = 0;
-        for (let i = 0; i < newPhotos.length; i++) {
-          setPhotoUploadProgress(`Uploading photo ${i + 1} of ${newPhotos.length}...`);
+        for (let i = 0; i < actualNewPhotos.length; i++) {
+          setPhotoUploadProgress(`Uploading photo ${i + 1} of ${actualNewPhotos.length}...`);
           setPhotoUploadCount(i + 1);
           try {
             await axios.post(
               `${API_URL}/api/user-cars/${savedCarId}/photos/upload?user_id=${user?.id}`,
-              { photo: newPhotos[i] },
+              { photo: actualNewPhotos[i] },
               { timeout: 30000 }
             );
             uploadedCount++;
@@ -601,7 +603,7 @@ export default function ProfileScreen() {
         } else if (failedCount > 0) {
           Alert.alert(
             'Partially Saved',
-            `Car saved! ${uploadedCount} of ${newPhotos.length} photos uploaded successfully. ${failedCount} photo(s) were too large and skipped.`
+            `Car saved! ${uploadedCount} of ${actualNewPhotos.length} photos uploaded successfully. ${failedCount} photo(s) were too large and skipped.`
           );
         }
       }
