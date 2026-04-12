@@ -292,7 +292,7 @@ export default function ChatScreen() {
       setSending(true);
       try {
         const response = await axios.post(`${API_URL}/api/messages`, {
-          senderId: user.id, receiverId: userId, content,
+          senderId: user.id, recipientId: userId, content,
         });
         setMessages(prev => [...prev, response.data]);
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
