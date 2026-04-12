@@ -176,7 +176,7 @@ export default function ChatScreen() {
     if (wsRef.current?.readyState === WebSocket.OPEN && user?.id && userId) {
       const tempId = `temp-${Date.now()}`;
       wsRef.current.send(JSON.stringify({
-        type: 'new_message', recipientId: userId, content, tempId,
+        type: 'message', recipientId: userId, content, tempId,
       }));
       setMessages(prev => [...prev, {
         id: tempId, senderId: user.id, receiverId: userId,
