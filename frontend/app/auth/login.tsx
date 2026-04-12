@@ -29,8 +29,8 @@ import { API_URL } from '../../utils/api';
 WebBrowser.maybeCompleteAuthSession();
 
 // Google OAuth Client IDs - Replace with your own from Google Cloud Console
-const GOOGLE_WEB_CLIENT_ID = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
-const GOOGLE_IOS_CLIENT_ID = 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_WEB_CLIENT_ID = '211008012524-l8k1999l1llvlfsqp0rm8jshg2ad96ev.apps.googleusercontent.com';
+const GOOGLE_IOS_CLIENT_ID = '211008012524-tq7bfhgk3bn9oaobtc4ls23srmaa577d.apps.googleusercontent.com';
 
 // Keys for secure storage
 const REMEMBER_ME_KEY = 'rememberMe';
