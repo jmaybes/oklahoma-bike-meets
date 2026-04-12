@@ -72,7 +72,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
     
     try {
       const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId: 'your-project-id', // This will be auto-configured by Expo
+        projectId: 'a936daac-9d2d-4795-aba0-e6e7554f9395',
       });
       token = tokenData.data;
     } catch (error) {
