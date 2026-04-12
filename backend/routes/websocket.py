@@ -55,9 +55,19 @@ class ConnectionManager:
 ws_manager = ConnectionManager()
 
 
-@router.websocket("/ws/messages/{user_id}")
-async def websocket_messages(websocket: WebSocket, user_id: str):
-    """WebSocket endpoint for real-time message updates"""
+@router.get("/ws/debug")
+async def ws_debug():
+    """Debug endpoint to verify WebSocket router is mounted and reachable"""
+    return {
+        "status": "ok",
+        "websocket_paths": ["/ws/messages/{user_id}", "/messages/{user_id}"],
+        "online_users": ws_manager.get_online_users(),
+        "message": "WebSocket router is mounted correctly"
+    }
+
+
+async def _handle_websocket(websocket: WebSocket, user_id: str):
+    """Core WebSocket handler for real-time message updates"""
     await ws_manager.connect(websocket, user_id)
     try:
         while True:
@@ -141,3 +151,19 @@ async def websocket_messages(websocket: WebSocket, user_id: str):
     except Exception as e:
         logger.error(f"WebSocket error for {user_id}: {e}")
         ws_manager.disconnect(user_id)
+
+
+# Register at BOTH paths to handle Nginx proxy_pass with or without trailing slash
+# When Nginx has: proxy_pass http://127.0.0.1:8001/  (trailing slash strips /ws/ prefix)
+# When Nginx has: proxy_pass http://127.0.0.1:8001   (no trailing slash preserves path)
+
+@router.websocket("/ws/messages/{user_id}")
+async def websocket_messages(websocket: WebSocket, user_id: str):
+    """WebSocket endpoint - full path (when Nginx preserves /ws/ prefix)"""
+    await _handle_websocket(websocket, user_id)
+
+
+@router.websocket("/messages/{user_id}")
+async def websocket_messages_alt(websocket: WebSocket, user_id: str):
+    """WebSocket endpoint - stripped path (when Nginx strips /ws/ prefix)"""
+    await _handle_websocket(websocket, user_id)
