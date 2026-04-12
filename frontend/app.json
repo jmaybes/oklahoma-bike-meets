@@ -32,7 +32,7 @@
       }
     },
     "android": {
-      "package": "com.velocityvisualcrew.okccarmeets",
+      "package": "com.velocityvisualcrew.okcarmeets",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
