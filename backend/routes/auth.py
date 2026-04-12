@@ -21,11 +21,13 @@ EMERGENT_AUTH_URL = os.environ.get("EMERGENT_AUTH_URL", "https://demobackend.eme
 
 @router.post("/auth/register")
 async def register_user(user: UserCreate):
-    existing_user = await db.users.find_one({"email": user.email})
+    normalized_email = user.email.strip().lower()
+    existing_user = await db.users.find_one({"email": normalized_email})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
     user_dict = user.dict()
+    user_dict["email"] = normalized_email
     user_dict["createdAt"] = datetime.utcnow().isoformat()
     user_dict["authProvider"] = "email"
 
@@ -36,7 +38,8 @@ async def register_user(user: UserCreate):
 
 @router.post("/auth/login")
 async def login_user(credentials: UserLogin):
-    user = await db.users.find_one({"email": credentials.email})
+    normalized_email = credentials.email.strip().lower()
+    user = await db.users.find_one({"email": normalized_email})
     if not user or user.get("password") != credentials.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
