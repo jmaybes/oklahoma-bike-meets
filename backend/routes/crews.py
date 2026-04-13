@@ -52,6 +52,7 @@ async def create_crew(data: dict, authorization: str = Header(...)):
     crew = {
         "name": name,
         "creatorId": user_id,
+        "coLeaders": [],  # Co-leaders can invite and kick regular members
         "members": [user_id],  # Creator is automatically a member
         "createdAt": datetime.utcnow().isoformat(),
         "updatedAt": datetime.utcnow().isoformat(),
@@ -77,6 +78,7 @@ async def get_crew(crew_id: str):
         raise HTTPException(status_code=404, detail="Crew not found")
 
     # Fetch member details
+    co_leaders = crew.get("coLeaders", [])
     members = []
     for member_id in crew.get("members", []):
         try:
@@ -93,6 +95,8 @@ async def get_crew(crew_id: str):
                     "nickname": user.get("nickname", ""),
                     "carCount": car_count,
                     "isCreator": member_id == crew["creatorId"],
+                    "isCoLeader": member_id in co_leaders,
+                    "role": "Creator" if member_id == crew["creatorId"] else ("Co-Leader" if member_id in co_leaders else "Member"),
                 })
         except Exception:
             continue
@@ -101,6 +105,7 @@ async def get_crew(crew_id: str):
         "id": str(crew["_id"]),
         "name": crew["name"],
         "creatorId": crew["creatorId"],
+        "coLeaders": co_leaders,
         "members": members,
         "memberCount": len(members),
         "createdAt": crew.get("createdAt"),
@@ -218,9 +223,10 @@ async def invite_to_crew(crew_id: str, target_user_id: str, authorization: str =
     if not crew:
         raise HTTPException(status_code=404, detail="Crew not found")
 
-    # Only crew creator or members can invite
-    if user_id not in crew.get("members", []):
-        raise HTTPException(status_code=403, detail="Only crew members can send invites")
+    # Only crew creator or co-leaders can invite
+    co_leaders = crew.get("coLeaders", [])
+    if user_id != crew["creatorId"] and user_id not in co_leaders:
+        raise HTTPException(status_code=403, detail="Only the crew creator or co-leaders can send invites")
 
     # Check target user exists
     try:
@@ -408,7 +414,7 @@ async def decline_invite(invite_id: str, authorization: str = Header(...)):
 
 @router.delete("/{crew_id}/members/{member_id}")
 async def remove_member(crew_id: str, member_id: str, authorization: str = Header(...)):
-    """Remove a member from crew (creator only) or leave crew (self)"""
+    """Remove a member from crew (creator/co-leader) or leave crew (self)"""
     user_id = verify_token(authorization)
 
     try:
@@ -419,25 +425,122 @@ async def remove_member(crew_id: str, member_id: str, authorization: str = Heade
     if not crew:
         raise HTTPException(status_code=404, detail="Crew not found")
 
+    co_leaders = crew.get("coLeaders", [])
+
     # Creator can't leave their own crew (must delete it)
     if member_id == crew["creatorId"] and user_id == member_id:
         raise HTTPException(status_code=400, detail="Crew creator cannot leave. Delete the crew instead.")
 
-    # Only creator can kick others, or user can leave themselves
-    if user_id != crew["creatorId"] and user_id != member_id:
-        raise HTTPException(status_code=403, detail="Only the crew creator can remove members")
+    # Co-leaders can't be kicked by other co-leaders, only by creator
+    if member_id in co_leaders and user_id != crew["creatorId"] and user_id != member_id:
+        raise HTTPException(status_code=403, detail="Only the crew creator can remove co-leaders")
+
+    # Creator and co-leaders can kick regular members, or user can leave themselves
+    is_creator = user_id == crew["creatorId"]
+    is_co_leader = user_id in co_leaders
+    is_self = user_id == member_id
+    if not is_creator and not is_co_leader and not is_self:
+        raise HTTPException(status_code=403, detail="Only the crew creator or co-leaders can remove members")
 
     if member_id not in crew.get("members", []):
         raise HTTPException(status_code=400, detail="User is not a member of this crew")
 
-    await db.crews.update_one(
-        {"_id": ObjectId(crew_id)},
-        {
-            "$pull": {"members": member_id},
-            "$set": {"updatedAt": datetime.utcnow().isoformat()}
-        }
-    )
+    # Also remove from co-leaders if they were one
+    update_ops = {
+        "$pull": {"members": member_id, "coLeaders": member_id},
+        "$set": {"updatedAt": datetime.utcnow().isoformat()}
+    }
+    await db.crews.update_one({"_id": ObjectId(crew_id)}, update_ops)
 
     action = "left" if user_id == member_id else "was removed from"
     logger.info(f"User {member_id} {action} crew '{crew['name']}'")
     return {"message": f"Successfully {'left' if user_id == member_id else 'removed member from'} the crew"}
+
+
+# ==================== CO-LEADER MANAGEMENT ====================
+
+@router.put("/{crew_id}/co-leader/{member_id}")
+async def promote_to_co_leader(crew_id: str, member_id: str, authorization: str = Header(...)):
+    """Promote a member to co-leader (creator only)"""
+    user_id = verify_token(authorization)
+
+    try:
+        crew = await db.crews.find_one({"_id": ObjectId(crew_id)})
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid crew ID")
+
+    if not crew:
+        raise HTTPException(status_code=404, detail="Crew not found")
+    if crew["creatorId"] != user_id:
+        raise HTTPException(status_code=403, detail="Only the crew creator can promote co-leaders")
+    if member_id == crew["creatorId"]:
+        raise HTTPException(status_code=400, detail="The creator is already the leader")
+    if member_id not in crew.get("members", []):
+        raise HTTPException(status_code=400, detail="User is not a member of this crew")
+    if member_id in crew.get("coLeaders", []):
+        raise HTTPException(status_code=400, detail="User is already a co-leader")
+
+    await db.crews.update_one(
+        {"_id": ObjectId(crew_id)},
+        {
+            "$addToSet": {"coLeaders": member_id},
+            "$set": {"updatedAt": datetime.utcnow().isoformat()}
+        }
+    )
+
+    # Notify the promoted member
+    member = await db.users.find_one({"_id": ObjectId(member_id)})
+    if member:
+        notification = {
+            "userId": member_id,
+            "type": "crew_promoted",
+            "title": "You're a Co-Leader! ⭐",
+            "message": f"You've been promoted to co-leader of '{crew['name']}'",
+            "crewId": crew_id,
+            "isRead": False,
+            "createdAt": datetime.utcnow().isoformat(),
+        }
+        await db.notifications.insert_one(notification)
+
+        if member.get("pushToken") and member.get("notificationsEnabled", True):
+            try:
+                await send_push_notification(
+                    member["pushToken"],
+                    "You're a Co-Leader! ⭐",
+                    f"You've been promoted to co-leader of '{crew['name']}'",
+                    {"type": "crew_promoted", "crewId": crew_id}
+                )
+            except Exception as e:
+                logger.error(f"Failed to send co-leader promotion push: {e}")
+
+    logger.info(f"User {member_id} promoted to co-leader of crew '{crew['name']}'")
+    return {"message": "Member promoted to co-leader"}
+
+
+@router.delete("/{crew_id}/co-leader/{member_id}")
+async def demote_co_leader(crew_id: str, member_id: str, authorization: str = Header(...)):
+    """Remove co-leader status from a member (creator only)"""
+    user_id = verify_token(authorization)
+
+    try:
+        crew = await db.crews.find_one({"_id": ObjectId(crew_id)})
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid crew ID")
+
+    if not crew:
+        raise HTTPException(status_code=404, detail="Crew not found")
+    if crew["creatorId"] != user_id:
+        raise HTTPException(status_code=403, detail="Only the crew creator can demote co-leaders")
+    if member_id not in crew.get("coLeaders", []):
+        raise HTTPException(status_code=400, detail="User is not a co-leader")
+
+    await db.crews.update_one(
+        {"_id": ObjectId(crew_id)},
+        {
+            "$pull": {"coLeaders": member_id},
+            "$set": {"updatedAt": datetime.utcnow().isoformat()}
+        }
+    )
+
+    logger.info(f"User {member_id} demoted from co-leader of crew '{crew['name']}'")
+    return {"message": "Co-leader status removed"}

@@ -23,6 +23,8 @@ interface CrewMember {
   nickname: string;
   carCount: number;
   isCreator: boolean;
+  isCoLeader: boolean;
+  role: 'Creator' | 'Co-Leader' | 'Member';
 }
 
 interface CrewDetail {
@@ -132,41 +134,104 @@ export default function CrewDetailScreen() {
     ]);
   };
 
-  const renderMember = ({ item }: { item: CrewMember }) => (
-    <TouchableOpacity
-      style={styles.memberCard}
-      onPress={() => router.push(`/user-garage/${item.id}`)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.memberAvatar}>
-        <Ionicons
-          name={item.isCreator ? 'star' : 'person'}
-          size={20}
-          color={item.isCreator ? '#FFE707' : '#888'}
-        />
-      </View>
-      <View style={styles.memberInfo}>
-        <Text style={styles.memberName}>
-          {item.nickname || item.name}
-          {item.isCreator && (
-            <Text style={styles.creatorBadge}>  CREATOR</Text>
-          )}
-        </Text>
-        <Text style={styles.memberCars}>
-          {item.carCount} car{item.carCount !== 1 ? 's' : ''} in garage
-        </Text>
-      </View>
-      {isCreator && !item.isCreator && (
-        <TouchableOpacity
-          onPress={() => handleKickMember(item.id, item.nickname || item.name)}
-          style={styles.kickBtn}
-        >
-          <Ionicons name="remove-circle-outline" size={22} color="#E91E63" />
-        </TouchableOpacity>
-      )}
-      <Ionicons name="chevron-forward" size={18} color="#444" />
-    </TouchableOpacity>
-  );
+  const handlePromote = (memberId: string, memberName: string) => {
+    Alert.alert('Promote to Co-Leader', `Make ${memberName} a co-leader? They'll be able to invite and kick members.`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Promote',
+        onPress: async () => {
+          try {
+            await axios.put(
+              `${API_URL}/api/crews/${crewId}/co-leader/${memberId}`,
+              {},
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            Alert.alert('Promoted! ⭐', `${memberName} is now a co-leader.`);
+            fetchCrew();
+          } catch (err: any) {
+            Alert.alert('Error', err.response?.data?.detail || 'Failed to promote member');
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleDemote = (memberId: string, memberName: string) => {
+    Alert.alert('Remove Co-Leader', `Remove co-leader status from ${memberName}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Demote',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await axios.delete(
+              `${API_URL}/api/crews/${crewId}/co-leader/${memberId}`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            fetchCrew();
+          } catch (err: any) {
+            Alert.alert('Error', err.response?.data?.detail || 'Failed to demote member');
+          }
+        },
+      },
+    ]);
+  };
+
+  const renderMember = ({ item }: { item: CrewMember }) => {
+    const displayName = item.nickname || item.name;
+    const roleColor = item.isCreator ? '#FFE707' : (item.isCoLeader ? '#4FC3F7' : '#888');
+    const roleIcon = item.isCreator ? 'star' : (item.isCoLeader ? 'shield-checkmark' : 'person');
+
+    return (
+      <TouchableOpacity
+        style={styles.memberCard}
+        onPress={() => router.push(`/user-garage/${item.id}`)}
+        activeOpacity={0.7}
+      >
+        <View style={[styles.memberAvatar, { borderColor: roleColor, borderWidth: item.isCreator || item.isCoLeader ? 2 : 0 }]}>
+          <Ionicons name={roleIcon} size={20} color={roleColor} />
+        </View>
+        <View style={styles.memberInfo}>
+          <Text style={styles.memberName}>
+            {displayName}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+            <Text style={[styles.roleTag, { color: roleColor }]}>{item.role}</Text>
+            <Text style={styles.memberCars}>
+              • {item.carCount} car{item.carCount !== 1 ? 's' : ''}
+            </Text>
+          </View>
+        </View>
+        {/* Creator actions for non-creator members */}
+        {isCreator && !item.isCreator && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+            {item.isCoLeader ? (
+              <TouchableOpacity
+                onPress={() => handleDemote(item.id, displayName)}
+                style={styles.roleActionBtn}
+              >
+                <Ionicons name="shield-outline" size={18} color="#666" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => handlePromote(item.id, displayName)}
+                style={styles.roleActionBtn}
+              >
+                <Ionicons name="shield-checkmark" size={18} color="#4FC3F7" />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              onPress={() => handleKickMember(item.id, displayName)}
+              style={styles.kickBtn}
+            >
+              <Ionicons name="remove-circle-outline" size={20} color="#E91E63" />
+            </TouchableOpacity>
+          </View>
+        )}
+        <Ionicons name="chevron-forward" size={18} color="#444" />
+      </TouchableOpacity>
+    );
+  };
 
   if (loading) {
     return (
@@ -383,15 +448,18 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
-  creatorBadge: {
-    color: '#FFE707',
-    fontSize: 10,
-    fontWeight: '800',
-  },
   memberCars: {
     color: '#666',
     fontSize: 12,
-    marginTop: 2,
+  },
+  roleTag: {
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  roleActionBtn: {
+    padding: 6,
   },
   kickBtn: {
     padding: 8,
