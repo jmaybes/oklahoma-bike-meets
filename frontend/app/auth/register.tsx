@@ -28,6 +28,7 @@ WebBrowser.maybeCompleteAuthSession();
 // Google OAuth Client IDs - Replace with your own from Google Cloud Console
 const GOOGLE_WEB_CLIENT_ID = '211008012524-l8k1999l1llvlfsqp0rm8jshg2ad96ev.apps.googleusercontent.com';
 const GOOGLE_IOS_CLIENT_ID = '211008012524-tq7bfhgk3bn9oaobtc4ls23srmaa577d.apps.googleusercontent.com';
+const GOOGLE_ANDROID_CLIENT_ID = '211008012524-3pfd27u1p30br8v03mt9colo9kqlpt9o.apps.googleusercontent.com';
 
 export default function RegisterScreen() {
   const { login } = useAuth();
@@ -46,6 +47,7 @@ export default function RegisterScreen() {
   const [googleRequest, googleResponse, googlePromptAsync] = Google.useAuthRequest({
     webClientId: GOOGLE_WEB_CLIENT_ID,
     iosClientId: GOOGLE_IOS_CLIENT_ID,
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
   });
 
   // Handle Google Auth response
