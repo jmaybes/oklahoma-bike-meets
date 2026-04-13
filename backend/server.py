@@ -23,6 +23,7 @@ from routes.feedback import router as feedback_router
 from routes.route_planning import router as route_planning_router
 from routes.admin import router as admin_router
 from routes.feeds import router as feeds_router
+from routes.crews import router as crews_router
 from routes.websocket import router as websocket_router
 
 # Configure logging
@@ -66,6 +67,7 @@ api_router.include_router(feedback_router)
 api_router.include_router(route_planning_router)
 api_router.include_router(admin_router)
 api_router.include_router(feeds_router)
+api_router.include_router(crews_router)
 
 # Include the API router in the main app
 app.include_router(api_router)

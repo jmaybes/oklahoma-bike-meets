@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, Query
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson import ObjectId
 import re
 import os
 import httpx
+import jwt
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,6 +16,7 @@ from helpers import user_helper
 router = APIRouter()
 
 EMERGENT_AUTH_URL = os.environ.get("EMERGENT_AUTH_URL", "https://demobackend.emergentagent.com")
+JWT_SECRET = os.environ.get("JWT_SECRET", "your-secret-key-change-in-production")
 
 
 # ==================== Auth ====================
@@ -43,7 +45,21 @@ async def login_user(credentials: UserLogin):
     if not user or user.get("password") != credentials.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    return user_helper(user)
+    # Generate JWT token
+    user_data = user_helper(user)
+    token_payload = {
+        "user_id": user_data["id"],
+        "userId": user_data["id"],  # Support both field names
+        "email": user_data["email"],
+        "exp": datetime.utcnow() + timedelta(days=30)  # Token expires in 30 days
+    }
+    
+    token = jwt.encode(token_payload, JWT_SECRET, algorithm="HS256")
+    
+    return {
+        "user": user_data,
+        "token": token
+    }
 
 
 # ==================== Google OAuth ====================

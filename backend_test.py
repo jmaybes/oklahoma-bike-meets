@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Multi-Car Garage Backend Testing Script
-Tests the multi-car garage functionality as specified in the review request.
+Comprehensive Backend API Testing for Oklahoma Car Events
+Testing Crews API endpoints as specified in review request
 """
 
 import requests
@@ -9,16 +9,17 @@ import json
 import sys
 from datetime import datetime
 
-# Configuration
-BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com"
-ADMIN_EMAIL = "admin@okcarevents.com"
-ADMIN_PASSWORD = "admin123"
-ADMIN_USER_ID = "69bb035fb5d3f5e057f073ca"
+# Backend URL from environment
+BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
 
-class MultiCarGarageTest:
+class CrewsAPITester:
     def __init__(self):
-        self.session = requests.Session()
         self.admin_token = None
+        self.admin_user_id = None
+        self.test_user_token = None
+        self.test_user_id = None
+        self.crew_id = None
+        self.invite_id = None
         self.test_results = []
         
     def log_test(self, test_name, success, details=""):
@@ -30,313 +31,393 @@ class MultiCarGarageTest:
         self.test_results.append({
             "test": test_name,
             "success": success,
-            "details": details,
-            "timestamp": datetime.now().isoformat()
+            "details": details
         })
         
-    def make_request(self, method, endpoint, **kwargs):
-        """Make HTTP request with error handling"""
-        url = f"{BACKEND_URL}/api{endpoint}"
-        try:
-            response = self.session.request(method, url, **kwargs)
-            return response
-        except Exception as e:
-            print(f"Request failed: {e}")
-            return None
-            
     def test_admin_login(self):
-        """Test 1: Login as admin to confirm auth works"""
-        print("\n=== Test 1: Admin Authentication ===")
-        
-        response = self.make_request("POST", "/auth/login", json={
-            "email": ADMIN_EMAIL,
-            "password": ADMIN_PASSWORD
-        })
-        
-        if response and response.status_code == 200:
-            data = response.json()
-            if data.get("isAdmin") == True:
-                self.admin_token = data.get("id")  # Using user ID as token
-                self.log_test("Admin Login", True, f"Admin user authenticated successfully. User ID: {self.admin_token}")
-                return True
-            else:
-                self.log_test("Admin Login", False, "User is not admin")
-                return False
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_test("Admin Login", False, f"Login failed: {error_msg}")
-            return False
+        """Test 1: Login as admin to get JWT token"""
+        try:
+            response = requests.post(f"{BACKEND_URL}/auth/login", json={
+                "email": "admin@okcarevents.com",
+                "password": "admin123"
+            })
             
-    def test_get_user_cars_all(self):
-        """Test 2: GET /api/user-cars/user/{user_id}/all - verify returns array with car(s)"""
-        print("\n=== Test 2: Get All User Cars ===")
-        
-        response = self.make_request("GET", f"/user-cars/user/{ADMIN_USER_ID}/all")
-        
-        if response and response.status_code == 200:
-            cars = response.json()
-            if isinstance(cars, list):
-                car_count = len(cars)
-                self.log_test("Get All User Cars", True, f"Retrieved {car_count} cars")
+            if response.status_code == 200:
+                data = response.json()
+                self.admin_token = data.get("token")
+                self.admin_user_id = data.get("user", {}).get("id")
                 
-                # Verify each car has required fields
-                for i, car in enumerate(cars):
-                    has_thumbnail = "thumbnailUrl" in car
-                    has_active = "isActive" in car
-                    if has_thumbnail and has_active:
-                        self.log_test(f"Car {i+1} Fields Check", True, f"Car has thumbnailUrl and isActive fields")
-                    else:
-                        self.log_test(f"Car {i+1} Fields Check", False, f"Missing fields - thumbnailUrl: {has_thumbnail}, isActive: {has_active}")
-                
-                return cars
-            else:
-                self.log_test("Get All User Cars", False, "Response is not an array")
-                return []
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_test("Get All User Cars", False, f"Request failed: {error_msg}")
-            return []
-            
-    def test_create_second_car(self):
-        """Test 3: POST /api/user-cars/create-or-update-metadata - create a 2nd car"""
-        print("\n=== Test 3: Create Second Car ===")
-        
-        car_data = {
-            "userId": ADMIN_USER_ID,
-            "make": "Toyota",
-            "model": "Supra",
-            "year": "2023",
-            "color": "White",
-            "isPublic": True,
-            "description": "Test car"
-        }
-        
-        response = self.make_request("POST", "/user-cars/create-or-update-metadata", json=car_data)
-        
-        if response and response.status_code == 200:
-            car = response.json()
-            car_id = car.get("id")
-            is_active = car.get("isActive", True)
-            
-            if car_id:
-                self.log_test("Create Second Car", True, f"Created car with ID: {car_id}, isActive: {is_active}")
-                return car_id
-            else:
-                self.log_test("Create Second Car", False, "No car ID returned")
-                return None
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_test("Create Second Car", False, f"Request failed: {error_msg}")
-            return None
-            
-    def test_verify_two_cars(self):
-        """Test 4: GET /api/user-cars/user/{user_id}/all - should now return 2 cars"""
-        print("\n=== Test 4: Verify Two Cars ===")
-        
-        response = self.make_request("GET", f"/user-cars/user/{ADMIN_USER_ID}/all")
-        
-        if response and response.status_code == 200:
-            cars = response.json()
-            car_count = len(cars)
-            
-            if car_count == 2:
-                self.log_test("Verify Two Cars", True, f"User now has {car_count} cars")
-                
-                # Check active status
-                active_cars = [car for car in cars if car.get("isActive", False)]
-                inactive_cars = [car for car in cars if not car.get("isActive", True)]
-                
-                self.log_test("Active Car Count", len(active_cars) == 1, f"Active cars: {len(active_cars)}, Inactive cars: {len(inactive_cars)}")
-                return cars
-            else:
-                self.log_test("Verify Two Cars", False, f"Expected 2 cars, got {car_count}")
-                return cars
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_test("Verify Two Cars", False, f"Request failed: {error_msg}")
-            return []
-            
-    def test_set_active_car(self, car_id):
-        """Test 5: PUT /api/user-cars/{car_id}/set-active - toggle the new car as active"""
-        print("\n=== Test 5: Set Active Car ===")
-        
-        response = self.make_request("PUT", f"/user-cars/{car_id}/set-active")
-        
-        if response and response.status_code == 200:
-            data = response.json()
-            self.log_test("Set Active Car", True, f"Car {car_id} set as active: {data.get('message')}")
-            return True
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_test("Set Active Car", False, f"Request failed: {error_msg}")
-            return False
-            
-    def test_verify_active_switch(self):
-        """Test 6: Verify first car is now inactive"""
-        print("\n=== Test 6: Verify Active Car Switch ===")
-        
-        response = self.make_request("GET", f"/user-cars/user/{ADMIN_USER_ID}/all")
-        
-        if response and response.status_code == 200:
-            cars = response.json()
-            active_cars = [car for car in cars if car.get("isActive", False)]
-            
-            if len(active_cars) == 1:
-                active_car = active_cars[0]
-                if active_car.get("make") == "Toyota" and active_car.get("model") == "Supra":
-                    self.log_test("Verify Active Switch", True, "Toyota Supra is now the active car")
+                if self.admin_token and self.admin_user_id:
+                    self.log_test("Admin Login", True, f"Token obtained, User ID: {self.admin_user_id}")
                     return True
                 else:
-                    self.log_test("Verify Active Switch", False, f"Wrong car is active: {active_car.get('make')} {active_car.get('model')}")
+                    self.log_test("Admin Login", False, "Token or user ID missing from response")
                     return False
             else:
-                self.log_test("Verify Active Switch", False, f"Expected 1 active car, got {len(active_cars)}")
+                self.log_test("Admin Login", False, f"Status: {response.status_code}, Response: {response.text}")
                 return False
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_test("Verify Active Switch", False, f"Request failed: {error_msg}")
+                
+        except Exception as e:
+            self.log_test("Admin Login", False, f"Exception: {str(e)}")
             return False
+    
+    def test_create_crew(self):
+        """Test 2: Create a crew"""
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.post(f"{BACKEND_URL}/crews", 
+                json={"name": "OKC Street Kings"}, 
+                headers=headers
+            )
             
-    def test_create_third_car_limit(self):
-        """Test 7: Try to create a 3rd car - should get 400 error"""
-        print("\n=== Test 7: Test Car Limit (3rd Car) ===")
-        
-        car_data = {
-            "userId": ADMIN_USER_ID,
-            "make": "Ford",
-            "model": "Mustang",
-            "year": "2024",
-            "color": "Red",
-            "isPublic": True,
-            "description": "Third test car - should fail"
-        }
-        
-        response = self.make_request("POST", "/user-cars/create-or-update-metadata", json=car_data)
-        
-        if response and response.status_code == 400:
-            error_msg = response.json().get("detail", "")
-            if "Maximum of 2 cars" in error_msg:
-                self.log_test("Test Car Limit", True, f"Correctly rejected 3rd car: {error_msg}")
+            if response.status_code in [200, 201]:
+                data = response.json()
+                crew = data.get("crew", {})
+                self.crew_id = crew.get("id") or crew.get("_id")
+                
+                if self.crew_id:
+                    self.log_test("Create Crew", True, f"Crew created with ID: {self.crew_id}")
+                    return True
+                else:
+                    self.log_test("Create Crew", False, "Crew ID missing from response")
+                    return False
+            else:
+                self.log_test("Create Crew", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Create Crew", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_create_second_crew_should_fail(self):
+        """Test 3: Try creating a second crew (should FAIL - limit 1 per user)"""
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.post(f"{BACKEND_URL}/crews", 
+                json={"name": "Second Crew"}, 
+                headers=headers
+            )
+            
+            if response.status_code == 400:
+                response_text = response.text.lower()
+                if "only create one crew" in response_text or "can only create one" in response_text:
+                    self.log_test("Create Second Crew (Should Fail)", True, "Correctly rejected with 400 - one crew limit enforced")
+                    return True
+                else:
+                    self.log_test("Create Second Crew (Should Fail)", False, f"Wrong error message: {response.text}")
+                    return False
+            else:
+                self.log_test("Create Second Crew (Should Fail)", False, f"Expected 400 but got {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Create Second Crew (Should Fail)", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_get_crew_details(self):
+        """Test 4: Get crew details"""
+        try:
+            response = requests.get(f"{BACKEND_URL}/crews/{self.crew_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                members = data.get("members", [])
+                
+                if len(members) >= 1 and any(member.get("id") == self.admin_user_id for member in members):
+                    self.log_test("Get Crew Details", True, f"Crew has {len(members)} members including creator")
+                    return True
+                else:
+                    self.log_test("Get Crew Details", False, f"Creator not found in members list: {members}")
+                    return False
+            else:
+                self.log_test("Get Crew Details", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Get Crew Details", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_get_user_crews(self):
+        """Test 5: Get user's crews"""
+        try:
+            response = requests.get(f"{BACKEND_URL}/crews/user/{self.admin_user_id}")
+            
+            if response.status_code == 200:
+                crews = response.json()
+                
+                if isinstance(crews, list) and len(crews) == 1:
+                    crew = crews[0]
+                    if crew.get("name") == "OKC Street Kings":
+                        self.log_test("Get User Crews", True, f"Found 1 crew: {crew.get('name')}")
+                        return True
+                    else:
+                        self.log_test("Get User Crews", False, f"Wrong crew name: {crew.get('name')}")
+                        return False
+                else:
+                    self.log_test("Get User Crews", False, f"Expected 1 crew but got {len(crews) if isinstance(crews, list) else 'non-list'}")
+                    return False
+            else:
+                self.log_test("Get User Crews", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Get User Crews", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_register_second_user(self):
+        """Test 6: Register a second user for invite testing"""
+        try:
+            # Use timestamp to make email unique
+            import time
+            timestamp = str(int(time.time()))
+            unique_email = f"testcrewuser{timestamp}@test.com"
+            unique_nickname = f"TestCrew{timestamp}"
+            
+            response = requests.post(f"{BACKEND_URL}/auth/register", json={
+                "name": "Test User",
+                "email": unique_email,
+                "password": "test123",
+                "nickname": unique_nickname
+            })
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                self.test_user_id = data.get("id")
+                
+                # Login to get token
+                login_response = requests.post(f"{BACKEND_URL}/auth/login", json={
+                    "email": unique_email,
+                    "password": "test123"
+                })
+                
+                if login_response.status_code == 200:
+                    login_data = login_response.json()
+                    self.test_user_token = login_data.get("token")
+                    self.test_user_id = login_data.get("user", {}).get("id")
+                    
+                    if self.test_user_id and self.test_user_token:
+                        self.log_test("Register Second User", True, f"User ID: {self.test_user_id}")
+                        return True
+                    else:
+                        self.log_test("Register Second User", False, "Missing user ID or token")
+                        return False
+                else:
+                    self.log_test("Register Second User", False, f"Login failed: {login_response.status_code}")
+                    return False
+            else:
+                self.log_test("Register Second User", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Register Second User", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_send_invite(self):
+        """Test 7: Send invite from admin to test user"""
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.post(f"{BACKEND_URL}/crews/{self.crew_id}/invite/{self.test_user_id}", 
+                headers=headers
+            )
+            
+            if response.status_code in [200, 201]:
+                self.log_test("Send Invite", True, "Invite sent successfully")
                 return True
             else:
-                self.log_test("Test Car Limit", False, f"Wrong error message: {error_msg}")
+                self.log_test("Send Invite", False, f"Status: {response.status_code}, Response: {response.text}")
                 return False
-        else:
-            status = response.status_code if response else "No response"
-            self.log_test("Test Car Limit", False, f"Expected 400 error, got {status}")
+                
+        except Exception as e:
+            self.log_test("Send Invite", False, f"Exception: {str(e)}")
             return False
+    
+    def test_get_pending_invites(self):
+        """Test 8: Get pending invites for test user"""
+        try:
+            response = requests.get(f"{BACKEND_URL}/crews/invites/pending/{self.test_user_id}")
             
-    def test_delete_test_car(self, car_id):
-        """Test 8: Clean up - DELETE /api/user-cars/{car_id}"""
-        print("\n=== Test 8: Delete Test Car ===")
-        
-        response = self.make_request("DELETE", f"/user-cars/{car_id}", params={"user_id": ADMIN_USER_ID})
-        
-        if response and response.status_code == 200:
-            data = response.json()
-            self.log_test("Delete Test Car", True, f"Car deleted: {data.get('message')}")
+            if response.status_code == 200:
+                invites = response.json()
+                
+                if isinstance(invites, list) and len(invites) == 1:
+                    invite = invites[0]
+                    self.invite_id = invite.get("id")
+                    
+                    if invite.get("crewName") == "OKC Street Kings":
+                        self.log_test("Get Pending Invites", True, f"Found 1 pending invite for crew: {invite.get('crewName')}")
+                        return True
+                    else:
+                        self.log_test("Get Pending Invites", False, f"Wrong crew name in invite: {invite.get('crewName')}")
+                        return False
+                else:
+                    self.log_test("Get Pending Invites", False, f"Expected 1 invite but got {len(invites) if isinstance(invites, list) else 'non-list'}")
+                    return False
+            else:
+                self.log_test("Get Pending Invites", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Get Pending Invites", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_accept_invite(self):
+        """Test 9: Accept invite using test user's token"""
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            response = requests.put(f"{BACKEND_URL}/crews/invites/{self.invite_id}/accept", 
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                self.log_test("Accept Invite", True, "Invite accepted successfully")
+                return True
+            else:
+                self.log_test("Accept Invite", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Accept Invite", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_verify_crew_has_two_members(self):
+        """Test 10: Verify crew now has 2 members"""
+        try:
+            response = requests.get(f"{BACKEND_URL}/crews/{self.crew_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                members = data.get("members", [])
+                member_count = data.get("memberCount", len(members))
+                
+                if member_count == 2:
+                    member_ids = [member.get("id") for member in members]
+                    if self.admin_user_id in member_ids and self.test_user_id in member_ids:
+                        self.log_test("Verify Crew Has Two Members", True, f"Crew has {member_count} members as expected")
+                        return True
+                    else:
+                        self.log_test("Verify Crew Has Two Members", False, f"Wrong member IDs: {member_ids}")
+                        return False
+                else:
+                    self.log_test("Verify Crew Has Two Members", False, f"Expected 2 members but got {member_count}")
+                    return False
+            else:
+                self.log_test("Verify Crew Has Two Members", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Verify Crew Has Two Members", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_leave_crew(self):
+        """Test 11: Leave crew as test user"""
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            response = requests.delete(f"{BACKEND_URL}/crews/{self.crew_id}/members/{self.test_user_id}", 
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                self.log_test("Leave Crew", True, "Successfully left crew")
+                return True
+            else:
+                self.log_test("Leave Crew", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Leave Crew", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_delete_crew(self):
+        """Test 12: Delete crew as admin"""
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.delete(f"{BACKEND_URL}/crews/{self.crew_id}", 
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                self.log_test("Delete Crew", True, "Crew deleted successfully")
+                return True
+            else:
+                self.log_test("Delete Crew", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Delete Crew", False, f"Exception: {str(e)}")
+            return False
+    
+    def cleanup_test_user(self):
+        """Test 13: Cleanup - note test user for manual cleanup"""
+        try:
+            # Note: In a real scenario, we would delete the test user
+            # For now, just log that cleanup is needed
+            self.log_test("Cleanup Test User", True, f"Test user {self.test_user_id} (testcrewuser@test.com) noted for cleanup")
             return True
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_test("Delete Test Car", False, f"Request failed: {error_msg}")
+        except Exception as e:
+            self.log_test("Cleanup Test User", False, f"Exception: {str(e)}")
             return False
-            
-    def test_restore_original_active(self, original_car_id):
-        """Test 9: Restore original car as active"""
-        print("\n=== Test 9: Restore Original Active Car ===")
-        
-        response = self.make_request("PUT", f"/user-cars/{original_car_id}/set-active")
-        
-        if response and response.status_code == 200:
-            data = response.json()
-            self.log_test("Restore Original Active", True, f"Original car restored as active: {data.get('message')}")
-            return True
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_test("Restore Original Active", False, f"Request failed: {error_msg}")
-            return False
-            
+    
     def run_all_tests(self):
-        """Run all multi-car garage tests"""
-        print("🚗 MULTI-CAR GARAGE BACKEND TESTING")
-        print("=" * 50)
+        """Run all Crews API tests in sequence"""
+        print("=" * 60)
+        print("CREWS API TESTING - Oklahoma Car Events Backend")
+        print("=" * 60)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Test started at: {datetime.now().isoformat()}")
+        print()
         
-        # Test 1: Admin login
-        if not self.test_admin_login():
-            print("\n❌ Cannot proceed without admin authentication")
-            return False
-            
-        # Test 2: Get initial cars
-        initial_cars = self.test_get_user_cars_all()
-        original_car_id = None
-        if initial_cars:
-            # Find the original active car
-            active_cars = [car for car in initial_cars if car.get("isActive", False)]
-            if active_cars:
-                original_car_id = active_cars[0].get("id")
-            elif initial_cars:
-                original_car_id = initial_cars[0].get("id")
+        # Run tests in sequence - each depends on previous ones
+        tests = [
+            self.test_admin_login,
+            self.test_create_crew,
+            self.test_create_second_crew_should_fail,
+            self.test_get_crew_details,
+            self.test_get_user_crews,
+            self.test_register_second_user,
+            self.test_send_invite,
+            self.test_get_pending_invites,
+            self.test_accept_invite,
+            self.test_verify_crew_has_two_members,
+            self.test_leave_crew,
+            self.test_delete_crew,
+            self.cleanup_test_user
+        ]
         
-        # Test 3: Create second car
-        new_car_id = self.test_create_second_car()
-        if not new_car_id:
-            print("\n❌ Cannot proceed without creating second car")
-            return False
-            
-        # Test 4: Verify two cars
-        self.test_verify_two_cars()
-        
-        # Test 5: Set new car as active
-        self.test_set_active_car(new_car_id)
-        
-        # Test 6: Verify active switch
-        self.test_verify_active_switch()
-        
-        # Test 7: Test car limit
-        self.test_create_third_car_limit()
-        
-        # Test 8: Clean up - delete test car
-        self.test_delete_test_car(new_car_id)
-        
-        # Test 9: Restore original car as active
-        if original_car_id:
-            self.test_restore_original_active(original_car_id)
-        else:
-            # Use the hardcoded car ID from review request
-            self.test_restore_original_active("69cb30e24ddc647117911a44")
+        for test in tests:
+            success = test()
+            if not success:
+                print(f"\n⚠️  Test failed: {test.__name__}")
+                print("Stopping test sequence due to failure.")
+                break
+            print()  # Add spacing between tests
         
         # Summary
-        self.print_summary()
-        return True
-        
-    def print_summary(self):
-        """Print test summary"""
-        print("\n" + "=" * 50)
-        print("🏁 TEST SUMMARY")
-        print("=" * 50)
+        print("=" * 60)
+        print("TEST SUMMARY")
+        print("=" * 60)
         
         passed = sum(1 for result in self.test_results if result["success"])
         total = len(self.test_results)
         
-        print(f"Total Tests: {total}")
-        print(f"Passed: {passed}")
-        print(f"Failed: {total - passed}")
+        print(f"Tests Passed: {passed}/{total}")
         print(f"Success Rate: {(passed/total)*100:.1f}%")
         
-        # Show failed tests
-        failed_tests = [result for result in self.test_results if not result["success"]]
-        if failed_tests:
-            print("\n❌ FAILED TESTS:")
-            for test in failed_tests:
-                print(f"  - {test['test']}: {test['details']}")
+        if passed == total:
+            print("\n🎉 ALL CREWS API TESTS PASSED!")
+            print("✅ Complete Crews API workflow verified successfully")
         else:
-            print("\n✅ ALL TESTS PASSED!")
-            
+            print(f"\n❌ {total - passed} test(s) failed")
+            print("Failed tests:")
+            for result in self.test_results:
+                if not result["success"]:
+                    print(f"  - {result['test']}: {result['details']}")
+        
+        print("=" * 60)
         return passed == total
 
 def main():
     """Main test execution"""
-    tester = MultiCarGarageTest()
+    tester = CrewsAPITester()
     success = tester.run_all_tests()
     
     # Exit with appropriate code

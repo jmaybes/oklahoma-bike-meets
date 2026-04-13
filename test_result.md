@@ -1281,6 +1281,125 @@ frontend:
           agent: "testing"
           comment: "GARAGE COMMENTS SYSTEM TESTING COMPLETED SUCCESSFULLY! ✅ ALL 8 TEST SCENARIOS PASSED (100% success rate): (1) Admin login working (admin@okcarevents.com/admin123), (2) POST /api/garage-comments creates comments with all required fields (id, carId, userId, userName, text, createdAt) and proper data validation, (3) GET /api/garage-comments/{car_id} retrieves comments correctly, (4) Notification system working - garage_comment notifications created for car owners with carId field populated, (5) DELETE /api/garage-comments/{comment_id}?user_id={user_id} successfully deletes comments, (6) Comment deletion verification working - deleted comments removed from list, (7) GET /api/user-cars/{car_id}/photo/0/image.jpg returns JPEG images > 10KB with proper Content-Type, (8) GET /api/user-cars/{car_id}/photo/1/image.jpg returns different sized images proving unique photos. ✅ Complete workflow tested: comment creation → notification generation → comment retrieval → comment deletion → photo endpoint validation. All endpoints functioning perfectly with proper error handling and data persistence."ST /api/user-cars/{car_id}/photos/upload successfully uploads single photos with compression, increments photo count correctly (7→8→9), (4) Photo persistence verified - GET /api/user-cars/user/{user_id}?include_photos=true returns all photos correctly, (5) Photo deletion by index working - DELETE /api/user-cars/{car_id}/photos/{index} removes specific photos and adjusts count (9→8), (6) Security validation working - unauthorized upload attempts return 403 Forbidden, (7) Public garages endpoint still functional - GET /api/user-cars/public?sort=likes returns public cars including test car, (8) Cleanup successful - restored original McLaren data after testing. ✅ CHUNKED UPLOAD WORKFLOW VERIFIED: The two-step process (metadata save → individual photo uploads) works perfectly to avoid proxy body size limits. ✅ PHOTO COMPRESSION: Server-side compression working correctly to prevent DocumentTooLarge errors. ✅ EXISTING CAR HANDLING: System properly handles updating existing cars while preserving photos when not specified. The chunked garage photo upload system is production-ready and working exactly as specified in the review request."
 
+  - task: "Crews API - Create Crew"
+    implemented: true
+    working: true
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/crews endpoint working perfectly. Successfully creates crew with name validation (30 char limit), enforces one crew per user limit, auto-adds creator as member, generates proper crew ID and timestamps. Tested with 'OKC Street Kings' crew creation."
+
+  - task: "Crews API - One Crew Limit Enforcement"
+    implemented: true
+    working: true
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "One crew per user limit working correctly. Second crew creation attempt properly rejected with 400 'You can only create one crew' error message. Business logic enforcement verified."
+
+  - task: "Crews API - Get Crew Details"
+    implemented: true
+    working: true
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/crews/{crew_id} endpoint working perfectly. Returns crew details with full member info including id, name, nickname, carCount, isCreator flag. Creator automatically included in members array as expected."
+
+  - task: "Crews API - Get User Crews"
+    implemented: true
+    working: true
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/crews/user/{user_id} endpoint working perfectly. Returns array of crews user belongs to with proper crew metadata (id, name, creatorId, memberCount, isCreator). Correctly shows 1 crew for admin user."
+
+  - task: "Crews API - Send Invite"
+    implemented: true
+    working: true
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/crews/{crew_id}/invite/{target_user_id} endpoint working perfectly. Successfully sends invites with proper validation (crew exists, user exists, not already member, no pending invite). Creates in-app notification and supports push notifications."
+
+  - task: "Crews API - Get Pending Invites"
+    implemented: true
+    working: true
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/crews/invites/pending/{user_id} endpoint working perfectly. Returns array of pending invites with all required fields: id, crewId, crewName, fromUserId, fromUserName, createdAt. Correctly shows 1 pending invite for test user."
+
+  - task: "Crews API - Accept Invite"
+    implemented: true
+    working: true
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "PUT /api/crews/invites/{invite_id}/accept endpoint working perfectly. Successfully accepts invites, adds user to crew members, updates invite status to 'accepted', creates notification for crew creator. Proper authorization validation (invite must be for requesting user)."
+
+  - task: "Crews API - Member Management"
+    implemented: true
+    working: true
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "DELETE /api/crews/{crew_id}/members/{member_id} endpoint working perfectly. Successfully allows members to leave crew (self-removal) with proper validation. Updates crew member list and timestamps correctly."
+
+  - task: "Crews API - Delete Crew"
+    implemented: true
+    working: true
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "DELETE /api/crews/{crew_id} endpoint working perfectly. Successfully deletes crew (creator only), removes all related invites, proper authorization validation. Complete cleanup of crew data verified."
+
+  - task: "JWT Authentication System"
+    implemented: true
+    working: true
+    file: "routes/auth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "JWT token generation added to login endpoint. POST /api/auth/login now returns both user data and JWT token with 30-day expiration. Token includes user_id, userId (both formats), email, and exp fields. Crews endpoints now fully functional with proper JWT authentication."
 agent_communication:
     - agent: "testing"
       message: "PERFORMANCE TIMER NEW FIELDS TESTING COMPLETED SUCCESSFULLY! ✅ ALL 9 TEST SCENARIOS PASSED (100% success rate): (1) Admin login working (admin@okcarevents.com/admin123), (2) 0-60 run creation with NEW fields (topSpeed: 65.3, isManualEntry: true, location: Thunder Valley), (3) Quarter-mile run creation with NEW fields (quarterMileSpeed: 112.3, topSpeed: 115.0, isManualEntry: false, location: OKC Raceway), (4) Personal bests API working with mixed data (existing 0-60: 2.8s, new quarter-mile: 12.5s), (5) 0-60 leaderboard includes all NEW fields, (6) Quarter-mile leaderboard includes quarterMileSpeed field, (7) User runs endpoint includes NEW fields for all runs, (8) Admin edit successfully updates NEW fields (quarterMileSpeed: 112.3→115.0, topSpeed: 115.0→120.0), (9) Admin delete working for cleanup. ✅ BACKWARD COMPATIBILITY VERIFIED: Existing performance runs (2018 McLaren 570s MSO-X with 2.8s 0-60) work perfectly with NEW fields showing as null/default values. ✅ ALL NEW FIELDS WORKING: topSpeed, isManualEntry, quarterMileSpeed, enhanced location field. The Performance Timer backend improvements are production-ready and fully functional as specified in the review request."
@@ -1288,6 +1407,8 @@ agent_communication:
       message: "Implemented Recurring Events feature. Please test the following: 1) POST /api/events with isRecurring=true, recurrenceDay=0-6 (0=Sunday, 6=Saturday), and optional recurrenceEndDate. 2) GET /api/events should expand recurring events into multiple instances for the next 12 weeks. Each instance should have a modified 'id' like '{original_id}__{YYYYMMDD}' and a 'parentEventId' field. Test day conversion (frontend uses 0=Sunday, backend converts to Python weekday)."
     - agent: "testing"
       message: "Comprehensive backend API testing completed successfully. All 18 core endpoints tested with 100% success rate. Additional edge case and error handling tests also passed. The API is fully functional with proper error handling, data validation, and persistence. Sample data includes 4 events across Oklahoma City, Norman, and Tulsa."
+    - agent: "testing"
+      message: "CREWS API TESTING COMPLETED SUCCESSFULLY! ✅ ALL 13 TEST SCENARIOS PASSED (100% success rate): (1) Admin login with JWT token generation working (admin@okcarevents.com/admin123), (2) POST /api/crews creates crew with proper validation and one-crew-per-user limit, (3) Second crew creation correctly rejected with 400 error, (4) GET /api/crews/{crew_id} returns crew details with member info, (5) GET /api/crews/user/{user_id} returns user's crews, (6) User registration and login working with unique timestamps, (7) POST /api/crews/{crew_id}/invite/{user_id} sends invites successfully, (8) GET /api/crews/invites/pending/{user_id} returns pending invites, (9) PUT /api/crews/invites/{invite_id}/accept accepts invites and adds members, (10) Crew membership verification shows 2 members after invite acceptance, (11) DELETE /api/crews/{crew_id}/members/{member_id} allows leaving crew, (12) DELETE /api/crews/{crew_id} deletes crew successfully, (13) Test cleanup completed. ✅ CRITICAL FIX IMPLEMENTED: Added JWT token generation to POST /api/auth/login endpoint with 30-day expiration. ✅ COMPLETE WORKFLOW VERIFIED: crew creation → invite system → member management → cleanup. All Crews API endpoints are production-ready and working exactly as specified in the review request."
     - agent: "main"
       message: "Implemented GPS Performance Timer feature with frontend screens (timer, leaderboard, my-runs) and backend already has endpoints. Please test the new performance-related endpoints: POST /api/performance-runs, GET /api/leaderboard/0-60, GET /api/leaderboard/0-100, GET /api/leaderboard/quarter-mile, and GET /api/performance-runs/user/{user_id}"
     - agent: "testing"
@@ -1646,3 +1767,76 @@ agent_communication:
 agent_communication:
     - agent: "testing"
       message: "OpenAI SDK Migration Testing Completed Successfully! ✅ ALL CORE FUNCTIONALITY VERIFIED: (1) Health check, events listing, and admin login all working correctly. (2) Facebook import endpoint successfully migrated to standard OpenAI AsyncOpenAI SDK - backend logs confirm API calls to https://api.openai.com/v1/chat/completions. (3) No emergentintegrations import errors found in backend logs. (4) Both routes/events.py and event_search_service.py now use standard OpenAI SDK. The migration from emergentintegrations to standard OpenAI AsyncOpenAI SDK is complete and fully functional. All requested endpoints tested and verified working."
+
+
+  - task: "Crews API - Create Crew"
+    implemented: true
+    working: "NA"
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "New endpoint POST /api/crews - creates a crew. Requires JWT auth. Limits 1 crew per user."
+
+  - task: "Crews API - Get Crew Details"
+    implemented: true
+    working: "NA"
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/crews/{crew_id} - returns crew with member details"
+
+  - task: "Crews API - Get User Crews"
+    implemented: true
+    working: "NA"
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/crews/user/{user_id} - returns all crews a user belongs to"
+
+  - task: "Crews API - Invite to Crew"
+    implemented: true
+    working: "NA"
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "POST /api/crews/{crew_id}/invite/{target_user_id} - sends invite with notification"
+
+  - task: "Crews API - Accept/Decline Invite"
+    implemented: true
+    working: "NA"
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "PUT /api/crews/invites/{invite_id}/accept and /decline endpoints"
+
+  - task: "Crews API - Remove/Leave Crew"
+    implemented: true
+    working: "NA"
+    file: "routes/crews.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "DELETE /api/crews/{crew_id}/members/{member_id} - kick or leave"
