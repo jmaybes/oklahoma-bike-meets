@@ -118,6 +118,9 @@ export default function GarageDetailScreen() {
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
 
+  // Crew state
+  const [ownerCrews, setOwnerCrews] = useState<any[]>([]);
+
   useEffect(() => {
     fetchCar();
     fetchComments();
@@ -127,6 +130,10 @@ export default function GarageDetailScreen() {
     try {
       const response = await axios.get(`${API_URL}/api/user-cars/${id}`);
       setCar(response.data);
+      // Fetch owner's crews
+      if (response.data.userId) {
+        fetchOwnerCrews(response.data.userId);
+      }
       // Log broken photos for debugging, but don't alarm the user
       if (response.data.brokenPhotos && response.data.brokenPhotos.length > 0) {
         console.log('Broken photo indices:', response.data.brokenPhotos);
@@ -135,6 +142,15 @@ export default function GarageDetailScreen() {
       console.error('Error fetching car:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOwnerCrews = async (ownerId: string) => {
+    try {
+      const res = await axios.get(`${API_URL}/api/crews/user/${ownerId}`);
+      setOwnerCrews(res.data || []);
+    } catch (err) {
+      console.error('Error fetching owner crews:', err);
     }
   };
 
@@ -483,6 +499,22 @@ export default function GarageDetailScreen() {
             <Text style={styles.ownerLabel}>Owner:</Text>
             <Text style={styles.ownerName}>{car.ownerNickname || car.ownerName}</Text>
           </View>
+          {/* Crew Badges */}
+          {ownerCrews.length > 0 && (
+            <View style={styles.crewBadgesRow}>
+              {ownerCrews.map((crew: any) => (
+                <TouchableOpacity
+                  key={crew.id}
+                  style={styles.crewBadgeChip}
+                  onPress={() => router.push(`/crews/${crew.id}`)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="people" size={11} color="#FFE707" />
+                  <Text style={styles.crewBadgeChipText}>{crew.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Stats Cards */}
@@ -1580,6 +1612,29 @@ const styles = StyleSheet.create({
   commentSubmitText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: '700',
+  },
+  // Crew badge styles for garage detail
+  crewBadgesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 8,
+  },
+  crewBadgeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,231,7,0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,231,7,0.25)',
+  },
+  crewBadgeChipText: {
+    color: '#FFE707',
+    fontSize: 11,
     fontWeight: '700',
   },
 });

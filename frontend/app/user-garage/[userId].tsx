@@ -142,7 +142,7 @@ interface GarageComment {
 export default function UserGarageScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const isAdmin = (user as any)?.isAdmin === true;
   const [car, setCar] = useState<UserCar | null>(null);
   const [loading, setLoading] = useState(true);
@@ -163,11 +163,61 @@ export default function UserGarageScreen() {
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
 
+  // Crew state
+  const [userCrews, setUserCrews] = useState<any[]>([]);
+  const [myCreatedCrew, setMyCreatedCrew] = useState<any>(null);
+  const [inviteSending, setInviteSending] = useState(false);
+
   useEffect(() => {
     if (userId) {
       fetchAllCarsAndDecide();
+      fetchUserCrews();
+      fetchMyCreatedCrew();
     }
   }, [userId]);
+
+  const fetchUserCrews = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/crews/user/${userId}`);
+      setUserCrews(res.data || []);
+    } catch (err) {
+      console.error('Error fetching user crews:', err);
+    }
+  };
+
+  const fetchMyCreatedCrew = async () => {
+    if (!user?.id) return;
+    try {
+      const res = await axios.get(`${API_URL}/api/crews/created/${user.id}`);
+      setMyCreatedCrew(res.data);
+    } catch (err) {
+      console.error('Error fetching my crew:', err);
+    }
+  };
+
+  const handleInviteToCrew = async () => {
+    if (!user?.id || !myCreatedCrew) {
+      Alert.alert('No Crew', 'You need to create a crew first before inviting others.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Create Crew', onPress: () => router.push('/crews/create') },
+      ]);
+      return;
+    }
+    setInviteSending(true);
+    try {
+      await axios.post(
+        `${API_URL}/api/crews/${myCreatedCrew.id}/invite/${userId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      Alert.alert('Invite Sent! 🏎️', `Invited to join "${myCreatedCrew.name}"`);
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || 'Failed to send invite';
+      Alert.alert('Error', msg);
+    } finally {
+      setInviteSending(false);
+    }
+  };
 
   const fetchAllCarsAndDecide = async () => {
     try {
@@ -527,6 +577,44 @@ export default function UserGarageScreen() {
           </TouchableOpacity>
         </View>
       </LinearGradient>
+
+      {/* Crew Badges - shown at top of public garage */}
+      {userCrews.length > 0 && (
+        <View style={styles.crewBadgesContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.crewBadgesScroll}>
+            {userCrews.map((crew) => (
+              <TouchableOpacity
+                key={crew.id}
+                style={styles.crewBadge}
+                onPress={() => router.push(`/crews/${crew.id}`)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="people" size={12} color="#FFE707" />
+                <Text style={styles.crewBadgeText}>{crew.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Invite to Crew Button (shown when viewing someone else's garage) */}
+      {user && user.id !== userId && (
+        <TouchableOpacity
+          style={styles.inviteCrewBtn}
+          onPress={handleInviteToCrew}
+          disabled={inviteSending}
+          activeOpacity={0.8}
+        >
+          {inviteSending ? (
+            <ActivityIndicator size="small" color="#FFE707" />
+          ) : (
+            <>
+              <Ionicons name="person-add" size={16} color="#FFE707" />
+              <Text style={styles.inviteCrewBtnText}>Invite to Crew</Text>
+            </>
+          )}
+        </TouchableOpacity>
+      )}
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Crossfade Photo Slideshow */}
@@ -1339,5 +1427,50 @@ const carPickerStyles = StyleSheet.create({
     color: '#ccc',
     fontSize: 15,
     fontWeight: '600',
+  },
+  // Crew badge styles
+  crewBadgesContainer: {
+    backgroundColor: '#111',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1a1a1a',
+  },
+  crewBadgesScroll: {
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  crewBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,231,7,0.12)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,231,7,0.25)',
+  },
+  crewBadgeText: {
+    color: '#FFE707',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  inviteCrewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,231,7,0.1)',
+    marginHorizontal: 16,
+    marginTop: 8,
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,231,7,0.2)',
+  },
+  inviteCrewBtnText: {
+    color: '#FFE707',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });
