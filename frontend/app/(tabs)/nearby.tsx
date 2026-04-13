@@ -76,10 +76,16 @@ export default function NearbyScreen() {
   const [popupDetails, setPopupDetails] = useState('');
   const [sendingPopup, setSendingPopup] = useState(false);
 
+  // Crew state
+  const [crewMemberIds, setCrewMemberIds] = useState<string[]>([]);
+  const [crewMembers, setCrewMembers] = useState<any[]>([]);
+  const [showCrewMessageModal, setShowCrewMessageModal] = useState(false);
+
   useEffect(() => {
     isMountedRef.current = true;
     initializeLocation();
     fetchPrewrittenMessages();
+    fetchCrewMembers();
     return () => { isMountedRef.current = false; };
   }, []);
 
@@ -164,6 +170,42 @@ export default function NearbyScreen() {
       }
     } catch (error) {
       console.error('Error fetching prewritten messages:', error);
+    }
+  };
+
+  const fetchCrewMembers = async () => {
+    if (!user?.id) return;
+    try {
+      const crewsRes = await api.get(`/crews/user/${user.id}`);
+      const crews = crewsRes.data || [];
+      if (crews.length === 0) {
+        setCrewMemberIds([]);
+        setCrewMembers([]);
+        return;
+      }
+      // Gather all members from all crews (excluding self)
+      const allMemberIds = new Set<string>();
+      const allMembers: any[] = [];
+      for (const crew of crews) {
+        try {
+          const detailRes = await api.get(`/crews/${crew.id}`);
+          const detail = detailRes.data;
+          if (detail?.members) {
+            for (const m of detail.members) {
+              if (m.id !== user.id && !allMemberIds.has(m.id)) {
+                allMemberIds.add(m.id);
+                allMembers.push({ ...m, crewName: detail.name });
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching crew detail:', err);
+        }
+      }
+      setCrewMemberIds(Array.from(allMemberIds));
+      setCrewMembers(allMembers);
+    } catch (error) {
+      console.error('Error fetching crew members:', error);
     }
   };
 
@@ -301,12 +343,15 @@ export default function NearbyScreen() {
   };
 
   // ====== Render Helpers ======
-  const renderUserCard = (nearbyUser: NearbyUser, showCheckbox: boolean) => (
+  const renderUserCard = (nearbyUser: NearbyUser, showCheckbox: boolean) => {
+    const isCrewMember = crewMemberIds.includes(nearbyUser.id);
+    return (
     <TouchableOpacity
       key={nearbyUser.id}
       style={[
         styles.userCard,
         showCheckbox && selectedUsers.has(nearbyUser.id) && styles.userCardSelected,
+        isCrewMember && styles.userCardCrew,
       ]}
       onPress={() => {
         if (showCheckbox) {
@@ -331,11 +376,18 @@ export default function NearbyScreen() {
           </View>
         </TouchableOpacity>
       )}
-      <View style={styles.userAvatar}>
-        <Ionicons name="person" size={24} color="#FF5500" />
+      <View style={[styles.userAvatar, isCrewMember && styles.userAvatarCrew]}>
+        <Ionicons name={isCrewMember ? "people" : "person"} size={24} color={isCrewMember ? "#FFE707" : "#FF5500"} />
       </View>
       <View style={styles.userInfo}>
-        <Text style={styles.userName}>{nearbyUser.nickname || nearbyUser.name}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Text style={styles.userName}>{nearbyUser.nickname || nearbyUser.name}</Text>
+          {isCrewMember && (
+            <View style={styles.crewChip}>
+              <Text style={styles.crewChipText}>CREW</Text>
+            </View>
+          )}
+        </View>
         <Text style={styles.userDistance}>{nearbyUser.distance} miles away</Text>
       </View>
       {!showCheckbox && (
@@ -356,7 +408,8 @@ export default function NearbyScreen() {
         </View>
       )}
     </TouchableOpacity>
-  );
+    );
+  };
 
   // ====== Early returns ======
   if (!user) {
@@ -478,6 +531,7 @@ export default function NearbyScreen() {
                 location={location}
                 radius={radius}
                 nearbyUsers={nearbyUsers}
+                crewMemberIds={crewMemberIds}
                 onCenterOnUser={() => {}}
                 onRefresh={initializeLocation}
               />
@@ -516,6 +570,43 @@ export default function NearbyScreen() {
             <Text style={styles.sliderMark}>50 mi</Text>
           </View>
         </View>
+
+        {/* Your Crew Section - pinned at top */}
+        {crewMembers.length > 0 && !selectionMode && (
+          <View style={styles.crewSection}>
+            <View style={styles.crewSectionHeader}>
+              <Ionicons name="people" size={18} color="#FFE707" />
+              <Text style={styles.crewSectionTitle}>Your Crew</Text>
+              <Text style={styles.crewSectionCount}>{crewMembers.length}</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.crewMembersScroll}>
+              {crewMembers.map((member) => (
+                <TouchableOpacity
+                  key={member.id}
+                  style={styles.crewMemberChip}
+                  onPress={() => router.push(`/user-garage/${member.id}`)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.crewMemberAvatar}>
+                    <Ionicons name="person" size={14} color="#FFE707" />
+                  </View>
+                  <Text style={styles.crewMemberName} numberOfLines={1}>
+                    {member.nickname || member.name}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.crewMemberMsg}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      router.push(`/messages/${member.id}`);
+                    }}
+                  >
+                    <Ionicons name="chatbubble" size={12} color="#fff" />
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Nearby Users List */}
         <View style={styles.usersSection}>
@@ -556,6 +647,62 @@ export default function NearbyScreen() {
 
         <View style={{ height: 110 }} />
       </ScrollView>
+
+      {/* Message Crew FAB */}
+      {crewMembers.length > 0 && !selectionMode && (
+        <TouchableOpacity
+          style={[styles.crewFab, { bottom: Math.max(insets.bottom, 16) + 80 }]}
+          onPress={() => setShowCrewMessageModal(true)}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="people" size={20} color="#000" />
+          <Text style={styles.crewFabText}>Message Crew</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Message Crew Modal */}
+      <Modal
+        visible={showCrewMessageModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowCrewMessageModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Message Crew</Text>
+              <TouchableOpacity onPress={() => setShowCrewMessageModal(false)}>
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <Text style={{ color: '#888', fontSize: 13, marginBottom: 12 }}>
+              Tap a crew member to start a conversation
+            </Text>
+            <ScrollView style={{ maxHeight: 400 }}>
+              {crewMembers.map((member) => (
+                <TouchableOpacity
+                  key={member.id}
+                  style={styles.crewMsgItem}
+                  onPress={() => {
+                    setShowCrewMessageModal(false);
+                    router.push(`/messages/${member.id}`);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.crewMsgAvatar}>
+                    <Ionicons name="person" size={18} color="#FFE707" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.crewMsgName}>{member.nickname || member.name}</Text>
+                    <Text style={styles.crewMsgCrew}>{member.crewName}</Text>
+                  </View>
+                  <Ionicons name="chatbubble-ellipses" size={18} color="#FF5500" />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       {/* Bottom Action Bar */}
       <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
@@ -1571,5 +1718,144 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
     textAlign: 'center',
+  },
+  // Crew section styles
+  crewSection: {
+    backgroundColor: '#111',
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,231,7,0.2)',
+  },
+  crewSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    gap: 6,
+  },
+  crewSectionTitle: {
+    color: '#FFE707',
+    fontSize: 14,
+    fontWeight: '700',
+    flex: 1,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  crewSectionCount: {
+    color: '#FFE707',
+    fontSize: 13,
+    fontWeight: '700',
+    backgroundColor: 'rgba(255,231,7,0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  crewMembersScroll: {
+    gap: 8,
+  },
+  crewMemberChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a2e',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+  crewMemberAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,231,7,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  crewMemberName: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+    maxWidth: 100,
+  },
+  crewMemberMsg: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#FF5500',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // Crew highlight on user cards
+  userCardCrew: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,231,7,0.4)',
+    backgroundColor: '#141420',
+  },
+  userAvatarCrew: {
+    borderWidth: 2,
+    borderColor: '#FFE707',
+  },
+  crewChip: {
+    backgroundColor: 'rgba(255,231,7,0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 8,
+  },
+  crewChipText: {
+    color: '#FFE707',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  // Message Crew FAB
+  crewFab: {
+    position: 'absolute',
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFE707',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 24,
+    gap: 6,
+    elevation: 5,
+    shadowColor: '#FFE707',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  crewFabText: {
+    color: '#000',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  // Message Crew modal items
+  crewMsgItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 10,
+    marginBottom: 6,
+    gap: 10,
+  },
+  crewMsgAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,231,7,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  crewMsgName: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  crewMsgCrew: {
+    color: '#888',
+    fontSize: 11,
   },
 });

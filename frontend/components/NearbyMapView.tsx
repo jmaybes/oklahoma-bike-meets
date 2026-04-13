@@ -54,9 +54,10 @@ export default function NearbyMapView({
   location, 
   radius, 
   nearbyUsers = [], 
+  crewMemberIds = [],
   onCenterOnUser, 
   onRefresh 
-}: NearbyMapViewProps) {
+}: NearbyMapViewProps & { crewMemberIds?: string[] }) {
   const mapRef = useRef<any>(null);
   const [mapLoadError, setMapLoadError] = useState(false);
 
@@ -213,7 +214,9 @@ export default function NearbyMapView({
         />
 
         {/* Nearby users markers */}
-        {nearbyUsers.map((nearbyUser) => (
+        {nearbyUsers.map((nearbyUser) => {
+          const isCrewMember = crewMemberIds.includes(nearbyUser.id);
+          return (
           <Marker
             key={nearbyUser.id}
             coordinate={{
@@ -221,13 +224,14 @@ export default function NearbyMapView({
               longitude: nearbyUser.longitude,
             }}
           >
-            <View style={styles.nearbyUserMarker}>
-              <Ionicons name="person" size={16} color="#fff" />
+            <View style={[styles.nearbyUserMarker, isCrewMember && styles.crewUserMarker]}>
+              <Ionicons name={isCrewMember ? "people" : "person"} size={16} color="#fff" />
             </View>
             {Callout && (
               <Callout tooltip onPress={() => router.push(`/messages/${nearbyUser.id}`)}>
                 <View style={styles.calloutContainer}>
                   <Text style={styles.calloutName}>{nearbyUser.nickname || nearbyUser.name}</Text>
+                  {isCrewMember && <Text style={styles.calloutCrew}>🏎️ Crew Member</Text>}
                   <Text style={styles.calloutDistance}>{nearbyUser.distance} mi away</Text>
                   <View style={styles.calloutMessageBtn}>
                     <Ionicons name="chatbubble-ellipses" size={14} color="#fff" />
@@ -237,7 +241,8 @@ export default function NearbyMapView({
               </Callout>
             )}
           </Marker>
-        ))}
+          );
+        })}
       </MapView>
 
       {/* Map overlay controls */}
@@ -393,6 +398,14 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
   },
+  crewUserMarker: {
+    backgroundColor: '#FFE707',
+    borderColor: '#FFD700',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 2.5,
+  },
   calloutContainer: {
     backgroundColor: '#1a1a1a',
     borderRadius: 12,
@@ -405,6 +418,12 @@ const styles = StyleSheet.create({
   calloutName: {
     color: '#fff',
     fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  calloutCrew: {
+    color: '#FFE707',
+    fontSize: 11,
     fontWeight: '700',
     marginBottom: 2,
   },
