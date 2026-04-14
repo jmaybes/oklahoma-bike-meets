@@ -2154,7 +2154,7 @@ const styles = StyleSheet.create({
   editCarButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     padding: 12,
     flex: 1,
   },
