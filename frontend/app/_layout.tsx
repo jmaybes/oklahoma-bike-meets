@@ -2,9 +2,14 @@ import { Stack } from 'expo-router';
 import { AuthProvider } from '../contexts/AuthContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import BetaNoticeModal from '../components/BetaNoticeModal';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import * as Updates from 'expo-updates';
-import { Alert, Platform } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+import { Alert, Platform, View } from 'react-native';
+
+// Prevent splash screen from auto-hiding until fonts are loaded
+SplashScreen.preventAutoHideAsync();
 
 async function checkForUpdates() {
   if (__DEV__) return; // Skip in development
@@ -28,11 +33,25 @@ async function checkForUpdates() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts({
+    'RockSalt_400Regular': require('../assets/fonts/RockSalt_400Regular.ttf'),
+  });
+
   useEffect(() => {
     checkForUpdates();
   }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded || fontError) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider onLayout={onLayoutRootView}>
       <AuthProvider>
         <Stack 
           screenOptions={{ 
