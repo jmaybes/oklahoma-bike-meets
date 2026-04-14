@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFonts, RockSalt_400Regular } from '@expo-google-fonts/rock-salt';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import { API_URL } from '../../utils/api';
@@ -22,6 +23,7 @@ import { API_URL } from '../../utils/api';
 export default function CreateCrewScreen() {
   const { user, token } = useAuth();
   const insets = useSafeAreaInsets();
+  const [fontsLoaded] = useFonts({ RockSalt_400Regular });
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -76,13 +78,18 @@ export default function CreateCrewScreen() {
           colors={['#FFE707', '#E91E63']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={styles.header}
+          style={styles.headerGradient}
         >
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Create Your Crew</Text>
-          <View style={{ width: 40 }} />
+          <View style={styles.headerRow}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]}>Create Crew</Text>
+              <Text style={styles.headerSubtitle}>Build your squad</Text>
+            </View>
+            <View style={{ width: 40 }} />
+          </View>
         </LinearGradient>
 
         <View style={styles.content}>
@@ -142,6 +149,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
+  headerGradient: {
+    paddingBottom: 0,
+    paddingHorizontal: 20,
+    overflow: 'hidden',
+    boxShadow: 'inset 2px 6px 19px 8px #000000',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   backBtn: {
     width: 40,
     height: 40,
@@ -151,9 +169,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: 'bold',
     color: '#fff',
+    letterSpacing: 2,
+    textShadow: '0px 3px 4px #000000cc',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: 'rgba(65, 59, 59, 0.9)',
+    marginTop: -5,
+    marginBottom: 5,
   },
   content: {
     padding: 24,

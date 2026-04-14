@@ -8,11 +8,13 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFonts, RockSalt_400Regular } from '@expo-google-fonts/rock-salt';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import { API_URL } from '../../utils/api';
@@ -37,6 +39,7 @@ interface PendingInvite {
 export default function MyCrewsScreen() {
   const { user, token, isAuthenticated } = useAuth();
   const insets = useSafeAreaInsets();
+  const [fontsLoaded] = useFonts({ RockSalt_400Regular });
   const [crews, setCrews] = useState<Crew[]>([]);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -163,22 +166,27 @@ export default function MyCrewsScreen() {
         colors={['#FFE707', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        style={styles.header}
+        style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
       >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Crews</Text>
-        {!createdCrew ? (
-          <TouchableOpacity
-            onPress={() => router.push('/crews/create')}
-            style={styles.createBtn}
-          >
-            <Ionicons name="add" size={22} color="#fff" />
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-        ) : (
-          <View style={{ width: 40 }} />
-        )}
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]}>My Crews</Text>
+            <Text style={styles.headerSubtitle}>Ride together</Text>
+          </View>
+          {!createdCrew ? (
+            <TouchableOpacity
+              onPress={() => router.push('/crews/create')}
+              style={styles.createBtn}
+            >
+              <Ionicons name="add" size={22} color="#fff" />
+            </TouchableOpacity>
+          ) : (
+            <View style={{ width: 40 }} />
+          )}
+        </View>
       </LinearGradient>
 
       {loading ? (
@@ -272,6 +280,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
+  headerGradient: {
+    paddingBottom: 0,
+    paddingHorizontal: 20,
+    overflow: 'hidden',
+    boxShadow: 'inset 2px 6px 19px 8px #000000',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   backBtn: {
     width: 40,
     height: 40,
@@ -281,9 +300,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: 'bold',
     color: '#fff',
+    letterSpacing: 2,
+    textShadow: '0px 3px 4px #000000cc',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: 'rgba(65, 59, 59, 0.9)',
+    marginTop: -5,
+    marginBottom: 5,
   },
   createBtn: {
     width: 40,

@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFonts, RockSalt_400Regular } from '@expo-google-fonts/rock-salt';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import { API_URL } from '../../utils/api';
@@ -40,6 +41,7 @@ export default function CrewDetailScreen() {
   const { crewId } = useLocalSearchParams<{ crewId: string }>();
   const { user, token } = useAuth();
   const insets = useSafeAreaInsets();
+  const [fontsLoaded] = useFonts({ RockSalt_400Regular });
   const [crew, setCrew] = useState<CrewDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -264,18 +266,20 @@ export default function CrewDetailScreen() {
         colors={['#FFE707', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        style={styles.header}
+        style={styles.headerGradient}
       >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle} numberOfLines={1}>{crew.name}</Text>
-          <Text style={styles.headerSub}>
-            {crew.memberCount} member{crew.memberCount !== 1 ? 's' : ''}
-          </Text>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]} numberOfLines={1}>{crew.name}</Text>
+            <Text style={styles.headerSubtitle}>
+              {crew.memberCount} member{crew.memberCount !== 1 ? 's' : ''}
+            </Text>
+          </View>
+          <View style={{ width: 40 }} />
         </View>
-        <View style={{ width: 40 }} />
       </LinearGradient>
 
       {/* Crew Banner */}
@@ -342,6 +346,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
+  headerGradient: {
+    paddingBottom: 0,
+    paddingHorizontal: 20,
+    overflow: 'hidden',
+    boxShadow: 'inset 2px 6px 19px 8px #000000',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   backBtn: {
     width: 40,
     height: 40,
@@ -355,13 +370,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: 'bold',
     color: '#fff',
+    letterSpacing: 2,
+    textShadow: '0px 3px 4px #000000cc',
   },
   headerSub: {
     fontSize: 12,
     color: 'rgba(255,255,255,0.7)',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: 'rgba(65, 59, 59, 0.9)',
+    marginTop: -5,
+    marginBottom: 5,
   },
   center: {
     flex: 1,
