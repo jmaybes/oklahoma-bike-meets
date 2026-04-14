@@ -840,10 +840,21 @@ export default function ProfileScreen() {
                 )}
               </View>
               
-              <TouchableOpacity style={styles.editCarButton} onPress={() => { setEditingCarId(userCar.id); fetchUserCar(true); setShowCarModal(true); }}>
-                <Ionicons name="pencil" size={16} color="#FF5500" />
-                <Text style={styles.editCarButtonText}>Edit Car & Photos</Text>
-              </TouchableOpacity>
+              <View style={styles.garageActionRow}>
+                <TouchableOpacity style={styles.editCarButton} onPress={() => { setEditingCarId(userCar.id); fetchUserCar(true); setShowCarModal(true); }}>
+                  <Ionicons name="pencil" size={16} color="#FF5500" />
+                  <Text style={styles.editCarButtonText}>Edit Car & Photos</Text>
+                </TouchableOpacity>
+                {userCars.length < 2 && (
+                  <TouchableOpacity
+                    style={styles.addCarInlineBtn}
+                    onPress={handleAddSecondCar}
+                  >
+                    <Ionicons name="add-circle-outline" size={18} color="#FF5500" />
+                    <Text style={styles.addCarInlineText}>2nd Car</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
 
             {/* Car Switcher - show all cars */}
@@ -891,26 +902,6 @@ export default function ProfileScreen() {
                       </TouchableOpacity>
                     ))}
                   </View>
-                )}
-                {userCars.length < 2 && (
-                  <TouchableOpacity
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#1a1a1a',
-                      borderRadius: 10,
-                      padding: 12,
-                      borderWidth: 1,
-                      borderColor: '#333',
-                      borderStyle: 'dashed',
-                      gap: 8,
-                    }}
-                    onPress={handleAddSecondCar}
-                  >
-                    <Ionicons name="add-circle-outline" size={20} color="#FF5500" />
-                    <Text style={{ color: '#FF5500', fontWeight: '600', fontSize: 14 }}>Add 2nd Car</Text>
-                  </TouchableOpacity>
                 )}
               </View>
             )}
@@ -2154,18 +2145,37 @@ const styles = StyleSheet.create({
     marginTop: 8,
     lineHeight: 20,
   },
+  garageActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+  },
   editCarButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#333',
+    flex: 1,
   },
   editCarButtonText: {
     color: '#FF5500',
     marginLeft: 8,
     fontWeight: '600',
+  },
+  addCarInlineBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    gap: 4,
+    borderLeftWidth: 1,
+    borderLeftColor: '#333',
+  },
+  addCarInlineText: {
+    color: '#FF5500',
+    fontWeight: '600',
+    fontSize: 13,
   },
   // Garage Notifications
   garageNotifsLink: {
