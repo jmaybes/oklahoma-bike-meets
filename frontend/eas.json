@@ -10,7 +10,7 @@
       "channel": "development",
       "credentialsSource": "remote",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://event-hub-okc-1.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://api.okccarmeets.com"
       },
       "ios": {
         "simulator": false
@@ -23,7 +23,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://event-hub-okc-1.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://api.okccarmeets.com"
       }
     },
     "production": {
