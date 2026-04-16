@@ -88,7 +88,8 @@ export default function RegisterScreen() {
         password,
       });
       
-      await login(response.data.user);
+      // Register endpoint returns user object directly (not wrapped in {user:...})
+      await login(response.data);
       Alert.alert('Success', 'Account created successfully!');
       router.replace('/(tabs)/profile');
     } catch (error: any) {

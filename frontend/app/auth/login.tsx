@@ -129,7 +129,8 @@ export default function LoginScreen() {
       // Save credentials if remember me is checked
       await saveCredentials();
       
-      await login(response.data.user);
+      // login() handles both {user:..., token:...} and direct user objects
+      await login(response.data);
       Alert.alert('Success', 'Logged in successfully!');
       router.replace('/(tabs)/profile');
     } catch (error: any) {

@@ -34,7 +34,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (user: User) => Promise<void>;
+  login: (data: any) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (user: User) => Promise<void>;
   isAuthenticated: boolean;
@@ -144,7 +144,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000))
       ]);
       if (userData && typeof userData === 'string') {
-        const parsedUser = JSON.parse(userData);
+        let parsedUser = JSON.parse(userData);
+        
+        // Fix corrupted/nested data from previous bug
+        if (parsedUser && !parsedUser.id && parsedUser.user && parsedUser.user.id) {
+          console.log('loadUser: fixing nested user object from stale cache');
+          parsedUser = parsedUser.user;
+          await AsyncStorage.setItem('user', JSON.stringify(parsedUser));
+        }
+        
+        if (!parsedUser || !parsedUser.id) {
+          console.log('loadUser: cached user has no id, clearing session');
+          await AsyncStorage.removeItem('user');
+          setUser(null);
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log('loadUser: validating cached user id =', parsedUser.id);
         
         // Validate that this user still exists in the current database
         // This handles cases where the backend database changed (e.g. after a migration)
@@ -218,8 +235,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (userData: User) => {
+  const login = async (rawData: any) => {
     try {
+      // Defensive: handle both { user: {...}, token: "..." } and direct user objects
+      let userData: User;
+      if (rawData?.user && rawData.user.id) {
+        // Wrapped format from login endpoint
+        userData = rawData.user;
+      } else if (rawData?.id) {
+        // Direct user object from register/google/apple endpoints
+        userData = rawData;
+      } else {
+        console.error('Login failed: invalid user data shape', JSON.stringify(rawData).slice(0, 200));
+        return;
+      }
+
+      console.log('AuthContext login: saving user with id =', userData.id);
       await AsyncStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       // Register push notifications on login
