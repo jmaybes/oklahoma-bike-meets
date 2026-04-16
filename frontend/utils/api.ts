@@ -1,7 +1,26 @@
 import axios from 'axios';
 import Constants from 'expo-constants';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://api.okccarmeets.com';
+// Production URL - the definitive source of truth
+const PRODUCTION_URL = 'https://api.okccarmeets.com';
+
+// Determine API URL with strict safety:
+// NEVER use the Emergent preview URL in a standalone/production app
+const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+const isEmergentUrl = envUrl && envUrl.includes('emergentagent.com');
+const isStandalone = Constants.expoConfig?.extra?.eas?.projectId || Constants.appOwnership !== 'expo';
+
+let API_URL: string;
+if (isEmergentUrl && isStandalone) {
+  // Block Emergent URL in production/standalone builds
+  API_URL = PRODUCTION_URL;
+} else if (envUrl) {
+  API_URL = envUrl;
+} else {
+  API_URL = PRODUCTION_URL;
+}
+
+console.log('[API] URL:', API_URL, '| env:', envUrl || 'not set');
 
 // Create axios instance with automatic retry for resilience
 const api = axios.create({
