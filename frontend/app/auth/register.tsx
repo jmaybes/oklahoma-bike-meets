@@ -88,7 +88,7 @@ export default function RegisterScreen() {
         password,
       });
       
-      await login(response.data);
+      await login(response.data.user);
       Alert.alert('Success', 'Account created successfully!');
       router.replace('/(tabs)/profile');
     } catch (error: any) {

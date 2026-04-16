@@ -226,7 +226,7 @@ export default function GoogleCallbackScreen() {
         throw new Error('No auth data available');
       }
 
-      await login(response.data);
+      await login(response.data.user);
       Alert.alert('Welcome!', `Your account has been created as @${nickname}`);
       router.replace('/(tabs)/profile');
     } catch (error: any) {

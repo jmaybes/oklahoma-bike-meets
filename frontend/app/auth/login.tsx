@@ -129,7 +129,7 @@ export default function LoginScreen() {
       // Save credentials if remember me is checked
       await saveCredentials();
       
-      await login(response.data);
+      await login(response.data.user);
       Alert.alert('Success', 'Logged in successfully!');
       router.replace('/(tabs)/profile');
     } catch (error: any) {
