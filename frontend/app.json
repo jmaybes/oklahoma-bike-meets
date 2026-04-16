@@ -2,7 +2,7 @@
   "expo": {
     "name": "Oklahoma Car Meets",
     "slug": "oklahoma-city-car-meets",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "okcarmeets",
@@ -110,6 +110,6 @@
         "projectId": "a936daac-9d2d-4795-aba0-e6e7554f9395"
       }
     },
-    "runtimeVersion": "1.0"
+    "runtimeVersion": "2.0"
   }
 }

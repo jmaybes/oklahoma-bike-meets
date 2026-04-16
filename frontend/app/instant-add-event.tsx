@@ -10,8 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
-
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import { API_URL } from '../utils/api';
 
 type Step = 'capture' | 'scanning' | 'review' | 'submitting' | 'done';
 
