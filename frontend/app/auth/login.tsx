@@ -131,7 +131,7 @@ export default function LoginScreen() {
       
       // login() handles both {user:..., token:...} and direct user objects
       await login(response.data);
-      Alert.alert('Success', 'Logged in successfully!');
+      Alert.alert('Success', 'Logged in successfully! (v2.3.1)');
       router.replace('/(tabs)/profile');
     } catch (error: any) {
       console.error('Login error:', error);
