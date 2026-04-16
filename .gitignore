@@ -216,3 +216,5 @@ android-sdk/ -e
 backend/db_export.tar.gz
 dump/test_database/user_cars.bson
 db_export.tar.gz
+.metro-cache
+frontend/.metro-cache
