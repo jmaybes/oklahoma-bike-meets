@@ -32,7 +32,7 @@
       }
     },
     "android": {
-      "package": "com.velocityvisualcrew.oklahomacarmeets",
+      "package": "com.velocityvisualcrew.oklahomacitycarmeets",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
