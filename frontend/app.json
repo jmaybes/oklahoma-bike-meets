@@ -32,7 +32,8 @@
       }
     },
     "android": {
-      "package": "com.velocityvisualcrew.oklahomacitycarmeets",
+      "package": "com.velocityvisualcrew.oklahomacarmeets",
+      "versionCode": 101,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
