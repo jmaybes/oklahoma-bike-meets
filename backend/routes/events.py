@@ -28,6 +28,15 @@ async def create_event(event: EventCreate):
     event_dict = event.dict()
     event_dict["createdAt"] = datetime.utcnow().isoformat()
 
+    # Duplicate check: same title + same date = duplicate
+    existing = await db.events.find_one({
+        "title": {"$regex": f"^{event_dict.get('title', '').strip()}$", "$options": "i"},
+        "date": event_dict.get("date", "").split("T")[0]
+    })
+    if existing:
+        logger.info(f"Duplicate event detected: '{event_dict.get('title')}' on {event_dict.get('date')}")
+        return event_helper(existing)
+
     # User-submitted events require admin approval
     event_dict["isApproved"] = False
 

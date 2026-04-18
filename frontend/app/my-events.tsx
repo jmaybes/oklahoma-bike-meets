@@ -38,6 +38,11 @@ interface MyEvent {
   contactInfo: string;
   website: string;
   isApproved: boolean;
+  isRecurring: boolean;
+  recurrenceDay?: number;
+  recurrenceEndDate?: string;
+  photos?: string[];
+}
 
 const formatEventDate = (dateStr: string): string => {
   if (!dateStr) return '';
@@ -52,11 +57,6 @@ const formatEventDate = (dateStr: string): string => {
     return dateStr.split('T')[0];
   }
 };
-  isRecurring: boolean;
-  recurrenceDay?: number;
-  recurrenceEndDate?: string;
-  photos?: string[];
-}
 
 export default function MyEventsScreen() {
   const { user } = useAuth();
