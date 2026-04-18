@@ -669,7 +669,7 @@ export default function UserGarageScreen() {
           {/* View Full Gallery */}
           <TouchableOpacity
             style={styles.galleryButton}
-            onPress={() => router.push(`/garage/${car.id}`)}
+            onPress={() => router.push(`/garage/${car.id}?showPhotos=true`)}
           >
             <Ionicons name="images" size={20} color="#fff" />
             <Text style={styles.galleryButtonText}>View Full Gallery</Text>

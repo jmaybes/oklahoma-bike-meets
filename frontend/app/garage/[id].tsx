@@ -94,7 +94,7 @@ const modCategories: { [key: string]: { icon: string; color: string } } = {
 };
 
 export default function GarageDetailScreen() {
-  const { id } = useLocalSearchParams();
+  const { id, showPhotos } = useLocalSearchParams();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const [fontsLoaded] = useFonts({ RockSalt_400Regular });
@@ -125,6 +125,13 @@ export default function GarageDetailScreen() {
     fetchCar();
     fetchComments();
   }, [id]);
+
+  // Auto-open photo gallery if navigated with showPhotos param
+  useEffect(() => {
+    if (showPhotos === 'true' && car && car.photos && car.photos.length > 0 && !loading) {
+      openPhotoModal(0);
+    }
+  }, [showPhotos, car, loading]);
 
   const fetchCar = async () => {
     try {
