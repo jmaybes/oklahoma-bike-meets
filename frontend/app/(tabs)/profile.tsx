@@ -805,13 +805,13 @@ export default function ProfileScreen() {
                 )}
                 <View style={styles.carStatsRow}>
                   {userCar.color && (
-                    <View style={styles.carDetailRow}>
+                    <View style={[styles.carDetailRow, { flex: 1 }]}>
                       <Ionicons name="color-palette" size={16} color="#888" />
                       <Text style={styles.carDetailText}>{userCar.color}</Text>
                     </View>
                   )}
                   {userCar.horsepower && (
-                    <View style={styles.carDetailRow}>
+                    <View style={[styles.carDetailRow, { flex: 1 }]}>
                       <Ionicons name="flash" size={16} color="#FF5500" />
                       <Text style={styles.carDetailText}>{userCar.horsepower} HP</Text>
                     </View>
