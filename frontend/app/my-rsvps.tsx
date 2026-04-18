@@ -126,7 +126,8 @@ export default function MyRSVPsScreen() {
 
   const formatDate = (dateStr: string) => {
     try {
-      const date = new Date(dateStr + 'T00:00:00');
+      const cleanDate = dateStr.split('T')[0]; // Strip T00:00:00 if present
+      const date = new Date(cleanDate + 'T00:00:00');
       return date.toLocaleDateString('en-US', {
         weekday: 'short',
         month: 'short',
@@ -134,13 +135,14 @@ export default function MyRSVPsScreen() {
         year: 'numeric',
       });
     } catch {
-      return dateStr;
+      return dateStr.split('T')[0];
     }
   };
 
   const isUpcoming = (dateStr: string) => {
     try {
-      const eventDate = new Date(dateStr + 'T23:59:59');
+      const cleanDate = dateStr.split('T')[0]; // Strip T00:00:00 if present
+      const eventDate = new Date(cleanDate + 'T23:59:59');
       return eventDate >= new Date();
     } catch {
       return true;

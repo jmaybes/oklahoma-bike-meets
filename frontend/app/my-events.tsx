@@ -38,6 +38,20 @@ interface MyEvent {
   contactInfo: string;
   website: string;
   isApproved: boolean;
+
+const formatEventDate = (dateStr: string): string => {
+  if (!dateStr) return '';
+  try {
+    const cleanDate = dateStr.split('T')[0];
+    const [year, month, day] = cleanDate.split('-').map(Number);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const date = new Date(year, month - 1, day);
+    return `${days[date.getDay()]}, ${months[month - 1]} ${day}, ${year}`;
+  } catch {
+    return dateStr.split('T')[0];
+  }
+};
   isRecurring: boolean;
   recurrenceDay?: number;
   recurrenceEndDate?: string;
@@ -208,7 +222,7 @@ export default function MyEventsScreen() {
             <View style={styles.detailRow}>
               <Ionicons name="calendar-outline" size={15} color="#888" />
               <Text style={styles.detailText}>
-                {item.date} at {item.time}
+                {formatEventDate(item.date)} at {item.time}
               </Text>
             </View>
             <View style={styles.detailRow}>

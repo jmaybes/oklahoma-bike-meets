@@ -56,6 +56,21 @@ interface Comment {
   createdAt: string;
 }
 
+// Format date string for display (handles both "2025-06-15" and "2025-06-15T00:00:00")
+const formatEventDate = (dateStr: string): string => {
+  if (!dateStr) return '';
+  try {
+    const cleanDate = dateStr.split('T')[0];
+    const [year, month, day] = cleanDate.split('-').map(Number);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const date = new Date(year, month - 1, day);
+    return `${days[date.getDay()]}, ${months[month - 1]} ${day}, ${year}`;
+  } catch {
+    return dateStr.split('T')[0];
+  }
+};
+
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams();
   const { user, isAuthenticated } = useAuth();
@@ -174,7 +189,7 @@ export default function EventDetailScreen() {
     
     try {
       await Share.share({
-        message: `Check out this event: ${event.title}\n${event.date} at ${event.time}\n${event.city}`,
+        message: `Check out this event: ${event.title}\n${formatEventDate(event.date)} at ${event.time}\n${event.city}`,
         title: event.title,
       });
     } catch (error) {
@@ -273,7 +288,7 @@ export default function EventDetailScreen() {
             <Ionicons name="calendar" size={24} color="#FF5500" />
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Date & Time</Text>
-              <Text style={styles.infoText}>{event.date}</Text>
+              <Text style={styles.infoText}>{formatEventDate(event.date)}</Text>
               <Text style={styles.infoText}>{event.time}</Text>
             </View>
           </View>

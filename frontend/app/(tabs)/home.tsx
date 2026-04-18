@@ -53,6 +53,22 @@ const OKC_LAT = 35.4676;
 const OKC_LON = -97.5164;
 const DEFAULT_RADIUS_MILES = 20;
 
+// Format date string for display (handles both "2025-06-15" and "2025-06-15T00:00:00")
+const formatEventDate = (dateStr: string): string => {
+  if (!dateStr) return '';
+  try {
+    // Strip time portion if present
+    const cleanDate = dateStr.split('T')[0];
+    const [year, month, day] = cleanDate.split('-').map(Number);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const date = new Date(year, month - 1, day);
+    return `${days[date.getDay()]}, ${months[month - 1]} ${day}, ${year}`;
+  } catch {
+    return dateStr.split('T')[0]; // fallback: at least strip the T00:00:00
+  }
+};
+
 interface Event {
   id: string;
   title: string;
@@ -623,7 +639,7 @@ export default function HomeScreen() {
                 <View style={styles.detailRow}>
                   <Ionicons name="calendar" size={16} color="#FF5500" />
                   <Text style={styles.detailText}>
-                    {item.date} at {item.time}
+                    {formatEventDate(item.date)} at {item.time}
                   </Text>
                 </View>
                 <View style={styles.detailRow}>
