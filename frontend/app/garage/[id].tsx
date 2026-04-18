@@ -120,15 +120,17 @@ export default function GarageDetailScreen() {
 
   // Crew state
   const [ownerCrews, setOwnerCrews] = useState<any[]>([]);
+  const hasAutoOpenedGallery = useRef(false);
 
   useEffect(() => {
     fetchCar();
     fetchComments();
   }, [id]);
 
-  // Auto-open photo gallery if navigated with showPhotos param
+  // Auto-open photo gallery if navigated with showPhotos param (once only)
   useEffect(() => {
-    if (showPhotos === 'true' && car && car.photos && car.photos.length > 0 && !loading) {
+    if (showPhotos === 'true' && car && car.photos && car.photos.length > 0 && !loading && !hasAutoOpenedGallery.current) {
+      hasAutoOpenedGallery.current = true;
       openPhotoModal(0);
     }
   }, [showPhotos, car, loading]);
