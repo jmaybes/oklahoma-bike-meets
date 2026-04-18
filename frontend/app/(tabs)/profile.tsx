@@ -1342,7 +1342,7 @@ export default function ProfileScreen() {
               <View style={{ width: 28 }} />
             </View>
 
-            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 32 : 0 }}>
               {/* Basic Info */}
               <Text style={styles.modalSectionTitle}>Basic Information</Text>
               
