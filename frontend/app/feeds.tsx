@@ -590,7 +590,10 @@ export default function FeedsScreen() {
   useEffect(() => {
     if (user?.id) {
       api.get(`/user-cars/user/${user.id}`).then((res) => {
-        if (res.data?.photos?.length > 0) setUserCarPhoto(res.data.photos[0]);
+        if (res.data?.photos?.length > 0) {
+          const idx = res.data.mainPhotoIndex && res.data.mainPhotoIndex < res.data.photos.length ? res.data.mainPhotoIndex : 0;
+          setUserCarPhoto(res.data.photos[idx]);
+        }
       }).catch(() => {});
     }
   }, [user?.id]);

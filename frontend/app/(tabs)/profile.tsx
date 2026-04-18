@@ -558,7 +558,6 @@ export default function ProfileScreen() {
           try {
             await axios.put(`${API_URL}/api/user-cars/${savedCarId}`, {
               photos: [],
-              mainPhotoIndex: 0,
             });
           } catch (clearErr) {
             console.log('Note: Could not clear old photos, continuing with upload');
@@ -586,10 +585,11 @@ export default function ProfileScreen() {
           }
         }
 
-        // Step 4: Set the main photo index
+        // Step 4: Set the main photo index (use total photo count, not just new uploads)
         if (uploadedCount > 0) {
           try {
-            const adjustedIndex = Math.min(mainPhotoIndex, uploadedCount - 1);
+            const totalPhotos = existingServerPhotos.length + uploadedCount;
+            const adjustedIndex = Math.min(mainPhotoIndex, Math.max(0, totalPhotos - 1));
             await axios.put(`${API_URL}/api/user-cars/${savedCarId}`, {
               mainPhotoIndex: adjustedIndex,
             });
@@ -768,7 +768,7 @@ export default function ProfileScreen() {
               {userCar.photos && userCar.photos.length > 0 ? (
                 <View style={styles.carMainPhotoContainer}>
                   <Image 
-                    source={{ uri: userCar.photos[0] }} 
+                    source={{ uri: userCar.photos[userCar.mainPhotoIndex && userCar.mainPhotoIndex < userCar.photos.length ? userCar.mainPhotoIndex : 0] }} 
                     style={{ width: '100%', height: 260 }} 
                     resizeMode="cover" 
                   />
@@ -2495,6 +2495,7 @@ const styles = StyleSheet.create({
   },
   photoContainer: {
     position: 'relative',
+    overflow: 'visible',
   },
   photoContainerMain: {
     borderWidth: 2,
@@ -2517,6 +2518,10 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     paddingVertical: 2,
     alignItems: 'center',
+    zIndex: 5,
+    ...Platform.select({
+      android: { elevation: 3 },
+    }),
   },
   coverBadgeText: {
     color: '#000',
@@ -2526,8 +2531,8 @@ const styles = StyleSheet.create({
   },
   setCoverButton: {
     position: 'absolute',
-    bottom: -4,
-    right: -4,
+    top: 4,
+    left: 4,
     backgroundColor: 'rgba(0,0,0,0.7)',
     borderRadius: 14,
     width: 28,
@@ -2536,6 +2541,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: '#444',
+    zIndex: 10,
+    ...Platform.select({
+      android: { elevation: 5 },
+    }),
   },
   setCoverButtonActive: {
     backgroundColor: 'rgba(255, 215, 0, 0.3)',
@@ -2543,10 +2552,14 @@ const styles = StyleSheet.create({
   },
   removePhotoButton: {
     position: 'absolute',
-    top: -8,
-    right: -8,
+    top: 4,
+    right: 4,
     backgroundColor: '#0c0c0c',
     borderRadius: 12,
+    zIndex: 10,
+    ...Platform.select({
+      android: { elevation: 5 },
+    }),
   },
   videoInputRow: {
     flexDirection: 'row',
