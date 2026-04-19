@@ -304,7 +304,9 @@ async def send_push_notification(push_token: str, title: str, body: str, data: d
         "sound": "default",
         "title": title,
         "body": body,
-        "data": data or {}
+        "data": data or {},
+        "priority": "high",
+        "channelId": "default",
     }
 
     try:
