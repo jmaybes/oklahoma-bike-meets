@@ -23,13 +23,16 @@ async def get_notifications(user_id: str, unread_only: bool = False):
                 "userId": _sid(notif["userId"]),
                 "eventId": _sid(notif.get("eventId")),
                 "carId": _sid(notif.get("carId")),
+                "feedbackId": _sid(notif.get("feedbackId")),
                 "type": notif.get("type", "general"),
-                "title": notif["title"],
-                "message": notif["message"],
+                "title": notif.get("title", "Notification"),
+                "message": notif.get("message", ""),
                 "isRead": notif.get("isRead", False),
                 "createdAt": _isodate(notif.get("createdAt"))
             })
-        except Exception:
+        except Exception as e:
+            import logging
+            logging.getLogger("server").error(f"Skipping notification {notif.get('_id')}: {e}")
             continue
     return result
 
