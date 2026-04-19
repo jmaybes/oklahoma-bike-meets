@@ -15,6 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Linking,
+  RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -74,6 +75,7 @@ export default function ProfileScreen() {
   const [carPhotos, setCarPhotos] = useState<string[]>([]);
   const [mainPhotoIndex, setMainPhotoIndex] = useState(0);
   const [garagePublic, setGaragePublic] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   
   const [carForm, setCarForm] = useState({
     make: '',
@@ -115,6 +117,20 @@ export default function ProfileScreen() {
       fetchGarageNotifications();
     }
   }, [isAuthenticated, user]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        fetchUserCar(true),
+        fetchGarageNotifications(),
+      ]);
+    } catch (e) {
+      console.log('Refresh error:', e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const fetchUserCar = async (includeAllPhotos = false) => {
     try {
@@ -715,7 +731,17 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#FF5500"
+            colors={['#FF5500']}
+          />
+        }
+      >
         <LinearGradient
           colors={['#FFE707', '#E91E63']}
           start={{ x: 0, y: 0 }}
