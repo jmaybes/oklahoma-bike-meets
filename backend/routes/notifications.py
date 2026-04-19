@@ -3,7 +3,7 @@ from datetime import datetime
 from bson import ObjectId
 
 from database import db
-from helpers import _sid, _isodate
+from helpers import _sid, _isodate, send_push_notification
 
 router = APIRouter()
 
@@ -53,3 +53,32 @@ async def mark_all_notifications_read(user_id: str):
         {"$set": {"isRead": True}}
     )
     return {"message": "All notifications marked as read"}
+
+
+@router.post("/notifications/test-push/{user_id}")
+async def test_push_notification(user_id: str):
+    """Send a test push notification to verify the system works."""
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    push_token = user.get("pushToken")
+    if not push_token:
+        return {"success": False, "error": "No push token registered for this user", "hasToken": False}
+    
+    result = await send_push_notification(
+        push_token,
+        "OKC Meets Test",
+        "Push notifications are working!",
+        {"type": "test"}
+    )
+    
+    return {
+        "success": result,
+        "hasToken": True,
+        "tokenPrefix": push_token[:30] + "...",
+        "message": "Push sent successfully!" if result else "Push failed - check server logs"
+    }

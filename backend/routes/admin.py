@@ -331,6 +331,17 @@ async def scheduled_weekly_search(secret_key: str = Query(...)):
                     "createdAt": datetime.utcnow().isoformat()
                 }
                 await db.notifications.insert_one(notification)
+                # Send push to admin's phone
+                if admin.get("pushToken"):
+                    try:
+                        await send_push_notification(
+                            admin["pushToken"],
+                            notification["title"],
+                            notification["message"],
+                            {"type": "admin_alert"}
+                        )
+                    except Exception as e:
+                        print(f"Failed to send admin push: {e}")
 
         return {
             "success": True,

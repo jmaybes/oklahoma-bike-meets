@@ -10,7 +10,7 @@ import os
 
 from database import db
 from models import UserCarCreate, UserCarUpdate, GarageCommentCreate
-from helpers import user_car_helper, compress_photos_list, compress_photo_base64, make_thumbnail_base64, MAX_PHOTO_SIZE_BYTES, _sid, _isodate
+from helpers import user_car_helper, compress_photos_list, compress_photo_base64, make_thumbnail_base64, send_push_notification, MAX_PHOTO_SIZE_BYTES, _sid, _isodate
 
 import logging
 logger = logging.getLogger(__name__)
@@ -875,6 +875,19 @@ async def create_garage_comment(comment: GarageCommentCreate):
             "createdAt": datetime.utcnow().isoformat()
         }
         await db.notifications.insert_one(notification)
+
+        # Send push notification to car owner's phone
+        owner = await db.users.find_one({"_id": ObjectId(car_owner_id)})
+        if owner and owner.get("pushToken"):
+            try:
+                await send_push_notification(
+                    owner["pushToken"],
+                    notification["title"],
+                    notification["message"],
+                    {"type": "garage_comment", "carId": comment.carId}
+                )
+            except Exception as e:
+                print(f"Failed to send garage comment push: {e}")
     
     return {
         "id": str(created["_id"]),

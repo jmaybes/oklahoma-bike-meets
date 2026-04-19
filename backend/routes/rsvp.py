@@ -79,6 +79,19 @@ async def create_rsvp(rsvp: RSVPCreate):
     }
     await db.notifications.insert_one(notification)
 
+    # Send push notification to phone
+    rsvp_user = await db.users.find_one({"_id": ObjectId(rsvp.userId)})
+    if rsvp_user and rsvp_user.get("pushToken"):
+        try:
+            await send_push_notification(
+                rsvp_user["pushToken"],
+                notification["title"],
+                notification["message"],
+                {"type": "rsvp_confirmation", "eventId": rsvp.eventId}
+            )
+        except Exception as e:
+            print(f"Failed to send RSVP push: {e}")
+
     return {
         "id": str(result.inserted_id),
         "message": "RSVP successful! You'll receive a reminder 24 hours before the event.",

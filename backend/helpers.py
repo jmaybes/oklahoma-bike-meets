@@ -296,6 +296,7 @@ def route_helper(route) -> dict:
 async def send_push_notification(push_token: str, title: str, body: str, data: dict = None):
     """Send push notification via Expo's push service"""
     if not push_token or not push_token.startswith('ExponentPushToken'):
+        logger.warning(f"Push skipped - invalid token: {push_token[:20] if push_token else 'None'}...")
         return False
 
     message = {
@@ -316,6 +317,8 @@ async def send_push_notification(push_token: str, title: str, body: str, data: d
                     "Content-Type": "application/json"
                 }
             )
+            result = response.json()
+            logger.info(f"Push notification sent to {push_token[:25]}... | Status: {response.status_code} | Response: {result}")
             return response.status_code == 200
     except Exception as e:
         logger.error(f"Failed to send push notification: {e}")
