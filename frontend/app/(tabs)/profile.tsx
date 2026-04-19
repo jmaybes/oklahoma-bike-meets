@@ -951,142 +951,86 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* View Public Garages Link - prominent placement */}
-        <TouchableOpacity 
-          style={styles.publicGarageLink}
-          onPress={() => router.push('/garage')}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={['#1e1e1e', '#252525']}
-            style={styles.publicGarageLinkGradient}
-          >
-            <View style={styles.publicGarageLinkContent}>
-              <View style={styles.publicGarageLinkLeft}>
-                <Ionicons name="people" size={24} color="#FF5500" />
-                <View>
-                  <Text style={styles.publicGarageLinkTitle}>View Public Garages</Text>
-                  <Text style={styles.publicGarageLinkSub}>Browse and like community builds</Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <View style={styles.menuItemBadge}>
-                  <Text style={styles.menuItemBadgeText}>NEW</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={22} color="#FF5500" />
-              </View>
-            </View>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        {/* Community Lounge Link */}
-        <TouchableOpacity 
-          style={styles.publicGarageLink}
-          onPress={() => router.push('/feeds')}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={['#1e1e1e', '#252525']}
-            style={styles.publicGarageLinkGradient}
-          >
-            <View style={styles.publicGarageLinkContent}>
-              <View style={styles.publicGarageLinkLeft}>
-                <Ionicons name="chatbubbles" size={24} color="#FF5500" />
-                <View>
-                  <Text style={styles.publicGarageLinkTitle}>Community Lounge</Text>
-                  <Text style={styles.publicGarageLinkSub}>Share posts and connect with the community</Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <View style={styles.menuItemBadge}>
-                  <Text style={styles.menuItemBadgeText}>NEW</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={22} color="#FF5500" />
-              </View>
-            </View>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        {/* Instant Add Event */}
-        <TouchableOpacity
-          style={styles.publicGarageLink}
-          onPress={() => router.push('/instant-add-event')}
-        >
-          <LinearGradient
-            colors={['#1a1a2e', '#16213e']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.publicGarageLinkGradient}
-          >
-            <View style={styles.publicGarageLinkContent}>
-              <View style={styles.publicGarageLinkLeft}>
-                <Ionicons name="camera" size={24} color="#FF5500" />
-                <View>
-                  <Text style={styles.publicGarageLinkTitle}>Instant Add Event</Text>
-                  <Text style={styles.publicGarageLinkSub}>Use your camera to add an event</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="#666" />
-            </View>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        {/* Menu Sections */}
+        {/* ===== EVENTS & RSVPs ===== */}
         <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/messages')}>
-            <Ionicons name="chatbubbles" size={24} color="#2196F3" />
-            <Text style={styles.menuItemText}>Messages</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer/my-runs')}>
-            <Ionicons name="speedometer" size={24} color="#FF5500" />
-            <Text style={styles.menuItemText}>My Performance Runs</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer')}>
-            <Ionicons name="timer" size={24} color="#E91E63" />
-            <Text style={styles.menuItemText}>Performance Timer</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer/leaderboard')}>
-            <Ionicons name="trophy" size={24} color="#FFC107" />
-            <Text style={styles.menuItemText}>Area Leaderboards</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
-
+          <View style={styles.sectionHeader}>
+            <Ionicons name="calendar" size={20} color="#FF5500" />
+            <Text style={styles.sectionHeaderText}>Events & RSVPs</Text>
+          </View>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/my-rsvps')}>
             <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
             <Text style={styles.menuItemText}>My RSVPs</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/crews')}>
-            <Ionicons name="people" size={24} color="#FFE707" />
-            <Text style={styles.menuItemText}>My Crews</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/my-favorites')}>
-            <Ionicons name="heart" size={24} color="#E91E63" />
-            <Text style={styles.menuItemText}>My Favorite Events</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
-
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/my-events')}>
             <Ionicons name="create" size={24} color="#FF5500" />
             <Text style={styles.menuItemText}>My Created Events</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/my-favorites')}>
+            <Ionicons name="heart" size={24} color="#E91E63" />
+            <Text style={styles.menuItemText}>My Favorite Events</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/instant-add-event')}>
+            <Ionicons name="camera" size={24} color="#9C27B0" />
+            <Text style={styles.menuItemText}>Instant Add Event</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+        </View>
 
+        {/* ===== COMMUNITY ===== */}
+        <View style={styles.menuSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="people" size={20} color="#FF5500" />
+            <Text style={styles.sectionHeaderText}>Community</Text>
+          </View>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/messages')}>
+            <Ionicons name="chatbubbles" size={24} color="#2196F3" />
+            <Text style={styles.menuItemText}>Messages</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/feeds')}>
+            <Ionicons name="newspaper" size={24} color="#FF9800" />
+            <Text style={styles.menuItemText}>Community Lounge</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/crews')}>
+            <Ionicons name="shield" size={24} color="#FFE707" />
+            <Text style={styles.menuItemText}>My Crews</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/garage')}>
+            <Ionicons name="car-sport" size={24} color="#4CAF50" />
+            <Text style={styles.menuItemText}>Browse Public Garages</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/garage/tagged-photos')}>
             <Ionicons name="images" size={24} color="#9C27B0" />
             <Text style={styles.menuItemText}>Tagged Photos</Text>
-            <View style={styles.menuItemBadge}>
-              <Text style={styles.menuItemBadgeText}>NEW</Text>
-            </View>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+        </View>
+
+        {/* ===== PERFORMANCE ===== */}
+        <View style={styles.menuSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="speedometer" size={20} color="#FF5500" />
+            <Text style={styles.sectionHeaderText}>Performance</Text>
+          </View>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer')}>
+            <Ionicons name="timer" size={24} color="#E91E63" />
+            <Text style={styles.menuItemText}>Performance Timer</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer/my-runs')}>
+            <Ionicons name="analytics" size={24} color="#FF5500" />
+            <Text style={styles.menuItemText}>My Performance Runs</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/timer/leaderboard')}>
+            <Ionicons name="trophy" size={24} color="#FFC107" />
+            <Text style={styles.menuItemText}>Area Leaderboards</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
         </View>
