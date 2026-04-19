@@ -406,6 +406,12 @@ async def register_push_token(data: PushTokenRegister):
     if not ObjectId.is_valid(data.userId):
         raise HTTPException(status_code=400, detail="Invalid user ID")
 
+    # Remove this push token from any other users first (one device = one user)
+    await db.users.update_many(
+        {"pushToken": data.pushToken, "_id": {"$ne": ObjectId(data.userId)}},
+        {"$unset": {"pushToken": ""}}
+    )
+
     result = await db.users.update_one(
         {"_id": ObjectId(data.userId)},
         {"$set": {"pushToken": data.pushToken}}
