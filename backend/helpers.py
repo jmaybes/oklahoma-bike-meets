@@ -307,6 +307,7 @@ async def send_push_notification(push_token: str, title: str, body: str, data: d
         "data": data or {},
         "priority": "high",
         "channelId": "default",
+        "badge": 1,
     }
 
     try:
