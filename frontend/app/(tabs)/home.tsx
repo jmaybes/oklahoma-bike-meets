@@ -762,7 +762,7 @@ export default function HomeScreen() {
         </Animated.View>
       </View>
 
-      {/* Sort & Past Row */}
+      {/* Sort & Calendar Row */}
       <View style={styles.filterRow2}>
         <TouchableOpacity
           style={styles.sortByButton}
@@ -775,9 +775,9 @@ export default function HomeScreen() {
 
         <View style={{ flex: 1 }} />
 
-        <TouchableOpacity style={styles.pastButton} onPress={() => router.push('/events/past')}>
-          <Ionicons name="time" size={14} color="#fff" />
-          <Text style={styles.pastButtonText}>Past</Text>
+        <TouchableOpacity style={styles.calendarViewButton} onPress={() => router.push('/events/calendar')}>
+          <Ionicons name="calendar" size={14} color="#FF5500" />
+          <Text style={styles.calendarViewButtonText}>Calendar</Text>
         </TouchableOpacity>
       </View>
 
@@ -987,6 +987,19 @@ export default function HomeScreen() {
             {freeOnly && (
               <Ionicons name="checkmark" size={18} color="#4CAF50" style={{ marginLeft: 'auto' }} />
             )}
+          </TouchableOpacity>
+
+          {/* Past Events */}
+          <TouchableOpacity
+            style={styles.sortDropdownItem}
+            onPress={() => {
+              setShowSortMenu(false);
+              router.push('/events/past');
+            }}
+          >
+            <Ionicons name="time" size={18} color="#D32F2F" />
+            <Text style={styles.sortDropdownText}>Past Events</Text>
+            <Ionicons name="chevron-forward" size={16} color="#666" style={{ marginLeft: 'auto' }} />
           </TouchableOpacity>
         </View>
       )}
@@ -1320,18 +1333,20 @@ const styles = StyleSheet.create({
     color: '#FF5500',
     fontWeight: '600',
   },
-  pastButton: {
+  calendarViewButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 6,
-    backgroundColor: '#D32F2F',
+    paddingVertical: 8,
+    backgroundColor: '#1a1a1a',
     borderRadius: 8,
-    gap: 4,
+    borderWidth: 1,
+    borderColor: '#FF5500',
+    gap: 6,
   },
-  pastButtonText: {
-    color: '#fff',
-    fontSize: 12,
+  calendarViewButtonText: {
+    color: '#FF5500',
+    fontSize: 13,
     fontWeight: '600',
   },
 
