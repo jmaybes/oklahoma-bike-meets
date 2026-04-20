@@ -218,3 +218,12 @@ dump/test_database/user_cars.bson
 db_export.tar.gz
 .metro-cache
 frontend/.metro-cache
+-e 
+# Environment and credential files
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
