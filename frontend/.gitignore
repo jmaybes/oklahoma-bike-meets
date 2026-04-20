@@ -33,6 +33,11 @@ yarn-error.*
 # local env files
 .env*.local
 
+# Firebase Admin SDK / FCM V1 service account key — NEVER commit
+fcm-service-account.json
+*-firebase-adminsdk-*.json
+*-service-account*.json
+
 # typescript
 *.tsbuildinfo
 

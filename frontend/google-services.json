@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "736886409631",
+    "project_id": "okcarevents",
+    "storage_bucket": "okcarevents.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:736886409631:android:dc83a4d64fc739cb53d5aa",
+        "android_client_info": {
+          "package_name": "com.velocityvisualcrew.okcbikemeets"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD79nHadnHtceU2P3-VzrZJ85BMlnp2r3I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:736886409631:android:32c18d4d85595cfe53d5aa",
+        "android_client_info": {
+          "package_name": "com.velocityvisualcrew.oklahomacarmeets"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD79nHadnHtceU2P3-VzrZJ85BMlnp2r3I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

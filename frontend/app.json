@@ -17,7 +17,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.velocityvisualcrew.oklahomabikemeets",
+      "bundleIdentifier": "com.velocityvisualcrew.okcbikemeets",
       "buildNumber": "1",
       "usesAppleSignIn": true,
       "config": {
@@ -32,8 +32,9 @@
       }
     },
     "android": {
-      "package": "com.velocityvisualcrew.oklahomabikemeets",
+      "package": "com.velocityvisualcrew.okcbikemeets",
       "versionCode": 1,
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
@@ -51,7 +52,8 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
       ]
     },
     "web": {
