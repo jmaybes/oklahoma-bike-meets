@@ -282,7 +282,7 @@ interface GlowProps {
 export const GlowView: React.FC<GlowProps> = ({
   children,
   style,
-  color = '#FF5500',
+  color = '#51fb00',
 }) => {
   const opacity = useSharedValue(0.5);
 
@@ -395,7 +395,7 @@ interface AnimatedProgressProps {
 
 export const AnimatedProgress: React.FC<AnimatedProgressProps> = ({
   progress,
-  color = '#FF5500',
+  color = '#51fb00',
   height = 4,
   style,
 }) => {

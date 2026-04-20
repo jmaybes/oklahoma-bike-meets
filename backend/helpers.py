@@ -27,7 +27,7 @@ JPEG_QUALITY = 75
 
 # Thumbnail settings for browse/list views
 THUMBNAIL_DIMENSION = 800  # Max width/height for thumbnails (good for full-width cards)
-THUMBNAIL_MAX_BYTES = 300_000  # ~300KB per thumbnail (high quality for car showcase)
+THUMBNAIL_MAX_BYTES = 300_000  # ~300KB per thumbnail (high quality for bike showcase)
 THUMBNAIL_QUALITY = 82
 
 
@@ -174,7 +174,7 @@ def event_helper(event) -> dict:
         "organizer": event.get("organizer", ""),
         "entryFee": event.get("entryFee", ""),
         "carTypes": event.get("carTypes", []),
-        "eventType": event.get("eventType", "Car Meet"),
+        "eventType": event.get("eventType", "Bike Meet"),
         "photos": event.get("photos", []),
         "attendeeCount": event.get("attendeeCount", 0),
         "userId": _sid(event.get("userId")),
@@ -219,7 +219,7 @@ def user_car_helper(car) -> dict:
         "color": car.get("color", ""),
         "trim": car.get("trim", ""),
         "engine": car.get("engine", ""),
-        "horsepower": car.get("horsepower"),
+        "displacement": car.get("displacement"),
         "torque": car.get("torque"),
         "transmission": car.get("transmission", ""),
         "drivetrain": car.get("drivetrain", ""),

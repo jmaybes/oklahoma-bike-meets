@@ -104,7 +104,7 @@ export default function MyRunsScreen() {
     if (item.topSpeed) message += `\n⚡ Top Speed: ${item.topSpeed.toFixed(1)} MPH`;
     if (item.quarterMileSpeed) message += `\n💨 Trap Speed: ${item.quarterMileSpeed.toFixed(1)} MPH`;
     if (item.isManualEntry) message += `\n📝 Manual Entry`;
-    message += `\n📱 OKC Car Events`;
+    message += `\n📱 OKC Bike Events`;
 
     try {
       await Share.share({ message });
@@ -116,7 +116,7 @@ export default function MyRunsScreen() {
   const renderRunItem = ({ item }: { item: PerformanceRun }) => {
     const runType = item.zeroToSixty ? '0-60' : item.zeroToHundred ? '0-100' : '1/4 Mile';
     const time = item.zeroToSixty || item.zeroToHundred || item.quarterMile || 0;
-    const color = item.zeroToSixty ? '#FF5500' : item.zeroToHundred ? '#E91E63' : '#9C27B0';
+    const color = item.zeroToSixty ? '#51fb00' : item.zeroToHundred ? '#E91E63' : '#9C27B0';
     const icon = item.zeroToSixty ? 'speedometer' : item.zeroToHundred ? 'rocket' : 'flag';
 
     // Check if this is a personal best
@@ -185,7 +185,7 @@ export default function MyRunsScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <LinearGradient
-          colors={['#FF5500', '#E91E63']}
+          colors={['#51fb00', '#E91E63']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.headerGradient}
@@ -215,7 +215,7 @@ export default function MyRunsScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <LinearGradient
-        colors={['#FF5500', '#E91E63']}
+        colors={['#51fb00', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -237,9 +237,9 @@ export default function MyRunsScreen() {
           </Text>
           <View style={styles.bestsGrid}>
             <View style={styles.bestItem}>
-              <Ionicons name="speedometer" size={18} color="#FF5500" />
+              <Ionicons name="speedometer" size={18} color="#51fb00" />
               <Text style={styles.bestLabel}>0-60</Text>
-              <Text style={[styles.bestValue, { color: '#FF5500' }]}>
+              <Text style={[styles.bestValue, { color: '#51fb00' }]}>
                 {personalBests.zeroToSixty?.toFixed(2) || '--'}s
               </Text>
             </View>
@@ -264,7 +264,7 @@ export default function MyRunsScreen() {
       {/* Runs List */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF5500" />
+          <ActivityIndicator size="large" color="#51fb00" />
           <Text style={styles.loadingText}>Loading your runs...</Text>
         </View>
       ) : (
@@ -281,7 +281,7 @@ export default function MyRunsScreen() {
                 Start your first performance run to track your times
               </Text>
               <TouchableOpacity style={styles.startRunButton} onPress={() => router.push('/timer')}>
-                <LinearGradient colors={['#FF5500', '#E91E63']} style={styles.startRunGradient}>
+                <LinearGradient colors={['#51fb00', '#E91E63']} style={styles.startRunGradient}>
                   <Ionicons name="play" size={20} color="#fff" />
                   <Text style={styles.startRunText}>Start a Run</Text>
                 </LinearGradient>
@@ -289,7 +289,7 @@ export default function MyRunsScreen() {
             </View>
           }
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF5500" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#51fb00" />
           }
           ListHeaderComponent={
             runs.length > 0 ? <Text style={styles.runHistoryTitle}>Run History</Text> : null
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   loginButton: {
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 12,

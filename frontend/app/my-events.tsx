@@ -80,9 +80,9 @@ export default function MyEventsScreen() {
   const [editOrganizer, setEditOrganizer] = useState('');
   const [editContactInfo, setEditContactInfo] = useState('');
   const [editWebsite, setEditWebsite] = useState('');
-  const [editEventType, setEditEventType] = useState('Car Meet');
+  const [editEventType, setEditEventType] = useState('Bike Meet');
 
-  const eventTypes = ['Car Meet', 'Car Show', 'Cruise'];
+  const eventTypes = ['Bike Meet', 'Bike Show', 'Group Ride'];
 
   const fetchEvents = useCallback(async () => {
     if (!user?.id) {
@@ -122,7 +122,7 @@ export default function MyEventsScreen() {
     setEditOrganizer(event.organizer || '');
     setEditContactInfo(event.contactInfo || '');
     setEditWebsite(event.website || '');
-    setEditEventType(event.eventType || 'Car Meet');
+    setEditEventType(event.eventType || 'Bike Meet');
     setEditModalVisible(true);
   };
 
@@ -205,7 +205,7 @@ export default function MyEventsScreen() {
           {/* Header row */}
           <View style={styles.cardHeader}>
             <View style={styles.cardTypeRow}>
-              <Ionicons name="car-sport" size={16} color="#FF5500" />
+              <Ionicons name="bicycle" size={16} color="#51fb00" />
               <Text style={styles.cardType}>{item.eventType}</Text>
             </View>
             <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
@@ -237,8 +237,8 @@ export default function MyEventsScreen() {
             ) : null}
             {item.isRecurring && item.recurrenceDay !== undefined && (
               <View style={styles.detailRow}>
-                <Ionicons name="repeat" size={15} color="#FF5500" />
-                <Text style={[styles.detailText, { color: '#FF5500' }]}>
+                <Ionicons name="repeat" size={15} color="#51fb00" />
+                <Text style={[styles.detailText, { color: '#51fb00' }]}>
                   Every {getDayName(item.recurrenceDay)}
                 </Text>
               </View>
@@ -268,7 +268,7 @@ export default function MyEventsScreen() {
               onPress={() => router.push(`/event/${item.id}`)}
               activeOpacity={0.7}
             >
-              <Ionicons name="eye-outline" size={18} color="#FF5500" />
+              <Ionicons name="eye-outline" size={18} color="#51fb00" />
               <Text style={styles.viewButtonText}>View</Text>
             </TouchableOpacity>
           </View>
@@ -281,7 +281,7 @@ export default function MyEventsScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF5500" />
+          <ActivityIndicator size="large" color="#51fb00" />
         </View>
       </View>
     );
@@ -324,7 +324,7 @@ export default function MyEventsScreen() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF5500" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#51fb00" />
           }
         />
       )}
@@ -349,7 +349,7 @@ export default function MyEventsScreen() {
               <Text style={styles.modalTitle}>Edit Event</Text>
               <TouchableOpacity onPress={handleSaveEdit} disabled={saving}>
                 {saving ? (
-                  <ActivityIndicator size="small" color="#FF5500" />
+                  <ActivityIndicator size="small" color="#51fb00" />
                 ) : (
                   <Text style={styles.modalSave}>Save</Text>
                 )}
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   cardType: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -653,7 +653,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   viewButtonText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -681,7 +681,7 @@ const styles = StyleSheet.create({
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
@@ -718,7 +718,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   modalSave: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -771,8 +771,8 @@ const styles = StyleSheet.create({
     borderColor: '#2a2a2a',
   },
   typeChipActive: {
-    backgroundColor: '#FF5500',
-    borderColor: '#FF5500',
+    backgroundColor: '#51fb00',
+    borderColor: '#51fb00',
   },
   typeChipText: {
     color: '#999',

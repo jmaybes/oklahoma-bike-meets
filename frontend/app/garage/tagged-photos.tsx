@@ -126,7 +126,7 @@ export default function TaggedPhotosScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#FF5500', '#E91E63']}
+        colors={['#51fb00', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -137,7 +137,7 @@ export default function TaggedPhotosScreen() {
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
             <Text style={styles.headerTitle}>Tagged Photos</Text>
-            <Text style={styles.headerSubtitle}>Photos of your car from events</Text>
+            <Text style={styles.headerSubtitle}>Photos of your bike from events</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
@@ -153,7 +153,7 @@ export default function TaggedPhotosScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF5500" />
+          <ActivityIndicator size="large" color="#51fb00" />
           <Text style={styles.loadingText}>Loading your tagged photos...</Text>
         </View>
       ) : (
@@ -164,14 +164,14 @@ export default function TaggedPhotosScreen() {
           numColumns={3}
           contentContainerStyle={styles.photoGrid}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF5500" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#51fb00" />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="images-outline" size={64} color="#444" />
               <Text style={styles.emptyTitle}>No Tagged Photos Yet</Text>
               <Text style={styles.emptySubtitle}>
-                When photographers tag your car in event photos, they'll appear here!
+                When photographers tag your bike in event photos, they'll appear here!
               </Text>
               <TouchableOpacity
                 style={styles.browseEventsButton}
@@ -211,7 +211,7 @@ export default function TaggedPhotosScreen() {
                   router.push(`/event/${selectedPhoto.eventId}/gallery`);
                 }
               }}>
-                <Ionicons name="images-outline" size={24} color="#FF5500" />
+                <Ionicons name="images-outline" size={24} color="#51fb00" />
               </TouchableOpacity>
             </View>
 
@@ -232,7 +232,7 @@ export default function TaggedPhotosScreen() {
                 <Text style={styles.taggedCarsTitle}>Your Tagged Cars:</Text>
                 {selectedPhoto.userTags.map((tag, index) => (
                   <View key={index} style={styles.taggedCarItem}>
-                    <Ionicons name="car-sport" size={18} color="#FF5500" />
+                    <Ionicons name="bicycle" size={18} color="#51fb00" />
                     <Text style={styles.taggedCarText}>{tag.carInfo}</Text>
                   </View>
                 ))}
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
   browseEventsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 25,
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(225, 85, 0, 0.1)',
   },
   taggedCarsTitle: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 8,

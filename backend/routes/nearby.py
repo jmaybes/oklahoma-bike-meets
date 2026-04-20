@@ -10,10 +10,10 @@ router = APIRouter()
 
 # Prewritten invite messages
 PREWRITTEN_INVITES = [
-    "Hey car enthusiasts! I'm nearby and looking to meet up. Anyone want to cruise?",
+    "Hey riders! I'm nearby and looking to meet up. Anyone want to cruise?",
     "Pop-up meet happening now! Come check out some rides in the area!",
     "Looking for fellow car lovers to hang out. Who's around?",
-    "Spontaneous car meet! Drop your location if you're interested!",
+    "Spontaneous bike meet! Drop your location if you're interested!",
     "Any gearheads nearby want to link up and talk cars?"
 ]
 
@@ -228,7 +228,7 @@ async def send_popup_invite(invite: PopupInviteRequest):
                 await send_push_notification(
                     recipient["pushToken"],
                     f"🏁 Pop-Up Invite from {invite.senderName}!",
-                    invite.message[:100] if invite.message else "You're invited to a pop-up car meet!",
+                    invite.message[:100] if invite.message else "You're invited to a pop-up bike meet!",
                     {
                         "type": "popup_invite",
                         "senderId": invite.senderId,

@@ -184,7 +184,7 @@ export default function AdminEditClubScreen() {
   if (authLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#FF5500" />
+        <ActivityIndicator size="large" color="#51fb00" />
       </View>
     );
   }
@@ -297,7 +297,7 @@ export default function AdminEditClubScreen() {
               style={styles.input}
               value={form.carTypes}
               onChangeText={(text) => setForm({ ...form, carTypes: text })}
-              placeholder="e.g., JDM, Muscle Cars, Euro"
+              placeholder="e.g., Cruisers, Sportbikes, Touring"
               placeholderTextColor="#666"
             />
 

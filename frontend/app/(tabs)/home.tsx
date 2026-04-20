@@ -605,7 +605,7 @@ export default function HomeScreen() {
             <View style={styles.eventContent}>
               <View style={styles.eventHeader}>
                 <View style={styles.eventTypeContainer}>
-                  <Ionicons name="car-sport" size={16} color="#FF5500" />
+                  <Ionicons name="bicycle" size={16} color="#51fb00" />
                   <Text style={styles.eventType}>{item.eventType}</Text>
                 </View>
                 <View style={styles.eventBadges}>
@@ -637,7 +637,7 @@ export default function HomeScreen() {
 
               <View style={styles.eventDetails}>
                 <View style={styles.detailRow}>
-                  <Ionicons name="calendar" size={16} color="#FF5500" />
+                  <Ionicons name="calendar" size={16} color="#51fb00" />
                   <Text style={styles.detailText}>
                     {formatEventDate(item.date)} at {item.time}
                   </Text>
@@ -708,7 +708,7 @@ export default function HomeScreen() {
         {/* Hero text content with parallax */}
         <Animated.View style={[styles.heroContent, heroContentStyle, { paddingTop: insets.top + 16 }]}>
           <View style={styles.heroBadge}>
-            <Ionicons name="flame" size={14} color="#FF5500" />
+            <Ionicons name="flame" size={14} color="#51fb00" />
             <Text style={styles.heroBadgeText}>OKC's #1 Car Community</Text>
           </View>
           <View style={styles.heroTitleRow}>
@@ -768,15 +768,15 @@ export default function HomeScreen() {
           style={styles.sortByButton}
           onPress={() => setShowSortMenu(!showSortMenu)}
         >
-          <Ionicons name="options" size={16} color="#FF5500" />
+          <Ionicons name="options" size={16} color="#51fb00" />
           <Text style={styles.sortByButtonText}>SORT / FILTER</Text>
-          <Ionicons name={showSortMenu ? 'chevron-up' : 'chevron-down'} size={14} color="#FF5500" />
+          <Ionicons name={showSortMenu ? 'chevron-up' : 'chevron-down'} size={14} color="#51fb00" />
         </TouchableOpacity>
 
         <View style={{ flex: 1 }} />
 
         <TouchableOpacity style={styles.calendarViewButton} onPress={() => router.push('/events/calendar')}>
-          <Ionicons name="calendar" size={14} color="#FF5500" />
+          <Ionicons name="calendar" size={14} color="#51fb00" />
           <Text style={styles.calendarViewButtonText}>Calendar</Text>
         </TouchableOpacity>
       </View>
@@ -829,7 +829,7 @@ export default function HomeScreen() {
             <Ionicons
               name="location"
               size={18}
-              color={(!showAllEvents && selectedType === 'All') ? '#FF5500' : '#999'}
+              color={(!showAllEvents && selectedType === 'All') ? '#51fb00' : '#999'}
             />
             <Text
               style={[
@@ -840,7 +840,7 @@ export default function HomeScreen() {
               OKC Only
             </Text>
             {(!showAllEvents && selectedType === 'All') && (
-              <Ionicons name="checkmark" size={18} color="#FF5500" style={{ marginLeft: 'auto' }} />
+              <Ionicons name="checkmark" size={18} color="#51fb00" style={{ marginLeft: 'auto' }} />
             )}
           </TouchableOpacity>
 
@@ -848,28 +848,28 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={[
               styles.sortDropdownItem,
-              selectedType === 'Car Meet' && styles.sortDropdownItemActive,
+              selectedType === 'Bike Meet' && styles.sortDropdownItemActive,
             ]}
             onPress={() => {
-              setSelectedType(selectedType === 'Car Meet' ? 'All' : 'Car Meet');
+              setSelectedType(selectedType === 'Bike Meet' ? 'All' : 'Bike Meet');
               setShowSortMenu(false);
             }}
           >
             <Ionicons
-              name="car-sport"
+              name="bicycle"
               size={18}
-              color={selectedType === 'Car Meet' ? '#FF5500' : '#999'}
+              color={selectedType === 'Bike Meet' ? '#51fb00' : '#999'}
             />
             <Text
               style={[
                 styles.sortDropdownText,
-                selectedType === 'Car Meet' && styles.sortDropdownTextActive,
+                selectedType === 'Bike Meet' && styles.sortDropdownTextActive,
               ]}
             >
               Meets
             </Text>
-            {selectedType === 'Car Meet' && (
-              <Ionicons name="checkmark" size={18} color="#FF5500" style={{ marginLeft: 'auto' }} />
+            {selectedType === 'Bike Meet' && (
+              <Ionicons name="checkmark" size={18} color="#51fb00" style={{ marginLeft: 'auto' }} />
             )}
           </TouchableOpacity>
 
@@ -877,28 +877,28 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={[
               styles.sortDropdownItem,
-              selectedType === 'Car Show' && styles.sortDropdownItemActive,
+              selectedType === 'Bike Show' && styles.sortDropdownItemActive,
             ]}
             onPress={() => {
-              setSelectedType(selectedType === 'Car Show' ? 'All' : 'Car Show');
+              setSelectedType(selectedType === 'Bike Show' ? 'All' : 'Bike Show');
               setShowSortMenu(false);
             }}
           >
             <Ionicons
               name="trophy"
               size={18}
-              color={selectedType === 'Car Show' ? '#FF5500' : '#999'}
+              color={selectedType === 'Bike Show' ? '#51fb00' : '#999'}
             />
             <Text
               style={[
                 styles.sortDropdownText,
-                selectedType === 'Car Show' && styles.sortDropdownTextActive,
+                selectedType === 'Bike Show' && styles.sortDropdownTextActive,
               ]}
             >
               Shows
             </Text>
-            {selectedType === 'Car Show' && (
-              <Ionicons name="checkmark" size={18} color="#FF5500" style={{ marginLeft: 'auto' }} />
+            {selectedType === 'Bike Show' && (
+              <Ionicons name="checkmark" size={18} color="#51fb00" style={{ marginLeft: 'auto' }} />
             )}
           </TouchableOpacity>
 
@@ -906,28 +906,28 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={[
               styles.sortDropdownItem,
-              selectedType === 'Cruise' && styles.sortDropdownItemActive,
+              selectedType === 'Group Ride' && styles.sortDropdownItemActive,
             ]}
             onPress={() => {
-              setSelectedType(selectedType === 'Cruise' ? 'All' : 'Cruise');
+              setSelectedType(selectedType === 'Group Ride' ? 'All' : 'Group Ride');
               setShowSortMenu(false);
             }}
           >
             <Ionicons
               name="speedometer"
               size={18}
-              color={selectedType === 'Cruise' ? '#FF5500' : '#999'}
+              color={selectedType === 'Group Ride' ? '#51fb00' : '#999'}
             />
             <Text
               style={[
                 styles.sortDropdownText,
-                selectedType === 'Cruise' && styles.sortDropdownTextActive,
+                selectedType === 'Group Ride' && styles.sortDropdownTextActive,
               ]}
             >
               Cruises
             </Text>
-            {selectedType === 'Cruise' && (
-              <Ionicons name="checkmark" size={18} color="#FF5500" style={{ marginLeft: 'auto' }} />
+            {selectedType === 'Group Ride' && (
+              <Ionicons name="checkmark" size={18} color="#51fb00" style={{ marginLeft: 'auto' }} />
             )}
           </TouchableOpacity>
 
@@ -1008,7 +1008,7 @@ export default function HomeScreen() {
       {(!showAllEvents && selectedType === 'All' && !freeOnly && sortBy === 'date') ? (
         <View style={styles.resultsRowHighlight}>
           <Text style={styles.resultsTextHighlight}>
-            <Text style={{ color: '#FF5500', fontWeight: '800' }}>{filteredEvents.length}</Text>
+            <Text style={{ color: '#51fb00', fontWeight: '800' }}>{filteredEvents.length}</Text>
             {'  '}Events in or near OKC!  Use sort for options.
           </Text>
         </View>
@@ -1025,7 +1025,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={[styles.centerContainer, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color="#FF5500" />
+        <ActivityIndicator size="large" color="#51fb00" />
       </View>
     );
   }
@@ -1039,8 +1039,8 @@ export default function HomeScreen() {
           style={StyleSheet.absoluteFillObject}
         />
         <View style={styles.stickyHeaderContent}>
-          <Ionicons name="car-sport" size={22} color="#FF5500" />
-          <Text style={styles.stickyHeaderTitle}>Oklahoma Car Events</Text>
+          <Ionicons name="bicycle" size={22} color="#51fb00" />
+          <Text style={styles.stickyHeaderTitle}>Oklahoma Bike Events</Text>
           <View style={styles.stickyHeaderBadge}>
             <Text style={styles.stickyHeaderCount}>{filteredEvents.length}</Text>
           </View>
@@ -1064,7 +1064,7 @@ export default function HomeScreen() {
         snapToAlignment="start"
         decelerationRate="fast"
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF5500" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#51fb00" />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -1083,7 +1083,7 @@ export default function HomeScreen() {
               </>
             ) : (
               <>
-                <Ionicons name="car" size={64} color="#333" />
+                <Ionicons name="bicycle" size={64} color="#333" />
                 <Text style={styles.emptyText}>No events found</Text>
                 <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
               </>
@@ -1156,7 +1156,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   heroBadgeText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.5,
@@ -1179,7 +1179,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
     letterSpacing: -0.5,
-    textShadowColor: '#FF5500',
+    textShadowColor: '#51fb00',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 12,
   },
@@ -1225,7 +1225,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   heroStatNumber: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 18,
     fontWeight: '800',
   },
@@ -1264,7 +1264,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   stickyHeaderBadge: {
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -1295,11 +1295,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FF5500',
+    borderColor: '#51fb00',
     gap: 6,
   },
   sortByButtonText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -1330,7 +1330,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   sortDropdownTextActive: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontWeight: '600',
   },
   calendarViewButton: {
@@ -1341,11 +1341,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FF5500',
+    borderColor: '#51fb00',
     gap: 6,
   },
   calendarViewButtonText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -1392,7 +1392,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   resultsDate: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -1432,7 +1432,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   eventType: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
@@ -1520,7 +1520,7 @@ const styles = StyleSheet.create({
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 25,

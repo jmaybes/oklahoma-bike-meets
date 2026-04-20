@@ -64,7 +64,7 @@ export default function LeaderboardScreen() {
   const [saving, setSaving] = useState(false);
 
   const types: { type: LeaderboardType; label: string; icon: string; color: string }[] = [
-    { type: '0-60', label: '0-60', icon: 'speedometer', color: '#FF5500' },
+    { type: '0-60', label: '0-60', icon: 'speedometer', color: '#51fb00' },
     { type: '0-100', label: '0-100', icon: 'rocket', color: '#E91E63' },
     { type: 'quarter-mile', label: '1/4 Mile', icon: 'flag', color: '#9C27B0' },
   ];
@@ -278,7 +278,7 @@ export default function LeaderboardScreen() {
         onPress={() => router.push('/timer')}
       >
         <LinearGradient
-          colors={['#FF5500', '#E91E63']}
+          colors={['#51fb00', '#E91E63']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.startRunGradient}
@@ -294,7 +294,7 @@ export default function LeaderboardScreen() {
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       {/* Header */}
       <LinearGradient
-        colors={['#FFD700', '#FF5500']}
+        colors={['#FFD700', '#51fb00']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -339,7 +339,7 @@ export default function LeaderboardScreen() {
       {leaderboard.length > 0 && (
         <View style={styles.statsBanner}>
           <View style={styles.statItem}>
-            <Ionicons name="people" size={20} color="#FF5500" />
+            <Ionicons name="people" size={20} color="#51fb00" />
             <Text style={styles.statValue}>{leaderboard.length}</Text>
             <Text style={styles.statLabel}>Entries</Text>
           </View>
@@ -357,7 +357,7 @@ export default function LeaderboardScreen() {
       {/* Leaderboard List */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF5500" />
+          <ActivityIndicator size="large" color="#51fb00" />
           <Text style={styles.loadingText}>Loading rankings...</Text>
         </View>
       ) : (
@@ -371,7 +371,7 @@ export default function LeaderboardScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#FF5500"
+              tintColor="#51fb00"
             />
           }
         />
@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
   formSectionTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FF5500',
+    color: '#51fb00',
     marginTop: 16,
     marginBottom: 12,
     textTransform: 'uppercase',
@@ -815,7 +815,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,

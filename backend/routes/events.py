@@ -20,7 +20,7 @@ router = APIRouter()
 
 @router.get("/")
 async def root():
-    return {"message": "Oklahoma Car Events API"}
+    return {"message": "Oklahoma Bike Events API"}
 
 
 @router.post("/events")
@@ -384,7 +384,7 @@ class FacebookPostImport(BaseModel):
 async def import_facebook_posts(data: FacebookPostImport):
     """
     Accept Apify-scraped Facebook group posts, use GPT to identify
-    car events, and create them in the database (pending admin approval).
+    bike events, and create them in the database (pending admin approval).
     Uses the standard OpenAI Python SDK (AsyncOpenAI) for VPS compatibility.
     """
     try:
@@ -414,8 +414,8 @@ async def import_facebook_posts(data: FacebookPostImport):
         if not post_texts:
             return {"message": "No text content found in posts", "eventsCreated": 0, "eventsSkipped": 0}
 
-        system_message = """You are an expert at identifying car event announcements in Facebook group posts.
-Analyze each post and determine if it's announcing a car-related event (car show, car meet, cruise, drag race, swap meet, etc.).
+        system_message = """You are an expert at identifying bike event announcements in Facebook group posts.
+Analyze each post and determine if it's announcing a car-related event (bike show, bike meet, cruise, drag race, swap meet, etc.).
 
 IGNORE posts that are:
 - Just showing off someone's car
@@ -439,7 +439,7 @@ For each REAL EVENT found, extract:
 - sourceUrl: The Facebook post URL if available
 
 IMPORTANT:
-- Focus on Oklahoma events, but include nearby states if clearly car events
+- Focus on Oklahoma events, but include nearby states if clearly bike events
 - Return ONLY a valid JSON array of event objects
 - If NO events found in any posts, return []
 - Do NOT fabricate events - only extract what's clearly announced"""
@@ -451,7 +451,7 @@ IMPORTANT:
             batch = post_texts[i:i + batch_size]
             combined_text = "\n\n---POST SEPARATOR---\n\n".join(batch)
 
-            prompt = f"""Analyze these Facebook group posts and extract any car event announcements:
+            prompt = f"""Analyze these Facebook group posts and extract any bike event announcements:
 
 {combined_text[:12000]}
 
@@ -516,7 +516,7 @@ Return ONLY a valid JSON array of events found. Return [] if none."""
                 "location": ev.get("location", ""),
                 "address": ev.get("address", ""),
                 "city": ev.get("city", "Oklahoma City"),
-                "eventType": ev.get("eventType", "Car Meet"),
+                "eventType": ev.get("eventType", "Bike Meet"),
                 "entryFee": ev.get("entryFee", "TBD"),
                 "organizer": ev.get("organizer", ""),
                 "website": ev.get("website", ""),

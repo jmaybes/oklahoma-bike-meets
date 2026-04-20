@@ -377,7 +377,7 @@ export default function NearbyScreen() {
         </TouchableOpacity>
       )}
       <View style={[styles.userAvatar, isCrewMember && styles.userAvatarCrew]}>
-        <Ionicons name={isCrewMember ? "people" : "person"} size={24} color={isCrewMember ? "#FFE707" : "#FF5500"} />
+        <Ionicons name={isCrewMember ? "people" : "person"} size={24} color={isCrewMember ? "#FFE707" : "#51fb00"} />
       </View>
       <View style={styles.userInfo}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -396,7 +396,7 @@ export default function NearbyScreen() {
             style={styles.garageButton}
             onPress={() => router.push(`/user-garage/${nearbyUser.id}`)}
           >
-            <Ionicons name="car-sport" size={18} color="#FF5500" />
+            <Ionicons name="bicycle" size={18} color="#51fb00" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.messageButton}
@@ -416,7 +416,7 @@ export default function NearbyScreen() {
     return (
       <View style={styles.container}>
         <LinearGradient
-          colors={['#FF5500', '#E91E63']}
+          colors={['#51fb00', '#E91E63']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -428,7 +428,7 @@ export default function NearbyScreen() {
         </LinearGradient>
         <View style={styles.centerContainer}>
           <Ionicons name="person-circle" size={80} color="#666" />
-          <Text style={styles.loginPrompt}>Please log in to find nearby car enthusiasts</Text>
+          <Text style={styles.loginPrompt}>Please log in to find nearby riders</Text>
         </View>
       </View>
     );
@@ -438,7 +438,7 @@ export default function NearbyScreen() {
     return (
       <View style={styles.container}>
         <View style={[styles.centerContainer, { paddingTop: insets.top }]}>
-          <ActivityIndicator size="large" color="#FF5500" />
+          <ActivityIndicator size="large" color="#51fb00" />
           <Text style={styles.loadingText}>Getting your location...</Text>
         </View>
       </View>
@@ -451,7 +451,7 @@ export default function NearbyScreen() {
     <View style={styles.container}>
       {/* Header */}
       <LinearGradient
-        colors={['#FF5500', '#E91E63']}
+        colors={['#51fb00', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -526,7 +526,7 @@ export default function NearbyScreen() {
         {/* Live Map */}
         {showMap && location && (
           NearbyMapView ? (
-            <MapErrorBoundary fallbackMessage="The map could not be loaded on this device. Use the list view instead to see nearby car enthusiasts.">
+            <MapErrorBoundary fallbackMessage="The map could not be loaded on this device. Use the list view instead to see nearby riders.">
               <NearbyMapView
                 location={location}
                 radius={radius}
@@ -538,7 +538,7 @@ export default function NearbyScreen() {
             </MapErrorBoundary>
           ) : (
             <View style={styles.mapFallback}>
-              <Ionicons name="map-outline" size={48} color="#FF5500" />
+              <Ionicons name="map-outline" size={48} color="#51fb00" />
               <Text style={styles.mapFallbackTitle}>Map Not Available</Text>
               <Text style={styles.mapFallbackText}>
                 Switch to list view to browse nearby users
@@ -560,9 +560,9 @@ export default function NearbyScreen() {
             step={1}
             value={radius}
             onValueChange={setRadius}
-            minimumTrackTintColor="#FF5500"
+            minimumTrackTintColor="#51fb00"
             maximumTrackTintColor="#444"
-            thumbTintColor="#FF5500"
+            thumbTintColor="#51fb00"
           />
           <View style={styles.sliderMarks}>
             <Text style={styles.sliderMark}>1 mi</Text>
@@ -614,7 +614,7 @@ export default function NearbyScreen() {
             {fetchError
               ? "Couldn't load nearby users"
               : nearbyUsers.length > 0
-                ? 'Nearby Car Enthusiasts'
+                ? 'Nearby Riders'
                 : 'No users found nearby'}
           </Text>
 
@@ -632,9 +632,9 @@ export default function NearbyScreen() {
             </View>
           ) : nearbyUsers.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="car-sport-outline" size={48} color="#444" />
+              <Ionicons name="bicycle-outline" size={48} color="#444" />
               <Text style={styles.emptyText}>
-                No car enthusiasts found within {radius} miles.
+                No riders found within {radius} miles.
               </Text>
               <Text style={styles.emptySubtext}>
                 Try increasing your search radius or check back later!
@@ -696,7 +696,7 @@ export default function NearbyScreen() {
                     <Text style={styles.crewMsgName}>{member.nickname || member.name}</Text>
                     <Text style={styles.crewMsgCrew}>{member.crewName}</Text>
                   </View>
-                  <Ionicons name="chatbubble-ellipses" size={18} color="#FF5500" />
+                  <Ionicons name="chatbubble-ellipses" size={18} color="#51fb00" />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -778,7 +778,7 @@ export default function NearbyScreen() {
                   >
                     <Text style={styles.messageOptionText}>{msg}</Text>
                     {selectedMessage === msg && (
-                      <Ionicons name="checkmark-circle" size={20} color="#FF5500" />
+                      <Ionicons name="checkmark-circle" size={20} color="#51fb00" />
                     )}
                   </TouchableOpacity>
                 ))}
@@ -856,7 +856,7 @@ export default function NearbyScreen() {
             {popupStep === 1 && (
               <View style={styles.stepContent}>
                 <View style={styles.stepIconContainer}>
-                  <Ionicons name="flash" size={48} color="#FF5500" />
+                  <Ionicons name="flash" size={48} color="#51fb00" />
                 </View>
                 <Text style={styles.stepQuestion}>
                   Would you like to send invites for a pop-up event?
@@ -931,7 +931,7 @@ export default function NearbyScreen() {
                     style={styles.stepButtonOutline}
                     onPress={() => handlePopupStep2(false)}
                   >
-                    <Ionicons name="location-outline" size={20} color="#FF5500" />
+                    <Ionicons name="location-outline" size={20} color="#51fb00" />
                     <Text style={styles.stepButtonOutlineText}>No, skip this</Text>
                   </TouchableOpacity>
                 </View>
@@ -948,7 +948,7 @@ export default function NearbyScreen() {
                 {/* Preview Banner */}
                 <View style={styles.previewBanner}>
                   <LinearGradient
-                    colors={['#FF5500', '#E91E63']}
+                    colors={['#51fb00', '#E91E63']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.previewGradient}
@@ -990,7 +990,7 @@ export default function NearbyScreen() {
                 <View style={styles.summaryCard}>
                   <Text style={styles.summaryTitle}>Invite Summary</Text>
                   <View style={styles.summaryRow}>
-                    <Ionicons name="people" size={16} color="#FF5500" />
+                    <Ionicons name="people" size={16} color="#51fb00" />
                     <Text style={styles.summaryText}>{selectedUsers.size} recipient{selectedUsers.size !== 1 ? 's' : ''}</Text>
                   </View>
                   {wantsLocationShare && (
@@ -1112,7 +1112,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   selectAllText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 15,
     fontWeight: '600',
   },
@@ -1136,8 +1136,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   checkboxChecked: {
-    backgroundColor: '#FF5500',
-    borderColor: '#FF5500',
+    backgroundColor: '#51fb00',
+    borderColor: '#51fb00',
   },
 
   // Privacy
@@ -1180,7 +1180,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   radiusValue: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -1229,7 +1229,7 @@ const styles = StyleSheet.create({
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 25,
@@ -1254,7 +1254,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   userCardSelected: {
-    borderColor: '#FF5500',
+    borderColor: '#51fb00',
     backgroundColor: '#1a1520',
   },
   userAvatar: {
@@ -1282,7 +1282,7 @@ const styles = StyleSheet.create({
   messageButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
@@ -1325,7 +1325,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingVertical: 16,
     borderRadius: 12,
     gap: 8,
@@ -1385,7 +1385,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   toggleOptionActive: {
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
   },
   toggleText: {
     color: '#888',
@@ -1410,7 +1410,7 @@ const styles = StyleSheet.create({
   },
   messageOptionActive: {
     backgroundColor: '#333',
-    borderColor: '#FF5500',
+    borderColor: '#51fb00',
     borderWidth: 1,
   },
   messageOptionText: {
@@ -1433,7 +1433,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingVertical: 16,
     borderRadius: 12,
     gap: 8,
@@ -1471,7 +1471,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
   },
   stepDotActive: {
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
   },
 
   // Step Content
@@ -1515,7 +1515,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingVertical: 16,
     borderRadius: 14,
     gap: 8,
@@ -1543,11 +1543,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#FF5500',
+    borderColor: '#51fb00',
     gap: 8,
   },
   stepButtonOutlineText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -1783,7 +1783,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     alignItems: 'center',
     justifyContent: 'center',
   },

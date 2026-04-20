@@ -379,7 +379,7 @@ export default function ChatScreen() {
         <View style={styles.popupInviteCard}>
           {/* Header Gradient */}
           <LinearGradient
-            colors={['#FF5500', '#E91E63']}
+            colors={['#51fb00', '#E91E63']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.popupCardHeader}
@@ -419,7 +419,7 @@ export default function ChatScreen() {
                   </View>
                 ) : (
                   <View style={styles.locationLoading}>
-                    <ActivityIndicator size="small" color="#FF5500" />
+                    <ActivityIndicator size="small" color="#51fb00" />
                     <Text style={styles.locationLoadingText}>Loading location...</Text>
                   </View>
                 )}
@@ -971,7 +971,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   rsvpChangeText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 12,
     fontWeight: '600',
   },

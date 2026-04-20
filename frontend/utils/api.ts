@@ -5,8 +5,8 @@ import { Platform } from 'react-native';
 // For native builds (iOS/Android): ALWAYS use production URL
 // For web (Emergent preview): Allow env variable override
 const API_URL = Platform.OS === 'web'
-  ? (process.env.EXPO_PUBLIC_BACKEND_URL || 'https://api.okccarmeets.com')
-  : 'https://api.okccarmeets.com';
+  ? (process.env.EXPO_PUBLIC_BACKEND_URL || 'https://api.okcbikemeets.com')
+  : 'https://api.okcbikemeets.com';
 
 // Create axios instance with automatic retry for resilience
 const api = axios.create({

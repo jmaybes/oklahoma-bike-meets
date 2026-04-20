@@ -87,7 +87,7 @@ export default function ClubsScreen() {
     <View style={styles.clubCard}>
       <View style={styles.clubHeader}>
         <View style={styles.clubIcon}>
-          <Ionicons name="people-circle" size={40} color="#FF5500" />
+          <Ionicons name="people-circle" size={40} color="#51fb00" />
         </View>
         <View style={styles.clubHeaderInfo}>
           <Text style={styles.clubName}>{item.name}</Text>
@@ -109,7 +109,7 @@ export default function ClubsScreen() {
         <View style={styles.carTypesContainer}>
           {item.carTypes.map((type, index) => (
             <View key={index} style={styles.carTypeChip}>
-              <Ionicons name="car-sport" size={12} color="#FF5500" />
+              <Ionicons name="bicycle" size={12} color="#51fb00" />
               <Text style={styles.carTypeText}>{type}</Text>
             </View>
           ))}
@@ -164,7 +164,7 @@ export default function ClubsScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF5500" />
+        <ActivityIndicator size="large" color="#51fb00" />
       </View>
     );
   }
@@ -176,7 +176,7 @@ export default function ClubsScreen() {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Oklahoma Car Clubs</Text>
+          <Text style={styles.headerTitle}>Oklahoma Bike Clubs</Text>
           <Text style={styles.headerSubtitle}>
             {filteredClubs.length} club{filteredClubs.length !== 1 ? 's' : ''} found
           </Text>
@@ -187,7 +187,7 @@ export default function ClubsScreen() {
         <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search clubs, cities, or car types..."
+          placeholder="Search clubs, cities, or bike types..."
           placeholderTextColor="#666"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -209,7 +209,7 @@ export default function ClubsScreen() {
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="car" size={64} color="#333" />
+            <Ionicons name="bicycle" size={64} color="#333" />
             <Text style={styles.emptyText}>No clubs found</Text>
             <Text style={styles.emptySubtext}>Try adjusting your search</Text>
           </View>
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   carTypeText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 12,
     fontWeight: '600',
   },

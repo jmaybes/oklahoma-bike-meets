@@ -321,7 +321,7 @@ export default function MessagesScreen() {
           <Ionicons name="chatbubbles-outline" size={80} color="#333" />
           <Text style={styles.authRequiredTitle}>Login Required</Text>
           <Text style={styles.authRequiredSubtitle}>
-            Sign in to message other car enthusiasts
+            Sign in to message other riders
           </Text>
           <TouchableOpacity
             style={styles.loginButton}
@@ -382,7 +382,7 @@ export default function MessagesScreen() {
               <Ionicons name="chatbubbles-outline" size={80} color="#333" />
               <Text style={styles.emptyTitle}>No Messages Yet</Text>
               <Text style={styles.emptySubtitle}>
-                Start connecting with other car enthusiasts!
+                Start connecting with other riders!
               </Text>
               <TouchableOpacity
                 style={styles.startChatButton}

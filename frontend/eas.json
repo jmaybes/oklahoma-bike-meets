@@ -10,7 +10,7 @@
       "channel": "development",
       "credentialsSource": "remote",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://api.okccarmeets.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://api.okcbikemeets.com"
       },
       "ios": {
         "simulator": false
@@ -23,14 +23,14 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://api.okccarmeets.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://api.okcbikemeets.com"
       }
     },
     "production": {
       "channel": "production",
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://api.okccarmeets.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://api.okcbikemeets.com"
       }
     }
   },

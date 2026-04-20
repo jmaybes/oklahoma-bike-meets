@@ -35,7 +35,7 @@ interface UserCar {
   views: number;
   ownerName: string;
   ownerNickname: string;
-  horsepower?: number;
+  displacement?: number;
   engine?: string;
   mainPhotoIndex?: number;
   likedBy?: string[];
@@ -189,7 +189,7 @@ export default function BrowseGaragesScreen() {
             />
           ) : (
             <View style={styles.noImageContainer}>
-              <Ionicons name="car-sport" size={48} color="#444" />
+              <Ionicons name="bicycle" size={48} color="#444" />
               <Text style={styles.noImageText}>No Photos</Text>
             </View>
           )}
@@ -205,7 +205,7 @@ export default function BrowseGaragesScreen() {
           </View>
           {/* Owner name overlay */}
           <View style={styles.ownerOverlay}>
-            <Ionicons name="person-circle" size={18} color="#FF5500" />
+            <Ionicons name="person-circle" size={18} color="#51fb00" />
             <Text style={styles.ownerOverlayText} numberOfLines={1}>
               {car.ownerNickname || car.ownerName}
             </Text>
@@ -219,7 +219,7 @@ export default function BrowseGaragesScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.viewUnderPhotoText}>View</Text>
-          <Ionicons name="chevron-forward" size={14} color="#FF5500" />
+          <Ionicons name="chevron-forward" size={14} color="#51fb00" />
         </TouchableOpacity>
 
         {/* Car Info */}
@@ -236,10 +236,10 @@ export default function BrowseGaragesScreen() {
                 <Text style={styles.specChipText}>{car.color}</Text>
               </View>
             ) : null}
-            {car.horsepower ? (
+            {car.displacement ? (
               <View style={styles.specChip}>
-                <Ionicons name="flash" size={12} color="#FF5500" />
-                <Text style={styles.specChipText}>{car.horsepower} HP</Text>
+                <Ionicons name="flash" size={12} color="#51fb00" />
+                <Text style={styles.specChipText}>{car.displacement} CC</Text>
               </View>
             ) : null}
             {car.drivetrain ? (
@@ -284,7 +284,7 @@ export default function BrowseGaragesScreen() {
               onPress={() => router.push(`/user-garage/${car.userId}`)}
               activeOpacity={0.7}
             >
-              <Ionicons name="chatbubble-outline" size={16} color="#FF5500" />
+              <Ionicons name="chatbubble-outline" size={16} color="#51fb00" />
               <Text style={styles.commentsLinkText}>
                 Comments{car.commentCount ? ` (${car.commentCount})` : ''}
               </Text>
@@ -350,7 +350,7 @@ export default function BrowseGaragesScreen() {
               <Ionicons 
                 name={option.icon as any} 
                 size={16} 
-                color={sortBy === option.key ? '#FF5500' : '#888'} 
+                color={sortBy === option.key ? '#51fb00' : '#888'} 
               />
               <Text style={[
                 styles.sortOptionText,
@@ -359,7 +359,7 @@ export default function BrowseGaragesScreen() {
                 {option.label}
               </Text>
               {sortBy === option.key && (
-                <Ionicons name="checkmark" size={16} color="#FF5500" />
+                <Ionicons name="checkmark" size={16} color="#51fb00" />
               )}
             </TouchableOpacity>
           ))}
@@ -388,12 +388,12 @@ export default function BrowseGaragesScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF5500" />
+          <ActivityIndicator size="large" color="#51fb00" />
           <Text style={styles.loadingText}>Loading garages...</Text>
         </View>
       ) : fetchError ? (
         <View style={styles.errorContainer}>
-          <Ionicons name="cloud-offline-outline" size={64} color="#FF5500" />
+          <Ionicons name="cloud-offline-outline" size={64} color="#51fb00" />
           <Text style={styles.errorTitle}>Unable to Load Garages</Text>
           <Text style={styles.errorText}>{fetchError}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => { setLoading(true); fetchGarages(); }}>
@@ -406,12 +406,12 @@ export default function BrowseGaragesScreen() {
           style={styles.content}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF5500" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#51fb00" />
           }
         >
           {filteredGarages.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Ionicons name="car-sport-outline" size={64} color="#333" />
+              <Ionicons name="bicycle-outline" size={64} color="#333" />
               <Text style={styles.emptyTitle}>No Public Garages Yet</Text>
               <Text style={styles.emptyText}>
                 Be the first to share your ride with the community!
@@ -432,7 +432,7 @@ export default function BrowseGaragesScreen() {
       {/* Bottom Navigation Bar */}
       <View style={[styles.bottomNav, { paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 12 : 20) }]}>
         <TouchableOpacity style={styles.navItem} onPress={() => router.replace('/(tabs)/home')}>
-          <Ionicons name="car-sport-outline" size={24} color="#ccc" />
+          <Ionicons name="bicycle-outline" size={24} color="#ccc" />
           <Text style={styles.navLabel}>Events</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => router.replace('/(tabs)/nearby')}>
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sortOptionTextActive: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontWeight: '700',
   },
   searchContainer: {
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,
@@ -780,7 +780,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   viewGarageBtnText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -788,7 +788,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingVertical: 10,
     gap: 4,
   },
@@ -804,7 +804,7 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   commentsLinkText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 13,
     fontWeight: '600',
   },

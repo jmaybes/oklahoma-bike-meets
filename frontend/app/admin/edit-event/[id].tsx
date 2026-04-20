@@ -204,7 +204,7 @@ export default function AdminEditEventScreen() {
   if (authLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#FF5500" />
+        <ActivityIndicator size="large" color="#51fb00" />
       </View>
     );
   }
@@ -231,7 +231,7 @@ export default function AdminEditEventScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#FF5500" />
+          <ActivityIndicator size="large" color="#51fb00" />
           <Text style={styles.loadingText}>Loading event...</Text>
         </View>
       </View>
@@ -241,7 +241,7 @@ export default function AdminEditEventScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#FF5500', '#f44336']}
+        colors={['#51fb00', '#f44336']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -282,7 +282,7 @@ export default function AdminEditEventScreen() {
                 </View>
               ))}
               <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
-                <Ionicons name="add" size={32} color="#FF5500" />
+                <Ionicons name="add" size={32} color="#51fb00" />
                 <Text style={styles.addPhotoText}>Add Photo</Text>
               </TouchableOpacity>
             </ScrollView>
@@ -317,7 +317,7 @@ export default function AdminEditEventScreen() {
               style={styles.input}
               value={form.eventType}
               onChangeText={(text) => setForm({ ...form, eventType: text })}
-              placeholder="e.g., Car Meet, Car Show, Cruise"
+              placeholder="e.g., Bike Meet, Bike Show, Group Ride"
               placeholderTextColor="#666"
             />
           </View>
@@ -409,7 +409,7 @@ export default function AdminEditEventScreen() {
               style={styles.input}
               value={form.carTypes}
               onChangeText={(text) => setForm({ ...form, carTypes: text })}
-              placeholder="e.g., All Cars, Imports, Muscle Cars"
+              placeholder="e.g., All Bikes, Cruisers, Sportbikes"
               placeholderTextColor="#666"
             />
 
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FF5500',
+    color: '#51fb00',
     marginBottom: 16,
   },
   label: {

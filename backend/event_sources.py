@@ -1,17 +1,17 @@
 """
 Event Source Integration Module
 
-This module provides functionality to fetch car events from external sources.
+This module provides functionality to fetch bike events from external sources.
 Currently supports:
 - Manual data entry via admin API
 - Future: Eventbrite API integration
 - Future: Facebook Events scraping
-- Future: Local car club websites
+- Future: Local bike club websites
 
 For production, you would need to:
 1. Register for Eventbrite API key at https://www.eventbrite.com/platform/api
 2. Set up Facebook Graph API access
-3. Create web scrapers for local car club websites
+3. Create web scrapers for local bike club websites
 """
 
 import asyncio
@@ -80,7 +80,7 @@ async def fetch_eventbrite_events(
 
 
 # ==================== Common Event Sources for OKC ====================
-# These are well-known sources for car events in the Oklahoma City area
+# These are well-known sources for bike events in the Oklahoma City area
 
 OKC_CAR_EVENT_SOURCES = [
     {
@@ -114,7 +114,7 @@ OKC_CAR_EVENT_SOURCES = [
 
 def generate_sample_events() -> List[Dict]:
     """
-    Generate sample car events for demonstration purposes.
+    Generate sample bike events for demonstration purposes.
     In production, this would be replaced with real API integrations.
     """
     from datetime import timedelta
@@ -123,24 +123,24 @@ def generate_sample_events() -> List[Dict]:
     event_templates = [
         {
             "title": "Cars & Coffee Morning Meet",
-            "description": "Join fellow car enthusiasts for our weekly Cars & Coffee event! Bring your classic, exotic, or tuned ride to show off. Free coffee for participants!",
+            "description": "Join fellow riders for our weekly Cars & Coffee event! Bring your classic, exotic, or tuned ride to show off. Free coffee for participants!",
             "location": "Quail Springs Mall",
             "address": "2501 W Memorial Rd, Oklahoma City, OK 73134",
-            "eventType": "Car Meet",
+            "eventType": "Bike Meet",
         },
         {
             "title": "Muscle Car Cruise Night",
             "description": "Classic American muscle cars only! Cruise through OKC with fellow muscle car owners. Route ends with a BBQ dinner.",
             "location": "Route 66 Park",
             "address": "3770 Lake Hefner Pkwy, Oklahoma City, OK 73116",
-            "eventType": "Cruise",
+            "eventType": "Group Ride",
         },
         {
             "title": "Import Tuner Showcase",
             "description": "JDM, Euro, and Korean imports welcome! Show off your build and meet other import enthusiasts. Prizes for best in show.",
             "location": "Bricktown Parking Lot",
             "address": "121 E California Ave, Oklahoma City, OK 73104",
-            "eventType": "Car Show",
+            "eventType": "Bike Show",
         },
         {
             "title": "Classic Car Swap Meet",
@@ -154,7 +154,7 @@ def generate_sample_events() -> List[Dict]:
             "description": "Test your truck or SUV on our off-road course! All 4x4 vehicles welcome. Safety equipment required.",
             "location": "Rush Springs Ranch",
             "address": "Rural Route 3, Oklahoma City, OK",
-            "eventType": "Car Meet",
+            "eventType": "Bike Meet",
         },
     ]
     
@@ -170,7 +170,7 @@ def generate_sample_events() -> List[Dict]:
             "city": "Oklahoma City",
             "latitude": 35.4676 + random.uniform(-0.1, 0.1),
             "longitude": -97.5164 + random.uniform(-0.1, 0.1),
-            "organizer": f"OKC Car Club #{i+1}",
+            "organizer": f"OKC Bike Club #{i+1}",
             "entryFee": random.choice(["Free", "$5", "$10", "$20"]),
             "carTypes": random.sample(
                 ["All Cars", "Muscle Cars", "Imports", "Classics", "Trucks", "Exotics"],

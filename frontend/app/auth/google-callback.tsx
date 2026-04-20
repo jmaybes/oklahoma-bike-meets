@@ -245,7 +245,7 @@ export default function GoogleCallbackScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF5500" />
+          <ActivityIndicator size="large" color="#51fb00" />
           <Text style={styles.loadingText}>
             {authProvider === 'apple' ? 'Signing in with Apple...' : 'Signing in with Google...'}
           </Text>
@@ -271,7 +271,7 @@ export default function GoogleCallbackScreen() {
           {/* Welcome Message */}
           <View style={styles.welcomeSection}>
             <LinearGradient
-              colors={['#FF5500', '#E91E63']}
+              colors={['#51fb00', '#E91E63']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.iconGradient}
@@ -319,7 +319,7 @@ export default function GoogleCallbackScreen() {
                 maxLength={20}
               />
               {checkingNickname ? (
-                <ActivityIndicator size="small" color="#FF5500" />
+                <ActivityIndicator size="small" color="#51fb00" />
               ) : nickname.length >= 3 && !nicknameError ? (
                 <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
               ) : null}
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   atSymbol: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 18,
     fontWeight: 'bold',
     marginRight: 4,
@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     borderRadius: 12,
     padding: 16,
     marginTop: 32,

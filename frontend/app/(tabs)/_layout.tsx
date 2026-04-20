@@ -49,7 +49,7 @@ const AnimatedTabIcon = ({
       <Ionicons 
         name={name as any} 
         size={size + 2} 
-        color={focused ? '#FF5500' : '#ccc'} 
+        color={focused ? '#51fb00' : '#ccc'} 
       />
     </Animated.View>
   );
@@ -67,7 +67,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#FF5500',
+        tabBarActiveTintColor: '#51fb00',
         tabBarInactiveTintColor: '#ccc',
         tabBarStyle: {
           backgroundColor: '#1a1a1a',
@@ -99,7 +99,7 @@ export default function TabLayout() {
           title: 'Events',
           tabBarIcon: ({ focused, size }) => (
             <AnimatedTabIcon 
-              name={focused ? "car-sport" : "car-sport-outline"} 
+              name={focused ? "bicycle" : "bicycle-outline"} 
               focused={focused}
               size={size} 
             />
@@ -151,7 +151,7 @@ export default function TabLayout() {
           title: 'Garage',
           tabBarIcon: ({ focused, size }) => (
             <AnimatedTabIcon 
-              name={focused ? "car" : "car-outline"} 
+              name={focused ? "bicycle" : "bicycle-outline"} 
               focused={focused}
               size={size} 
             />

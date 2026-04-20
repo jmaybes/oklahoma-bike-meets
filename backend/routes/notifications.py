@@ -74,7 +74,7 @@ async def test_push_notification(user_id: str):
     
     result = await send_push_notification(
         push_token,
-        "OKC Meets Test",
+        "OKC Bike Meets Test",
         "Push notifications are working!",
         {"type": "test"}
     )

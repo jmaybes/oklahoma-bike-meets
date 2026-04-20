@@ -72,10 +72,10 @@ export default function LandingScreen() {
 
   const features = [
     {
-      icon: 'car-sport',
+      icon: 'bicycle',
       title: 'My Garage',
       description: 'Showcase your ride with photos and specs',
-      color: '#FF5500',
+      color: '#51fb00',
     },
     {
       icon: 'trophy',
@@ -92,13 +92,13 @@ export default function LandingScreen() {
     {
       icon: 'people',
       title: 'Messaging',
-      description: 'Connect with fellow car enthusiasts',
+      description: 'Connect with fellow riders',
       color: '#2196F3',
     },
     {
       icon: 'location',
       title: 'Location Sharing',
-      description: 'Find car meets and cruises near you',
+      description: 'Find bike meets and cruises near you',
       color: '#4CAF50',
     },
     {
@@ -112,7 +112,7 @@ export default function LandingScreen() {
   if (!fontsLoaded) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF5500" />
+        <ActivityIndicator size="large" color="#51fb00" />
       </View>
     );
   }
@@ -131,15 +131,15 @@ export default function LandingScreen() {
           <View style={styles.heroOverlay}>
             <View style={styles.heroContent}>
               <View style={styles.logoContainer}>
-                <Ionicons name="car-sport" size={60} color="#FF5500" />
+                <Ionicons name="bicycle" size={60} color="#51fb00" />
               </View>
-              <Text style={styles.heroTitle}>Oklahoma Car Events</Text>
+              <Text style={styles.heroTitle}>Oklahoma Bike Events</Text>
               <Text style={styles.heroTitleSub}>& Clubs</Text>
               <Text style={styles.heroSubtitle}>
                 Your Ultimate Car Community Hub
               </Text>
               <View style={styles.taglineContainer}>
-                <Ionicons name="flame" size={20} color="#FF5500" />
+                <Ionicons name="flame" size={20} color="#51fb00" />
                 <Text style={styles.tagline}>
                   Meets • Shows • Cruises • Races
                 </Text>
@@ -167,7 +167,7 @@ export default function LandingScreen() {
             >
               <Text style={styles.communityTitle}>Join 1000+ Enthusiasts</Text>
               <Text style={styles.communitySubtitle}>
-                Oklahoma's largest car community
+                Oklahoma's largest bike community
               </Text>
             </LinearGradient>
           </ImageBackground>
@@ -202,7 +202,7 @@ export default function LandingScreen() {
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{stats.clubs}</Text>
-            <Text style={styles.statLabel}>Car Clubs</Text>
+            <Text style={styles.statLabel}>Bike Clubs</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
@@ -223,13 +223,13 @@ export default function LandingScreen() {
               style={styles.ctaOverlay}
             >
               <Image 
-                source={require('../assets/images/okc-logo.png')} 
+                source={require('../assets/images/bike-logo.png')} 
                 style={styles.ctaLogo}
                 resizeMode="contain"
               />
               <Text style={styles.ctaTitle}>Ready to Rev Up?</Text>
               <Text style={styles.ctaSubtitle}>
-                Join Oklahoma's most active car community
+                Join Oklahoma's most active bike community
               </Text>
             </LinearGradient>
           </ImageBackground>
@@ -242,7 +242,7 @@ export default function LandingScreen() {
             onPress={handleSignUp}
           >
             <LinearGradient
-              colors={['#FF5500', '#E91E63']}
+              colors={['#51fb00', '#E91E63']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.gradientButton}
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   heroTitleSub: {
     fontSize: 32,
     fontFamily: 'RobotoCondensed_700Bold',
-    color: '#FF5500',
+    color: '#51fb00',
     textAlign: 'center',
     marginBottom: 8,
     textShadowColor: 'rgba(0,0,0,0.8)',
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   },
   tagline: {
     fontSize: 14,
-    color: '#FF5500',
+    color: '#51fb00',
     fontWeight: '600',
   },
   scrollView: {
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 36,
     fontFamily: 'RobotoCondensed_700Bold',
-    color: '#FF5500',
+    color: '#51fb00',
     marginBottom: 4,
   },
   statLabel: {

@@ -52,7 +52,8 @@ interface UserCar {
   color: string;
   trim: string;
   engine: string;
-  horsepower?: number;
+  displacement?: number;
+  engineType?: string;
   torque?: number;
   transmission: string;
   drivetrain: string;
@@ -85,7 +86,7 @@ interface GarageComment {
 const modCategories: { [key: string]: { icon: string; color: string } } = {
   Engine: { icon: 'flash', color: '#F44336' },
   Suspension: { icon: 'git-merge', color: '#2196F3' },
-  Exterior: { icon: 'car-sport', color: '#4CAF50' },
+  Exterior: { icon: 'bicycle', color: '#4CAF50' },
   Interior: { icon: 'apps', color: '#9C27B0' },
   Wheels: { icon: 'ellipse', color: '#FF9800' },
   Exhaust: { icon: 'volume-high', color: '#795548' },
@@ -148,7 +149,7 @@ export default function GarageDetailScreen() {
         console.log('Broken photo indices:', response.data.brokenPhotos);
       }
     } catch (error) {
-      console.error('Error fetching car:', error);
+      console.error('Error fetching bike:', error);
     } finally {
       setLoading(false);
     }
@@ -222,7 +223,7 @@ export default function GarageDetailScreen() {
       });
       await axios.post(`${API_URL}/api/user-cars/${car.id}/like?user_id=${user.id}`);
     } catch (error) {
-      console.error('Error liking car:', error);
+      console.error('Error liking bike:', error);
       fetchCar(); // Revert on error
     }
   };
@@ -372,7 +373,7 @@ export default function GarageDetailScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF5500" />
+          <ActivityIndicator size="large" color="#51fb00" />
         </View>
       </View>
     );
@@ -382,10 +383,10 @@ export default function GarageDetailScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.loadingContainer}>
-          <Ionicons name="car-sport-outline" size={64} color="#666" />
+          <Ionicons name="bicycle-outline" size={64} color="#666" />
           <Text style={styles.errorText}>This Ride Is Gone</Text>
           <Text style={{ color: '#888', fontSize: 14, textAlign: 'center', marginTop: 8, marginHorizontal: 30 }}>
-            This car may have been removed by its owner or is no longer available.
+            This bike may have been removed by its owner or is no longer available.
           </Text>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Text style={styles.backBtnText}>Go Back</Text>
@@ -499,7 +500,7 @@ export default function GarageDetailScreen() {
           </View>
         )}
 
-        {/* Car Title */}
+        {/* Bike Title */}
         <View style={styles.titleSection}>
           <Text style={styles.carYear}>{car.year}</Text>
           <Text style={styles.carTitle}>{car.make} {car.model}</Text>
@@ -529,7 +530,7 @@ export default function GarageDetailScreen() {
         {/* Stats Cards */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Ionicons name="heart" size={24} color="#FF5500" />
+            <Ionicons name="heart" size={24} color="#51fb00" />
             <Text style={styles.statValue}>{car.likes || 0}</Text>
             <Text style={styles.statLabel}>Likes</Text>
           </View>
@@ -538,10 +539,10 @@ export default function GarageDetailScreen() {
             <Text style={styles.statValue}>{car.views || 0}</Text>
             <Text style={styles.statLabel}>Views</Text>
           </View>
-          {car.horsepower && (
+          {car.displacement && (
             <View style={styles.statCard}>
               <Ionicons name="flash" size={24} color="#FFC107" />
-              <Text style={styles.statValue}>{car.horsepower}</Text>
+              <Text style={styles.statValue}>{car.displacement}</Text>
               <Text style={styles.statLabel}>HP</Text>
             </View>
           )}
@@ -568,42 +569,42 @@ export default function GarageDetailScreen() {
           <View style={styles.specsGrid}>
             {car.engine && (
               <View style={styles.specItem}>
-                <Ionicons name="speedometer" size={20} color="#FF5500" />
+                <Ionicons name="speedometer" size={20} color="#51fb00" />
                 <Text style={styles.specLabel}>Engine</Text>
                 <Text style={styles.specValue}>{car.engine}</Text>
               </View>
             )}
-            {car.horsepower && (
+            {car.displacement && (
               <View style={styles.specItem}>
-                <Ionicons name="flash" size={20} color="#FF5500" />
-                <Text style={styles.specLabel}>Horsepower</Text>
-                <Text style={styles.specValue}>{car.horsepower} HP</Text>
+                <Ionicons name="flash" size={20} color="#51fb00" />
+                <Text style={styles.specLabel}>Displacement</Text>
+                <Text style={styles.specValue}>{car.displacement} CC</Text>
               </View>
             )}
             {car.torque && (
               <View style={styles.specItem}>
-                <Ionicons name="sync" size={20} color="#FF5500" />
+                <Ionicons name="sync" size={20} color="#51fb00" />
                 <Text style={styles.specLabel}>Torque</Text>
                 <Text style={styles.specValue}>{car.torque} lb-ft</Text>
               </View>
             )}
             {car.transmission && (
               <View style={styles.specItem}>
-                <Ionicons name="cog" size={20} color="#FF5500" />
+                <Ionicons name="cog" size={20} color="#51fb00" />
                 <Text style={styles.specLabel}>Transmission</Text>
                 <Text style={styles.specValue}>{car.transmission}</Text>
               </View>
             )}
             {car.drivetrain && (
               <View style={styles.specItem}>
-                <Ionicons name="git-branch" size={20} color="#FF5500" />
+                <Ionicons name="git-branch" size={20} color="#51fb00" />
                 <Text style={styles.specLabel}>Drivetrain</Text>
                 <Text style={styles.specValue}>{car.drivetrain}</Text>
               </View>
             )}
             {car.color && (
               <View style={styles.specItem}>
-                <Ionicons name="color-palette" size={20} color="#FF5500" />
+                <Ionicons name="color-palette" size={20} color="#51fb00" />
                 <Text style={styles.specLabel}>Color</Text>
                 <Text style={styles.specValue}>{car.color}</Text>
               </View>
@@ -674,7 +675,7 @@ export default function GarageDetailScreen() {
         {comments.length > 0 && (
           <View style={styles.commentsSection}>
             <View style={styles.commentsSectionHeader}>
-              <Ionicons name="chatbubbles" size={20} color="#FF5500" />
+              <Ionicons name="chatbubbles" size={20} color="#51fb00" />
               <Text style={styles.commentsSectionTitle}>Comments ({comments.length})</Text>
             </View>
             {comments.map((comment) => (
@@ -699,7 +700,7 @@ export default function GarageDetailScreen() {
                         setEditCommentText(comment.text);
                       }}
                     >
-                      <Ionicons name="pencil-outline" size={16} color="#FF5500" />
+                      <Ionicons name="pencil-outline" size={16} color="#51fb00" />
                     </TouchableOpacity>
                   )}
                   {user && (user.id === comment.userId || isAdmin) && (
@@ -819,7 +820,7 @@ export default function GarageDetailScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Car info header */}
+          {/* Bike info header */}
           <View style={[styles.carouselHeader, { top: insets.top + 10 }]}>
             <Text style={styles.carouselTitle}>{car.year} {car.make} {car.model}</Text>
           </View>
@@ -869,7 +870,7 @@ export default function GarageDetailScreen() {
                   />
                   {loadingPhoto === index && (
                     <View style={styles.photoLoadingOverlay}>
-                      <ActivityIndicator size="large" color="#FF5500" />
+                      <ActivityIndicator size="large" color="#51fb00" />
                       <Text style={{ color: '#fff', marginTop: 8, fontSize: 12 }}>Loading HD...</Text>
                     </View>
                   )}
@@ -977,7 +978,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   backBtn: {
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -1083,7 +1084,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#222',
   },
   carYear: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -1217,7 +1218,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   modNotesTitle: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
@@ -1252,7 +1253,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     padding: 16,
     borderRadius: 12,
     gap: 8,
@@ -1381,7 +1382,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     ...Platform.select({
       ios: {
-        shadowColor: '#FF5500',
+        shadowColor: '#51fb00',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.3,
         shadowRadius: 16,
@@ -1421,7 +1422,7 @@ const styles = StyleSheet.create({
   carouselDot: {
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
   },
   photoLoadingOverlay: {
     position: 'absolute',
@@ -1484,7 +1485,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -1552,7 +1553,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 6,
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
   },
   editSaveText: {
     color: '#fff',
@@ -1607,7 +1608,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   commentSubmitBtn: {
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

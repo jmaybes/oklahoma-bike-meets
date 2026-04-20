@@ -17,7 +17,7 @@ class EventCreate(BaseModel):
     organizer: str = ""
     entryFee: str = ""
     carTypes: List[str] = []
-    eventType: str = "Car Meet"
+    eventType: str = "Bike Meet"
     photos: List[str] = []
     userId: Optional[str] = None
     contactInfo: str = ""
@@ -149,21 +149,22 @@ class UserCarCreate(BaseModel):
     color: str = ""
     trim: str = ""
     engine: str = ""
-    horsepower: Optional[int] = None
+    displacement: Optional[int] = None
+    engineType: str = ""  # V-Twin, Inline-4, Single, Parallel Twin, Boxer, etc.
     torque: Optional[int] = None
     transmission: str = ""
-    drivetrain: str = ""  # FWD, RWD, AWD
+    drivetrain: str = ""
     description: str = ""
     photos: List[str] = []
-    videos: List[str] = []  # Base64 encoded or URLs
+    videos: List[str] = []
     modifications: List[Modification] = []
-    modificationNotes: str = ""  # Free-form text for additional notes
-    isPublic: bool = True  # Default to public/sharing mode
+    modificationNotes: str = ""
+    isPublic: bool = True
     instagramHandle: str = ""
     youtubeChannel: str = ""
     mainPhotoIndex: int = 0
-    isActive: bool = True  # Whether this car is the active/displayed car
-    carId: Optional[str] = None  # If provided, update this specific car
+    isActive: bool = True
+    carId: Optional[str] = None
 
 
 class UserCarUpdate(BaseModel):
@@ -173,7 +174,7 @@ class UserCarUpdate(BaseModel):
     color: Optional[str] = None
     trim: Optional[str] = None
     engine: Optional[str] = None
-    horsepower: Optional[int] = None
+    displacement: Optional[int] = None
     torque: Optional[int] = None
     transmission: Optional[str] = None
     drivetrain: Optional[str] = None

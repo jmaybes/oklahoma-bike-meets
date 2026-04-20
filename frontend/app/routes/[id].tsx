@@ -147,7 +147,7 @@ export default function RouteDetailScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF5500" />
+          <ActivityIndicator size="large" color="#51fb00" />
         </View>
       </View>
     );
@@ -173,7 +173,7 @@ export default function RouteDetailScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#FF5500', '#E91E63']}
+        colors={['#51fb00', '#E91E63']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -209,26 +209,26 @@ export default function RouteDetailScreen() {
           {/* Stats Row */}
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
-              <Ionicons name="map-outline" size={24} color="#FF5500" />
+              <Ionicons name="map-outline" size={24} color="#51fb00" />
               <Text style={styles.statValue}>{route.waypoints.length}</Text>
               <Text style={styles.statLabel}>Stops</Text>
             </View>
             {route.distance && (
               <View style={styles.statBox}>
-                <Ionicons name="speedometer-outline" size={24} color="#FF5500" />
+                <Ionicons name="speedometer-outline" size={24} color="#51fb00" />
                 <Text style={styles.statValue}>{route.distance}</Text>
                 <Text style={styles.statLabel}>Miles</Text>
               </View>
             )}
             {route.estimatedTime && (
               <View style={styles.statBox}>
-                <Ionicons name="time-outline" size={24} color="#FF5500" />
+                <Ionicons name="time-outline" size={24} color="#51fb00" />
                 <Text style={styles.statValue}>{route.estimatedTime}</Text>
                 <Text style={styles.statLabel}>Est. Time</Text>
               </View>
             )}
             <View style={styles.statBox}>
-              <Ionicons name="heart" size={24} color="#FF5500" />
+              <Ionicons name="heart" size={24} color="#51fb00" />
               <Text style={styles.statValue}>{route.likes}</Text>
               <Text style={styles.statLabel}>Likes</Text>
             </View>
@@ -242,7 +242,7 @@ export default function RouteDetailScreen() {
             <View style={styles.highlightsContainer}>
               {route.scenicHighlights.map((highlight, index) => (
                 <View key={index} style={styles.highlightBadge}>
-                  <Ionicons name="star" size={12} color="#FF5500" />
+                  <Ionicons name="star" size={12} color="#51fb00" />
                   <Text style={styles.highlightText}>{highlight}</Text>
                 </View>
               ))}
@@ -279,7 +279,7 @@ export default function RouteDetailScreen() {
         {/* Action Buttons */}
         <View style={styles.actionsRow}>
           <TouchableOpacity style={styles.actionBtn} onPress={handleLike}>
-            <Ionicons name="heart-outline" size={24} color="#FF5500" />
+            <Ionicons name="heart-outline" size={24} color="#51fb00" />
             <Text style={styles.actionBtnText}>Like</Text>
           </TouchableOpacity>
           
@@ -287,9 +287,9 @@ export default function RouteDetailScreen() {
             <Ionicons 
               name={isSaved ? "bookmark" : "bookmark-outline"} 
               size={24} 
-              color={isSaved ? "#FF5500" : "#888"} 
+              color={isSaved ? "#51fb00" : "#888"} 
             />
-            <Text style={[styles.actionBtnText, isSaved && { color: '#FF5500' }]}>
+            <Text style={[styles.actionBtnText, isSaved && { color: '#51fb00' }]}>
               {isSaved ? 'Saved' : 'Save'}
             </Text>
           </TouchableOpacity>
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   backBtn: {
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   waypointLine: {
     width: 2,
     height: 20,
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     marginTop: 4,
   },
   waypointContent: {

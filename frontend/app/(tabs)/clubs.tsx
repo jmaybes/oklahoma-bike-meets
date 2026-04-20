@@ -136,12 +136,12 @@ export default function ClubsScreen() {
     if (focus.includes('Mustang') || focus.includes('Ford')) return '#1E88E5';
     if (focus.includes('Corvette') || focus.includes('Camaro') || focus.includes('Chevrolet')) return '#FFD700';
     if (focus.includes('Mopar') || focus.includes('Dodge') || focus.includes('Challenger')) return '#FF3B30';
-    if (focus.includes('JDM') || focus.includes('Japanese')) return '#FF5500';
+    if (focus.includes('JDM') || focus.includes('Japanese')) return '#51fb00';
     if (focus.includes('European') || focus.includes('BMW') || focus.includes('Porsche')) return '#4CAF50';
     if (focus.includes('Truck') || focus.includes('Jeep')) return '#795548';
     if (focus.includes('Tesla') || focus.includes('Electric')) return '#E91E63';
     if (focus.includes('Classic') || focus.includes('Hot Rod')) return '#9C27B0';
-    return '#FF5500';
+    return '#51fb00';
   };
 
   // Animated Club Card Component
@@ -202,7 +202,7 @@ export default function ClubsScreen() {
               <View style={styles.clubActions}>
                 {item.contactEmail && (
                   <TouchableOpacity style={styles.actionButton}>
-                    <Ionicons name="mail-outline" size={18} color="#FF5500" />
+                    <Ionicons name="mail-outline" size={18} color="#51fb00" />
                     <Text style={styles.actionText}>Contact</Text>
                   </TouchableOpacity>
                 )}
@@ -325,7 +325,7 @@ export default function ClubsScreen() {
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.headerTitle}>Car Clubs</Text>
+            <Text style={styles.headerTitle}>Bike Clubs</Text>
             <Text style={styles.headerSubtitle}>{clubs.length} clubs in Oklahoma</Text>
           </View>
           <Ionicons name="people-circle" size={32} color="#fff" />
@@ -685,7 +685,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 14,
-    color: '#FF5500',
+    color: '#51fb00',
     fontWeight: '600',
   },
   emptyContainer: {

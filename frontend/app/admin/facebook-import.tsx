@@ -87,7 +87,7 @@ export default function FacebookImportScreen() {
       } else {
         Alert.alert(
           'No Events Found',
-          `Analyzed ${response.data.totalPostsAnalyzed} posts but no car events were identified. ${response.data.eventsSkipped} duplicates were skipped.`
+          `Analyzed ${response.data.totalPostsAnalyzed} posts but no bike events were identified. ${response.data.eventsSkipped} duplicates were skipped.`
         );
       }
     } catch (error: any) {
@@ -123,7 +123,7 @@ export default function FacebookImportScreen() {
               <Ionicons name="logo-facebook" size={32} color="#fff" />
               <Text style={styles.infoTitle}>Import Events from Facebook</Text>
               <Text style={styles.infoText}>
-                Paste the JSON output from your Apify Facebook Groups Scraper below. GPT will analyze each post, identify car event announcements, and create them automatically.
+                Paste the JSON output from your Apify Facebook Groups Scraper below. GPT will analyze each post, identify bike event announcements, and create them automatically.
               </Text>
             </LinearGradient>
           </View>
@@ -156,7 +156,7 @@ export default function FacebookImportScreen() {
               style={styles.jsonInput}
               value={jsonInput}
               onChangeText={setJsonInput}
-              placeholder={'[\n  {\n    "text": "Car meet this Saturday...",\n    "groupName": "OKC Car Meets",\n    "timestamp": "2026-04-10"\n  }\n]'}
+              placeholder={'[\n  {\n    "text": "Car meet this Saturday...",\n    "groupName": "Oklahoma Bike Meets",\n    "timestamp": "2026-04-10"\n  }\n]'}
               placeholderTextColor="#444"
               multiline
               textAlignVertical="top"
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#FF5500',
+    color: '#51fb00',
   },
   statLabel: {
     fontSize: 11,

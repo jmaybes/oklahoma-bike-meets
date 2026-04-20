@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Oklahoma Car Meets",
-    "slug": "oklahoma-city-car-meets",
-    "version": "2.3.0",
+    "name": "Oklahoma Bike Meets",
+    "slug": "oklahoma-bike-meets",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "okcarmeets",
+    "scheme": "okbikemeets",
     "owner": "jbmsurfs",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -17,23 +17,23 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.velocityvisualcrew.okcarmeets",
+      "bundleIdentifier": "com.velocityvisualcrew.oklahomabikemeets",
       "buildNumber": "1",
       "usesAppleSignIn": true,
       "config": {
         "googleMapsApiKey": "AIzaSyDekipz2kW6nfOpd_c6Ku_NLwgc5N9AsUI"
       },
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Find nearby car enthusiasts and share your location for meetups",
-        "NSCameraUsageDescription": "Take photos of your car for your garage",
+        "NSLocationWhenInUseUsageDescription": "Find nearby riders and share your location for meetups",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Find nearby riders and share your location for meetups",
+        "NSCameraUsageDescription": "Take photos of your bike for your garage",
         "NSPhotoLibraryUsageDescription": "Select photos for events and your garage",
         "CFBundleAllowMixedLocalizations": true
       }
     },
     "android": {
-      "package": "com.velocityvisualcrew.oklahomacarmeets",
-      "versionCode": 206,
+      "package": "com.velocityvisualcrew.oklahomabikemeets",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
@@ -83,14 +83,14 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Find nearby car enthusiasts and share your location for meetups"
+          "locationAlwaysAndWhenInUsePermission": "Find nearby riders and share your location for meetups"
         }
       ],
       [
         "expo-notifications",
         {
           "icon": "./assets/images/icon.png",
-          "color": "#E15500",
+          "color": "#51fb00",
           "sounds": []
         }
       ],
@@ -103,7 +103,7 @@
     },
     "notification": {
       "icon": "./assets/images/icon.png",
-      "color": "#E15500"
+      "color": "#51fb00"
     },
     "extra": {
       "router": {},

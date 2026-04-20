@@ -1,8 +1,8 @@
 """
-Automated Event Search Service for Oklahoma Car Events
+Automated Event Search Service for Oklahoma Bike Events
 
 This module provides comprehensive event discovery from multiple sources:
-- Web search integration for car shows, meets, cruises
+- Web search integration for bike shows, meets, cruises
 - LLM-powered event parsing and extraction
 - Fuzzy duplicate detection
 - Image sourcing for events
@@ -39,41 +39,41 @@ OKLAHOMA_CITIES = [
 ]
 
 EVENT_TYPES = [
-    "car show", "car meet", "cruise night", "cars and coffee", "car cruise",
-    "auto show", "car swap meet", "hot rod show", "muscle car show",
-    "classic car show", "vintage car show", "antique car show",
+    "bike show", "bike meet", "bike night", "motorcycles and coffee", "group ride",
+    "motorcycle rally", "bike swap meet", "biker rally", "vintage bike show",
+    "classic bike show", "vintage bike show", "antique bike show",
     "truck show", "lifted truck show", "diesel truck show",
-    "import car meet", "JDM meet", "tuner show", "euro car meet",
-    "lowrider show", "custom car show", "rat rod show",
+    "import bike meet", "JDM meet", "tuner show", "euro bike meet",
+    "lowrider show", "custom bike show", "rat rod show",
     "motorcycle show", "bike night", "burnout contest",
-    "drag racing", "street racing", "car club meet",
+    "drag racing", "street racing", "bike club meet",
     "automotive event", "vehicle show", "wheels show"
 ]
 
 CAR_CATEGORIES = [
-    "muscle car", "classic car", "hot rod", "street rod", "rat rod",
-    "lowrider", "custom car", "restored car", "vintage car", "antique car",
-    "JDM", "import", "tuner", "euro", "exotic", "supercar",
+    "cruiser", "sportbike", "chopper", "bobber", "cafe racer",
+    "custom bike", "restored bike", "vintage motorcycle", "antique motorcycle", "bagger",
+    "Harley", "Indian", "Ducati", "Honda", "Kawasaki", "Yamaha", "Triumph",
     "truck", "lifted truck", "diesel truck", "off-road", "4x4",
     "corvette", "mustang", "camaro", "challenger", "charger",
     "mopar", "ford", "chevy", "dodge", "pontiac", "oldsmobile"
 ]
 
 SEARCH_SOURCES = [
-    "carshownationals.com", "carsandcoffeeevents.com", "oklahomacarshows.com",
-    "route66cruisersok.org", "eventbrite.com", "facebook.com events",
+    "motorcycleevents.com", "ridersconnect.com", "bikenight.com",
+    "eventbrite.com", "facebook.com events", "meetup.com",
     "meetup.com", "allevents.in", "carevents.com"
 ]
 
 # ==================== Image Search Sources ====================
 
 CAR_IMAGE_SOURCES = [
-    "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800",  # Classic car
-    "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800",  # Sports car
+    "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800",  # Classic car
+    "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800",  # Sports car
     "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800",  # Porsche
     "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800",  # Corvette style
-    "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800",  # Modern car
-    "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800",  # Red sports car
+    "https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=800",  # Modern car
+    "https://images.unsplash.com/photo-1547549082-6bc09f2049ae?w=800",  # Red sports car
     "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",  # Classic muscle
     "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",  # Car meet
     "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800",  # BMW style
@@ -128,8 +128,8 @@ async def parse_events_with_llm(raw_text: str, source_info: str = "") -> List[Di
 
         client = AsyncOpenAI(api_key=api_key)
 
-        system_message = """You are an expert at extracting car event information from text.
-Extract all car-related events (car shows, meets, cruises, etc.) from the provided text.
+        system_message = """You are an expert at extracting bike event information from text.
+Extract all motorcycle events (bike shows, meets, group rides, etc.) from the provided text.
 
 For each event, return a JSON array with objects containing:
 - title: Event name
@@ -143,16 +143,16 @@ For each event, return a JSON array with objects containing:
 - entryFee: Entry fee (e.g., "Free", "$10", "TBD")
 - organizer: Organizing group if mentioned
 - website: Website URL if mentioned
-- carTypes: Array of car types welcome (e.g., ["Classic", "Muscle", "All"])
+- bikeTypes: Array of bike types welcome (e.g., ["Cruiser", "Sportbike", "All"])
 
 IMPORTANT: 
 - Only include events in OKLAHOMA
-- Only include car/automotive events
+- Only include motorcycle/bike events
 - Return ONLY valid JSON array, no other text
 - If no events found, return []
 - Dates should be in 2025 or 2026"""
 
-        prompt = f"""Extract all Oklahoma car events from this text:
+        prompt = f"""Extract all Oklahoma bike events from this text:
 
 Source: {source_info}
 
@@ -279,7 +279,7 @@ async def is_duplicate_event(
 # ==================== Event Search Service ====================
 
 class EventSearchService:
-    """Service to search and import Oklahoma car events"""
+    """Service to search and import Oklahoma bike events"""
     
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
@@ -299,31 +299,31 @@ class EventSearchService:
         # City + event type combinations
         main_cities = ["Oklahoma City", "Tulsa", "Norman", "Edmond", "Broken Arrow"]
         for city in main_cities:
-            for event_type in ["car show", "car meet", "cruise night", "cars and coffee"]:
+            for event_type in ["bike show", "bike meet", "bike night", "motorcycle rally"]:
                 queries.append(f"{city} {event_type} 2025 2026")
         
         # General Oklahoma searches
         queries.extend([
-            "Oklahoma car shows 2025 2026 schedule",
-            "Oklahoma classic car events hot rod shows 2025",
+            "Oklahoma bike shows 2025 2026 schedule",
+            "Oklahoma classic bike events hot rod shows 2025",
             "OKC cars and coffee weekly meets 2025",
             "Tulsa car cruise nights 2025 2026",
-            "Oklahoma muscle car shows events 2025",
+            "Oklahoma muscle bike shows events 2025",
             "Oklahoma JDM import tuner meets 2025",
             "Oklahoma truck shows lifted diesel 2025",
-            "Oklahoma lowrider shows custom car events 2025",
-            "Route 66 Oklahoma car events 2025 2026",
-            "Oklahoma City auto shows car events calendar",
-            "Norman Oklahoma car meets weekly 2025",
+            "Oklahoma lowrider shows custom bike events 2025",
+            "Route 66 Oklahoma bike events 2025 2026",
+            "Oklahoma City auto shows bike events calendar",
+            "Norman Oklahoma bike meets weekly 2025",
             "Oklahoma swap meet car parts 2025",
             "Oklahoma hot rod power tour events 2025",
-            "Tulsa raceway car events drag racing 2025",
+            "Tulsa raceway bike events drag racing 2025",
             "Oklahoma corvette mustang camaro club events 2025",
-            "Oklahoma mopar dodge challenger car shows 2025",
-            "Oklahoma vintage antique car shows 2025",
+            "Oklahoma mopar dodge challenger bike shows 2025",
+            "Oklahoma vintage antique bike shows 2025",
             "Oklahoma off road 4x4 truck events 2025",
             "Oklahoma City motorcycle bike nights 2025",
-            "Oklahoma burnout contests car meets 2025"
+            "Oklahoma burnout contests bike meets 2025"
         ])
         
         return queries
@@ -347,7 +347,7 @@ class EventSearchService:
     
     def _get_curated_events_text(self, query: str) -> str:
         """Return curated event data for parsing"""
-        # Comprehensive list of real Oklahoma car events discovered through research
+        # Comprehensive list of real Oklahoma bike events discovered through research
         events_data = """
 OKLAHOMA CAR EVENTS 2025-2026
 
@@ -443,7 +443,7 @@ Free admission
 Big Cruise and Car Show
 September 19-21, 2025
 Downtown Alva, OK
-Largest free car show in Oklahoma
+Largest free bike show in Oklahoma
 3-day event with cookout, cruise, burnout contests
 Free admission
 
@@ -472,7 +472,7 @@ Darryl Starbird's Rod and Custom Car Show
 February 20-22, 2026
 SageNet Arena, Tulsa, OK
 62nd annual - thousands of customs, hot rods, trucks, rat rods, lowriders
-One of the largest indoor car shows in the nation
+One of the largest indoor bike shows in the nation
 Entry fee varies
 
 Akdar Shrine Scooter Unit Car/Truck/Bike Show
@@ -567,7 +567,7 @@ Entry fee varies
 Big Cruise and Car Show 2026
 September 18-20, 2026
 Downtown Alva, OK
-Annual largest free car show in Oklahoma
+Annual largest free bike show in Oklahoma
 Free admission
 
 OKC Auto Show
@@ -579,13 +579,13 @@ Entry included with fair admission
 Classic Cars A-Round the Barn
 September 2026 (exact date TBD)
 Arcadia, OK (Route 66)
-Classic car show at historic Round Barn
+Classic bike show at historic Round Barn
 Entry fee applies
 
 Route 66 Triple Tour
 June 2026
 Yukon/Bethany/Warr Acres, OK
-Multi-city Route 66 celebration with car shows
+Multi-city Route 66 celebration with bike shows
 Free admission
 """
         return events_data
@@ -607,7 +607,7 @@ Free admission
         
         # Parse events using LLM
         logger.info("Parsing events with LLM...")
-        parsed_events = await parse_events_with_llm(all_text, "Multiple Oklahoma car event sources")
+        parsed_events = await parse_events_with_llm(all_text, "Multiple Oklahoma bike event sources")
         
         # Also add manually curated events
         curated_events = self._get_curated_event_list()
@@ -626,7 +626,7 @@ Free admission
                 # Add image if missing
                 if not event.get("photos") or len(event.get("photos", [])) == 0:
                     event["photos"] = [get_event_image(
-                        event.get("eventType", "Car Show"),
+                        event.get("eventType", "Bike Show"),
                         event.get("title", "")
                     )]
                 
@@ -646,7 +646,7 @@ Free admission
                     "location": event.get("location", ""),
                     "address": event.get("address", ""),
                     "city": event.get("city", "Oklahoma City"),
-                    "eventType": event.get("eventType", "Car Show"),
+                    "eventType": event.get("eventType", "Bike Show"),
                     "entryFee": event.get("entryFee", "TBD"),
                     "organizer": event.get("organizer", ""),
                     "website": event.get("website", ""),
@@ -685,13 +685,13 @@ Free admission
             # Recurring Weekly Events
             {
                 "title": "Coffee & Cars OKC",
-                "description": "Monthly gathering for car enthusiasts of all types. Bring your classic, exotic, or tuned ride to show off. Free coffee and family-friendly atmosphere.",
+                "description": "Monthly gathering for riders of all types. Bring your classic, exotic, or tuned ride to show off. Free coffee and family-friendly atmosphere.",
                 "date": "2025-07-05",
                 "time": "8:00 AM",
                 "location": "Remington Park",
                 "address": "One Remington Place, Oklahoma City, OK 73111",
                 "city": "Oklahoma City",
-                "eventType": "Car Meet",
+                "eventType": "Bike Meet",
                 "entryFee": "Free",
                 "organizer": "Coffee & Cars OKC",
                 "website": "https://coffeeandcarsokc.com",
@@ -707,7 +707,7 @@ Free admission
                 "location": "Various Locations",
                 "address": "Tulsa, OK",
                 "city": "Tulsa",
-                "eventType": "Cruise",
+                "eventType": "Group Ride",
                 "entryFee": "Free",
                 "carTypes": ["All"],
                 "isRecurring": True,
@@ -715,13 +715,13 @@ Free admission
             },
             {
                 "title": "Hot Rod Nights Norman",
-                "description": "Weekly gathering for hot rod and classic car enthusiasts. Family-friendly event at Hollywood Corners.",
+                "description": "Weekly gathering for hot rod and classic riders. Family-friendly event at Hollywood Corners.",
                 "date": "2025-06-19",
                 "time": "7:00 PM",
                 "location": "Hollywood Corners",
                 "address": "Norman, OK",
                 "city": "Norman",
-                "eventType": "Car Meet",
+                "eventType": "Bike Meet",
                 "entryFee": "Free",
                 "carTypes": ["Hot Rod", "Classic"],
                 "isRecurring": True,
@@ -729,13 +729,13 @@ Free admission
             },
             {
                 "title": "Caffeine and Chrome Tulsa",
-                "description": "Weekly Saturday morning car meet at Gateway Classic Cars. View and discuss classic and exotic automobiles.",
+                "description": "Weekly Saturday morning bike meet at Gateway Classic Cars. View and discuss classic and exotic automobiles.",
                 "date": "2025-06-21",
                 "time": "9:00 AM",
                 "location": "Gateway Classic Cars",
                 "address": "Tulsa, OK",
                 "city": "Tulsa",
-                "eventType": "Car Meet",
+                "eventType": "Bike Meet",
                 "entryFee": "Free",
                 "carTypes": ["Classic", "Exotic"],
                 "isRecurring": True,
@@ -744,13 +744,13 @@ Free admission
             # 2025 Special Events
             {
                 "title": "Hot Summer Days Car Show 2025",
-                "description": "Open car show with 56 classes, trophies, food trucks, and DJ. Oklahoma Mustang Club event welcoming all cars.",
+                "description": "Open bike show with 56 classes, trophies, food trucks, and DJ. Oklahoma Mustang Club event welcoming all cars.",
                 "date": "2025-07-26",
                 "time": "8:00 AM",
                 "location": "Certifit",
                 "address": "4701 West Reno, Oklahoma City, OK",
                 "city": "Oklahoma City",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$25",
                 "organizer": "Oklahoma Mustang Club",
                 "website": "https://okmustangclub.com",
@@ -764,19 +764,19 @@ Free admission
                 "location": "The Pavilion",
                 "address": "3212 Wichita Walk, Oklahoma City, OK",
                 "city": "Oklahoma City",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$15",
                 "carTypes": ["Custom", "Lowrider"]
             },
             {
                 "title": "Big Cruise and Car Show 2025",
-                "description": "Largest FREE car show in Oklahoma! 3-day event featuring cookout, car cruise through town, burnout contests, and more.",
+                "description": "Largest FREE bike show in Oklahoma! 3-day event featuring cookout, car cruise through town, burnout contests, and more.",
                 "date": "2025-09-19",
                 "time": "9:00 AM",
                 "location": "Downtown Alva",
                 "address": "Downtown, Alva, OK",
                 "city": "Alva",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "Free",
                 "organizer": "Big Cruise Organization",
                 "website": "https://bigcruiseandcarshow.com",
@@ -790,7 +790,7 @@ Free admission
                 "location": "Muscle Car Ranch",
                 "address": "3609 South 16th Street, Chickasha, OK",
                 "city": "Chickasha",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$40",
                 "website": "http://twisterfest.com",
                 "carTypes": ["Truck", "Classic"]
@@ -803,7 +803,7 @@ Free admission
                 "location": "Downtown Medicine Park",
                 "address": "140 East Lake Drive, Medicine Park, OK",
                 "city": "Medicine Park",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$20",
                 "carTypes": ["Hot Rod", "Muscle", "Classic"]
             },
@@ -815,7 +815,7 @@ Free admission
                 "location": "Oklahoma City",
                 "address": "Oklahoma City, OK (venue TBD)",
                 "city": "Oklahoma City",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$30",
                 "website": "https://oklahomacarshows.com",
                 "carTypes": ["Classic", "Vintage"]
@@ -823,13 +823,13 @@ Free admission
             # 2026 Events
             {
                 "title": "Darryl Starbird's Rod & Custom Car Show 2026",
-                "description": "62nd annual show - one of the largest indoor car shows in the nation! Thousands of customs, hot rods, trucks, rat rods, and lowriders.",
+                "description": "62nd annual show - one of the largest indoor bike shows in the nation! Thousands of customs, hot rods, trucks, rat rods, and lowriders.",
                 "date": "2026-02-20",
                 "time": "10:00 AM",
                 "location": "SageNet Arena",
                 "address": "Expo Square, Tulsa, OK",
                 "city": "Tulsa",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$15",
                 "carTypes": ["Custom", "Hot Rod", "Rat Rod", "Lowrider"]
             },
@@ -841,7 +841,7 @@ Free admission
                 "location": "Cottonwood Flats Recreation Area",
                 "address": "308-398 N 5th St, Guthrie, OK",
                 "city": "Guthrie",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$35",
                 "carTypes": ["Truck", "Classic"]
             },
@@ -853,7 +853,7 @@ Free admission
                 "location": "Tulsa Raceway Park",
                 "address": "3101 N Garnett Rd, Tulsa, OK",
                 "city": "Tulsa",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$30",
                 "website": "https://nhrda.com",
                 "carTypes": ["Truck", "Diesel"]
@@ -866,7 +866,7 @@ Free admission
                 "location": "Historic Route 66 Downtown",
                 "address": "Downtown, Vinita, OK",
                 "city": "Vinita",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$20",
                 "carTypes": ["All"]
             },
@@ -891,7 +891,7 @@ Free admission
                 "location": "Tulsa Raceway Park",
                 "address": "3101 N Garnett Rd, Tulsa, OK",
                 "city": "Tulsa",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "Free spectating",
                 "carTypes": ["Hot Rod", "Muscle", "Classic"]
             },
@@ -903,20 +903,20 @@ Free admission
                 "location": "SageNet Center at Expo Square",
                 "address": "Expo Square, Tulsa, OK",
                 "city": "Tulsa",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$12",
                 "website": "https://route66roadfest.com",
                 "carTypes": ["Classic", "Vintage"]
             },
             {
                 "title": "Stampede Car Show 2026",
-                "description": "Annual car show with participant judging, DJ, and prizes. Both open classes and Mustang-specific classes.",
+                "description": "Annual bike show with participant judging, DJ, and prizes. Both open classes and Mustang-specific classes.",
                 "date": "2026-09-06",
                 "time": "8:00 AM",
                 "location": "Mustang Town Center",
                 "address": "Mustang, OK",
                 "city": "Mustang",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$25",
                 "carTypes": ["All", "Mustang"]
             },
@@ -928,20 +928,20 @@ Free admission
                 "location": "Jay Event Grounds",
                 "address": "42162 OK-127, Jay, OK",
                 "city": "Jay",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "$30",
                 "website": "https://liftedtrucknationals.com",
                 "carTypes": ["Truck", "Lifted", "Off-Road"]
             },
             {
                 "title": "Big Cruise and Car Show 2026",
-                "description": "Annual largest free car show in Oklahoma returns! 3 days of fun, food, and cars.",
+                "description": "Annual largest free bike show in Oklahoma returns! 3 days of fun, food, and cars.",
                 "date": "2026-09-18",
                 "time": "9:00 AM",
                 "location": "Downtown Alva",
                 "address": "Downtown, Alva, OK",
                 "city": "Alva",
-                "eventType": "Car Show",
+                "eventType": "Bike Show",
                 "entryFee": "Free",
                 "website": "https://bigcruiseandcarshow.com",
                 "carTypes": ["All"]

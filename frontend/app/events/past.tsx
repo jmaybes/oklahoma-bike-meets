@@ -205,7 +205,7 @@ export default function PastEventsScreen() {
             <View style={styles.eventContent}>
               <View style={styles.eventHeader}>
                 <View style={styles.eventTypeContainer}>
-                  <Ionicons name="car-sport" size={16} color="#888" />
+                  <Ionicons name="bicycle" size={16} color="#888" />
                   <Text style={styles.eventType}>{item.eventType}</Text>
                 </View>
               </View>
@@ -229,7 +229,7 @@ export default function PastEventsScreen() {
                   style={styles.viewDetailsButton}
                   onPress={() => router.push(`/event/${item.id}`)}
                 >
-                  <Ionicons name="information-circle-outline" size={18} color="#FF5500" />
+                  <Ionicons name="information-circle-outline" size={18} color="#51fb00" />
                   <Text style={styles.viewDetailsText}>View Details</Text>
                 </TouchableOpacity>
                 
@@ -297,7 +297,7 @@ export default function PastEventsScreen() {
 
       {/* Info Banner */}
       <View style={styles.infoBanner}>
-        <Ionicons name="information-circle" size={18} color="#FF5500" />
+        <Ionicons name="information-circle" size={18} color="#51fb00" />
         <Text style={styles.infoBannerText}>
           Share your photos from events you attended!
         </Text>
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   infoBannerText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 13,
     flex: 1,
   },
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   viewDetailsText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 13,
     fontWeight: '600',
   },

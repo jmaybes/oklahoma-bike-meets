@@ -34,7 +34,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Create the main app
-app = FastAPI(title="Oklahoma Car Events API")
+app = FastAPI(title="Oklahoma Bike Events API")
 
 # GZip compression middleware - reduces response sizes by 80-90%
 # Critical for base64 photo payloads to prevent OOM kills

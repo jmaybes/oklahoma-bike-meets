@@ -94,7 +94,7 @@ interface UserCar {
   trim: string;
   color: string;
   engine?: string;
-  horsepower?: number;
+  displacement?: number;
   torque?: number;
   transmission?: string;
   drivetrain?: string;
@@ -380,7 +380,7 @@ export default function UserGarageScreen() {
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#FF5500" />
+          <ActivityIndicator size="large" color="#51fb00" />
         </View>
       </View>
     );
@@ -411,7 +411,7 @@ export default function UserGarageScreen() {
               {/* Header */}
               <View style={carPickerStyles.header}>
                 <View style={carPickerStyles.headerIcon}>
-                  <Ionicons name="car-sport" size={28} color="#FF5500" />
+                  <Ionicons name="bicycle" size={28} color="#51fb00" />
                 </View>
                 <Text style={carPickerStyles.title}>Choose a Ride</Text>
                 <Text style={carPickerStyles.subtitle}>
@@ -438,7 +438,7 @@ export default function UserGarageScreen() {
                         />
                       ) : (
                         <View style={carPickerStyles.thumbPlaceholder}>
-                          <Ionicons name="car-sport" size={32} color="#555" />
+                          <Ionicons name="bicycle" size={32} color="#555" />
                         </View>
                       )}
                       {c.isActive && (
@@ -504,7 +504,7 @@ export default function UserGarageScreen() {
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.center}>
-          <Ionicons name="car-sport-outline" size={64} color="#444" />
+          <Ionicons name="bicycle-outline" size={64} color="#444" />
           <Text style={styles.emptyTitle}>
             {error === 'no_garage' ? 'No Public Garage' : 'Error Loading Garage'}
           </Text>
@@ -622,7 +622,7 @@ export default function UserGarageScreen() {
           <CrossfadeSlideshow carId={car.id} photoCount={car.photoCount || photos.length} />
         ) : (
           <View style={styles.noPhoto}>
-            <Ionicons name="car-sport" size={48} color="#444" />
+            <Ionicons name="bicycle" size={48} color="#444" />
             <Text style={styles.noPhotoText}>No Photos</Text>
           </View>
         )}
@@ -698,41 +698,41 @@ export default function UserGarageScreen() {
           </TouchableOpacity>
 
           {/* Specifications */}
-          {(car.engine || car.horsepower || car.torque || car.transmission || car.drivetrain) && (
+          {(car.engine || car.displacement || car.torque || car.transmission || car.drivetrain) && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Specifications</Text>
               <View style={styles.specsGrid}>
                 {car.engine ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="speedometer" size={18} color="#FF5500" />
+                    <Ionicons name="speedometer" size={18} color="#51fb00" />
                     <Text style={styles.specLabel}>Engine</Text>
                     <Text style={styles.specValue}>{car.engine}</Text>
                   </View>
                 ) : null}
-                {car.horsepower ? (
+                {car.displacement ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="flash" size={18} color="#FF5500" />
-                    <Text style={styles.specLabel}>Horsepower</Text>
-                    <Text style={styles.specValue}>{car.horsepower} HP</Text>
+                    <Ionicons name="flash" size={18} color="#51fb00" />
+                    <Text style={styles.specLabel}>Displacement</Text>
+                    <Text style={styles.specValue}>{car.displacement} CC</Text>
                   </View>
                 ) : null}
                 {car.torque ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="sync" size={18} color="#FF5500" />
+                    <Ionicons name="sync" size={18} color="#51fb00" />
                     <Text style={styles.specLabel}>Torque</Text>
                     <Text style={styles.specValue}>{car.torque} lb-ft</Text>
                   </View>
                 ) : null}
                 {car.transmission ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="cog" size={18} color="#FF5500" />
+                    <Ionicons name="cog" size={18} color="#51fb00" />
                     <Text style={styles.specLabel}>Transmission</Text>
                     <Text style={styles.specValue}>{car.transmission}</Text>
                   </View>
                 ) : null}
                 {car.drivetrain ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="git-branch" size={18} color="#FF5500" />
+                    <Ionicons name="git-branch" size={18} color="#51fb00" />
                     <Text style={styles.specLabel}>Drivetrain</Text>
                     <Text style={styles.specValue}>{car.drivetrain}</Text>
                   </View>
@@ -757,7 +757,7 @@ export default function UserGarageScreen() {
               </Text>
               {car.modifications && car.modifications.length > 0 && car.modifications.map((mod: any, idx: number) => (
                 <View key={idx} style={styles.modRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#FF5500" />
+                  <Ionicons name="checkmark-circle" size={16} color="#51fb00" />
                   <Text style={styles.modText}>
                     {typeof mod === 'string' ? mod : `${mod.brand ? mod.brand + ' ' : ''}${mod.name || ''}`}
                   </Text>
@@ -775,7 +775,7 @@ export default function UserGarageScreen() {
           {comments.length > 0 && (
             <View style={styles.section}>
               <View style={styles.commentsSectionHeader}>
-                <Ionicons name="chatbubbles" size={20} color="#FF5500" />
+                <Ionicons name="chatbubbles" size={20} color="#51fb00" />
                 <Text style={styles.sectionTitle}>Comments ({comments.length})</Text>
               </View>
               {comments.map((comment) => (
@@ -822,7 +822,7 @@ export default function UserGarageScreen() {
             <View style={carPickerStyles.container}>
               <View style={carPickerStyles.header}>
                 <View style={carPickerStyles.headerIcon}>
-                  <Ionicons name="car-sport" size={28} color="#FF5500" />
+                  <Ionicons name="bicycle" size={28} color="#51fb00" />
                 </View>
                 <Text style={carPickerStyles.title}>Switch Ride</Text>
                 <Text style={carPickerStyles.subtitle}>
@@ -852,11 +852,11 @@ export default function UserGarageScreen() {
                           />
                         ) : (
                           <View style={carPickerStyles.thumbPlaceholder}>
-                            <Ionicons name="car-sport" size={32} color="#555" />
+                            <Ionicons name="bicycle" size={32} color="#555" />
                           </View>
                         )}
                         {isCurrentCar && (
-                          <View style={[carPickerStyles.activeBadge, { backgroundColor: '#FF5500' }]}>
+                          <View style={[carPickerStyles.activeBadge, { backgroundColor: '#51fb00' }]}>
                             <Ionicons name="eye" size={10} color="#fff" />
                             <Text style={carPickerStyles.activeBadgeText}>Viewing</Text>
                           </View>
@@ -880,7 +880,7 @@ export default function UserGarageScreen() {
                           </View>
                         </View>
                       </View>
-                      <Ionicons name={isCurrentCar ? 'checkmark-circle' : 'chevron-forward'} size={22} color={isCurrentCar ? '#FF5500' : '#555'} />
+                      <Ionicons name={isCurrentCar ? 'checkmark-circle' : 'chevron-forward'} size={22} color={isCurrentCar ? '#51fb00' : '#555'} />
                     </TouchableOpacity>
                   );
                 })}
@@ -1048,7 +1048,7 @@ const styles = StyleSheet.create({
   },
   carTrim: {
     fontSize: 15,
-    color: '#FF5500',
+    color: '#51fb00',
     fontWeight: '600',
     marginTop: 2,
   },
@@ -1149,7 +1149,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
@@ -1202,7 +1202,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -1276,7 +1276,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   commentSubmitBtn: {
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1349,7 +1349,7 @@ const carPickerStyles = StyleSheet.create({
     borderColor: '#333',
   },
   carCardSelected: {
-    borderColor: '#FF5500',
+    borderColor: '#51fb00',
     backgroundColor: 'rgba(225, 85, 0, 0.08)',
   },
   thumbContainer: {
@@ -1398,7 +1398,7 @@ const carPickerStyles = StyleSheet.create({
   },
   carTrim: {
     fontSize: 13,
-    color: '#FF5500',
+    color: '#51fb00',
     fontWeight: '600',
     marginTop: 2,
   },

@@ -48,13 +48,13 @@ export default function AddEventScreen() {
     city: '',
     organizer: '',
     entryFee: '',
-    eventType: 'Car Meet',
+    eventType: 'Bike Meet',
     carTypes: '',
     contactInfo: '',
     website: '',
   });
 
-  const eventTypes = ['Car Meet', 'Car Show', 'Cruise', 'Race', 'Pop Up Race', 'Other'];
+  const eventTypes = ['Bike Meet', 'Bike Show', 'Group Ride', 'Race', 'Pop Up Race', 'Other'];
   
   const daysOfWeek = [
     { label: 'Sunday', value: 0 },
@@ -273,7 +273,7 @@ export default function AddEventScreen() {
             city: '',
             organizer: '',
             entryFee: '',
-            eventType: 'Car Meet',
+            eventType: 'Bike Meet',
             carTypes: '',
             contactInfo: '',
             website: '',
@@ -305,7 +305,7 @@ export default function AddEventScreen() {
       >
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <LinearGradient
-            colors={['#FF5500', '#E91E63']}
+            colors={['#51fb00', '#E91E63']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -314,7 +314,7 @@ export default function AddEventScreen() {
               <View>
                 <Text style={styles.headerTitle}>Add New Event</Text>
                 <Text style={styles.headerSubtitle}>
-                  Share a car event with the community
+                  Share a bike event with the community
                 </Text>
               </View>
               <Ionicons name="add-circle" size={32} color="#fff" />
@@ -323,7 +323,7 @@ export default function AddEventScreen() {
 
           {!isAuthenticated && (
             <View style={styles.authNotice}>
-              <Ionicons name="information-circle" size={20} color="#FF5500" />
+              <Ionicons name="information-circle" size={20} color="#51fb00" />
               <Text style={styles.authNoticeText}>
                 You can add events as a guest, or login for more features
               </Text>
@@ -363,7 +363,7 @@ export default function AddEventScreen() {
             <Text style={styles.label}>Event Title *</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., OKC Cars & Coffee"
+              placeholder="e.g., OKC Bikes & Coffee"
               placeholderTextColor="#666"
               value={formData.title}
               onChangeText={(text) => setFormData({ ...formData, title: text })}
@@ -594,7 +594,7 @@ export default function AddEventScreen() {
 
             <Text style={styles.label}>Event Photos (Max 5)</Text>
             <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-              <Ionicons name="images" size={24} color="#FF5500" />
+              <Ionicons name="images" size={24} color="#51fb00" />
               <Text style={styles.uploadButtonText}>Upload Photos</Text>
             </TouchableOpacity>
 
@@ -739,7 +739,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   typeChipActive: {
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
   },
   typeChipText: {
     color: '#888',
@@ -757,7 +757,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   submitButton: {
-    backgroundColor: '#FF5500',
+    backgroundColor: '#51fb00',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -783,11 +783,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#FF5500',
+    borderColor: '#51fb00',
     borderStyle: 'dashed',
   },
   uploadButtonText: {
-    color: '#FF5500',
+    color: '#51fb00',
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,

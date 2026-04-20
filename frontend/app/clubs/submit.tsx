@@ -97,7 +97,7 @@ export default function SubmitClubScreen() {
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Submit Car Club</Text>
+            <Text style={styles.headerTitle}>Submit Bike Club</Text>
             <Text style={styles.headerSubtitle}>Add a club to the directory</Text>
           </View>
         </View>
@@ -105,7 +105,7 @@ export default function SubmitClubScreen() {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {!isAuthenticated && (
             <View style={styles.authNotice}>
-              <Ionicons name="information-circle" size={20} color="#FF5500" />
+              <Ionicons name="information-circle" size={20} color="#51fb00" />
               <Text style={styles.authNoticeText}>
                 You can submit clubs as a guest, or login for more features
               </Text>
