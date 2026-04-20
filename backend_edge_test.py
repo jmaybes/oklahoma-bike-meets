@@ -6,7 +6,7 @@ Edge case and error handling tests for Oklahoma Car Events API
 import requests
 import json
 
-BASE_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
+BASE_URL = "https://github-check-4.preview.emergentagent.com/api"
 
 def test_error_cases():
     """Test error handling and edge cases"""

@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://github-check-4.preview.emergentagent.com/api"
 
 def print_test_result(test_name, success, details=""):
     """Print formatted test results"""

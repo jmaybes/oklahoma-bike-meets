@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com"
+BACKEND_URL = "https://github-check-4.preview.emergentagent.com"
 ADMIN_EMAIL = "admin@okcarevents.com"
 ADMIN_PASSWORD = "admin123"
 

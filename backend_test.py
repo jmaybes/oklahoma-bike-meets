@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://github-check-4.preview.emergentagent.com/api"
 
 class CrewsCoLeaderTester:
     def __init__(self):

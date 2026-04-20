@@ -6,7 +6,7 @@ Focused Multi-Car Garage Test - Testing the specific workflow from review reques
 import requests
 import json
 
-BACKEND_URL = "https://event-hub-okc-1.preview.emergentagent.com"
+BACKEND_URL = "https://github-check-4.preview.emergentagent.com"
 ADMIN_EMAIL = "admin@okcarevents.com"
 ADMIN_PASSWORD = "admin123"
 ADMIN_USER_ID = "69bb035fb5d3f5e057f073ca"
