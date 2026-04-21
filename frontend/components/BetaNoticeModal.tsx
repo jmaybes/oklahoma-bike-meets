@@ -360,12 +360,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   privacyBox: {
-    backgroundColor: '#1a2e1a',
+    backgroundColor: 'rgba(227, 24, 55, 0.31)',
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#4CAF50',
+    borderColor: '#E31837',
   },
   privacyHeader: {
     flexDirection: 'row',
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   privacyTitle: {
-    color: '#4CAF50',
+    color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '700',
   },
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   scrollHintText: {
-    color: '#E31837',
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '600',
   },
