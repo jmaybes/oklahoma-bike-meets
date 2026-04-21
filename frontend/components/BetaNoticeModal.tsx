@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E31837',
+    borderColor: '#FFFFFF',
   },
   privacyHeader: {
     flexDirection: 'row',
