@@ -206,7 +206,7 @@ export default function EventSearchScreen() {
   if (authLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#51fb00" />
+        <ActivityIndicator size="large" color="#E31837" />
       </View>
     );
   }
@@ -215,7 +215,7 @@ export default function EventSearchScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.errorContainer}>
-          <Ionicons name="lock-closed" size={48} color="#51fb00" />
+          <Ionicons name="lock-closed" size={48} color="#E31837" />
           <Text style={styles.errorText}>Admin access required</Text>
           <TouchableOpacity
             style={styles.backButton}
@@ -231,7 +231,7 @@ export default function EventSearchScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#9C27B0', '#E91E63']}
+        colors={['#9C27B0', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
@@ -257,7 +257,7 @@ export default function EventSearchScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#51fb00"
+            tintColor="#E31837"
           />
         }
       >
@@ -324,7 +324,7 @@ export default function EventSearchScreen() {
 
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#51fb00" />
+            <ActivityIndicator size="large" color="#E31837" />
             <Text style={styles.loadingText}>Loading pending events...</Text>
           </View>
         ) : pendingEvents.length === 0 ? (
@@ -361,17 +361,17 @@ export default function EventSearchScreen() {
                 
                 <View style={styles.eventMeta}>
                   <View style={styles.metaItem}>
-                    <Ionicons name="calendar" size={14} color="#51fb00" />
+                    <Ionicons name="calendar" size={14} color="#E31837" />
                     <Text style={styles.metaText}>{formatDate(event.date)}</Text>
                   </View>
                   <View style={styles.metaItem}>
-                    <Ionicons name="time" size={14} color="#51fb00" />
+                    <Ionicons name="time" size={14} color="#E31837" />
                     <Text style={styles.metaText}>{event.time || 'TBD'}</Text>
                   </View>
                 </View>
                 
                 <View style={styles.metaItem}>
-                  <Ionicons name="location" size={14} color="#51fb00" />
+                  <Ionicons name="location" size={14} color="#E31837" />
                   <Text style={styles.metaText} numberOfLines={1}>
                     {event.city || event.location}
                   </Text>
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   statsContainer: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   eventCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 16,
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   eventTypeBadge: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     alignSelf: 'flex-start',
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   backButton: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

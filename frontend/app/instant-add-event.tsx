@@ -180,7 +180,7 @@ export default function InstantAddEventScreen() {
         <View style={styles.captureContainer}>
           <View style={styles.captureIconWrap}>
             <LinearGradient
-              colors={['#51fb00', '#E91E63']}
+              colors={['#E31837', '#E31837']}
               style={styles.captureIconGradient}
             >
               <Ionicons name="camera" size={48} color="#fff" />
@@ -193,7 +193,7 @@ export default function InstantAddEventScreen() {
 
           <TouchableOpacity style={styles.captureBtn} onPress={takePhoto} activeOpacity={0.8}>
             <LinearGradient
-              colors={['#51fb00', '#E91E63']}
+              colors={['#E31837', '#E31837']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.captureBtnGradient}
@@ -205,8 +205,8 @@ export default function InstantAddEventScreen() {
 
           <TouchableOpacity style={styles.captureBtn} onPress={pickFromGallery} activeOpacity={0.8}>
             <View style={styles.captureBtnOutline}>
-              <Ionicons name="images" size={24} color="#51fb00" />
-              <Text style={[styles.captureBtnText, { color: '#51fb00' }]}>Choose from Gallery</Text>
+              <Ionicons name="images" size={24} color="#E31837" />
+              <Text style={[styles.captureBtnText, { color: '#E31837' }]}>Choose from Gallery</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -231,7 +231,7 @@ export default function InstantAddEventScreen() {
             <Image source={{ uri: imageUri }} style={styles.scanningImage} resizeMode="contain" />
           )}
           <View style={styles.scanningOverlay}>
-            <ActivityIndicator size="large" color="#51fb00" />
+            <ActivityIndicator size="large" color="#E31837" />
             <Text style={styles.scanningText}>Reading your flyer...</Text>
             <Text style={styles.scanningSubtext}>Extracting event details</Text>
           </View>
@@ -274,7 +274,7 @@ export default function InstantAddEventScreen() {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#51fb00', '#E91E63']}
+              colors={['#E31837', '#E31837']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.captureBtnGradient}
@@ -290,7 +290,7 @@ export default function InstantAddEventScreen() {
             activeOpacity={0.8}
           >
             <View style={styles.captureBtnOutline}>
-              <Text style={[styles.captureBtnText, { color: '#51fb00' }]}>Back to Profile</Text>
+              <Text style={[styles.captureBtnText, { color: '#E31837' }]}>Back to Profile</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -480,7 +480,7 @@ export default function InstantAddEventScreen() {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#51fb00', '#E91E63']}
+              colors={['#E31837', '#E31837']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.submitGradient}
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
   },
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#51fb00',
+    borderColor: '#E31837',
     gap: 10,
   },
   captureBtnText: {
@@ -704,7 +704,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   row: {
     flexDirection: 'row',
@@ -720,12 +720,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#222',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
     marginRight: 8,
   },
   chipSelected: {
     backgroundColor: 'rgba(225, 85, 0, 0.2)',
-    borderColor: '#51fb00',
+    borderColor: '#E31837',
   },
   chipText: {
     color: '#999',
@@ -733,7 +733,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   chipTextSelected: {
-    color: '#51fb00',
+    color: '#E31837',
   },
 
   // Submit bar

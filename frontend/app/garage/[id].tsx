@@ -90,7 +90,7 @@ const modCategories: { [key: string]: { icon: string; color: string } } = {
   Interior: { icon: 'apps', color: '#9C27B0' },
   Wheels: { icon: 'ellipse', color: '#FF9800' },
   Exhaust: { icon: 'volume-high', color: '#795548' },
-  Brakes: { icon: 'stop-circle', color: '#E91E63' },
+  Brakes: { icon: 'stop-circle', color: '#E31837' },
   Other: { icon: 'construct', color: '#607D8B' },
 };
 
@@ -373,7 +373,7 @@ export default function GarageDetailScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
         </View>
       </View>
     );
@@ -402,7 +402,7 @@ export default function GarageDetailScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <LinearGradient
-        colors={['#FFE707', '#E91E63']}
+        colors={['#FFE707', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -530,7 +530,7 @@ export default function GarageDetailScreen() {
         {/* Stats Cards */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Ionicons name="heart" size={24} color="#51fb00" />
+            <Ionicons name="heart" size={24} color="#E31837" />
             <Text style={styles.statValue}>{car.likes || 0}</Text>
             <Text style={styles.statLabel}>Likes</Text>
           </View>
@@ -569,42 +569,42 @@ export default function GarageDetailScreen() {
           <View style={styles.specsGrid}>
             {car.engine && (
               <View style={styles.specItem}>
-                <Ionicons name="speedometer" size={20} color="#51fb00" />
+                <Ionicons name="speedometer" size={20} color="#E31837" />
                 <Text style={styles.specLabel}>Engine</Text>
                 <Text style={styles.specValue}>{car.engine}</Text>
               </View>
             )}
             {car.displacement && (
               <View style={styles.specItem}>
-                <Ionicons name="flash" size={20} color="#51fb00" />
+                <Ionicons name="flash" size={20} color="#E31837" />
                 <Text style={styles.specLabel}>Displacement</Text>
                 <Text style={styles.specValue}>{car.displacement} CC</Text>
               </View>
             )}
             {car.torque && (
               <View style={styles.specItem}>
-                <Ionicons name="sync" size={20} color="#51fb00" />
+                <Ionicons name="sync" size={20} color="#E31837" />
                 <Text style={styles.specLabel}>Torque</Text>
                 <Text style={styles.specValue}>{car.torque} lb-ft</Text>
               </View>
             )}
             {car.transmission && (
               <View style={styles.specItem}>
-                <Ionicons name="cog" size={20} color="#51fb00" />
+                <Ionicons name="cog" size={20} color="#E31837" />
                 <Text style={styles.specLabel}>Transmission</Text>
                 <Text style={styles.specValue}>{car.transmission}</Text>
               </View>
             )}
             {car.drivetrain && (
               <View style={styles.specItem}>
-                <Ionicons name="git-branch" size={20} color="#51fb00" />
+                <Ionicons name="git-branch" size={20} color="#E31837" />
                 <Text style={styles.specLabel}>Drivetrain</Text>
                 <Text style={styles.specValue}>{car.drivetrain}</Text>
               </View>
             )}
             {car.color && (
               <View style={styles.specItem}>
-                <Ionicons name="color-palette" size={20} color="#51fb00" />
+                <Ionicons name="color-palette" size={20} color="#E31837" />
                 <Text style={styles.specLabel}>Color</Text>
                 <Text style={styles.specValue}>{car.color}</Text>
               </View>
@@ -675,7 +675,7 @@ export default function GarageDetailScreen() {
         {comments.length > 0 && (
           <View style={styles.commentsSection}>
             <View style={styles.commentsSectionHeader}>
-              <Ionicons name="chatbubbles" size={20} color="#51fb00" />
+              <Ionicons name="chatbubbles" size={20} color="#E31837" />
               <Text style={styles.commentsSectionTitle}>Comments ({comments.length})</Text>
             </View>
             {comments.map((comment) => (
@@ -700,7 +700,7 @@ export default function GarageDetailScreen() {
                         setEditCommentText(comment.text);
                       }}
                     >
-                      <Ionicons name="pencil-outline" size={16} color="#51fb00" />
+                      <Ionicons name="pencil-outline" size={16} color="#E31837" />
                     </TouchableOpacity>
                   )}
                   {user && (user.id === comment.userId || isAdmin) && (
@@ -870,7 +870,7 @@ export default function GarageDetailScreen() {
                   />
                   {loadingPhoto === index && (
                     <View style={styles.photoLoadingOverlay}>
-                      <ActivityIndicator size="large" color="#51fb00" />
+                      <ActivityIndicator size="large" color="#E31837" />
                       <Text style={{ color: '#fff', marginTop: 8, fontSize: 12 }}>Loading HD...</Text>
                     </View>
                   )}
@@ -978,7 +978,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   backBtn: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -1084,7 +1084,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#222',
   },
   carYear: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -1121,7 +1121,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -1160,7 +1160,7 @@ const styles = StyleSheet.create({
   },
   specItem: {
     width: '47%',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 16,
     borderRadius: 12,
   },
@@ -1195,7 +1195,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   modItem: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 12,
     borderRadius: 8,
     marginBottom: 6,
@@ -1212,13 +1212,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   modNotes: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 16,
     borderRadius: 12,
     marginTop: 16,
   },
   modNotesTitle: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
@@ -1235,7 +1235,7 @@ const styles = StyleSheet.create({
   socialButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
@@ -1253,13 +1253,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     padding: 16,
     borderRadius: 12,
     gap: 8,
   },
   likeButtonLiked: {
-    backgroundColor: '#E91E63',
+    backgroundColor: '#E31837',
   },
   likeButtonText: {
     color: '#fff',
@@ -1300,7 +1300,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   setLikesSave: {
     width: 40,
@@ -1320,7 +1320,7 @@ const styles = StyleSheet.create({
   },
   photoModal: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#0A0A0A',
   },
   closeModalButton: {
     position: 'absolute',
@@ -1379,10 +1379,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     ...Platform.select({
       ios: {
-        shadowColor: '#51fb00',
+        shadowColor: '#E31837',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.3,
         shadowRadius: 16,
@@ -1422,7 +1422,7 @@ const styles = StyleSheet.create({
   carouselDot: {
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
   },
   photoLoadingOverlay: {
     position: 'absolute',
@@ -1469,7 +1469,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   commentCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
@@ -1485,7 +1485,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -1519,13 +1519,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   editCommentInput: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     color: '#fff',
     borderRadius: 8,
     padding: 10,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
     minHeight: 60,
     textAlignVertical: 'top',
   },
@@ -1553,7 +1553,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 6,
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
   },
   editSaveText: {
     color: '#fff',
@@ -1572,7 +1572,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   commentModalContent: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -1598,7 +1598,7 @@ const styles = StyleSheet.create({
     minHeight: 100,
     textAlignVertical: 'top',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   commentCharCount: {
     color: '#666',
@@ -1608,7 +1608,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   commentSubmitBtn: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

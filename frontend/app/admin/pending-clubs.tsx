@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a1a',
+    borderBottomColor: '#141414',
   },
   backButton: {
     width: 44,
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   clubCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   carTypeChip: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   linkTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,

@@ -96,14 +96,14 @@ export default function MyFavoritesScreen() {
       <View style={styles.eventContent}>
         <View style={styles.eventHeader}>
           <View style={styles.typeBadge}>
-            <Ionicons name="bicycle" size={14} color="#51fb00" />
+            <Ionicons name="bicycle" size={14} color="#E31837" />
             <Text style={styles.typeText}>{item.eventType}</Text>
           </View>
           <TouchableOpacity
             onPress={() => removeFavorite(item.id)}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="heart" size={24} color="#E91E63" />
+            <Ionicons name="heart" size={24} color="#E31837" />
           </TouchableOpacity>
         </View>
         <Text style={styles.eventTitle}>{item.title}</Text>
@@ -123,7 +123,7 @@ export default function MyFavoritesScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#E91E63', '#51fb00']}
+        colors={['#E31837', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -140,7 +140,7 @@ export default function MyFavoritesScreen() {
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#E91E63" />
+          <ActivityIndicator size="large" color="#E31837" />
         </View>
       ) : (
         <FlatList
@@ -148,7 +148,7 @@ export default function MyFavoritesScreen() {
           keyExtractor={(item) => item.id}
           renderItem={renderEvent}
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E91E63" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E31837" />}
           ListEmptyComponent={
             <View style={styles.empty}>
               <Ionicons name="heart-outline" size={64} color="#444" />
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   eventCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 14,
     overflow: 'hidden',
     marginBottom: 14,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   eventImage: {
     width: '100%',
     height: 160,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
   },
   eventContent: {
     padding: 14,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   typeText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   },
   browseButton: {
     marginTop: 24,
-    backgroundColor: '#E91E63',
+    backgroundColor: '#E31837',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 25,

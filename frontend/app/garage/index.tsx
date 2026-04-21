@@ -205,7 +205,7 @@ export default function BrowseGaragesScreen() {
           </View>
           {/* Owner name overlay */}
           <View style={styles.ownerOverlay}>
-            <Ionicons name="person-circle" size={18} color="#51fb00" />
+            <Ionicons name="person-circle" size={18} color="#E31837" />
             <Text style={styles.ownerOverlayText} numberOfLines={1}>
               {car.ownerNickname || car.ownerName}
             </Text>
@@ -219,7 +219,7 @@ export default function BrowseGaragesScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.viewUnderPhotoText}>View</Text>
-          <Ionicons name="chevron-forward" size={14} color="#51fb00" />
+          <Ionicons name="chevron-forward" size={14} color="#E31837" />
         </TouchableOpacity>
 
         {/* Car Info */}
@@ -238,7 +238,7 @@ export default function BrowseGaragesScreen() {
             ) : null}
             {car.displacement ? (
               <View style={styles.specChip}>
-                <Ionicons name="flash" size={12} color="#51fb00" />
+                <Ionicons name="flash" size={12} color="#E31837" />
                 <Text style={styles.specChipText}>{car.displacement} CC</Text>
               </View>
             ) : null}
@@ -284,7 +284,7 @@ export default function BrowseGaragesScreen() {
               onPress={() => router.push(`/user-garage/${car.userId}`)}
               activeOpacity={0.7}
             >
-              <Ionicons name="chatbubble-outline" size={16} color="#51fb00" />
+              <Ionicons name="chatbubble-outline" size={16} color="#E31837" />
               <Text style={styles.commentsLinkText}>
                 Comments{car.commentCount ? ` (${car.commentCount})` : ''}
               </Text>
@@ -302,7 +302,7 @@ export default function BrowseGaragesScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#FFE707', '#E91E63']}
+        colors={['#FFE707', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -350,7 +350,7 @@ export default function BrowseGaragesScreen() {
               <Ionicons 
                 name={option.icon as any} 
                 size={16} 
-                color={sortBy === option.key ? '#51fb00' : '#888'} 
+                color={sortBy === option.key ? '#E31837' : '#888'} 
               />
               <Text style={[
                 styles.sortOptionText,
@@ -359,7 +359,7 @@ export default function BrowseGaragesScreen() {
                 {option.label}
               </Text>
               {sortBy === option.key && (
-                <Ionicons name="checkmark" size={16} color="#51fb00" />
+                <Ionicons name="checkmark" size={16} color="#E31837" />
               )}
             </TouchableOpacity>
           ))}
@@ -388,12 +388,12 @@ export default function BrowseGaragesScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
           <Text style={styles.loadingText}>Loading garages...</Text>
         </View>
       ) : fetchError ? (
         <View style={styles.errorContainer}>
-          <Ionicons name="cloud-offline-outline" size={64} color="#51fb00" />
+          <Ionicons name="cloud-offline-outline" size={64} color="#E31837" />
           <Text style={styles.errorTitle}>Unable to Load Garages</Text>
           <Text style={styles.errorText}>{fetchError}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => { setLoading(true); fetchGarages(); }}>
@@ -406,7 +406,7 @@ export default function BrowseGaragesScreen() {
           style={styles.content}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#51fb00" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E31837" />
           }
         >
           {filteredGarages.length === 0 ? (
@@ -496,12 +496,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sortDropdown: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 16,
     marginTop: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
     overflow: 'hidden',
   },
   sortOption: {
@@ -523,13 +523,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sortOptionTextActive: {
-    color: '#51fb00',
+    color: '#E31837',
     fontWeight: '700',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 16,
     marginTop: 16,
     paddingHorizontal: 16,
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   garageCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 0,
     overflow: 'hidden',
     marginBottom: 2,
@@ -659,7 +659,7 @@ const styles = StyleSheet.create({
   noImageContainer: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -780,7 +780,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   viewGarageBtnText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -788,7 +788,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingVertical: 10,
     gap: 4,
   },
@@ -804,18 +804,18 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   commentsLinkText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 13,
     fontWeight: '600',
   },
   bottomNav: {
     flexDirection: 'row',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderTopColor: '#444',
     borderTopWidth: 1,
     paddingTop: 10,
     elevation: 12,
-    shadowColor: '#000',
+    shadowColor: '#0A0A0A',
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.4,
     shadowRadius: 6,

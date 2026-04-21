@@ -226,7 +226,7 @@ export default function CrewDetailScreen() {
               onPress={() => handleKickMember(item.id, displayName)}
               style={styles.kickBtn}
             >
-              <Ionicons name="remove-circle-outline" size={20} color="#E91E63" />
+              <Ionicons name="remove-circle-outline" size={20} color="#E31837" />
             </TouchableOpacity>
           </View>
         )}
@@ -263,7 +263,7 @@ export default function CrewDetailScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <LinearGradient
-        colors={['#FFE707', '#E91E63']}
+        colors={['#FFE707', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -319,12 +319,12 @@ export default function CrewDetailScreen() {
         <View style={[styles.bottomActions, { paddingBottom: insets.bottom + 12 }]}>
           {isCreator ? (
             <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteCrew}>
-              <Ionicons name="trash-outline" size={18} color="#E91E63" />
+              <Ionicons name="trash-outline" size={18} color="#E31837" />
               <Text style={styles.deleteBtnText}>Delete Crew</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.leaveBtn} onPress={handleLeaveCrew}>
-              <Ionicons name="exit-outline" size={18} color="#E91E63" />
+              <Ionicons name="exit-outline" size={18} color="#E31837" />
               <Text style={styles.leaveBtnText}>Leave Crew</Text>
             </TouchableOpacity>
           )}
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingHorizontal: 24,
     paddingVertical: 10,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 20,
   },
   goBackText: {
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a1a',
+    borderBottomColor: '#141414',
   },
   bannerIcon: {
     width: 64,
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   memberCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
   bottomActions: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#1a1a1a',
+    borderTopColor: '#141414',
   },
   deleteBtn: {
     flexDirection: 'row',
@@ -501,11 +501,11 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E91E63',
+    borderColor: '#E31837',
     gap: 8,
   },
   deleteBtnText: {
-    color: '#E91E63',
+    color: '#E31837',
     fontWeight: '600',
     fontSize: 15,
   },
@@ -516,11 +516,11 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E91E63',
+    borderColor: '#E31837',
     gap: 8,
   },
   leaveBtnText: {
-    color: '#E91E63',
+    color: '#E31837',
     fontWeight: '600',
     fontSize: 15,
   },

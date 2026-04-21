@@ -87,7 +87,7 @@ export default function ClubsScreen() {
     <View style={styles.clubCard}>
       <View style={styles.clubHeader}>
         <View style={styles.clubIcon}>
-          <Ionicons name="people-circle" size={40} color="#51fb00" />
+          <Ionicons name="people-circle" size={40} color="#E31837" />
         </View>
         <View style={styles.clubHeaderInfo}>
           <Text style={styles.clubName}>{item.name}</Text>
@@ -109,7 +109,7 @@ export default function ClubsScreen() {
         <View style={styles.carTypesContainer}>
           {item.carTypes.map((type, index) => (
             <View key={index} style={styles.carTypeChip}>
-              <Ionicons name="bicycle" size={12} color="#51fb00" />
+              <Ionicons name="bicycle" size={12} color="#E31837" />
               <Text style={styles.carTypeText}>{type}</Text>
             </View>
           ))}
@@ -164,7 +164,7 @@ export default function ClubsScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#51fb00" />
+        <ActivityIndicator size="large" color="#E31837" />
       </View>
     );
   }
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a1a',
+    borderBottomColor: '#141414',
   },
   backButton: {
     width: 44,
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 16,
     marginVertical: 12,
     paddingHorizontal: 16,
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   clubCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -341,14 +341,14 @@ const styles = StyleSheet.create({
   carTypeChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
     gap: 4,
   },
   carTypeText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   linkButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,

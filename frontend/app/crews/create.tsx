@@ -75,7 +75,7 @@ export default function CreateCrewScreen() {
       <View style={[styles.container, { paddingTop: insets.top }]}>
         {/* Header */}
         <LinearGradient
-          colors={['#FFE707', '#E91E63']}
+          colors={['#FFE707', '#E31837']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.headerGradient}
@@ -206,13 +206,13 @@ const styles = StyleSheet.create({
   },
   input: {
     width: '100%',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     fontSize: 18,
     color: '#fff',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   charCount: {
     color: '#555',
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   createButtonText: {
-    color: '#000',
+    color: '#0A0A0A',
     fontSize: 18,
     fontWeight: '700',
   },

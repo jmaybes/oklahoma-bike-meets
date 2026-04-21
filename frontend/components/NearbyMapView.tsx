@@ -47,7 +47,7 @@ const darkMapStyle = [
   { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2c2c2c' }] },
   { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#212121' }] },
   { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#1a1a2e' }] },
-  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
+  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#141414' }] },
 ];
 
 export default function NearbyMapView({ 
@@ -75,7 +75,7 @@ export default function NearbyMapView({
   if (!MapView || !Marker || !Circle || mapLoadError) {
     return (
       <View style={styles.mapPlaceholder}>
-        <Ionicons name="map-outline" size={48} color="#51fb00" />
+        <Ionicons name="map-outline" size={48} color="#E31837" />
         <Text style={styles.mapPlaceholderTitle}>Map Unavailable</Text>
         <Text style={styles.mapPlaceholderText}>
           {mapLoadError 
@@ -248,16 +248,16 @@ export default function NearbyMapView({
       {/* Map overlay controls */}
       <View style={styles.mapControls}>
         <TouchableOpacity style={styles.mapControlButton} onPress={handleCenterOnUser}>
-          <Ionicons name="locate" size={22} color="#51fb00" />
+          <Ionicons name="locate" size={22} color="#E31837" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.mapControlButton} onPress={handleZoomIn}>
-          <Ionicons name="add" size={22} color="#51fb00" />
+          <Ionicons name="add" size={22} color="#E31837" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.mapControlButton} onPress={handleZoomOut}>
-          <Ionicons name="remove" size={22} color="#51fb00" />
+          <Ionicons name="remove" size={22} color="#E31837" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.mapControlButton} onPress={onRefresh}>
-          <Ionicons name="refresh" size={22} color="#51fb00" />
+          <Ionicons name="refresh" size={22} color="#E31837" />
         </TouchableOpacity>
       </View>
 
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   mapPlaceholder: {
     height: 350,
     borderRadius: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginBottom: 16,
     justifyContent: 'center',
     alignItems: 'center',
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 12,
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 16,
@@ -327,13 +327,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   mapControlButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     width: 44,
     height: 44,
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#0A0A0A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   userMarker: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#fff',
-    shadowColor: '#000',
+    shadowColor: '#0A0A0A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -407,13 +407,13 @@ const styles = StyleSheet.create({
     borderWidth: 2.5,
   },
   calloutContainer: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 12,
     minWidth: 160,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   calloutName: {
     color: '#fff',
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
   calloutMessageBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 16,

@@ -120,8 +120,8 @@ export default function TimerScreen() {
   const pbBounce = useSharedValue(1);
 
   const modes: { type: RunType; label: string; target: number; icon: string; color: string }[] = [
-    { type: '0-60', label: '0-60 MPH', target: 60, icon: 'speedometer', color: '#51fb00' },
-    { type: '0-100', label: '0-100 MPH', target: 100, icon: 'rocket', color: '#E91E63' },
+    { type: '0-60', label: '0-60 MPH', target: 60, icon: 'speedometer', color: '#E31837' },
+    { type: '0-100', label: '0-100 MPH', target: 100, icon: 'rocket', color: '#E31837' },
     { type: 'quarter-mile', label: '1/4 Mile', target: 0, icon: 'flag', color: '#9C27B0' },
   ];
 
@@ -479,8 +479,8 @@ export default function TimerScreen() {
   const getSpeedColor = () => {
     if (currentSpeed < 30) return '#4CAF50';
     if (currentSpeed < 60) return '#FF9800';
-    if (currentSpeed < 100) return '#51fb00';
-    return '#E91E63';
+    if (currentSpeed < 100) return '#E31837';
+    return '#E31837';
   };
 
   const shareResult = async () => {
@@ -543,7 +543,7 @@ export default function TimerScreen() {
     }
   };
 
-  const selectedModeColor = modes.find((m) => m.type === selectedMode)?.color || '#51fb00';
+  const selectedModeColor = modes.find((m) => m.type === selectedMode)?.color || '#E31837';
   const isActive = waitingForStartRef.current || isRunningRef.current || countdown !== null;
 
   // Generate tick marks for speedometer
@@ -558,7 +558,7 @@ export default function TimerScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <LinearGradient
-          colors={['#51fb00', '#E91E63']}
+          colors={['#E31837', '#E31837']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.headerGradient}
@@ -583,7 +583,7 @@ export default function TimerScreen() {
         {/* Car Selection */}
         {garageCars.length > 0 && (
           <TouchableOpacity style={styles.carSelector} onPress={() => setShowCarPicker(true)}>
-            <Ionicons name="bicycle" size={18} color="#51fb00" />
+            <Ionicons name="bicycle" size={18} color="#E31837" />
             <Text style={styles.carSelectorText} numberOfLines={1}>
               {selectedCar || 'Select your bike'}
             </Text>
@@ -630,14 +630,14 @@ export default function TimerScreen() {
           <View style={styles.pbStrip}>
             <View style={styles.pbItem}>
               <Text style={styles.pbLabel}>0-60 PB</Text>
-              <Text style={[styles.pbValue, { color: '#51fb00' }]}>
+              <Text style={[styles.pbValue, { color: '#E31837' }]}>
                 {personalBests.zeroToSixty?.toFixed(2) || '--'}s
               </Text>
             </View>
             <View style={styles.pbDivider} />
             <View style={styles.pbItem}>
               <Text style={styles.pbLabel}>0-100 PB</Text>
-              <Text style={[styles.pbValue, { color: '#E91E63' }]}>
+              <Text style={[styles.pbValue, { color: '#E31837' }]}>
                 {personalBests.zeroToHundred?.toFixed(2) || '--'}s
               </Text>
             </View>
@@ -742,7 +742,7 @@ export default function TimerScreen() {
           {(isRunningRef.current || result) && (
             <View style={styles.runStats}>
               <View style={styles.runStatItem}>
-                <Ionicons name="flash" size={14} color="#51fb00" />
+                <Ionicons name="flash" size={14} color="#E31837" />
                 <Text style={styles.runStatText}>Top: {topSpeed.toFixed(1)} MPH</Text>
               </View>
               {result?.type === 'quarter-mile' && result.quarterMileSpeed && (
@@ -802,7 +802,7 @@ export default function TimerScreen() {
           {result && (
             <View style={styles.resultButtons}>
               <TouchableOpacity style={[styles.resultBtn, { flex: 2 }]} onPress={resetTimer}>
-                <LinearGradient colors={['#51fb00', '#E91E63']} style={styles.resultBtnGradient}>
+                <LinearGradient colors={['#E31837', '#E31837']} style={styles.resultBtnGradient}>
                   <Ionicons name="refresh" size={24} color="#fff" />
                   <Text style={styles.resultBtnText}>TRY AGAIN</Text>
                 </LinearGradient>
@@ -876,9 +876,9 @@ export default function TimerScreen() {
                       setShowCarPicker(false);
                     }}
                   >
-                    <Ionicons name="bicycle" size={20} color={isSelected ? '#51fb00' : '#888'} />
-                    <Text style={[styles.carOptionText, isSelected && { color: '#51fb00' }]}>{label}</Text>
-                    {isSelected && <Ionicons name="checkmark-circle" size={20} color="#51fb00" />}
+                    <Ionicons name="bicycle" size={20} color={isSelected ? '#E31837' : '#888'} />
+                    <Text style={[styles.carOptionText, isSelected && { color: '#E31837' }]}>{label}</Text>
+                    {isSelected && <Ionicons name="checkmark-circle" size={20} color="#E31837" />}
                   </TouchableOpacity>
                 );
               })}
@@ -1056,7 +1056,7 @@ const styles = StyleSheet.create({
   carSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 16,
     marginTop: 16,
     paddingVertical: 12,
@@ -1085,7 +1085,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     paddingVertical: 12,
     paddingHorizontal: 6,
     borderRadius: 12,
@@ -1102,7 +1102,7 @@ const styles = StyleSheet.create({
   // PB strip
   pbStrip: {
     flexDirection: 'row',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 16,
     marginTop: 12,
     borderRadius: 12,
@@ -1234,7 +1234,7 @@ const styles = StyleSheet.create({
   distanceBarTrack: {
     width: '100%',
     height: 6,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -1391,7 +1391,7 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,
@@ -1425,7 +1425,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '80%',
@@ -1512,7 +1512,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   manualModeRow: {
     flexDirection: 'row',

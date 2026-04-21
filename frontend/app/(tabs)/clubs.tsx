@@ -136,12 +136,12 @@ export default function ClubsScreen() {
     if (focus.includes('Mustang') || focus.includes('Ford')) return '#1E88E5';
     if (focus.includes('Corvette') || focus.includes('Camaro') || focus.includes('Chevrolet')) return '#FFD700';
     if (focus.includes('Mopar') || focus.includes('Dodge') || focus.includes('Challenger')) return '#FF3B30';
-    if (focus.includes('JDM') || focus.includes('Japanese')) return '#51fb00';
+    if (focus.includes('JDM') || focus.includes('Japanese')) return '#E31837';
     if (focus.includes('European') || focus.includes('BMW') || focus.includes('Porsche')) return '#4CAF50';
     if (focus.includes('Truck') || focus.includes('Jeep')) return '#795548';
-    if (focus.includes('Tesla') || focus.includes('Electric')) return '#E91E63';
+    if (focus.includes('Tesla') || focus.includes('Electric')) return '#E31837';
     if (focus.includes('Classic') || focus.includes('Hot Rod')) return '#9C27B0';
-    return '#51fb00';
+    return '#E31837';
   };
 
   // Animated Club Card Component
@@ -202,7 +202,7 @@ export default function ClubsScreen() {
               <View style={styles.clubActions}>
                 {item.contactEmail && (
                   <TouchableOpacity style={styles.actionButton}>
-                    <Ionicons name="mail-outline" size={18} color="#51fb00" />
+                    <Ionicons name="mail-outline" size={18} color="#E31837" />
                     <Text style={styles.actionText}>Contact</Text>
                   </TouchableOpacity>
                 )}
@@ -318,7 +318,7 @@ export default function ClubsScreen() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#9C27B0', '#E91E63']}
+        colors={['#9C27B0', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -405,7 +405,7 @@ export default function ClubsScreen() {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={['#9C27B0', '#E91E63']}
+            colors={['#9C27B0', '#E31837']}
             style={styles.fabGradient}
           >
             <Ionicons name="add" size={28} color="#fff" />
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 20,
     marginTop: 16,
     marginBottom: 8,
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   clubCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 16,
     marginBottom: 16,
     overflow: 'hidden',
@@ -685,7 +685,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 14,
-    color: '#51fb00',
+    color: '#E31837',
     fontWeight: '600',
   },
   emptyContainer: {
@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a1a',
+    borderBottomColor: '#141414',
   },
   modalCancel: {
     color: '#888',
@@ -822,7 +822,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   modalInput: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,

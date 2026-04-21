@@ -379,7 +379,7 @@ export default function ChatScreen() {
         <View style={styles.popupInviteCard}>
           {/* Header Gradient */}
           <LinearGradient
-            colors={['#51fb00', '#E91E63']}
+            colors={['#E31837', '#E31837']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.popupCardHeader}
@@ -419,7 +419,7 @@ export default function ChatScreen() {
                   </View>
                 ) : (
                   <View style={styles.locationLoading}>
-                    <ActivityIndicator size="small" color="#51fb00" />
+                    <ActivityIndicator size="small" color="#E31837" />
                     <Text style={styles.locationLoadingText}>Loading location...</Text>
                   </View>
                 )}
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
   dateHeaderText: {
     color: '#666',
     fontSize: 12,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 10,
@@ -789,7 +789,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 4,
   },
   theirMessageBubble: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderBottomLeftRadius: 4,
   },
   messageText: {
@@ -822,7 +822,7 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginVertical: 4,
   },
   popupCardHeader: {
@@ -971,7 +971,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   rsvpChangeText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -1005,7 +1005,7 @@ const styles = StyleSheet.create({
   },
   typingDots: {
     flexDirection: 'row',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 16,
@@ -1046,13 +1046,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingHorizontal: 12,
     paddingTop: 12,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderTopWidth: 1,
     borderTopColor: '#333',
   },
   textInput: {
     flex: 1,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,

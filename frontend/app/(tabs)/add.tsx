@@ -305,7 +305,7 @@ export default function AddEventScreen() {
       >
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <LinearGradient
-            colors={['#51fb00', '#E91E63']}
+            colors={['#E31837', '#E31837']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -323,7 +323,7 @@ export default function AddEventScreen() {
 
           {!isAuthenticated && (
             <View style={styles.authNotice}>
-              <Ionicons name="information-circle" size={20} color="#51fb00" />
+              <Ionicons name="information-circle" size={20} color="#E31837" />
               <Text style={styles.authNoticeText}>
                 You can add events as a guest, or login for more features
               </Text>
@@ -337,7 +337,7 @@ export default function AddEventScreen() {
             disabled={scanningFlyer}
           >
             <LinearGradient
-              colors={['#9C27B0', '#E91E63']}
+              colors={['#9C27B0', '#E31837']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.scanFlyerGradient}
@@ -594,7 +594,7 @@ export default function AddEventScreen() {
 
             <Text style={styles.label}>Event Photos (Max 5)</Text>
             <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-              <Ionicons name="images" size={24} color="#51fb00" />
+              <Ionicons name="images" size={24} color="#E31837" />
               <Text style={styles.uploadButtonText}>Upload Photos</Text>
             </TouchableOpacity>
 
@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
   authNotice: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 12,
     marginHorizontal: 20,
     borderRadius: 8,
@@ -717,7 +717,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   input: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     color: '#fff',
@@ -734,12 +734,12 @@ const styles = StyleSheet.create({
   typeChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 20,
     marginRight: 8,
   },
   typeChipActive: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
   },
   typeChipText: {
     color: '#888',
@@ -757,7 +757,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   submitButton: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -776,18 +776,18 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   uploadButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#51fb00',
+    borderColor: '#E31837',
     borderStyle: 'dashed',
   },
   uploadButtonText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -805,7 +805,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 12,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
   },
   removePhotoButton: {
     position: 'absolute',
@@ -815,7 +815,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   locationButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -832,7 +832,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   popupToggleContainer: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     marginTop: 24,
@@ -864,7 +864,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   recurringToggleContainer: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
@@ -896,7 +896,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   recurringOptionsContainer: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     marginTop: 12,
@@ -910,7 +910,7 @@ const styles = StyleSheet.create({
   dayChip: {
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderRadius: 20,
     marginRight: 8,
   },

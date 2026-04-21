@@ -184,7 +184,7 @@ export default function AdminEditClubScreen() {
   if (authLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#51fb00" />
+        <ActivityIndicator size="large" color="#E31837" />
       </View>
     );
   }
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   section: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderTopWidth: 1,
     borderTopColor: '#333',
   },

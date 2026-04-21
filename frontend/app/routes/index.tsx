@@ -196,7 +196,7 @@ export default function MyRoutesScreen() {
             style={styles.actionButton}
             onPress={() => handleLikeRoute(route.id)}
           >
-            <Ionicons name="heart-outline" size={20} color="#51fb00" />
+            <Ionicons name="heart-outline" size={20} color="#E31837" />
             <Text style={styles.actionText}>{route.likes}</Text>
           </TouchableOpacity>
           
@@ -207,7 +207,7 @@ export default function MyRoutesScreen() {
             <Ionicons 
               name={isSaved ? "bookmark" : "bookmark-outline"} 
               size={20} 
-              color={isSaved ? "#51fb00" : "#888"} 
+              color={isSaved ? "#E31837" : "#888"} 
             />
           </TouchableOpacity>
 
@@ -247,7 +247,7 @@ export default function MyRoutesScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#51fb00', '#E91E63']}
+        colors={['#E31837', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -300,14 +300,14 @@ export default function MyRoutesScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
         </View>
       ) : (
         <ScrollView
           style={styles.content}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#51fb00" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E31837" />
           }
         >
           {getCurrentRoutes().length === 0 ? (
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 16,
     marginTop: 16,
     borderRadius: 12,
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeTab: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
   },
   tabText: {
     color: '#888',
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   routeCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -503,13 +503,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   highlightBadge: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
   },
   highlightText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 11,
   },
   cardActions: {

@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
   },
@@ -306,12 +306,12 @@ const styles = StyleSheet.create({
 
   // Steps
   stepsCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 14,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   stepsTitle: {
     fontSize: 16,
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   jsonInput: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 14,
     color: '#fff',
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     minHeight: 200,
     maxHeight: 400,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   inputHint: {
     marginTop: 6,
@@ -376,11 +376,11 @@ const styles = StyleSheet.create({
 
   // Results
   resultsCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
     marginBottom: 16,
   },
   resultsTitle: {
@@ -401,12 +401,12 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   statNumber: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#51fb00',
+    color: '#E31837',
   },
   statLabel: {
     fontSize: 11,

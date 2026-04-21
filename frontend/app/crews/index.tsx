@@ -163,7 +163,7 @@ export default function MyCrewsScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <LinearGradient
-        colors={['#FFE707', '#E91E63']}
+        colors={['#FFE707', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   acceptBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   crewCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 14,
     marginBottom: 8,

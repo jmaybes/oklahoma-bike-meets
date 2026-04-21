@@ -37,7 +37,7 @@ interface Feedback {
 }
 
 const statusColors: Record<string, string> = {
-  new: '#51fb00',
+  new: '#E31837',
   in_progress: '#2196F3',
   resolved: '#4CAF50',
   closed: '#888',
@@ -157,7 +157,7 @@ export default function AdminFeedbackScreen() {
   if (authLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#51fb00" />
+        <ActivityIndicator size="large" color="#E31837" />
       </View>
     );
   }
@@ -182,7 +182,7 @@ export default function AdminFeedbackScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <LinearGradient
-        colors={['#51fb00', '#E91E63']}
+        colors={['#E31837', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -204,8 +204,8 @@ export default function AdminFeedbackScreen() {
           <Text style={styles.statNumber}>{stats.total}</Text>
           <Text style={styles.statLabel}>Total</Text>
         </View>
-        <View style={[styles.statCard, { borderColor: '#51fb00' }]}>
-          <Text style={[styles.statNumber, { color: '#51fb00' }]}>{stats.new}</Text>
+        <View style={[styles.statCard, { borderColor: '#E31837' }]}>
+          <Text style={[styles.statNumber, { color: '#E31837' }]}>{stats.new}</Text>
           <Text style={styles.statLabel}>New</Text>
         </View>
         <View style={[styles.statCard, { borderColor: '#2196F3' }]}>
@@ -244,13 +244,13 @@ export default function AdminFeedbackScreen() {
       {/* Feedback List */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
         </View>
       ) : (
         <ScrollView
           style={styles.listContainer}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#51fb00" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E31837" />
           }
         >
           {feedbackList.length === 0 ? (
@@ -360,7 +360,7 @@ export default function AdminFeedbackScreen() {
               {/* User Info */}
               <Text style={styles.detailLabel}>From</Text>
               <View style={styles.userInfoBox}>
-                <Ionicons name="person-circle" size={24} color="#51fb00" />
+                <Ionicons name="person-circle" size={24} color="#E31837" />
                 <View>
                   <Text style={styles.userName}>{selectedFeedback.userName}</Text>
                   <Text style={styles.userEmail}>{selectedFeedback.userEmail}</Text>
@@ -473,12 +473,12 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   statNumber: {
     fontSize: 24,
@@ -498,11 +498,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginRight: 8,
   },
   filterButtonActive: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
   },
   filterButtonText: {
     color: '#888',
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   feedbackCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   backButton: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -681,7 +681,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   messageBox: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -695,7 +695,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 12,
     borderRadius: 12,
     marginBottom: 16,
@@ -738,18 +738,18 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
   },
   statusActionButtonActive: {
-    backgroundColor: '#51fb00',
-    borderColor: '#51fb00',
+    backgroundColor: '#E31837',
+    borderColor: '#E31837',
   },
   statusActionText: {
     fontSize: 13,
     fontWeight: '600',
   },
   responseInput: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     color: '#fff',

@@ -75,7 +75,7 @@ export default function LandingScreen() {
       icon: 'bicycle',
       title: 'My Garage',
       description: 'Showcase your ride with photos and specs',
-      color: '#51fb00',
+      color: '#E31837',
     },
     {
       icon: 'trophy',
@@ -105,14 +105,14 @@ export default function LandingScreen() {
       icon: 'heart',
       title: 'Save Favorites',
       description: 'Bookmark events and clubs you love',
-      color: '#E91E63',
+      color: '#E31837',
     },
   ];
 
   if (!fontsLoaded) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#51fb00" />
+        <ActivityIndicator size="large" color="#E31837" />
       </View>
     );
   }
@@ -131,7 +131,7 @@ export default function LandingScreen() {
           <View style={styles.heroOverlay}>
             <View style={styles.heroContent}>
               <View style={styles.logoContainer}>
-                <Ionicons name="bicycle" size={60} color="#51fb00" />
+                <Ionicons name="bicycle" size={60} color="#E31837" />
               </View>
               <Text style={styles.heroTitle}>Oklahoma Bike Events</Text>
               <Text style={styles.heroTitleSub}>& Clubs</Text>
@@ -139,7 +139,7 @@ export default function LandingScreen() {
                 Your Ultimate Car Community Hub
               </Text>
               <View style={styles.taglineContainer}>
-                <Ionicons name="flame" size={20} color="#51fb00" />
+                <Ionicons name="flame" size={20} color="#E31837" />
                 <Text style={styles.tagline}>
                   Meets • Shows • Cruises • Races
                 </Text>
@@ -242,7 +242,7 @@ export default function LandingScreen() {
             onPress={handleSignUp}
           >
             <LinearGradient
-              colors={['#51fb00', '#E91E63']}
+              colors={['#E31837', '#E31837']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.gradientButton}
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   heroTitleSub: {
     fontSize: 32,
     fontFamily: 'RobotoCondensed_700Bold',
-    color: '#51fb00',
+    color: '#E31837',
     textAlign: 'center',
     marginBottom: 8,
     textShadowColor: 'rgba(0,0,0,0.8)',
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   },
   tagline: {
     fontSize: 14,
-    color: '#51fb00',
+    color: '#E31837',
     fontWeight: '600',
   },
   scrollView: {
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   },
   featureCard: {
     width: (width - 56) / 2,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 20,
     marginBottom: 20,
     padding: 24,
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 36,
     fontFamily: 'RobotoCondensed_700Bold',
-    color: '#51fb00',
+    color: '#E31837',
     marginBottom: 4,
   },
   statLabel: {
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   loginButton: {
     padding: 16,
     borderRadius: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     alignItems: 'center',
     marginBottom: 12,
   },

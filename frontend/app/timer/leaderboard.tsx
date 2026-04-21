@@ -64,8 +64,8 @@ export default function LeaderboardScreen() {
   const [saving, setSaving] = useState(false);
 
   const types: { type: LeaderboardType; label: string; icon: string; color: string }[] = [
-    { type: '0-60', label: '0-60', icon: 'speedometer', color: '#51fb00' },
-    { type: '0-100', label: '0-100', icon: 'rocket', color: '#E91E63' },
+    { type: '0-60', label: '0-60', icon: 'speedometer', color: '#E31837' },
+    { type: '0-100', label: '0-100', icon: 'rocket', color: '#E31837' },
     { type: 'quarter-mile', label: '1/4 Mile', icon: 'flag', color: '#9C27B0' },
   ];
 
@@ -278,7 +278,7 @@ export default function LeaderboardScreen() {
         onPress={() => router.push('/timer')}
       >
         <LinearGradient
-          colors={['#51fb00', '#E91E63']}
+          colors={['#E31837', '#E31837']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.startRunGradient}
@@ -294,7 +294,7 @@ export default function LeaderboardScreen() {
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       {/* Header */}
       <LinearGradient
-        colors={['#FFD700', '#51fb00']}
+        colors={['#FFD700', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -339,7 +339,7 @@ export default function LeaderboardScreen() {
       {leaderboard.length > 0 && (
         <View style={styles.statsBanner}>
           <View style={styles.statItem}>
-            <Ionicons name="people" size={20} color="#51fb00" />
+            <Ionicons name="people" size={20} color="#E31837" />
             <Text style={styles.statValue}>{leaderboard.length}</Text>
             <Text style={styles.statLabel}>Entries</Text>
           </View>
@@ -357,7 +357,7 @@ export default function LeaderboardScreen() {
       {/* Leaderboard List */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
           <Text style={styles.loadingText}>Loading rankings...</Text>
         </View>
       ) : (
@@ -371,7 +371,7 @@ export default function LeaderboardScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#51fb00"
+              tintColor="#E31837"
             />
           }
         />
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 20,
     marginTop: 20,
     paddingVertical: 20,
@@ -603,14 +603,14 @@ const styles = StyleSheet.create({
   leaderboardItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
   },
   topThreeItem: {
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   rankContainer: {
     width: 50,
@@ -722,7 +722,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '85%',
@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
   formSectionTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#51fb00',
+    color: '#E31837',
     marginTop: 16,
     marginBottom: 12,
     textTransform: 'uppercase',
@@ -785,7 +785,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   formRow: {
     flexDirection: 'row',
@@ -815,7 +815,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,

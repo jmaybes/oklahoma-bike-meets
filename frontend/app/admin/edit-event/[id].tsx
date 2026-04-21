@@ -204,7 +204,7 @@ export default function AdminEditEventScreen() {
   if (authLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#51fb00" />
+        <ActivityIndicator size="large" color="#E31837" />
       </View>
     );
   }
@@ -231,7 +231,7 @@ export default function AdminEditEventScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
           <Text style={styles.loadingText}>Loading event...</Text>
         </View>
       </View>
@@ -241,7 +241,7 @@ export default function AdminEditEventScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#51fb00', '#f44336']}
+        colors={['#E31837', '#f44336']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -282,7 +282,7 @@ export default function AdminEditEventScreen() {
                 </View>
               ))}
               <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
-                <Ionicons name="add" size={32} color="#51fb00" />
+                <Ionicons name="add" size={32} color="#E31837" />
                 <Text style={styles.addPhotoText}>Add Photo</Text>
               </TouchableOpacity>
             </ScrollView>
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   section: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#51fb00',
+    color: '#E31837',
     marginBottom: 16,
   },
   label: {
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderTopWidth: 1,
     borderTopColor: '#333',
   },

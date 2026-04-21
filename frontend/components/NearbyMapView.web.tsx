@@ -15,7 +15,7 @@ export default function NearbyMapView({ location, radius }: NearbyMapViewProps) 
   return (
     <View style={styles.mapPlaceholder}>
       <View style={styles.mapPlaceholderInner}>
-        <Ionicons name="map" size={48} color="#51fb00" />
+        <Ionicons name="map" size={48} color="#E31837" />
         <Text style={styles.mapPlaceholderTitle}>Your Location</Text>
         <Text style={styles.mapPlaceholderCoords}>
           {location ? `${location.latitude.toFixed(4)}°N, ${Math.abs(location.longitude).toFixed(4)}°W` : 'Loading...'}
@@ -38,11 +38,11 @@ const styles = StyleSheet.create({
   mapPlaceholder: {
     height: 280,
     borderRadius: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginBottom: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   mapPlaceholderInner: {
     flex: 1,

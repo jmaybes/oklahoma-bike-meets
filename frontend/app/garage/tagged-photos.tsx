@@ -126,7 +126,7 @@ export default function TaggedPhotosScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={['#51fb00', '#E91E63']}
+        colors={['#E31837', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -153,7 +153,7 @@ export default function TaggedPhotosScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
           <Text style={styles.loadingText}>Loading your tagged photos...</Text>
         </View>
       ) : (
@@ -164,7 +164,7 @@ export default function TaggedPhotosScreen() {
           numColumns={3}
           contentContainerStyle={styles.photoGrid}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#51fb00" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E31837" />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -211,7 +211,7 @@ export default function TaggedPhotosScreen() {
                   router.push(`/event/${selectedPhoto.eventId}/gallery`);
                 }
               }}>
-                <Ionicons name="images-outline" size={24} color="#51fb00" />
+                <Ionicons name="images-outline" size={24} color="#E31837" />
               </TouchableOpacity>
             </View>
 
@@ -232,7 +232,7 @@ export default function TaggedPhotosScreen() {
                 <Text style={styles.taggedCarsTitle}>Your Tagged Cars:</Text>
                 {selectedPhoto.userTags.map((tag, index) => (
                   <View key={index} style={styles.taggedCarItem}>
-                    <Ionicons name="bicycle" size={18} color="#51fb00" />
+                    <Ionicons name="bicycle" size={18} color="#E31837" />
                     <Text style={styles.taggedCarText}>{tag.carInfo}</Text>
                   </View>
                 ))}
@@ -246,7 +246,7 @@ export default function TaggedPhotosScreen() {
                 <Text style={styles.photoInfoText}>Photo by {selectedPhoto?.uploaderName}</Text>
               </View>
               <View style={styles.photoInfoRow}>
-                <Ionicons name="heart" size={16} color="#E91E63" />
+                <Ionicons name="heart" size={16} color="#E31837" />
                 <Text style={styles.photoInfoText}>{selectedPhoto?.likeCount || 0} likes</Text>
               </View>
             </View>
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     margin: 4,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
   },
   photoThumbnail: {
     width: '100%',
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
   browseEventsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 25,
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(225, 85, 0, 0.1)',
   },
   taggedCarsTitle: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 8,

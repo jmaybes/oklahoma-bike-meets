@@ -105,7 +105,7 @@ export default function SubmitClubScreen() {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {!isAuthenticated && (
             <View style={styles.authNotice}>
-              <Ionicons name="information-circle" size={20} color="#51fb00" />
+              <Ionicons name="information-circle" size={20} color="#E31837" />
               <Text style={styles.authNoticeText}>
                 You can submit clubs as a guest, or login for more features
               </Text>
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a1a',
+    borderBottomColor: '#141414',
   },
   backButton: {
     width: 44,
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   authNotice: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 12,
     marginHorizontal: 20,
     marginTop: 16,
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   input: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 16,
     color: '#fff',

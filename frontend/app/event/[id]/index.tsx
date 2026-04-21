@@ -206,7 +206,7 @@ export default function EventDetailScreen() {
   if (loading) {
     return (
       <View style={[styles.centerContainer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <ActivityIndicator size="large" color="#51fb00" />
+        <ActivityIndicator size="large" color="#E31837" />
       </View>
     );
   }
@@ -232,7 +232,7 @@ export default function EventDetailScreen() {
                 onPress={() => router.push(`/admin/edit-event/${id}`)}
                 style={styles.editButton}
               >
-                <Ionicons name="create-outline" size={24} color="#51fb00" />
+                <Ionicons name="create-outline" size={24} color="#E31837" />
               </TouchableOpacity>
               <TouchableOpacity 
                 onPress={() => {
@@ -274,7 +274,7 @@ export default function EventDetailScreen() {
           style={styles.header}
         >
           <View style={styles.typeTag}>
-            <Ionicons name="bicycle" size={16} color="#51fb00" />
+            <Ionicons name="bicycle" size={16} color="#E31837" />
             <Text style={styles.typeText}>{event.eventType}</Text>
           </View>
           <Text style={styles.title}>{event.title}</Text>
@@ -285,7 +285,7 @@ export default function EventDetailScreen() {
           style={styles.infoSection}
         >
           <View style={styles.infoRow}>
-            <Ionicons name="calendar" size={24} color="#51fb00" />
+            <Ionicons name="calendar" size={24} color="#E31837" />
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Date & Time</Text>
               <Text style={styles.infoText}>{formatEventDate(event.date)}</Text>
@@ -294,7 +294,7 @@ export default function EventDetailScreen() {
           </View>
 
           <View style={styles.infoRow}>
-            <Ionicons name="location" size={24} color="#51fb00" />
+            <Ionicons name="location" size={24} color="#E31837" />
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Location</Text>
               <Text style={styles.infoText}>{event.location || 'TBD'}</Text>
@@ -305,7 +305,7 @@ export default function EventDetailScreen() {
 
           {event.organizer && (
             <View style={styles.infoRow}>
-              <Ionicons name="person" size={24} color="#51fb00" />
+              <Ionicons name="person" size={24} color="#E31837" />
               <View style={styles.infoContent}>
                 <Text style={styles.infoLabel}>Organizer</Text>
                 <Text style={styles.infoText}>{event.organizer}</Text>
@@ -315,7 +315,7 @@ export default function EventDetailScreen() {
 
           {event.entryFee && (
             <View style={styles.infoRow}>
-              <Ionicons name="cash" size={24} color="#51fb00" />
+              <Ionicons name="cash" size={24} color="#E31837" />
               <View style={styles.infoContent}>
                 <Text style={styles.infoLabel}>Entry Fee</Text>
                 <Text style={styles.infoText}>{event.entryFee}</Text>
@@ -324,7 +324,7 @@ export default function EventDetailScreen() {
           )}
 
           <View style={styles.infoRow}>
-            <Ionicons name="people" size={24} color="#51fb00" />
+            <Ionicons name="people" size={24} color="#E31837" />
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Attendees</Text>
               <Text style={styles.infoText}>{event.attendeeCount} going</Text>
@@ -422,7 +422,7 @@ export default function EventDetailScreen() {
           <Ionicons
             name={isFavorited ? 'heart' : 'heart-outline'}
             size={24}
-            color="#51fb00"
+            color="#E31837"
           />
         </TouchableOpacity>
         <TouchableOpacity
@@ -497,14 +497,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     marginBottom: 12,
   },
   typeText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
     lineHeight: 36,
   },
   infoSection: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 20,
     borderRadius: 16,
     padding: 20,
@@ -561,13 +561,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tag: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   tagText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 13,
   },
   contactText: {
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 20,
     padding: 16,
     borderRadius: 12,
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   galleryButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginHorizontal: 20,
     borderRadius: 16,
     marginBottom: 24,
@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -625,7 +625,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   comment: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: '#1a1a1a',
+    borderTopColor: '#141414',
   },
   actionButton: {
     borderRadius: 12,
@@ -665,11 +665,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   favoriteButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     width: 56,
   },
   rsvpButton: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     flex: 1,
     flexDirection: 'row',
   },

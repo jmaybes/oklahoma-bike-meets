@@ -274,7 +274,7 @@ export default function LoginScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
         </View>
       </View>
     );
@@ -294,7 +294,7 @@ export default function LoginScreen() {
 
         <View style={styles.content}>
           <Animated.View entering={FadeInDown.delay(100).springify()}>
-            <Ionicons name="bicycle" size={64} color="#51fb00" />
+            <Ionicons name="bicycle" size={64} color="#E31837" />
           </Animated.View>
           <Animated.Text 
             entering={FadeInDown.delay(200).springify()}
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     marginBottom: 16,
     paddingHorizontal: 16,
@@ -538,8 +538,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   checkboxChecked: {
-    backgroundColor: '#51fb00',
-    borderColor: '#51fb00',
+    backgroundColor: '#E31837',
+    borderColor: '#E31837',
   },
   rememberMeText: {
     color: '#fff',
@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
     marginLeft: 34,
   },
   loginButton: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   registerLinkBold: {
-    color: '#51fb00',
+    color: '#E31837',
     fontWeight: 'bold',
   },
   dividerContainer: {
@@ -640,9 +640,9 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   appleButton: {
-    backgroundColor: '#000',
+    backgroundColor: '#0A0A0A',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   appleButtonText: {
     fontSize: 16,

@@ -205,7 +205,7 @@ export default function MyEventsScreen() {
           {/* Header row */}
           <View style={styles.cardHeader}>
             <View style={styles.cardTypeRow}>
-              <Ionicons name="bicycle" size={16} color="#51fb00" />
+              <Ionicons name="bicycle" size={16} color="#E31837" />
               <Text style={styles.cardType}>{item.eventType}</Text>
             </View>
             <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
@@ -237,8 +237,8 @@ export default function MyEventsScreen() {
             ) : null}
             {item.isRecurring && item.recurrenceDay !== undefined && (
               <View style={styles.detailRow}>
-                <Ionicons name="repeat" size={15} color="#51fb00" />
-                <Text style={[styles.detailText, { color: '#51fb00' }]}>
+                <Ionicons name="repeat" size={15} color="#E31837" />
+                <Text style={[styles.detailText, { color: '#E31837' }]}>
                   Every {getDayName(item.recurrenceDay)}
                 </Text>
               </View>
@@ -268,7 +268,7 @@ export default function MyEventsScreen() {
               onPress={() => router.push(`/event/${item.id}`)}
               activeOpacity={0.7}
             >
-              <Ionicons name="eye-outline" size={18} color="#51fb00" />
+              <Ionicons name="eye-outline" size={18} color="#E31837" />
               <Text style={styles.viewButtonText}>View</Text>
             </TouchableOpacity>
           </View>
@@ -281,7 +281,7 @@ export default function MyEventsScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
         </View>
       </View>
     );
@@ -324,7 +324,7 @@ export default function MyEventsScreen() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#51fb00" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E31837" />
           }
         />
       )}
@@ -349,7 +349,7 @@ export default function MyEventsScreen() {
               <Text style={styles.modalTitle}>Edit Event</Text>
               <TouchableOpacity onPress={handleSaveEdit} disabled={saving}>
                 {saving ? (
-                  <ActivityIndicator size="small" color="#51fb00" />
+                  <ActivityIndicator size="small" color="#E31837" />
                 ) : (
                   <Text style={styles.modalSave}>Save</Text>
                 )}
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a1a',
+    borderBottomColor: '#141414',
   },
   backButton: {
     width: 44,
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
 
   // ===== EVENT CARD =====
   eventCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   cardType: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -653,7 +653,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   viewButtonText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -681,7 +681,7 @@ const styles = StyleSheet.create({
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a1a',
+    borderBottomColor: '#141414',
   },
   modalCancel: {
     color: '#888',
@@ -718,7 +718,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   modalSave: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -736,7 +736,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   modalInput: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -765,14 +765,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 10,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#2a2a2a',
   },
   typeChipActive: {
-    backgroundColor: '#51fb00',
-    borderColor: '#51fb00',
+    backgroundColor: '#E31837',
+    borderColor: '#E31837',
   },
   typeChipText: {
     color: '#999',

@@ -377,7 +377,7 @@ export default function NearbyScreen() {
         </TouchableOpacity>
       )}
       <View style={[styles.userAvatar, isCrewMember && styles.userAvatarCrew]}>
-        <Ionicons name={isCrewMember ? "people" : "person"} size={24} color={isCrewMember ? "#FFE707" : "#51fb00"} />
+        <Ionicons name={isCrewMember ? "people" : "person"} size={24} color={isCrewMember ? "#FFE707" : "#E31837"} />
       </View>
       <View style={styles.userInfo}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -396,7 +396,7 @@ export default function NearbyScreen() {
             style={styles.garageButton}
             onPress={() => router.push(`/user-garage/${nearbyUser.id}`)}
           >
-            <Ionicons name="bicycle" size={18} color="#51fb00" />
+            <Ionicons name="bicycle" size={18} color="#E31837" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.messageButton}
@@ -416,7 +416,7 @@ export default function NearbyScreen() {
     return (
       <View style={styles.container}>
         <LinearGradient
-          colors={['#51fb00', '#E91E63']}
+          colors={['#E31837', '#E31837']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -438,7 +438,7 @@ export default function NearbyScreen() {
     return (
       <View style={styles.container}>
         <View style={[styles.centerContainer, { paddingTop: insets.top }]}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
           <Text style={styles.loadingText}>Getting your location...</Text>
         </View>
       </View>
@@ -451,7 +451,7 @@ export default function NearbyScreen() {
     <View style={styles.container}>
       {/* Header */}
       <LinearGradient
-        colors={['#51fb00', '#E91E63']}
+        colors={['#E31837', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
@@ -538,7 +538,7 @@ export default function NearbyScreen() {
             </MapErrorBoundary>
           ) : (
             <View style={styles.mapFallback}>
-              <Ionicons name="map-outline" size={48} color="#51fb00" />
+              <Ionicons name="map-outline" size={48} color="#E31837" />
               <Text style={styles.mapFallbackTitle}>Map Not Available</Text>
               <Text style={styles.mapFallbackText}>
                 Switch to list view to browse nearby users
@@ -560,9 +560,9 @@ export default function NearbyScreen() {
             step={1}
             value={radius}
             onValueChange={setRadius}
-            minimumTrackTintColor="#51fb00"
+            minimumTrackTintColor="#E31837"
             maximumTrackTintColor="#444"
-            thumbTintColor="#51fb00"
+            thumbTintColor="#E31837"
           />
           <View style={styles.sliderMarks}>
             <Text style={styles.sliderMark}>1 mi</Text>
@@ -696,7 +696,7 @@ export default function NearbyScreen() {
                     <Text style={styles.crewMsgName}>{member.nickname || member.name}</Text>
                     <Text style={styles.crewMsgCrew}>{member.crewName}</Text>
                   </View>
-                  <Ionicons name="chatbubble-ellipses" size={18} color="#51fb00" />
+                  <Ionicons name="chatbubble-ellipses" size={18} color="#E31837" />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -778,7 +778,7 @@ export default function NearbyScreen() {
                   >
                     <Text style={styles.messageOptionText}>{msg}</Text>
                     {selectedMessage === msg && (
-                      <Ionicons name="checkmark-circle" size={20} color="#51fb00" />
+                      <Ionicons name="checkmark-circle" size={20} color="#E31837" />
                     )}
                   </TouchableOpacity>
                 ))}
@@ -856,7 +856,7 @@ export default function NearbyScreen() {
             {popupStep === 1 && (
               <View style={styles.stepContent}>
                 <View style={styles.stepIconContainer}>
-                  <Ionicons name="flash" size={48} color="#51fb00" />
+                  <Ionicons name="flash" size={48} color="#E31837" />
                 </View>
                 <Text style={styles.stepQuestion}>
                   Would you like to send invites for a pop-up event?
@@ -931,7 +931,7 @@ export default function NearbyScreen() {
                     style={styles.stepButtonOutline}
                     onPress={() => handlePopupStep2(false)}
                   >
-                    <Ionicons name="location-outline" size={20} color="#51fb00" />
+                    <Ionicons name="location-outline" size={20} color="#E31837" />
                     <Text style={styles.stepButtonOutlineText}>No, skip this</Text>
                   </TouchableOpacity>
                 </View>
@@ -948,7 +948,7 @@ export default function NearbyScreen() {
                 {/* Preview Banner */}
                 <View style={styles.previewBanner}>
                   <LinearGradient
-                    colors={['#51fb00', '#E91E63']}
+                    colors={['#E31837', '#E31837']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.previewGradient}
@@ -990,7 +990,7 @@ export default function NearbyScreen() {
                 <View style={styles.summaryCard}>
                   <Text style={styles.summaryTitle}>Invite Summary</Text>
                   <View style={styles.summaryRow}>
-                    <Ionicons name="people" size={16} color="#51fb00" />
+                    <Ionicons name="people" size={16} color="#E31837" />
                     <Text style={styles.summaryText}>{selectedUsers.size} recipient{selectedUsers.size !== 1 ? 's' : ''}</Text>
                   </View>
                   {wantsLocationShare && (
@@ -1112,7 +1112,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   selectAllText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 15,
     fontWeight: '600',
   },
@@ -1136,8 +1136,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   checkboxChecked: {
-    backgroundColor: '#51fb00',
-    borderColor: '#51fb00',
+    backgroundColor: '#E31837',
+    borderColor: '#E31837',
   },
 
   // Privacy
@@ -1145,7 +1145,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
@@ -1163,7 +1163,7 @@ const styles = StyleSheet.create({
 
   // Slider
   sliderContainer: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
@@ -1180,7 +1180,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   radiusValue: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -1211,7 +1211,7 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     padding: 32,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
   },
   emptyText: {
@@ -1229,7 +1229,7 @@ const styles = StyleSheet.create({
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 25,
@@ -1246,7 +1246,7 @@ const styles = StyleSheet.create({
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -1254,7 +1254,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   userCardSelected: {
-    borderColor: '#51fb00',
+    borderColor: '#E31837',
     backgroundColor: '#1a1520',
   },
   userAvatar: {
@@ -1282,7 +1282,7 @@ const styles = StyleSheet.create({
   messageButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
@@ -1325,13 +1325,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingVertical: 16,
     borderRadius: 12,
     gap: 8,
   },
   popupInviteButton: {
-    backgroundColor: '#E91E63',
+    backgroundColor: '#E31837',
   },
   inviteButtonDisabled: {
     opacity: 0.4,
@@ -1349,7 +1349,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
@@ -1373,7 +1373,7 @@ const styles = StyleSheet.create({
   },
   messageToggle: {
     flexDirection: 'row',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderRadius: 8,
     padding: 4,
     marginBottom: 16,
@@ -1385,7 +1385,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   toggleOptionActive: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
   },
   toggleText: {
     color: '#888',
@@ -1403,14 +1403,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
   },
   messageOptionActive: {
     backgroundColor: '#333',
-    borderColor: '#51fb00',
+    borderColor: '#E31837',
     borderWidth: 1,
   },
   messageOptionText: {
@@ -1420,7 +1420,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   customInput: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderRadius: 12,
     padding: 16,
     color: '#fff',
@@ -1433,7 +1433,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingVertical: 16,
     borderRadius: 12,
     gap: 8,
@@ -1449,7 +1449,7 @@ const styles = StyleSheet.create({
 
   // Pop-Up Modal
   popupModalContent: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
@@ -1471,7 +1471,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
   },
   stepDotActive: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
   },
 
   // Step Content
@@ -1515,7 +1515,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingVertical: 16,
     borderRadius: 14,
     gap: 8,
@@ -1543,11 +1543,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#51fb00',
+    borderColor: '#E31837',
     gap: 8,
   },
   stepButtonOutlineText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -1572,7 +1572,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderWidth: 1.5,
     borderColor: '#2a2a2a',
   },
@@ -1608,7 +1608,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   previewBody: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     padding: 14,
   },
   previewLine: {
@@ -1642,7 +1642,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   composeInput: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderRadius: 12,
     padding: 16,
     color: '#fff',
@@ -1684,7 +1684,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E91E63',
+    backgroundColor: '#E31837',
     paddingVertical: 16,
     borderRadius: 14,
     gap: 8,
@@ -1699,13 +1699,13 @@ const styles = StyleSheet.create({
   mapFallback: {
     height: 280,
     borderRadius: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     marginBottom: 16,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   mapFallbackTitle: {
     fontSize: 18,
@@ -1783,7 +1783,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1827,7 +1827,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   crewFabText: {
-    color: '#000',
+    color: '#0A0A0A',
     fontSize: 14,
     fontWeight: '800',
   },
@@ -1836,7 +1836,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 10,
     marginBottom: 6,
     gap: 10,

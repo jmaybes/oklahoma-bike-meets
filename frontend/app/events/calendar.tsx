@@ -34,10 +34,10 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const eventTypeColors: { [key: string]: string } = {
-  'Bike Meet': '#51fb00',
+  'Bike Meet': '#E31837',
   'Bike Show': '#FFC107',
   'Group Ride': '#4FC3F7',
-  'Pop Up': '#E91E63',
+  'Pop Up': '#E31837',
   'Swap Meet': '#9C27B0',
   'Track Day': '#FF9800',
   'Rally': '#F44336',
@@ -202,7 +202,7 @@ export default function CalendarViewScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
           <Text style={styles.loadingText}>Loading calendar...</Text>
         </View>
       </View>
@@ -226,13 +226,13 @@ export default function CalendarViewScreen() {
         {/* Month Navigation */}
         <View style={styles.monthNav}>
           <TouchableOpacity onPress={goToPrevMonth} style={styles.monthArrow}>
-            <Ionicons name="chevron-back" size={24} color="#51fb00" />
+            <Ionicons name="chevron-back" size={24} color="#E31837" />
           </TouchableOpacity>
           <Text style={styles.monthTitle}>
             {MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
           </Text>
           <TouchableOpacity onPress={goToNextMonth} style={styles.monthArrow}>
-            <Ionicons name="chevron-forward" size={24} color="#51fb00" />
+            <Ionicons name="chevron-forward" size={24} color="#E31837" />
           </TouchableOpacity>
         </View>
 
@@ -301,7 +301,7 @@ export default function CalendarViewScreen() {
         {selectedDate && (
           <View style={styles.selectedSection}>
             <LinearGradient
-              colors={['#1a1a1a', '#111']}
+              colors={['#141414', '#111']}
               style={styles.selectedHeader}
             >
               <Text style={styles.selectedHeaderText}>
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a1a',
+    borderBottomColor: '#141414',
   },
   backButton: {
     width: 44,
@@ -377,10 +377,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 85, 0, 0.15)',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#51fb00',
+    borderColor: '#E31837',
   },
   todayButtonText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
   },
   monthTitle: {
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   dayCellSelected: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     borderRadius: 12,
   },
   dayCellPast: {
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   dayNumberToday: {
-    color: '#51fb00',
+    color: '#E31837',
     fontWeight: '800',
   },
   dayNumberSelected: {
@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 85, 0, 0.35)',
   },
   eventDotText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 10,
     fontWeight: '700',
   },
@@ -510,13 +510,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   selectedCountText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 12,
     fontWeight: '700',
   },
   eventCard: {
     flexDirection: 'row',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 8,

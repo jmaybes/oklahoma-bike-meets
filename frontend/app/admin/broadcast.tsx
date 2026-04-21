@@ -85,7 +85,7 @@ export default function BroadcastScreen() {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Info Card */}
           <View style={styles.infoCard}>
-            <Ionicons name="megaphone" size={24} color="#51fb00" />
+            <Ionicons name="megaphone" size={24} color="#E31837" />
             <Text style={styles.infoText}>
               Send a message to every user from your admin account. They'll see it in their Messages inbox and receive a push notification if enabled.
             </Text>
@@ -158,13 +158,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a1a',
+    borderBottomColor: '#141414',
   },
   backBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -181,12 +181,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 14,
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#51fb0030',
+    borderColor: '#E3183730',
   },
   infoText: {
     flex: 1,
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   input: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 14,
     padding: 16,
     color: '#fff',
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     borderRadius: 14,
     paddingVertical: 16,
   },

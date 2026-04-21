@@ -112,7 +112,7 @@ export default function AccountSettingsScreen() {
           {/* Log Out Section */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Ionicons name="log-out-outline" size={24} color="#51fb00" />
+              <Ionicons name="log-out-outline" size={24} color="#E31837" />
               <Text style={styles.sectionTitle}>Log Out</Text>
             </View>
             <Text style={styles.sectionDescription}>
@@ -286,7 +286,7 @@ export default function AccountSettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
   },
   header: {
     flexDirection: 'row',
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     borderRadius: 12,
     padding: 16,
     gap: 8,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   input: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderRadius: 10,
     padding: 14,
     fontSize: 16,
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#444',
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalContent: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     borderRadius: 20,
     padding: 28,
     width: '100%',

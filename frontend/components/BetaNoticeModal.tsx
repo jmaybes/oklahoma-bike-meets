@@ -118,7 +118,7 @@ export default function BetaNoticeModal() {
     >
       <View style={[styles.overlay, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
         <LinearGradient
-          colors={['#51fb00', '#E91E63', '#9C27B0', '#51fb00']}
+          colors={['#E31837', '#FF6B35', '#E31837']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.gradientBorder}
@@ -133,9 +133,9 @@ export default function BetaNoticeModal() {
             >
               {/* Header */}
               <LinearGradient
-                colors={['#51fb00', '#E91E63']}
+                colors={['#E31837', '#B81430']}
                 start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={styles.header}
               >
                 <View style={styles.versionBadge}>
@@ -155,7 +155,7 @@ export default function BetaNoticeModal() {
                 {/* Feedback Box */}
                 <View style={styles.featureBox}>
                   <View style={styles.featureHeader}>
-                    <Ionicons name="chatbubble-ellipses" size={18} color="#51fb00" />
+                    <Ionicons name="chatbubble-ellipses" size={18} color="#E31837" />
                     <Text style={styles.featureTitle}>Your Feedback Matters!</Text>
                   </View>
                   <Text style={styles.featureText}>
@@ -235,13 +235,13 @@ export default function BetaNoticeModal() {
                 pointerEvents="none"
               >
                 <LinearGradient
-                  colors={['transparent', 'rgba(26, 26, 26, 0.95)', '#1a1a1a']}
+                  colors={['transparent', 'rgba(26, 26, 26, 0.95)', '#141414']}
                   style={styles.scrollHintGradient}
                 >
                   <Animated.View style={[styles.scrollHintContent, bounceStyle]}>
-                    <Ionicons name="chevron-down" size={20} color="#51fb00" />
+                    <Ionicons name="chevron-down" size={20} color="#E31837" />
                     <Text style={styles.scrollHintText}>Scroll down for more</Text>
-                    <Ionicons name="chevron-down" size={20} color="#51fb00" />
+                    <Ionicons name="chevron-down" size={20} color="#E31837" />
                   </Animated.View>
                 </LinearGradient>
               </Animated.View>
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
   container: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#0A0A0A',
     borderRadius: 21,
     overflow: 'hidden',
     width: '100%',
@@ -320,16 +320,16 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   highlight: {
-    color: '#51fb00',
+    color: '#E31837',
     fontWeight: '600',
   },
   featureBox: {
-    backgroundColor: '#222',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 12,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   featureHeader: {
     flexDirection: 'row',
@@ -396,15 +396,15 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 2,
     borderColor: '#555',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
     marginTop: 2,
   },
   checkboxChecked: {
-    backgroundColor: '#51fb00',
-    borderColor: '#51fb00',
+    backgroundColor: '#E31837',
+    borderColor: '#E31837',
   },
   checkboxLabel: {
     flex: 1,
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   continueButton: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     borderRadius: 12,
     padding: 14,
     flexDirection: 'row',
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   scrollHintText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 13,
     fontWeight: '600',
   },

@@ -179,7 +179,7 @@ export default function CreateRouteScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <LinearGradient
-        colors={['#51fb00', '#E91E63']}
+        colors={['#E31837', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -334,7 +334,7 @@ export default function CreateRouteScreen() {
             <View key={index} style={styles.highlightTag}>
               <Text style={styles.highlightTagText}>{highlight}</Text>
               <TouchableOpacity onPress={() => removeHighlight(index)}>
-                <Ionicons name="close" size={16} color="#51fb00" />
+                <Ionicons name="close" size={16} color="#E31837" />
               </TouchableOpacity>
             </View>
           ))}
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   loginButton: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 32,
     paddingVertical: 12,
     borderRadius: 8,
@@ -451,14 +451,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   input: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 8,
     padding: 14,
     color: '#fff',
     fontSize: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   textArea: {
     height: 100,
@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
   waypointItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   addWaypointButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingHorizontal: 12,
     borderRadius: 8,
     gap: 6,
@@ -539,10 +539,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     borderRadius: 8,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   difficultyButtonActive: {
     borderColor: 'transparent',
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   addHighlightButton: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     width: 48,
     borderRadius: 8,
     justifyContent: 'center',
@@ -575,21 +575,21 @@ const styles = StyleSheet.create({
   highlightTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#1E1E1E',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     gap: 6,
   },
   highlightTagText: {
-    color: '#51fb00',
+    color: '#E31837',
     fontSize: 13,
   },
   publicToggle: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     padding: 16,
     borderRadius: 12,
     marginBottom: 24,
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     padding: 16,
     borderRadius: 12,
     gap: 8,

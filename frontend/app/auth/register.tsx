@@ -220,7 +220,7 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.content}>
-            <Ionicons name="bicycle" size={64} color="#51fb00" />
+            <Ionicons name="bicycle" size={64} color="#E31837" />
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join the bike community</Text>
 
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     marginBottom: 16,
     paddingHorizontal: 16,
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   registerButton: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#000',
+    backgroundColor: '#0A0A0A',
     borderRadius: 12,
     paddingVertical: 14,
     gap: 10,
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginLinkBold: {
-    color: '#51fb00',
+    color: '#E31837',
     fontWeight: 'bold',
   },
 });

@@ -380,7 +380,7 @@ export default function UserGarageScreen() {
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#51fb00" />
+          <ActivityIndicator size="large" color="#E31837" />
         </View>
       </View>
     );
@@ -411,7 +411,7 @@ export default function UserGarageScreen() {
               {/* Header */}
               <View style={carPickerStyles.header}>
                 <View style={carPickerStyles.headerIcon}>
-                  <Ionicons name="bicycle" size={28} color="#51fb00" />
+                  <Ionicons name="bicycle" size={28} color="#E31837" />
                 </View>
                 <Text style={carPickerStyles.title}>Choose a Ride</Text>
                 <Text style={carPickerStyles.subtitle}>
@@ -543,7 +543,7 @@ export default function UserGarageScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <LinearGradient
-        colors={['#FFE707', '#E91E63']}
+        colors={['#FFE707', '#E31837']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -640,9 +640,9 @@ export default function UserGarageScreen() {
               <Ionicons
                 name={isLiked ? 'heart' : 'heart-outline'}
                 size={28}
-                color={isLiked ? '#E91E63' : '#888'}
+                color={isLiked ? '#E31837' : '#888'}
               />
-              <Text style={[styles.likeCount, isLiked && { color: '#E91E63' }]}>
+              <Text style={[styles.likeCount, isLiked && { color: '#E31837' }]}>
                 {car.likes || 0}
               </Text>
             </TouchableOpacity>
@@ -704,35 +704,35 @@ export default function UserGarageScreen() {
               <View style={styles.specsGrid}>
                 {car.engine ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="speedometer" size={18} color="#51fb00" />
+                    <Ionicons name="speedometer" size={18} color="#E31837" />
                     <Text style={styles.specLabel}>Engine</Text>
                     <Text style={styles.specValue}>{car.engine}</Text>
                   </View>
                 ) : null}
                 {car.displacement ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="flash" size={18} color="#51fb00" />
+                    <Ionicons name="flash" size={18} color="#E31837" />
                     <Text style={styles.specLabel}>Displacement</Text>
                     <Text style={styles.specValue}>{car.displacement} CC</Text>
                   </View>
                 ) : null}
                 {car.torque ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="sync" size={18} color="#51fb00" />
+                    <Ionicons name="sync" size={18} color="#E31837" />
                     <Text style={styles.specLabel}>Torque</Text>
                     <Text style={styles.specValue}>{car.torque} lb-ft</Text>
                   </View>
                 ) : null}
                 {car.transmission ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="cog" size={18} color="#51fb00" />
+                    <Ionicons name="cog" size={18} color="#E31837" />
                     <Text style={styles.specLabel}>Transmission</Text>
                     <Text style={styles.specValue}>{car.transmission}</Text>
                   </View>
                 ) : null}
                 {car.drivetrain ? (
                   <View style={styles.specCard}>
-                    <Ionicons name="git-branch" size={18} color="#51fb00" />
+                    <Ionicons name="git-branch" size={18} color="#E31837" />
                     <Text style={styles.specLabel}>Drivetrain</Text>
                     <Text style={styles.specValue}>{car.drivetrain}</Text>
                   </View>
@@ -757,7 +757,7 @@ export default function UserGarageScreen() {
               </Text>
               {car.modifications && car.modifications.length > 0 && car.modifications.map((mod: any, idx: number) => (
                 <View key={idx} style={styles.modRow}>
-                  <Ionicons name="checkmark-circle" size={16} color="#51fb00" />
+                  <Ionicons name="checkmark-circle" size={16} color="#E31837" />
                   <Text style={styles.modText}>
                     {typeof mod === 'string' ? mod : `${mod.brand ? mod.brand + ' ' : ''}${mod.name || ''}`}
                   </Text>
@@ -775,7 +775,7 @@ export default function UserGarageScreen() {
           {comments.length > 0 && (
             <View style={styles.section}>
               <View style={styles.commentsSectionHeader}>
-                <Ionicons name="chatbubbles" size={20} color="#51fb00" />
+                <Ionicons name="chatbubbles" size={20} color="#E31837" />
                 <Text style={styles.sectionTitle}>Comments ({comments.length})</Text>
               </View>
               {comments.map((comment) => (
@@ -822,7 +822,7 @@ export default function UserGarageScreen() {
             <View style={carPickerStyles.container}>
               <View style={carPickerStyles.header}>
                 <View style={carPickerStyles.headerIcon}>
-                  <Ionicons name="bicycle" size={28} color="#51fb00" />
+                  <Ionicons name="bicycle" size={28} color="#E31837" />
                 </View>
                 <Text style={carPickerStyles.title}>Switch Ride</Text>
                 <Text style={carPickerStyles.subtitle}>
@@ -856,7 +856,7 @@ export default function UserGarageScreen() {
                           </View>
                         )}
                         {isCurrentCar && (
-                          <View style={[carPickerStyles.activeBadge, { backgroundColor: '#51fb00' }]}>
+                          <View style={[carPickerStyles.activeBadge, { backgroundColor: '#E31837' }]}>
                             <Ionicons name="eye" size={10} color="#fff" />
                             <Text style={carPickerStyles.activeBadgeText}>Viewing</Text>
                           </View>
@@ -880,7 +880,7 @@ export default function UserGarageScreen() {
                           </View>
                         </View>
                       </View>
-                      <Ionicons name={isCurrentCar ? 'checkmark-circle' : 'chevron-forward'} size={22} color={isCurrentCar ? '#51fb00' : '#555'} />
+                      <Ionicons name={isCurrentCar ? 'checkmark-circle' : 'chevron-forward'} size={22} color={isCurrentCar ? '#E31837' : '#555'} />
                     </TouchableOpacity>
                   );
                 })}
@@ -1023,7 +1023,7 @@ const styles = StyleSheet.create({
   },
   noPhoto: {
     height: 200,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1048,7 +1048,7 @@ const styles = StyleSheet.create({
   },
   carTrim: {
     fontSize: 15,
-    color: '#51fb00',
+    color: '#E31837',
     fontWeight: '600',
     marginTop: 2,
   },
@@ -1101,7 +1101,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   specCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 10,
     padding: 12,
     width: '47%',
@@ -1132,7 +1132,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modNotesBox: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 10,
     padding: 14,
     marginTop: 8,
@@ -1149,7 +1149,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
@@ -1165,13 +1165,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
     marginTop: 10,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   commentButtonText: {
     color: '#fff',
@@ -1186,7 +1186,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   commentCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
@@ -1202,7 +1202,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -1240,7 +1240,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   commentModalContent: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -1266,7 +1266,7 @@ const styles = StyleSheet.create({
     minHeight: 100,
     textAlignVertical: 'top',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   commentCharCount: {
     color: '#666',
@@ -1276,7 +1276,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   commentSubmitBtn: {
-    backgroundColor: '#51fb00',
+    backgroundColor: '#E31837',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1304,13 +1304,13 @@ const carPickerStyles = StyleSheet.create({
     padding: 24,
   },
   container: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#141414',
     borderRadius: 20,
     padding: 24,
     width: '100%',
     maxWidth: 400,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   header: {
     alignItems: 'center',
@@ -1346,10 +1346,10 @@ const carPickerStyles = StyleSheet.create({
     borderRadius: 14,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#2A2A2A',
   },
   carCardSelected: {
-    borderColor: '#51fb00',
+    borderColor: '#E31837',
     backgroundColor: 'rgba(225, 85, 0, 0.08)',
   },
   thumbContainer: {
@@ -1398,7 +1398,7 @@ const carPickerStyles = StyleSheet.create({
   },
   carTrim: {
     fontSize: 13,
-    color: '#51fb00',
+    color: '#E31837',
     fontWeight: '600',
     marginTop: 2,
   },
@@ -1433,7 +1433,7 @@ const carPickerStyles = StyleSheet.create({
     backgroundColor: '#111',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a1a',
+    borderBottomColor: '#141414',
   },
   crewBadgesScroll: {
     paddingHorizontal: 12,
