@@ -171,7 +171,7 @@ export default function LandingScreen() {
             >
               <Text style={styles.communityTitle}>Join 1000+ Enthusiasts</Text>
               <Text style={styles.communitySubtitle}>
-                Oklahoma's largest bike community
+                Oklahoma's largest motorcycle community
               </Text>
             </LinearGradient>
           </ImageBackground>
@@ -233,7 +233,7 @@ export default function LandingScreen() {
               />
               <Text style={styles.ctaTitle}>Ready to Rev Up?</Text>
               <Text style={styles.ctaSubtitle}>
-                Join Oklahoma's most active bike community
+                Join Oklahoma's most active motorcycle community
               </Text>
             </LinearGradient>
           </ImageBackground>
