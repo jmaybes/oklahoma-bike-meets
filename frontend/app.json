@@ -11,7 +11,7 @@
     "newArchEnabled": true,
     "updates": {
       "enabled": true,
-      "url": "https://u.expo.dev/a936daac-9d2d-4795-aba0-e6e7554f9395",
+      "url": "https://u.expo.dev/5648ba9c-abad-4362-a599-7c998f8f07d3",
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
     },
@@ -110,7 +110,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "a936daac-9d2d-4795-aba0-e6e7554f9395"
+        "projectId": "5648ba9c-abad-4362-a599-7c998f8f07d3"
       }
     },
     "runtimeVersion": "2.0"

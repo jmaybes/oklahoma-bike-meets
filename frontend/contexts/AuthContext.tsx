@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect, useRef } from 'r
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import axios from 'axios';
@@ -71,8 +72,15 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
     }
     
     try {
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ??
+        (Constants as any)?.easConfig?.projectId;
+      if (!projectId) {
+        console.log('No Expo projectId found in app config — cannot fetch push token');
+        return null;
+      }
       const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId: 'a936daac-9d2d-4795-aba0-e6e7554f9395',
+        projectId,
       });
       token = tokenData.data;
     } catch (error) {
