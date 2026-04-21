@@ -173,7 +173,7 @@ def event_helper(event) -> dict:
         "longitude": event.get("longitude"),
         "organizer": event.get("organizer", ""),
         "entryFee": event.get("entryFee", ""),
-        "carTypes": event.get("carTypes", []),
+        "bikeTypes": event.get("bikeTypes", event.get("carTypes", [])),  # Support both for backwards compat
         "eventType": event.get("eventType", "Bike Meet"),
         "photos": event.get("photos", []),
         "attendeeCount": event.get("attendeeCount", 0),
@@ -209,35 +209,39 @@ def user_helper(user) -> dict:
     }
 
 
-def user_car_helper(car) -> dict:
+def user_bike_helper(bike) -> dict:
     return {
-        "id": str(car["_id"]),
-        "userId": _sid(car["userId"]),
-        "make": car["make"],
-        "model": car["model"],
-        "year": car["year"],
-        "color": car.get("color", ""),
-        "trim": car.get("trim", ""),
-        "engine": car.get("engine", ""),
-        "displacement": car.get("displacement"),
-        "torque": car.get("torque"),
-        "transmission": car.get("transmission", ""),
-        "drivetrain": car.get("drivetrain", ""),
-        "description": car.get("description", ""),
-        "photos": car.get("photos", []),
-        "videos": car.get("videos", []),
-        "modifications": car.get("modifications", []),
-        "modificationNotes": car.get("modificationNotes", ""),
-        "isPublic": car.get("isPublic", True),
-        "instagramHandle": car.get("instagramHandle", ""),
-        "youtubeChannel": car.get("youtubeChannel", ""),
-        "likes": car.get("likes", 0),
-        "views": car.get("views", 0),
-        "mainPhotoIndex": car.get("mainPhotoIndex", 0),
-        "isActive": car.get("isActive", True),
-        "createdAt": _isodate(car.get("createdAt")),
-        "updatedAt": _isodate(car.get("updatedAt")),
+        "id": str(bike["_id"]),
+        "userId": _sid(bike["userId"]),
+        "make": bike["make"],
+        "model": bike["model"],
+        "year": bike["year"],
+        "color": bike.get("color", ""),
+        "trim": bike.get("trim", ""),
+        "engine": bike.get("engine", ""),
+        "displacement": bike.get("displacement"),
+        "torque": bike.get("torque"),
+        "transmission": bike.get("transmission", ""),
+        "drivetrain": bike.get("drivetrain", ""),
+        "description": bike.get("description", ""),
+        "photos": bike.get("photos", []),
+        "videos": bike.get("videos", []),
+        "modifications": bike.get("modifications", []),
+        "modificationNotes": bike.get("modificationNotes", ""),
+        "isPublic": bike.get("isPublic", True),
+        "instagramHandle": bike.get("instagramHandle", ""),
+        "youtubeChannel": bike.get("youtubeChannel", ""),
+        "likes": bike.get("likes", 0),
+        "views": bike.get("views", 0),
+        "mainPhotoIndex": bike.get("mainPhotoIndex", 0),
+        "isActive": bike.get("isActive", True),
+        "createdAt": _isodate(bike.get("createdAt")),
+        "updatedAt": _isodate(bike.get("updatedAt")),
     }
+
+
+# Alias for backwards compatibility
+user_car_helper = user_bike_helper
 
 
 def event_photo_helper(photo) -> dict:

@@ -87,13 +87,13 @@ async def get_crew(crew_id: str):
                 {"name": 1, "nickname": 1, "email": 1}
             )
             if user:
-                # Get member's car count
-                car_count = await db.user_cars.count_documents({"userId": member_id, "isPublic": True})
+                # Get member's bike count
+                bike_count = await db.user_cars.count_documents({"userId": member_id, "isPublic": True})
                 members.append({
                     "id": str(user["_id"]),
                     "name": user.get("name", "Unknown"),
                     "nickname": user.get("nickname", ""),
-                    "carCount": car_count,
+                    "bikeCount": bike_count,
                     "isCreator": member_id == crew["creatorId"],
                     "isCoLeader": member_id in co_leaders,
                     "role": "Creator" if member_id == crew["creatorId"] else ("Co-Leader" if member_id in co_leaders else "Member"),

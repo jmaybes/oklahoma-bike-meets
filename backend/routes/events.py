@@ -414,12 +414,12 @@ async def import_facebook_posts(data: FacebookPostImport):
         if not post_texts:
             return {"message": "No text content found in posts", "eventsCreated": 0, "eventsSkipped": 0}
 
-        system_message = """You are an expert at identifying bike event announcements in Facebook group posts.
-Analyze each post and determine if it's announcing a car-related event (bike show, bike meet, cruise, drag race, swap meet, etc.).
+        system_message = """You are an expert at identifying motorcycle/bike event announcements in Facebook group posts.
+Analyze each post and determine if it's announcing a motorcycle-related event (bike show, bike meet, poker run, group ride, rally, swap meet, etc.).
 
 IGNORE posts that are:
-- Just showing off someone's car
-- Selling car parts
+- Just showing off someone's bike
+- Selling bike parts
 - General discussion/questions
 - Memes or photos without event info
 
@@ -431,15 +431,15 @@ For each REAL EVENT found, extract:
 - location: Venue name
 - address: Full address if available, otherwise city and state
 - city: City name
-- eventType: One of: Car Show, Car Meet, Car Cruise, Drag Race, Swap Meet, Auction, Other
+- eventType: One of: Motorcycle Rally, Bike Night, Poker Run, Group Ride, Bike Show, Charity Ride, Swap Meet, Other
 - entryFee: Entry fee (e.g., "Free", "$20", "TBD")
 - organizer: Organizing group/person if mentioned
 - website: URL if mentioned
-- carTypes: Array of car types (e.g., ["All"], ["Classic", "Muscle"])
+- bikeTypes: Array of bike types (e.g., ["All Motorcycles"], ["Harley-Davidson", "Cruiser"])
 - sourceUrl: The Facebook post URL if available
 
 IMPORTANT:
-- Focus on Oklahoma events, but include nearby states if clearly bike events
+- Focus on Oklahoma events, but include nearby states if clearly motorcycle events
 - Return ONLY a valid JSON array of event objects
 - If NO events found in any posts, return []
 - Do NOT fabricate events - only extract what's clearly announced"""
@@ -520,7 +520,7 @@ Return ONLY a valid JSON array of events found. Return [] if none."""
                 "entryFee": ev.get("entryFee", "TBD"),
                 "organizer": ev.get("organizer", ""),
                 "website": ev.get("website", ""),
-                "carTypes": ev.get("carTypes", ["All"]),
+                "bikeTypes": ev.get("bikeTypes", ["All Motorcycles"]),
                 "source": "facebook",
                 "sourceUrl": ev.get("sourceUrl", ""),
                 "isApproved": False,

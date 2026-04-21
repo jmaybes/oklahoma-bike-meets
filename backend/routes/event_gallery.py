@@ -71,36 +71,36 @@ async def upload_event_photo(event_id: str, data: EventPhotoUpload):
 
 
 @router.post("/events/{event_id}/gallery/{photo_id}/tag")
-async def tag_car_in_photo(event_id: str, photo_id: str, tag: PhotoTagCreate):
-    """Tag a user's car in an event photo"""
+async def tag_bike_in_photo(event_id: str, photo_id: str, tag: PhotoTagCreate):
+    """Tag a user's bike in an event photo"""
     if not ObjectId.is_valid(photo_id):
         raise HTTPException(status_code=400, detail="Invalid photo ID")
 
     if not ObjectId.is_valid(tag.userId):
         raise HTTPException(status_code=400, detail="Invalid user ID")
 
-    if not ObjectId.is_valid(tag.carId):
-        raise HTTPException(status_code=400, detail="Invalid car ID")
+    if not ObjectId.is_valid(tag.bikeId):
+        raise HTTPException(status_code=400, detail="Invalid bike ID")
 
     photo = await db.event_photos.find_one({"_id": ObjectId(photo_id), "eventId": event_id})
     if not photo:
         raise HTTPException(status_code=404, detail="Photo not found")
 
-    car = await db.user_cars.find_one({"_id": ObjectId(tag.carId), "userId": tag.userId})
-    if not car:
-        raise HTTPException(status_code=404, detail="Car not found or doesn't belong to user")
+    bike = await db.user_cars.find_one({"_id": ObjectId(tag.bikeId), "userId": tag.userId})
+    if not bike:
+        raise HTTPException(status_code=404, detail="Bike not found or doesn't belong to user")
 
     existing_tags = photo.get("tags", [])
     for existing_tag in existing_tags:
-        if existing_tag.get("carId") == tag.carId:
-            raise HTTPException(status_code=400, detail="This car is already tagged in this photo")
+        if existing_tag.get("bikeId") == tag.bikeId:
+            raise HTTPException(status_code=400, detail="This bike is already tagged in this photo")
 
-    car_info = tag.carInfo or f"{car.get('year', '')} {car.get('make', '')} {car.get('model', '')}".strip()
+    bike_info = tag.bikeInfo or f"{bike.get('year', '')} {bike.get('make', '')} {bike.get('model', '')}".strip()
 
     new_tag = {
         "userId": tag.userId,
-        "carId": tag.carId,
-        "carInfo": car_info,
+        "bikeId": tag.bikeId,
+        "bikeInfo": bike_info,
         "taggedAt": datetime.utcnow().isoformat()
     }
 
@@ -113,9 +113,9 @@ async def tag_car_in_photo(event_id: str, photo_id: str, tag: PhotoTagCreate):
     return event_photo_helper(updated_photo)
 
 
-@router.delete("/events/{event_id}/gallery/{photo_id}/tag/{car_id}")
-async def remove_car_tag(event_id: str, photo_id: str, car_id: str, user_id: str = Query(...)):
-    """Remove a car tag from a photo"""
+@router.delete("/events/{event_id}/gallery/{photo_id}/tag/{bike_id}")
+async def remove_bike_tag(event_id: str, photo_id: str, bike_id: str, user_id: str = Query(...)):
+    """Remove a bike tag from a photo"""
     if not ObjectId.is_valid(photo_id):
         raise HTTPException(status_code=400, detail="Invalid photo ID")
 
@@ -125,7 +125,7 @@ async def remove_car_tag(event_id: str, photo_id: str, car_id: str, user_id: str
 
     result = await db.event_photos.update_one(
         {"_id": ObjectId(photo_id)},
-        {"$pull": {"tags": {"carId": car_id, "userId": user_id}}}
+        {"$pull": {"tags": {"bikeId": bike_id, "userId": user_id}}}
     )
 
     if result.modified_count == 0:
@@ -182,7 +182,7 @@ async def delete_event_photo(event_id: str, photo_id: str, user_id: str = Query(
 
 @router.get("/users/{user_id}/tagged-photos")
 async def get_user_tagged_photos(user_id: str):
-    """Get all photos where the user's cars are tagged"""
+    """Get all photos where the user's bikes are tagged"""
     if not ObjectId.is_valid(user_id):
         raise HTTPException(status_code=400, detail="Invalid user ID")
 
@@ -205,14 +205,14 @@ async def get_user_tagged_photos(user_id: str):
     return result
 
 
-@router.get("/cars/{car_id}/tagged-photos")
-async def get_car_tagged_photos(car_id: str):
-    """Get all photos where a specific car is tagged"""
-    if not ObjectId.is_valid(car_id):
-        raise HTTPException(status_code=400, detail="Invalid car ID")
+@router.get("/bikes/{bike_id}/tagged-photos")
+async def get_bike_tagged_photos(bike_id: str):
+    """Get all photos where a specific bike is tagged"""
+    if not ObjectId.is_valid(bike_id):
+        raise HTTPException(status_code=400, detail="Invalid bike ID")
 
     photos = await db.event_photos.find(
-        {"tags.carId": car_id}
+        {"tags.bikeId": bike_id}
     ).sort("createdAt", -1).to_list(500)
 
     result = []

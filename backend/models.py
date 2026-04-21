@@ -16,7 +16,7 @@ class EventCreate(BaseModel):
     longitude: Optional[float] = None
     organizer: str = ""
     entryFee: str = ""
-    carTypes: List[str] = []
+    bikeTypes: List[str] = []
     eventType: str = "Bike Meet"
     photos: List[str] = []
     userId: Optional[str] = None
@@ -40,7 +40,7 @@ class EventUpdate(BaseModel):
     longitude: Optional[float] = None
     organizer: Optional[str] = None
     entryFee: Optional[str] = None
-    carTypes: Optional[List[str]] = None
+    bikeTypes: Optional[List[str]] = None
     eventType: Optional[str] = None
     photos: Optional[List[str]] = None
     contactInfo: Optional[str] = None
@@ -61,8 +61,8 @@ class EventPhotoUpload(BaseModel):
 
 class PhotoTagCreate(BaseModel):
     userId: str
-    carId: str
-    carInfo: Optional[str] = ""  # e.g., "2022 Ford Mustang GT"
+    bikeId: str
+    bikeInfo: Optional[str] = ""  # e.g., "2022 Harley-Davidson Street Glide"
 
 
 # ==================== User Models ====================
@@ -131,17 +131,17 @@ class PushTokenRegister(BaseModel):
     pushToken: str
 
 
-# ==================== Garage / User Car Models ====================
+# ==================== Garage / User Bike Models ====================
 
 class Modification(BaseModel):
-    category: str  # e.g., "Engine", "Suspension", "Exterior", "Interior", "Wheels"
+    category: str  # e.g., "Engine", "Suspension", "Exhaust", "Handlebars", "Wheels"
     name: str
     brand: Optional[str] = None
     description: Optional[str] = None
     cost: Optional[float] = None
 
 
-class UserCarCreate(BaseModel):
+class UserBikeCreate(BaseModel):
     userId: str
     make: str
     model: str
@@ -164,10 +164,10 @@ class UserCarCreate(BaseModel):
     youtubeChannel: str = ""
     mainPhotoIndex: int = 0
     isActive: bool = True
-    carId: Optional[str] = None
+    bikeId: Optional[str] = None
 
 
-class UserCarUpdate(BaseModel):
+class UserBikeUpdate(BaseModel):
     make: Optional[str] = None
     model: Optional[str] = None
     year: Optional[str] = None
@@ -187,6 +187,11 @@ class UserCarUpdate(BaseModel):
     instagramHandle: Optional[str] = None
     youtubeChannel: Optional[str] = None
     mainPhotoIndex: Optional[int] = None
+
+
+# Keep aliases for backwards compatibility
+UserCarCreate = UserBikeCreate
+UserCarUpdate = UserBikeUpdate
 
 
 # ==================== Messaging Models ====================
@@ -239,7 +244,7 @@ class PopupRsvpRequest(BaseModel):
 
 class PerformanceRunCreate(BaseModel):
     userId: str
-    carInfo: str
+    bikeInfo: str
     zeroToSixty: Optional[float] = None
     zeroToHundred: Optional[float] = None
     quarterMile: Optional[float] = None
@@ -252,7 +257,7 @@ class PerformanceRunCreate(BaseModel):
 
 
 class PerformanceRunUpdate(BaseModel):
-    carInfo: Optional[str] = None
+    bikeInfo: Optional[str] = None
     zeroToSixty: Optional[float] = None
     zeroToHundred: Optional[float] = None
     quarterMile: Optional[float] = None
@@ -299,7 +304,7 @@ class CommentCreate(BaseModel):
 
 
 class GarageCommentCreate(BaseModel):
-    carId: str
+    bikeId: str
     userId: str
     userName: str
     text: str
@@ -312,7 +317,7 @@ class ClubCreate(BaseModel):
     description: str
     location: str
     city: str
-    carTypes: List[str] = []
+    bikeTypes: List[str] = []
     contactInfo: str = ""
     website: str = ""
     facebookGroup: str = ""
@@ -326,7 +331,7 @@ class ClubUpdate(BaseModel):
     description: Optional[str] = None
     location: Optional[str] = None
     city: Optional[str] = None
-    carTypes: Optional[List[str]] = None
+    bikeTypes: Optional[List[str]] = None
     contactInfo: Optional[str] = None
     website: Optional[str] = None
     facebookGroup: Optional[str] = None

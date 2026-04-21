@@ -74,29 +74,29 @@ async def get_feed_posts(
     from starlette.requests import Request
     posts = await db.feed_posts.find().sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
 
-    # Collect unique user IDs to batch-lookup their car thumbnails
+    # Collect unique user IDs to batch-lookup their bike thumbnails
     user_ids = list(set(p.get("userId", "") for p in posts if p.get("userId")))
     user_thumb_map: dict = {}
     if user_ids:
-        cars = await db.user_cars.find(
+        bikes = await db.user_cars.find(
             {"userId": {"$in": user_ids}, "isPublic": True, "photoCount": {"$gt": 0}},
             {"userId": 1, "photoCount": 1}
         ).to_list(500)
-        for car in cars:
-            uid = car.get("userId", "")
+        for bike in bikes:
+            uid = bike.get("userId", "")
             if uid and uid not in user_thumb_map:
-                car_id = str(car["_id"])
-                user_thumb_map[uid] = f"/api/user-cars/{car_id}/thumbnail.jpg"
+                bike_id = str(bike["_id"])
+                user_thumb_map[uid] = f"/api/user-cars/{bike_id}/thumbnail.jpg"
 
     result = []
     for p in posts:
         try:
             post_data = feed_post_helper(p)
             post_data["imageCount"] = len(post_data.get("images", []))
-            # Enrich with user's car thumbnail URL
+            # Enrich with user's bike thumbnail URL
             uid = p.get("userId", "")
             if uid in user_thumb_map:
-                post_data["carThumbnailUrl"] = user_thumb_map[uid]
+                post_data["bikeThumbnailUrl"] = user_thumb_map[uid]
             result.append(post_data)
         except Exception as e:
             import logging
