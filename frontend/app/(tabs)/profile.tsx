@@ -709,7 +709,11 @@ export default function ProfileScreen() {
         </LinearGradient>
         
         <View style={styles.guestContainer}>
-          <Ionicons name="bicycle-outline" size={80} color="#333" />
+          <Image 
+            source={require('../../assets/images/header-logo.png')} 
+            style={{ width: 100, height: 100 }}
+            resizeMode="contain"
+          />
           <Text style={styles.guestTitle}>Guest Mode</Text>
           <Text style={styles.guestText}>
             Login to create your garage, save favorites, RSVP to events, and more
@@ -821,7 +825,11 @@ export default function ProfileScreen() {
                 </View>
               ) : (
                 <View style={styles.noPhotoContainer}>
-                  <Ionicons name="bicycle" size={60} color="#333" />
+                  <Image 
+                    source={require('../../assets/images/small-bike-icon.png')} 
+                    style={{ width: 70, height: 70 }}
+                    resizeMode="contain"
+                  />
                   <Text style={styles.noPhotoText}>Add photos of your ride</Text>
                 </View>
               )}

@@ -10,6 +10,7 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -220,7 +221,11 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.content}>
-            <Ionicons name="bicycle" size={64} color="#E31837" />
+            <Image 
+              source={require('../../assets/images/header-logo.png')} 
+              style={{ width: 120, height: 120 }}
+              resizeMode="contain"
+            />
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join the bike community</Text>
 
@@ -237,7 +242,11 @@ export default function RegisterScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <Ionicons name="bicycle" size={20} color="#888" style={styles.inputIcon} />
+                <Image 
+                  source={require('../assets/images/small-bike-icon.png')} 
+                  style={{ width: 20, height: 20 }}
+                  resizeMode="contain"
+                />
                 <TextInput
                   style={styles.input}
                   placeholder="Nickname (visible to other users)"
