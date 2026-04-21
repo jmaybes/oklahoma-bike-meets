@@ -148,18 +148,10 @@ export default function BetaNoticeModal() {
                 />
                 <Text style={styles.headerTitle}>Welcome to Oklahoma Bike Meets</Text>
                 <Text style={styles.headerSubtitle}>Meets, Cruises, Shows & More!</Text>
-                <Text style={styles.betaBadge}>BETA VERSION</Text>
               </LinearGradient>
 
               {/* Content */}
               <View style={styles.content}>
-                {/* Intro message - no icon, spread out */}
-                <View style={styles.messageContainer}>
-                  <Text style={styles.messageText}>
-                    Thank you for being an early user of our app! This is a <Text style={styles.highlight}>beta version</Text>, which means you may encounter bugs or incomplete features as we continue to improve.
-                  </Text>
-                </View>
-
                 {/* Feedback Box */}
                 <View style={styles.featureBox}>
                   <View style={styles.featureHeader}>
@@ -205,7 +197,7 @@ export default function BetaNoticeModal() {
                     {acknowledged && <Ionicons name="checkmark" size={16} color="#fff" />}
                   </View>
                   <Text style={styles.checkboxLabel}>
-                    I understand this is a beta version and this notice will not appear again
+                    I understand and this notice will not appear again
                   </Text>
                 </TouchableOpacity>
 
@@ -324,30 +316,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '600',
   },
-  betaBadge: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: 'bold',
-    paddingHorizontal: 12,
-    paddingVertical: 3,
-    borderRadius: 4,
-    marginTop: 10,
-    letterSpacing: 1,
-  },
   content: {
     padding: 14,
-  },
-  messageContainer: {
-    backgroundColor: '#2a2a2a',
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-  messageText: {
-    color: '#ccc',
-    fontSize: 14,
-    lineHeight: 22,
   },
   highlight: {
     color: '#51fb00',
