@@ -142,7 +142,7 @@ export default function BetaNoticeModal() {
                   <Text style={styles.versionText}>v1.0.0</Text>
                 </View>
                 <Image 
-                  source={require('../assets/images/okc-logo.png')} 
+                  source={require('../assets/images/bike-logo.png')} 
                   style={styles.logoIcon}
                   resizeMode="contain"
                 />
