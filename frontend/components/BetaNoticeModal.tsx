@@ -131,24 +131,22 @@ export default function BetaNoticeModal() {
               onScroll={handleScroll}
               scrollEventThrottle={16}
             >
-              {/* Header */}
-              <LinearGradient
-                colors={['#E31837', '#B81430']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.header}
-              >
-                <View style={styles.versionBadge}>
-                  <Text style={styles.versionText}>v1.0.0</Text>
-                </View>
+              {/* Header with Feature Image */}
+              <View style={styles.header}>
                 <Image 
-                  source={require('../assets/images/bike-logo.png')} 
-                  style={styles.logoIcon}
-                  resizeMode="contain"
+                  source={require('../assets/images/modal-header.jpg')} 
+                  style={styles.headerImage}
+                  resizeMode="cover"
                 />
-                <Text style={styles.headerTitle}>Welcome to Oklahoma Bike Meets</Text>
-                <Text style={styles.headerSubtitle}>Meets, Cruises, Shows & More!</Text>
-              </LinearGradient>
+                <LinearGradient
+                  colors={['transparent', 'rgba(10,10,10,0.7)', 'rgba(10,10,10,0.95)']}
+                  style={styles.headerOverlay}
+                >
+                  <View style={styles.versionBadge}>
+                    <Text style={styles.versionText}>v1.0.0</Text>
+                  </View>
+                </LinearGradient>
+              </View>
 
               {/* Content */}
               <View style={styles.content}>
@@ -278,10 +276,28 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   header: {
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 14,
+    width: '100%',
+    height: 180,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  headerImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+  headerOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 60,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    paddingRight: 12,
+    paddingBottom: 8,
   },
   logoIcon: {
     width: 70,
@@ -289,32 +305,15 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   versionBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(227, 24, 55, 0.9)',
     paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 12,
   },
   versionText: {
     color: '#fff',
     fontSize: 11,
     fontWeight: 'bold',
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  headerSubtitle: {
-    fontSize: 18,
-    color: 'rgba(255,255,255,0.9)',
-    marginTop: 5,
-    textAlign: 'center',
-    fontWeight: '600',
   },
   content: {
     padding: 14,
