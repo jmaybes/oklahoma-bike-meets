@@ -318,11 +318,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 20,
     padding: 10,
-    marginBottom: 16,
+    marginBottom: 0,
   },
   heroLogo: {
-    width: 100,
-    height: 100,
+    width: 140,
+    height: 140,
   },
   heroTitle: {
     fontSize: 36,
