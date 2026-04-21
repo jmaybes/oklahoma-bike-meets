@@ -121,22 +121,26 @@ export default function LandingScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       
-      {/* Hero Section with McLaren */}
+      {/* Hero Section with Sport Bikes */}
       <View style={styles.heroSection}>
         <ImageBackground
-          source={{ uri: 'https://images.unsplash.com/photo-1650980715009-e1b81ee825f6?w=1200&q=80' }}
+          source={{ uri: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=1200&q=80' }}
           style={styles.heroBackground}
           resizeMode="cover"
         >
           <View style={styles.heroOverlay}>
             <View style={styles.heroContent}>
               <View style={styles.logoContainer}>
-                <Ionicons name="bicycle" size={60} color="#E31837" />
+                <Image 
+                  source={require('../assets/images/sport-bike-logo.png')} 
+                  style={styles.heroLogo}
+                  resizeMode="contain"
+                />
               </View>
               <Text style={styles.heroTitle}>Oklahoma Bike Events</Text>
               <Text style={styles.heroTitleSub}>& Clubs</Text>
               <Text style={styles.heroSubtitle}>
-                Your Ultimate Car Community Hub
+                Your Ultimate Motorcycle Community Hub
               </Text>
               <View style={styles.taglineContainer}>
                 <Ionicons name="flame" size={20} color="#E31837" />
@@ -157,7 +161,7 @@ export default function LandingScreen() {
         {/* Community Preview */}
         <View style={styles.communitySection}>
           <ImageBackground
-            source={{ uri: 'https://images.unsplash.com/photo-1593427934550-4742b652ac84?w=800&q=80' }}
+            source={{ uri: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&q=80' }}
             style={styles.communityImage}
             imageStyle={styles.communityImageStyle}
           >
@@ -214,7 +218,7 @@ export default function LandingScreen() {
         {/* CTA Section */}
         <View style={styles.ctaSection}>
           <ImageBackground
-            source={{ uri: 'https://images.unsplash.com/photo-1654832171857-c5977ce7c7fb?w=800&q=80' }}
+            source={{ uri: 'https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=800&q=80' }}
             style={styles.ctaBackground}
             imageStyle={styles.ctaImageStyle}
           >
@@ -303,10 +307,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   logoContainer: {
-    backgroundColor: 'rgba(255,107,53,0.2)',
-    borderRadius: 30,
-    padding: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 10,
     marginBottom: 16,
+  },
+  heroLogo: {
+    width: 100,
+    height: 100,
   },
   heroTitle: {
     fontSize: 36,
