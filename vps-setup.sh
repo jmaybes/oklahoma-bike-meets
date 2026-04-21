@@ -58,7 +58,8 @@ cd "${BACKEND_DIR}"
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
-pip install -r requirements.txt
+# emergentintegrations is hosted on Emergent's private index — needs --extra-index-url
+pip install -r requirements.txt --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/
 deactivate
 
 # 4. Create .env file (only if it doesn't exist yet)
