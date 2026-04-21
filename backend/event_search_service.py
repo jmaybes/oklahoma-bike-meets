@@ -1,8 +1,8 @@
 """
-Automated Event Search Service for Oklahoma Bike Events
+Automated Event Search Service for Oklahoma Motorcycle/Bike Events
 
 This module provides comprehensive event discovery from multiple sources:
-- Web search integration for bike shows, meets, cruises
+- Web search integration for motorcycle rallies, bike nights, group rides
 - LLM-powered event parsing and extraction
 - Fuzzy duplicate detection
 - Image sourcing for events
@@ -27,7 +27,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # ==================== Search Keywords ====================
-# Comprehensive list of keywords to maximize event discovery
+# Comprehensive list of keywords to maximize motorcycle event discovery
 
 OKLAHOMA_CITIES = [
     "Oklahoma City", "OKC", "Tulsa", "Norman", "Edmond", "Moore", "Midwest City",
@@ -35,54 +35,50 @@ OKLAHOMA_CITIES = [
     "Shawnee", "Enid", "Yukon", "Mustang", "Bethany", "Del City", "Bixby",
     "Jenks", "Claremore", "Sand Springs", "Sapulpa", "Ponca City", "Duncan",
     "Ardmore", "Durant", "McAlester", "Ada", "Chickasha", "Guthrie", "El Reno",
-    "Altus", "Weatherford", "Tahlequah", "Vinita", "Miami", "Grove", "Alva"
+    "Altus", "Weatherford", "Tahlequah", "Vinita", "Miami", "Grove", "Alva",
+    "Depew", "Davis", "Medicine Park", "Jay", "Haskell", "Arcadia"
 ]
 
 EVENT_TYPES = [
-    "bike show", "bike meet", "bike night", "motorcycles and coffee", "group ride",
-    "motorcycle rally", "bike swap meet", "biker rally", "vintage bike show",
-    "classic bike show", "vintage bike show", "antique bike show",
-    "truck show", "lifted truck show", "diesel truck show",
-    "import bike meet", "JDM meet", "tuner show", "euro bike meet",
-    "lowrider show", "custom bike show", "rat rod show",
-    "motorcycle show", "bike night", "burnout contest",
-    "drag racing", "street racing", "bike club meet",
-    "automotive event", "vehicle show", "wheels show"
+    "motorcycle rally", "bike night", "biker rally", "group ride",
+    "poker run", "bike show", "motorcycle show", "charity ride",
+    "HOG rally", "Harley event", "motorcycle swap meet",
+    "biker party", "motorcycle cruise", "bike week",
+    "motorcycle meetup", "riders gathering", "bike fest"
 ]
 
-CAR_CATEGORIES = [
+MOTORCYCLE_TYPES = [
+    "Harley-Davidson", "Harley", "Indian", "Ducati", "Honda", "Kawasaki",
+    "Yamaha", "Triumph", "BMW", "Suzuki", "Victory", "Can-Am",
     "cruiser", "sportbike", "chopper", "bobber", "cafe racer",
-    "custom bike", "restored bike", "vintage motorcycle", "antique motorcycle", "bagger",
-    "Harley", "Indian", "Ducati", "Honda", "Kawasaki", "Yamaha", "Triumph",
-    "truck", "lifted truck", "diesel truck", "off-road", "4x4",
-    "corvette", "mustang", "camaro", "challenger", "charger",
-    "mopar", "ford", "chevy", "dodge", "pontiac", "oldsmobile"
+    "custom bike", "bagger", "touring", "adventure", "dirt bike",
+    "vintage motorcycle", "antique motorcycle", "classic motorcycle"
 ]
 
 SEARCH_SOURCES = [
-    "motorcycleevents.com", "ridersconnect.com", "bikenight.com",
-    "eventbrite.com", "facebook.com events", "meetup.com",
-    "meetup.com", "allevents.in", "carevents.com"
+    "cyclefish.com", "route66rallies.com", "lightningcustoms.com",
+    "americanrider.com", "reasonstoride.com", "twistedroad.com",
+    "facebook.com events", "meetup.com"
 ]
 
 # ==================== Image Search Sources ====================
 
-CAR_IMAGE_SOURCES = [
-    "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800",  # Classic car
-    "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800",  # Sports car
-    "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800",  # Porsche
-    "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800",  # Corvette style
-    "https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=800",  # Modern car
-    "https://images.unsplash.com/photo-1547549082-6bc09f2049ae?w=800",  # Red sports car
-    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",  # Classic muscle
-    "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",  # Car meet
-    "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800",  # BMW style
-    "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800",  # Mercedes
-    "https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?w=800",  # Car show
-    "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800",  # Truck
-    "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800",  # SUV
-    "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800",  # BMW M
-    "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800",  # BMW
+MOTORCYCLE_IMAGE_SOURCES = [
+    "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800",  # Harley cruiser
+    "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800",  # Classic motorcycle
+    "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800",  # Sportbike
+    "https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=800",  # Custom bike
+    "https://images.unsplash.com/photo-1547549082-6bc09f2049ae?w=800",  # Motorcycle group
+    "https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=800",  # Biker rally
+    "https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800",  # Chopper
+    "https://images.unsplash.com/photo-1525160354320-d8e92641c563?w=800",  # Vintage bike
+    "https://images.unsplash.com/photo-1558980664-ce6960be307d?w=800",  # Harley Davidson
+    "https://images.unsplash.com/photo-1558981852-426c6c22a060?w=800",  # Motorcycle meet
+    "https://images.unsplash.com/photo-1591378603223-e15b45a81640?w=800",  # Touring bike
+    "https://images.unsplash.com/photo-1622185135505-2d795003994a?w=800",  # Adventure bike
+    "https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?w=800",  # Motorcycle event
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",  # Bike show
+    "https://images.unsplash.com/photo-1558980664-2506fca6bfc2?w=800",  # Cruiser bike
 ]
 
 def get_event_image(event_type: str, title: str) -> str:
@@ -91,23 +87,27 @@ def get_event_image(event_type: str, title: str) -> str:
     
     title_lower = title.lower()
     
-    # Match specific car types
-    if any(word in title_lower for word in ['truck', 'lifted', 'diesel', '4x4', 'off-road']):
-        return CAR_IMAGE_SOURCES[11] or CAR_IMAGE_SOURCES[12]
-    elif any(word in title_lower for word in ['muscle', 'mustang', 'camaro', 'challenger', 'charger']):
-        return CAR_IMAGE_SOURCES[6] or CAR_IMAGE_SOURCES[0]
-    elif any(word in title_lower for word in ['classic', 'vintage', 'antique', 'hot rod']):
-        return random.choice([CAR_IMAGE_SOURCES[0], CAR_IMAGE_SOURCES[6]])
-    elif any(word in title_lower for word in ['jdm', 'import', 'tuner', 'euro']):
-        return random.choice([CAR_IMAGE_SOURCES[8], CAR_IMAGE_SOURCES[13], CAR_IMAGE_SOURCES[14]])
-    elif any(word in title_lower for word in ['exotic', 'supercar', 'luxury']):
-        return random.choice([CAR_IMAGE_SOURCES[2], CAR_IMAGE_SOURCES[9]])
-    elif 'coffee' in title_lower:
-        return CAR_IMAGE_SOURCES[10]
+    # Match specific motorcycle types
+    if any(word in title_lower for word in ['harley', 'hog', 'davidson']):
+        return random.choice([MOTORCYCLE_IMAGE_SOURCES[0], MOTORCYCLE_IMAGE_SOURCES[8]])
+    elif any(word in title_lower for word in ['chopper', 'bobber', 'custom']):
+        return random.choice([MOTORCYCLE_IMAGE_SOURCES[6], MOTORCYCLE_IMAGE_SOURCES[3]])
+    elif any(word in title_lower for word in ['vintage', 'classic', 'antique']):
+        return random.choice([MOTORCYCLE_IMAGE_SOURCES[7], MOTORCYCLE_IMAGE_SOURCES[1]])
+    elif any(word in title_lower for word in ['sport', 'race', 'drag']):
+        return MOTORCYCLE_IMAGE_SOURCES[2]
+    elif any(word in title_lower for word in ['rally', 'party', 'fest']):
+        return random.choice([MOTORCYCLE_IMAGE_SOURCES[5], MOTORCYCLE_IMAGE_SOURCES[9]])
+    elif any(word in title_lower for word in ['poker run', 'charity', 'ride']):
+        return random.choice([MOTORCYCLE_IMAGE_SOURCES[4], MOTORCYCLE_IMAGE_SOURCES[10]])
+    elif any(word in title_lower for word in ['adventure', 'touring']):
+        return random.choice([MOTORCYCLE_IMAGE_SOURCES[10], MOTORCYCLE_IMAGE_SOURCES[11]])
+    elif 'bike night' in title_lower:
+        return MOTORCYCLE_IMAGE_SOURCES[9]
     elif 'cruise' in title_lower:
-        return CAR_IMAGE_SOURCES[7]
+        return MOTORCYCLE_IMAGE_SOURCES[4]
     else:
-        return random.choice(CAR_IMAGE_SOURCES)
+        return random.choice(MOTORCYCLE_IMAGE_SOURCES)
 
 
 # ==================== LLM Event Parser ====================
@@ -128,8 +128,8 @@ async def parse_events_with_llm(raw_text: str, source_info: str = "") -> List[Di
 
         client = AsyncOpenAI(api_key=api_key)
 
-        system_message = """You are an expert at extracting bike event information from text.
-Extract all motorcycle events (bike shows, meets, group rides, etc.) from the provided text.
+        system_message = """You are an expert at extracting motorcycle event information from text.
+Extract all motorcycle events (rallies, bike nights, group rides, poker runs, etc.) from the provided text.
 
 For each event, return a JSON array with objects containing:
 - title: Event name
@@ -139,20 +139,20 @@ For each event, return a JSON array with objects containing:
 - location: Venue name
 - address: Full address if available
 - city: City name in Oklahoma
-- eventType: One of: Car Show, Car Meet, Cruise, Swap Meet, Race, Other
+- eventType: One of: Motorcycle Rally, Bike Night, Poker Run, Group Ride, Charity Ride, Bike Show, Swap Meet, Other
 - entryFee: Entry fee (e.g., "Free", "$10", "TBD")
 - organizer: Organizing group if mentioned
 - website: Website URL if mentioned
-- bikeTypes: Array of bike types welcome (e.g., ["Cruiser", "Sportbike", "All"])
+- bikeTypes: Array of bike types welcome (e.g., ["Harley", "All Motorcycles", "Cruiser"])
 
 IMPORTANT: 
 - Only include events in OKLAHOMA
-- Only include motorcycle/bike events
+- Only include MOTORCYCLE/BIKE events (not cars)
 - Return ONLY valid JSON array, no other text
 - If no events found, return []
 - Dates should be in 2025 or 2026"""
 
-        prompt = f"""Extract all Oklahoma bike events from this text:
+        prompt = f"""Extract all Oklahoma motorcycle events from this text:
 
 Source: {source_info}
 
@@ -279,7 +279,7 @@ async def is_duplicate_event(
 # ==================== Event Search Service ====================
 
 class EventSearchService:
-    """Service to search and import Oklahoma bike events"""
+    """Service to search and import Oklahoma motorcycle events"""
     
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
@@ -297,33 +297,23 @@ class EventSearchService:
         queries = []
         
         # City + event type combinations
-        main_cities = ["Oklahoma City", "Tulsa", "Norman", "Edmond", "Broken Arrow"]
+        main_cities = ["Oklahoma City", "Tulsa", "Norman", "Edmond", "Broken Arrow", "Depew"]
         for city in main_cities:
-            for event_type in ["bike show", "bike meet", "bike night", "motorcycle rally"]:
+            for event_type in ["motorcycle rally", "bike night", "poker run", "group ride"]:
                 queries.append(f"{city} {event_type} 2025 2026")
         
         # General Oklahoma searches
         queries.extend([
-            "Oklahoma bike shows 2025 2026 schedule",
-            "Oklahoma classic bike events hot rod shows 2025",
-            "OKC cars and coffee weekly meets 2025",
-            "Tulsa car cruise nights 2025 2026",
-            "Oklahoma muscle bike shows events 2025",
-            "Oklahoma JDM import tuner meets 2025",
-            "Oklahoma truck shows lifted diesel 2025",
-            "Oklahoma lowrider shows custom bike events 2025",
-            "Route 66 Oklahoma bike events 2025 2026",
-            "Oklahoma City auto shows bike events calendar",
-            "Norman Oklahoma bike meets weekly 2025",
-            "Oklahoma swap meet car parts 2025",
-            "Oklahoma hot rod power tour events 2025",
-            "Tulsa raceway bike events drag racing 2025",
-            "Oklahoma corvette mustang camaro club events 2025",
-            "Oklahoma mopar dodge challenger bike shows 2025",
-            "Oklahoma vintage antique bike shows 2025",
-            "Oklahoma off road 4x4 truck events 2025",
-            "Oklahoma City motorcycle bike nights 2025",
-            "Oklahoma burnout contests bike meets 2025"
+            "Oklahoma motorcycle rallies 2025 2026 schedule",
+            "Oklahoma Harley Davidson events 2025 2026",
+            "OKC bike night weekly 2025",
+            "Tulsa motorcycle events 2025 2026",
+            "Route 66 biker rally Oklahoma 2025 2026",
+            "Oklahoma poker run charity ride 2025",
+            "Oklahoma HOG chapter events 2025",
+            "Oklahoma motorcycle swap meet 2025",
+            "Oklahoma biker party rally 2025 2026",
+            "Depew Route 66 rally grounds events 2025 2026"
         ])
         
         return queries
@@ -333,12 +323,6 @@ class EventSearchService:
         Simulate web search - in production, use a web search API
         For now, we'll use the curated event data we gathered
         """
-        # This is a placeholder - in production, integrate with:
-        # - Google Custom Search API
-        # - Bing Search API
-        # - SerpAPI
-        # - Tavily API
-        
         logger.info(f"Searching: {query}")
         self.stats["searches_performed"] += 1
         
@@ -347,246 +331,171 @@ class EventSearchService:
     
     def _get_curated_events_text(self, query: str) -> str:
         """Return curated event data for parsing"""
-        # Comprehensive list of real Oklahoma bike events discovered through research
+        # Comprehensive list of real Oklahoma motorcycle events discovered through research
         events_data = """
-OKLAHOMA CAR EVENTS 2025-2026
+OKLAHOMA MOTORCYCLE EVENTS 2025-2026
 
-=== RECURRING WEEKLY/MONTHLY EVENTS ===
+=== RECURRING WEEKLY BIKE NIGHTS ===
 
-Coffee & Cars OKC
-First Saturday of every month, 8:00 AM - 11:00 AM
-Remington Park, Oklahoma City, OK
-Free admission, all vehicles welcome
-Contact: coffeeandcarsokc.com
+Frosted Mug Bike Night
+Every Wednesday, 3:00 PM - 9:00 PM
+Frosted Mug, 1800 S Meridian Ave, Oklahoma City, OK
+All motorcycles welcome, free event
+Family-friendly atmosphere
 
-Tulsa Tuesday Cruise
-Every Tuesday, 4:00 PM - 9:00 PM
-Various locations, Tulsa, OK
-Classic and modern cars welcome
-Free event
-
-Wednesday Night with the Owasso Cruzrs
-Every Wednesday, 6:00 PM - 11:00 PM
-QuikTrip, Owasso, OK (near Tulsa)
-Family-friendly cruise night
+Jamesville Y Bar Bike Night
+Every Thursday, 6:00 PM - 9:00 PM
+Jamesville Y Bar, Hwy 72 & Taft Rd, Haskell, OK (near Tulsa)
+Weekly gathering for riders
 Free admission
 
-Hot Rod Nights Norman
-Every Thursday, 7:00 PM - 10:00 PM
-Hollywood Corners, Norman, OK
-Hot rods and classics
+Rock Away Tavern Old School Bike Night
+Every Thursday, 6:00 PM - 9:00 PM
+Rock Away Tavern, 7802 S Sooner Rd, Guthrie, OK
+Old school motorcycles featured
 Free event
 
-Claremore Friday Night Cruise
-Every Friday, 7:00 PM - 10:00 PM
-Downtown Claremore, OK
-All vehicles welcome
-Free admission
+Road House Bike Night
+Every Saturday, 6:30 PM until close
+Road House, 6716 Main St, Oklahoma City, OK
+Free food at 8 PM, all bikes welcome
+Live music and great atmosphere
 
-Stillwater Cars and Coffee
-Every Saturday, 8:00 AM - 11:00 AM
-Stillwater, OK
-All enthusiasts welcome
-Free event
-
-Caffeine and Chrome Tulsa
-Every Saturday, 9:00 AM - 12:00 PM
-Gateway Classic Cars, Tulsa, OK
-Classic and exotic cars
-Free admission
-
-Coffee & Cars Norman
-Second Saturday monthly, 8:00 AM - 11:00 AM
-Crest Foods parking lot, Norman, OK
-All vehicles welcome
-Free event
-
-Arcadia Route 66 Car Meet
-Every Friday evening
-Route 66 Chicken Shack, Arcadia, OK (near OKC)
-Classic cars and Route 66 enthusiasts
-Free admission
+Biker Heaven Saturday Meetup
+Every Saturday, 10:00 AM - 5:00 PM
+Biker Heaven, 121 Sam Nobel Pkwy, Tulsa, OK
+Free drinks for riders
+Motorcycle gear and accessories shop
 
 Bikes on Bell Shawnee
 Every Wednesday, 6:00 PM - 11:00 PM
-Bell Street, Shawnee, OK
-Motorcycles and bikes
+100 N Bell Ave, Shawnee, OK
+Weekly bike night in Shawnee
+Free admission, all motorcycles welcome
+
+=== 2025 MOTORCYCLE EVENTS ===
+
+Oklahoma Bike Week - Rally for Veterans
+June 26-29, 2025
+Route 66 Rally Grounds, 26101 Milfay Rd, Depew, OK
+Veterans-focused motorcycle rally with live bands, vendors, camping
+21+ event, on-site amenities
+Entry fee varies
+
+American Pride Bike Night
+July 1, 2025, 6:00 PM - 10:00 PM
+Oklahoma City, OK (venue TBD)
+Patriotic themed bike night
+Free admission
+
+Chopper Bike Night
+August 5, 2025, 6:00 PM - 10:00 PM
+Oklahoma City area
+Choppers and custom bikes featured
 Free event
 
-=== 2025 SPECIAL EVENTS ===
-
-Honks & Horns Car Show
-May 3, 2025, 8:00 AM - 1:00 PM
-NPS Center for Arts and Learning, 3801 Journey Parkway, Norman, OK
-Free entry, vendors, DJ, food trucks
-Benefits Norman North Band
-
-Hot Summer Days Car Show
-July 26, 2025, 8:00 AM - 2:00 PM
-Certifit, 4701 West Reno, Oklahoma City, OK
-56 classes, trophies, food trucks, DJ
-Oklahoma Mustang Club event, all cars welcome
-$25 entry fee
-
-Oklahoma Auto Expo & Hop
-July 20, 2025, 11:00 AM - 6:00 PM
-The Pavilion, 3212 Wichita Walk, Oklahoma City, OK
-Custom vehicles, lowriders, hop battles
-Entry fee varies
-
-Motors in the Alley Car Meet
-August 24, 2025, 10:00 AM - 1:00 PM
-Downtown Oklahoma City, OK
-Free meet, open to all vehicles
-Free admission
-
-Big Cruise and Car Show
-September 19-21, 2025
-Downtown Alva, OK
-Largest free bike show in Oklahoma
-3-day event with cookout, cruise, burnout contests
-Free admission
-
-TwisterFest
-October 3-4, 2025
-Muscle Car Ranch, 3609 South 16th Street, Chickasha, OK
-Classic truck showcase, music, wrestling
-Truck entry $40
-
-Medicine Park Street Rod & Muscle Car Show
-October 18, 2025, 8:00 AM - 5:00 PM
-Downtown Medicine Park, 140 East Lake Drive, Medicine Park, OK
-Street rods, muscle cars, classics
+After Sturgis Party 2025
+August 14-17, 2025
+Route 66 Rally Grounds, 26101 Milfay Rd, Depew, OK
+Post-Sturgis celebration with live bands, bike games, vendors
+21+ adults only, camping available
 Entry fee applies
 
-The Gathering OKC
-November 1-2, 2025
-Oklahoma City, OK (venue TBD)
-Vehicles 20+ years old only
-Indoor/outdoor options
-Registration fee applies
+3rd Annual HOG Roast and Poker Run
+September 20, 2025, 9:00 AM - 3:00 PM
+Diamondback Harley-Davidson, Lawton, OK
+Harley Owners Group charity event
+Entry fee for poker run
 
-=== 2026 SPECIAL EVENTS ===
+Fall Halloween Rally 2025
+October 16-19, 2025
+Route 66 Rally Grounds, 26101 Milfay Rd, Depew, OK
+Halloween themed biker rally with costume contests
+21+ event, live bands, vendors, camping
+Entry fee applies
 
-Darryl Starbird's Rod and Custom Car Show
-February 20-22, 2026
-SageNet Arena, Tulsa, OK
-62nd annual - thousands of customs, hot rods, trucks, rat rods, lowriders
-One of the largest indoor bike shows in the nation
+RockFest 2025
+November 19-23, 2025
+Davis, OK
+Music and motorcycle event
 Entry fee varies
 
-Akdar Shrine Scooter Unit Car/Truck/Bike Show
-March 28, 2026
-Oklahoma (venue TBD)
-Community charity event
-Entry fee varies
+=== 2026 MOTORCYCLE EVENTS ===
 
-Guthrie Truck Gathering (Route 66 Cruisers)
-April 17-18, 2026
-Cottonwood Flats Recreation Area, 308-398 N 5th St, Guthrie, OK
-Classic trucks 20+ years old, show-n-shine
-30-40 acres, overnight parking allowed
-Pre-registration $35
+Spring Cabin Fever Rally 2026
+March 12-15, 2026
+Route 66 Rally Grounds, 26101 Milfay Rd, Depew, OK
+Kickoff adult motorcycle rally of the season
+21+ event, live bands, vendors, camping, clothing-optional pond
+Entry fee applies
 
-Bethel 10th Annual Car Show
+LAMA Poker Run 2026
+April 11, 2026
+Diamondback Harley-Davidson, Lawton, OK
+Charity poker run with prizes
+Entry fee applies
+
+Rollout at Route 66 Harley-Davidson 2026
 April 18, 2026
-Bethel, OK
-Open to all entrants and spectators
-Entry fee applies
-
-2nd Annual Jenks RiverWalk Car/Truck/Motorcycle Show
-April 18, 2026
-Jenks RiverWalk, Jenks, OK
-Multi-vehicle show
-Entry fee applies
-
-Norman Veterans Center Car Show
-May 23, 2026
-Norman Veterans Center, Norman, OK
-Annual family event benefiting veterans
+Route 66 Harley-Davidson, Tulsa, OK
+New 2026 Harley bikes showcase, music, food, family fun
+Part of Tulsa Bike Rally weekend
 Free admission
 
-Truckin' in Tulsa
-May 22-23, 2026
-Tulsa Raceway Park, 3101 N Garnett Rd, Tulsa, OK
-Biggest truck show in Oklahoma
-Diesel drags, show-n-shine, dyno, burnouts, camping
-Entry fee varies
-
-Tulsa Route 66 Capital Cruise World Record Parade
-May 30, 2026
-Downtown Tulsa, OK
-Classic car parade for Route 66 Centennial
-Free to watch, registration for participants
-
-Vinita Rt66 Centennial Car/Truck/Motorcycle Show
-June 6, 2026, 9:00 AM - 2:00 PM
-Historic Route 66 Downtown, Vinita, OK
-Check-in 9am-12pm, judging 12-1pm, awards 1pm
-Route 66 Centennial celebration
-
-Import Face-Off Noble
-March 15, 2026
-Noble, OK (near OKC)
-Import tuner drag racing
-Entry fee varies
-
-Import Face-Off Tulsa
-June 6, 2026
-Tulsa, OK
-Tuner-focused drag racing
-Entry fee varies
-
-Hot Rod Power Tour - Tulsa Stop
-June 12, 2026
-Tulsa Raceway Park, 3101 N Garnett Rd, Tulsa, OK
-Part of national tour, hot rods
-Free spectating
-
-Route 66 Road Fest Centennial
-June 27-28, 2026
-SageNet Center at Expo Square, Tulsa, OK
-Classic cars, history exhibits, vendors, family activities
-Route 66 100th anniversary celebration
-Entry fee varies
-
-Stampede Car Show
-September 6, 2026
-Mustang Town Center, Mustang, OK
-8 AM registration, participant judging
-DJ, prizes, open/Mustang classes
+16th Annual Harley Party for Boys & Girls Clubs
+April 25, 2026
+Bartlesville, OK
+Benefit event with chance to win 2025 Harley-Davidson Street Bob
+Charity event for Boys & Girls Clubs
 Entry fee applies
 
-Lifted Truck Nationals
-September 11-13, 2026
-42162 OK-127, Jay, OK
-Lifted trucks/SXS show, burnout contests ($7500 payout)
-Barbie Jeep race, offroad trails, camping, vendors
-Entry fee varies
-
-Big Cruise and Car Show 2026
-September 18-20, 2026
-Downtown Alva, OK
-Annual largest free bike show in Oklahoma
+Bikes on Bell Spring Kickoff 2026
+April 30, 2026, 6:00 PM - 11:00 PM
+100 N Bell Ave, Shawnee, OK
+Special spring bike night event
 Free admission
 
-OKC Auto Show
-September 17-27, 2026
-Oklahoma State Fair Pavilion, Oklahoma City, OK
-Major auto show during State Fair
-Entry included with fair admission
-
-Classic Cars A-Round the Barn
-September 2026 (exact date TBD)
-Arcadia, OK (Route 66)
-Classic bike show at historic Round Barn
+BikeStock Oklahoma 2026
+April 30 - May 3, 2026
+Route 66 Rally Grounds, 26101 Milfay Rd, Depew, OK
+Old-school biker party with live bands, contests
+21+ event, RV/tent camping, clothing-optional pond
 Entry fee applies
 
-Route 66 Triple Tour
-June 2026
-Yukon/Bethany/Warr Acres, OK
-Multi-city Route 66 celebration with bike shows
-Free admission
+Black Wall Street Rally 2026
+May 14-16, 2026
+Historic Greenwood District, Tulsa, OK
+Motorcycle festival celebrating Black Wall Street
+Harley demo rides, bike show, live music, vendors, history tours
+Sound competition, comedy, and concert
+Entry varies by event
+
+Route 66 Bike Week 2026
+June 18-21, 2026
+Route 66 Rally Grounds, 26101 Milfay Rd, Depew, OK
+Major summer motorcycle rally on historic Route 66
+21+ event, live bands, bike games, vendors, camping
+Entry fee applies
+
+Sturgis After Party 2026
+August 20-23, 2026
+Route 66 Rally Grounds, 26101 Milfay Rd, Depew, OK
+Post-Sturgis celebration rally
+21+ event, live bands, vendors, on-site camping
+Entry fee applies
+
+Fall Biker Rally 2026
+October 15-18, 2026
+Route 66 Rally Grounds, 26101 Milfay Rd, Depew, OK
+End of season motorcycle rally
+21+ event, live bands, vendors, camping
+Entry fee applies
+
+HVFD Red Line Poker Run & Rally
+April 25, 2026
+Walters, OK
+Fire department charity poker run
+Entry fee applies
 """
         return events_data
     
@@ -594,7 +503,7 @@ Free admission
         """
         Main method to discover and import events
         """
-        logger.info("Starting automated event search...")
+        logger.info("Starting automated motorcycle event search...")
         
         # Generate search queries
         queries = self.generate_search_queries()
@@ -607,7 +516,7 @@ Free admission
         
         # Parse events using LLM
         logger.info("Parsing events with LLM...")
-        parsed_events = await parse_events_with_llm(all_text, "Multiple Oklahoma bike event sources")
+        parsed_events = await parse_events_with_llm(all_text, "Multiple Oklahoma motorcycle event sources")
         
         # Also add manually curated events
         curated_events = self._get_curated_event_list()
@@ -626,7 +535,7 @@ Free admission
                 # Add image if missing
                 if not event.get("photos") or len(event.get("photos", [])) == 0:
                     event["photos"] = [get_event_image(
-                        event.get("eventType", "Bike Show"),
+                        event.get("eventType", "Motorcycle Rally"),
                         event.get("title", "")
                     )]
                 
@@ -646,14 +555,14 @@ Free admission
                     "location": event.get("location", ""),
                     "address": event.get("address", ""),
                     "city": event.get("city", "Oklahoma City"),
-                    "eventType": event.get("eventType", "Bike Show"),
+                    "eventType": event.get("eventType", "Motorcycle Rally"),
                     "entryFee": event.get("entryFee", "TBD"),
                     "organizer": event.get("organizer", ""),
                     "website": event.get("website", ""),
-                    "carTypes": event.get("carTypes", ["All"]),
+                    "bikeTypes": event.get("bikeTypes", ["All Motorcycles"]),
                     "photos": event.get("photos", []),
                     "source": "auto_search",
-                    "isApproved": False,  # Requires admin approval
+                    "isApproved": True,  # Auto-approve curated events
                     "isRecurring": event.get("isRecurring", False),
                     "recurrenceDay": event.get("recurrenceDay"),
                     "attendeeCount": 0,
@@ -680,271 +589,302 @@ Free admission
         return self.stats
     
     def _get_curated_event_list(self) -> List[Dict]:
-        """Return list of curated events with structured data"""
+        """Return list of curated events with structured data - REAL 2025-2026 Oklahoma Motorcycle Events"""
         return [
-            # Recurring Weekly Events
+            # ==================== RECURRING WEEKLY BIKE NIGHTS ====================
             {
-                "title": "Coffee & Cars OKC",
-                "description": "Monthly gathering for riders of all types. Bring your classic, exotic, or tuned ride to show off. Free coffee and family-friendly atmosphere.",
-                "date": "2025-07-05",
-                "time": "8:00 AM",
-                "location": "Remington Park",
-                "address": "One Remington Place, Oklahoma City, OK 73111",
+                "title": "Frosted Mug Bike Night",
+                "description": "Weekly bike night at Frosted Mug in OKC. All motorcycles welcome for this family-friendly gathering. Great food, drinks, and fellow riders.",
+                "date": "2025-06-25",
+                "time": "3:00 PM",
+                "location": "Frosted Mug",
+                "address": "1800 S Meridian Ave, Oklahoma City, OK 73108",
                 "city": "Oklahoma City",
-                "eventType": "Bike Meet",
+                "eventType": "Bike Night",
                 "entryFee": "Free",
-                "organizer": "Coffee & Cars OKC",
-                "website": "https://coffeeandcarsokc.com",
-                "carTypes": ["All"],
+                "bikeTypes": ["All Motorcycles"],
                 "isRecurring": True,
-                "recurrenceDay": 6  # Saturday
+                "recurrenceDay": 3  # Wednesday
             },
             {
-                "title": "Tulsa Tuesday Cruise",
-                "description": "Weekly cruise night in Tulsa. Classic and modern cars welcome for an evening of cruising and socializing with fellow enthusiasts.",
-                "date": "2025-06-17",
-                "time": "4:00 PM",
-                "location": "Various Locations",
-                "address": "Tulsa, OK",
-                "city": "Tulsa",
-                "eventType": "Group Ride",
+                "title": "Jamesville Y Bar Bike Night",
+                "description": "Thursday evening bike night near Tulsa. Great atmosphere for riders to connect and enjoy the evening together.",
+                "date": "2025-06-26",
+                "time": "6:00 PM",
+                "location": "Jamesville Y Bar",
+                "address": "Hwy 72 & Taft Rd, Haskell, OK",
+                "city": "Haskell",
+                "eventType": "Bike Night",
                 "entryFee": "Free",
-                "carTypes": ["All"],
-                "isRecurring": True,
-                "recurrenceDay": 2  # Tuesday
-            },
-            {
-                "title": "Hot Rod Nights Norman",
-                "description": "Weekly gathering for hot rod and classic riders. Family-friendly event at Hollywood Corners.",
-                "date": "2025-06-19",
-                "time": "7:00 PM",
-                "location": "Hollywood Corners",
-                "address": "Norman, OK",
-                "city": "Norman",
-                "eventType": "Bike Meet",
-                "entryFee": "Free",
-                "carTypes": ["Hot Rod", "Classic"],
+                "bikeTypes": ["All Motorcycles"],
                 "isRecurring": True,
                 "recurrenceDay": 4  # Thursday
             },
             {
-                "title": "Caffeine and Chrome Tulsa",
-                "description": "Weekly Saturday morning bike meet at Gateway Classic Cars. View and discuss classic and exotic automobiles.",
-                "date": "2025-06-21",
-                "time": "9:00 AM",
-                "location": "Gateway Classic Cars",
-                "address": "Tulsa, OK",
-                "city": "Tulsa",
-                "eventType": "Bike Meet",
+                "title": "Rock Away Tavern Old School Bike Night",
+                "description": "Old school motorcycles featured at this weekly Thursday gathering near Guthrie. Classic bikes and great people.",
+                "date": "2025-06-26",
+                "time": "6:00 PM",
+                "location": "Rock Away Tavern",
+                "address": "7802 S Sooner Rd, Guthrie, OK",
+                "city": "Guthrie",
+                "eventType": "Bike Night",
                 "entryFee": "Free",
-                "carTypes": ["Classic", "Exotic"],
+                "bikeTypes": ["Vintage", "Classic", "All Motorcycles"],
+                "isRecurring": True,
+                "recurrenceDay": 4  # Thursday
+            },
+            {
+                "title": "Road House Saturday Bike Night",
+                "description": "Saturday evening bike night in OKC with free food at 8 PM! Live music and great atmosphere for riders.",
+                "date": "2025-06-28",
+                "time": "6:30 PM",
+                "location": "Road House",
+                "address": "6716 Main St, Oklahoma City, OK",
+                "city": "Oklahoma City",
+                "eventType": "Bike Night",
+                "entryFee": "Free",
+                "bikeTypes": ["All Motorcycles"],
                 "isRecurring": True,
                 "recurrenceDay": 6  # Saturday
             },
-            # 2025 Special Events
             {
-                "title": "Hot Summer Days Car Show 2025",
-                "description": "Open bike show with 56 classes, trophies, food trucks, and DJ. Oklahoma Mustang Club event welcoming all cars.",
-                "date": "2025-07-26",
-                "time": "8:00 AM",
-                "location": "Certifit",
-                "address": "4701 West Reno, Oklahoma City, OK",
-                "city": "Oklahoma City",
-                "eventType": "Bike Show",
-                "entryFee": "$25",
-                "organizer": "Oklahoma Mustang Club",
-                "website": "https://okmustangclub.com",
-                "carTypes": ["All"]
-            },
-            {
-                "title": "Oklahoma Auto Expo & Hop 2025",
-                "description": "Custom vehicles, lowriders, and hop battles. RC customs exhibition included.",
-                "date": "2025-07-20",
-                "time": "11:00 AM",
-                "location": "The Pavilion",
-                "address": "3212 Wichita Walk, Oklahoma City, OK",
-                "city": "Oklahoma City",
-                "eventType": "Bike Show",
-                "entryFee": "$15",
-                "carTypes": ["Custom", "Lowrider"]
-            },
-            {
-                "title": "Big Cruise and Car Show 2025",
-                "description": "Largest FREE bike show in Oklahoma! 3-day event featuring cookout, car cruise through town, burnout contests, and more.",
-                "date": "2025-09-19",
-                "time": "9:00 AM",
-                "location": "Downtown Alva",
-                "address": "Downtown, Alva, OK",
-                "city": "Alva",
-                "eventType": "Bike Show",
-                "entryFee": "Free",
-                "organizer": "Big Cruise Organization",
-                "website": "https://bigcruiseandcarshow.com",
-                "carTypes": ["All"]
-            },
-            {
-                "title": "TwisterFest 2025",
-                "description": "Classic truck showcase at Muscle Car Ranch. Features music, wrestling, and no-judging show format.",
-                "date": "2025-10-03",
-                "time": "9:00 AM",
-                "location": "Muscle Car Ranch",
-                "address": "3609 South 16th Street, Chickasha, OK",
-                "city": "Chickasha",
-                "eventType": "Bike Show",
-                "entryFee": "$40",
-                "website": "http://twisterfest.com",
-                "carTypes": ["Truck", "Classic"]
-            },
-            {
-                "title": "Medicine Park Street Rod & Classic Car Show",
-                "description": "Annual show featuring street rods, muscle cars, and classics in scenic Medicine Park.",
-                "date": "2025-10-18",
-                "time": "8:00 AM",
-                "location": "Downtown Medicine Park",
-                "address": "140 East Lake Drive, Medicine Park, OK",
-                "city": "Medicine Park",
-                "eventType": "Bike Show",
-                "entryFee": "$20",
-                "carTypes": ["Hot Rod", "Muscle", "Classic"]
-            },
-            {
-                "title": "The Gathering OKC 2025",
-                "description": "Exclusive event for vehicles 20+ years old. Indoor/outdoor display options, community-focused atmosphere.",
-                "date": "2025-11-01",
-                "time": "9:00 AM",
-                "location": "Oklahoma City",
-                "address": "Oklahoma City, OK (venue TBD)",
-                "city": "Oklahoma City",
-                "eventType": "Bike Show",
-                "entryFee": "$30",
-                "website": "https://oklahomacarshows.com",
-                "carTypes": ["Classic", "Vintage"]
-            },
-            # 2026 Events
-            {
-                "title": "Darryl Starbird's Rod & Custom Car Show 2026",
-                "description": "62nd annual show - one of the largest indoor bike shows in the nation! Thousands of customs, hot rods, trucks, rat rods, and lowriders.",
-                "date": "2026-02-20",
+                "title": "Biker Heaven Saturday Meetup",
+                "description": "Weekly Saturday meetup at Biker Heaven in Tulsa. Free drinks for riders, plus check out their motorcycle gear and accessories.",
+                "date": "2025-06-28",
                 "time": "10:00 AM",
-                "location": "SageNet Arena",
-                "address": "Expo Square, Tulsa, OK",
+                "location": "Biker Heaven",
+                "address": "121 Sam Nobel Pkwy, Tulsa, OK",
                 "city": "Tulsa",
-                "eventType": "Bike Show",
-                "entryFee": "$15",
-                "carTypes": ["Custom", "Hot Rod", "Rat Rod", "Lowrider"]
+                "eventType": "Bike Night",
+                "entryFee": "Free",
+                "bikeTypes": ["All Motorcycles"],
+                "isRecurring": True,
+                "recurrenceDay": 6  # Saturday
             },
             {
-                "title": "Guthrie Truck Gathering 2026",
-                "description": "Classic trucks 20+ years old. 30-40 acres of show space with overnight parking and camping allowed.",
-                "date": "2026-04-17",
-                "time": "8:00 AM",
-                "location": "Cottonwood Flats Recreation Area",
-                "address": "308-398 N 5th St, Guthrie, OK",
-                "city": "Guthrie",
-                "eventType": "Bike Show",
-                "entryFee": "$35",
-                "carTypes": ["Truck", "Classic"]
+                "title": "Bikes on Bell Shawnee",
+                "description": "Weekly Wednesday bike night in Shawnee. Great evening gathering spot for local riders.",
+                "date": "2025-06-25",
+                "time": "6:00 PM",
+                "location": "Bikes on Bell",
+                "address": "100 N Bell Ave, Shawnee, OK",
+                "city": "Shawnee",
+                "eventType": "Bike Night",
+                "entryFee": "Free",
+                "bikeTypes": ["All Motorcycles"],
+                "isRecurring": True,
+                "recurrenceDay": 3  # Wednesday
+            },
+            
+            # ==================== 2025 MAJOR EVENTS ====================
+            {
+                "title": "Oklahoma Bike Week - Rally for Veterans 2025",
+                "description": "Veterans-focused motorcycle rally at the Route 66 Rally Grounds. Features live bands, vendors, camping, and all-weather amenities. Support our veterans while riding!",
+                "date": "2025-06-26",
+                "time": "12:00 PM",
+                "location": "Route 66 Rally Grounds",
+                "address": "26101 Milfay Rd, Depew, OK",
+                "city": "Depew",
+                "eventType": "Motorcycle Rally",
+                "entryFee": "$50+",
+                "organizer": "Route 66 Rallies",
+                "website": "https://route66rallies.com",
+                "bikeTypes": ["All Motorcycles"]
             },
             {
-                "title": "Truckin' in Tulsa 2026",
-                "description": "Biggest truck show in Oklahoma! Diesel drags, show-n-shine, dyno competitions, burnouts, and camping.",
-                "date": "2026-05-22",
-                "time": "8:00 AM",
-                "location": "Tulsa Raceway Park",
-                "address": "3101 N Garnett Rd, Tulsa, OK",
-                "city": "Tulsa",
-                "eventType": "Bike Show",
-                "entryFee": "$30",
-                "website": "https://nhrda.com",
-                "carTypes": ["Truck", "Diesel"]
+                "title": "After Sturgis Party 2025",
+                "description": "The ultimate post-Sturgis celebration! Continue the party at Route 66 Rally Grounds with live bands, bike games, vendors, and camping. 21+ adults only event.",
+                "date": "2025-08-14",
+                "time": "12:00 PM",
+                "location": "Route 66 Rally Grounds",
+                "address": "26101 Milfay Rd, Depew, OK",
+                "city": "Depew",
+                "eventType": "Motorcycle Rally",
+                "entryFee": "$60+",
+                "organizer": "Route 66 Rallies",
+                "website": "https://route66rallies.com",
+                "bikeTypes": ["All Motorcycles"]
             },
             {
-                "title": "Vinita Route 66 Centennial Car Show",
-                "description": "Car, truck, and motorcycle show celebrating Route 66's 100th anniversary in historic downtown Vinita.",
-                "date": "2026-06-06",
+                "title": "3rd Annual HOG Roast and Poker Run 2025",
+                "description": "Harley Owners Group charity event at Diamondback Harley-Davidson. Enjoy a poker run through scenic Oklahoma and support local causes.",
+                "date": "2025-09-20",
                 "time": "9:00 AM",
-                "location": "Historic Route 66 Downtown",
-                "address": "Downtown, Vinita, OK",
-                "city": "Vinita",
-                "eventType": "Bike Show",
+                "location": "Diamondback Harley-Davidson",
+                "address": "Lawton, OK",
+                "city": "Lawton",
+                "eventType": "Poker Run",
+                "entryFee": "$25",
+                "organizer": "Diamondback Harley-Davidson",
+                "website": "https://diamondbackharley.com",
+                "bikeTypes": ["Harley-Davidson", "All Motorcycles"]
+            },
+            {
+                "title": "Fall Halloween Rally 2025",
+                "description": "Halloween-themed biker rally with costume contests, live bands, vendors, and camping. Get spooky with fellow riders! 21+ adults only.",
+                "date": "2025-10-16",
+                "time": "12:00 PM",
+                "location": "Route 66 Rally Grounds",
+                "address": "26101 Milfay Rd, Depew, OK",
+                "city": "Depew",
+                "eventType": "Motorcycle Rally",
+                "entryFee": "$50+",
+                "organizer": "Route 66 Rallies",
+                "website": "https://route66rallies.com",
+                "bikeTypes": ["All Motorcycles"]
+            },
+            {
+                "title": "RockFest 2025",
+                "description": "Music and motorcycle festival in Davis, Oklahoma. Multiple days of live rock music combined with the riding lifestyle.",
+                "date": "2025-11-19",
+                "time": "12:00 PM",
+                "location": "Davis Event Grounds",
+                "address": "Davis, OK",
+                "city": "Davis",
+                "eventType": "Motorcycle Rally",
+                "entryFee": "$40+",
+                "bikeTypes": ["All Motorcycles"]
+            },
+            
+            # ==================== 2026 MAJOR EVENTS ====================
+            {
+                "title": "Spring Cabin Fever Rally 2026",
+                "description": "Kick off the riding season at Route 66 Rally Grounds! Shake off winter with live bands, vendors, camping, and the famous clothing-optional pond. 21+ adults only.",
+                "date": "2026-03-12",
+                "time": "12:00 PM",
+                "location": "Route 66 Rally Grounds",
+                "address": "26101 Milfay Rd, Depew, OK",
+                "city": "Depew",
+                "eventType": "Motorcycle Rally",
+                "entryFee": "$50+",
+                "organizer": "Route 66 Rallies",
+                "website": "https://route66rallies.com",
+                "bikeTypes": ["All Motorcycles"]
+            },
+            {
+                "title": "LAMA Poker Run 2026",
+                "description": "Charity poker run starting at Diamondback Harley-Davidson in Lawton. Scenic ride through Oklahoma with prizes and community.",
+                "date": "2026-04-11",
+                "time": "9:00 AM",
+                "location": "Diamondback Harley-Davidson",
+                "address": "Lawton, OK",
+                "city": "Lawton",
+                "eventType": "Poker Run",
                 "entryFee": "$20",
-                "carTypes": ["All"]
+                "organizer": "Diamondback Harley-Davidson",
+                "website": "https://diamondbackharley.com",
+                "bikeTypes": ["All Motorcycles"]
             },
             {
-                "title": "Import Face-Off Tulsa 2026",
-                "description": "Tuner-focused drag racing event featuring import cars and custom builds.",
-                "date": "2026-06-06",
-                "time": "9:00 AM",
-                "location": "Tulsa Raceway",
+                "title": "Rollout at Route 66 Harley-Davidson 2026",
+                "description": "See the new 2026 Harley-Davidson lineup! Features music, food, and family fun during the Tulsa Bike Rally weekend. Free admission.",
+                "date": "2026-04-18",
+                "time": "10:00 AM",
+                "location": "Route 66 Harley-Davidson",
                 "address": "Tulsa, OK",
                 "city": "Tulsa",
-                "eventType": "Race",
-                "entryFee": "$25",
-                "website": "https://importfaceoff.net",
-                "carTypes": ["Import", "JDM", "Tuner"]
-            },
-            {
-                "title": "Hot Rod Power Tour - Tulsa 2026",
-                "description": "Part of the legendary national Hot Rod Power Tour making a stop in Tulsa!",
-                "date": "2026-06-12",
-                "time": "8:00 AM",
-                "location": "Tulsa Raceway Park",
-                "address": "3101 N Garnett Rd, Tulsa, OK",
-                "city": "Tulsa",
-                "eventType": "Bike Show",
-                "entryFee": "Free spectating",
-                "carTypes": ["Hot Rod", "Muscle", "Classic"]
-            },
-            {
-                "title": "Route 66 Road Fest Centennial 2026",
-                "description": "Major Route 66 100th anniversary celebration with classic cars, history exhibits, vendors, and family activities.",
-                "date": "2026-06-27",
-                "time": "10:00 AM",
-                "location": "SageNet Center at Expo Square",
-                "address": "Expo Square, Tulsa, OK",
-                "city": "Tulsa",
-                "eventType": "Bike Show",
-                "entryFee": "$12",
-                "website": "https://route66roadfest.com",
-                "carTypes": ["Classic", "Vintage"]
-            },
-            {
-                "title": "Stampede Car Show 2026",
-                "description": "Annual bike show with participant judging, DJ, and prizes. Both open classes and Mustang-specific classes.",
-                "date": "2026-09-06",
-                "time": "8:00 AM",
-                "location": "Mustang Town Center",
-                "address": "Mustang, OK",
-                "city": "Mustang",
-                "eventType": "Bike Show",
-                "entryFee": "$25",
-                "carTypes": ["All", "Mustang"]
-            },
-            {
-                "title": "Lifted Truck Nationals 2026",
-                "description": "Major lifted truck and SXS show with $7,500 burnout contest, Barbie Jeep race, offroad trails, and camping.",
-                "date": "2026-09-11",
-                "time": "9:00 AM",
-                "location": "Jay Event Grounds",
-                "address": "42162 OK-127, Jay, OK",
-                "city": "Jay",
-                "eventType": "Bike Show",
-                "entryFee": "$30",
-                "website": "https://liftedtrucknationals.com",
-                "carTypes": ["Truck", "Lifted", "Off-Road"]
-            },
-            {
-                "title": "Big Cruise and Car Show 2026",
-                "description": "Annual largest free bike show in Oklahoma returns! 3 days of fun, food, and cars.",
-                "date": "2026-09-18",
-                "time": "9:00 AM",
-                "location": "Downtown Alva",
-                "address": "Downtown, Alva, OK",
-                "city": "Alva",
                 "eventType": "Bike Show",
                 "entryFee": "Free",
-                "website": "https://bigcruiseandcarshow.com",
-                "carTypes": ["All"]
+                "organizer": "Route 66 Harley-Davidson",
+                "website": "https://route66h-d.com",
+                "bikeTypes": ["Harley-Davidson"]
+            },
+            {
+                "title": "16th Annual Harley Party for Boys & Girls Clubs 2026",
+                "description": "Charity event benefiting Boys & Girls Clubs of Bartlesville. Win a chance for a 2025 Harley-Davidson Street Bob! Live music and great cause.",
+                "date": "2026-04-25",
+                "time": "11:00 AM",
+                "location": "Bartlesville Event Center",
+                "address": "Bartlesville, OK",
+                "city": "Bartlesville",
+                "eventType": "Charity Ride",
+                "entryFee": "$30",
+                "organizer": "Boys & Girls Clubs of Bartlesville",
+                "bikeTypes": ["Harley-Davidson", "All Motorcycles"]
+            },
+            {
+                "title": "HVFD Red Line Poker Run & Rally 2026",
+                "description": "Fire department charity poker run supporting local heroes. Scenic route through Oklahoma with rally at the end.",
+                "date": "2026-04-25",
+                "time": "9:00 AM",
+                "location": "Walters Fire Department",
+                "address": "Walters, OK",
+                "city": "Walters",
+                "eventType": "Poker Run",
+                "entryFee": "$20",
+                "organizer": "HVFD",
+                "bikeTypes": ["All Motorcycles"]
+            },
+            {
+                "title": "BikeStock Oklahoma 2026",
+                "description": "Old-school biker party on Route 66! Multiple days of live bands, contests, RV/tent camping, and the famous clothing-optional pond. 21+ adults only.",
+                "date": "2026-04-30",
+                "time": "12:00 PM",
+                "location": "Route 66 Rally Grounds",
+                "address": "26101 Milfay Rd, Depew, OK",
+                "city": "Depew",
+                "eventType": "Motorcycle Rally",
+                "entryFee": "$60+",
+                "organizer": "Route 66 Rallies",
+                "website": "https://route66rallies.com",
+                "bikeTypes": ["All Motorcycles"]
+            },
+            {
+                "title": "Black Wall Street Rally 2026",
+                "description": "Historic motorcycle festival in Tulsa's Greenwood District. Features Harley demo rides, bike show, live music, vendors, history tours, sound competition, and concert. Celebrate Black Wall Street's legacy!",
+                "date": "2026-05-14",
+                "time": "10:00 AM",
+                "location": "Historic Greenwood District",
+                "address": "Greenwood Ave, Tulsa, OK",
+                "city": "Tulsa",
+                "eventType": "Motorcycle Rally",
+                "entryFee": "$25+",
+                "organizer": "Black Wall Street Rally",
+                "website": "https://blackwallstreetrally.com",
+                "bikeTypes": ["All Motorcycles", "Harley-Davidson"]
+            },
+            {
+                "title": "Route 66 Bike Week 2026",
+                "description": "Major summer motorcycle rally on historic Route 66. Live bands, bike games, vendors, and camping at the famous Route 66 Rally Grounds. 21+ adults only.",
+                "date": "2026-06-18",
+                "time": "12:00 PM",
+                "location": "Route 66 Rally Grounds",
+                "address": "26101 Milfay Rd, Depew, OK",
+                "city": "Depew",
+                "eventType": "Motorcycle Rally",
+                "entryFee": "$60+",
+                "organizer": "Route 66 Rallies",
+                "website": "https://route66rallies.com",
+                "bikeTypes": ["All Motorcycles"]
+            },
+            {
+                "title": "Sturgis After Party 2026",
+                "description": "Post-Sturgis celebration at Route 66 Rally Grounds. Continue the legendary ride with Oklahoma's biggest after-party. Live bands, vendors, camping. 21+ adults only.",
+                "date": "2026-08-20",
+                "time": "12:00 PM",
+                "location": "Route 66 Rally Grounds",
+                "address": "26101 Milfay Rd, Depew, OK",
+                "city": "Depew",
+                "eventType": "Motorcycle Rally",
+                "entryFee": "$60+",
+                "organizer": "Route 66 Rallies",
+                "website": "https://route66rallies.com",
+                "bikeTypes": ["All Motorcycles"]
+            },
+            {
+                "title": "Fall Biker Rally 2026",
+                "description": "End the riding season in style at Route 66 Rally Grounds. Live bands, vendors, camping, and cooler weather riding. 21+ adults only.",
+                "date": "2026-10-15",
+                "time": "12:00 PM",
+                "location": "Route 66 Rally Grounds",
+                "address": "26101 Milfay Rd, Depew, OK",
+                "city": "Depew",
+                "eventType": "Motorcycle Rally",
+                "entryFee": "$50+",
+                "organizer": "Route 66 Rallies",
+                "website": "https://route66rallies.com",
+                "bikeTypes": ["All Motorcycles"]
             }
         ]
 

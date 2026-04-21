@@ -246,7 +246,7 @@ async def apple_auth_session(request: AppleAuthRequest):
                         request.identityToken,
                         public_key,
                         algorithms=["RS256"],
-                        audience="com.velocityvisualcrew.okcarmeets",
+                        audience="com.velocityvisualcrew.okcbikemeets",
                         options={"verify_exp": True}
                     )
                 else:

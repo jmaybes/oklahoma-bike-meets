@@ -25,10 +25,10 @@ import { API_URL } from '../../utils/api';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Google OAuth Client IDs - Replace with your own from Google Cloud Console
-const GOOGLE_WEB_CLIENT_ID = '211008012524-l8k1999l1llvlfsqp0rm8jshg2ad96ev.apps.googleusercontent.com';
-const GOOGLE_IOS_CLIENT_ID = '211008012524-tq7bfhgk3bn9oaobtc4ls23srmaa577d.apps.googleusercontent.com';
-const GOOGLE_ANDROID_CLIENT_ID = '211008012524-3pfd27u1p30br8v03mt9colo9kqlpt9o.apps.googleusercontent.com';
+// Google OAuth Client IDs for Oklahoma Bike Meets
+const GOOGLE_WEB_CLIENT_ID = '211008012524-scsr0jauel74n096h0mu5jjnq9k86c2v.apps.googleusercontent.com';
+const GOOGLE_IOS_CLIENT_ID = '211008012524-uljcvuojvbctv2ot9k8v4fa39f42njck.apps.googleusercontent.com';
+const GOOGLE_ANDROID_CLIENT_ID = '211008012524-croc9ef6hoh0f14osh1n22nkhtetafr3.apps.googleusercontent.com';
 
 export default function RegisterScreen() {
   const { login } = useAuth();

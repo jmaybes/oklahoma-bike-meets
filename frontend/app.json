@@ -66,6 +66,14 @@
       "./plugins/withNoRoutingApp",
       "expo-apple-authentication",
       [
+        "expo-build-properties",
+        {
+          "ios": {
+            "privacyManifestPath": "./ios/PrivacyInfo.xcprivacy"
+          }
+        }
+      ],
+      [
         "expo-font",
         {
           "fonts": [
