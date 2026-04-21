@@ -72,7 +72,7 @@ export default function LandingScreen() {
 
   const features = [
     {
-      icon: 'bicycle',
+      icon: 'garage-custom',  // Custom image
       title: 'My Garage',
       description: 'Showcase your ride with photos and specs',
       color: '#E31837',
@@ -188,7 +188,15 @@ export default function LandingScreen() {
             {features.map((feature, index) => (
               <View key={index} style={styles.featureCard}>
                 <View style={[styles.featureIcon, { backgroundColor: `${feature.color}20` }]}>
-                  <Ionicons name={feature.icon as any} size={28} color={feature.color} />
+                  {feature.icon === 'garage-custom' ? (
+                    <Image 
+                      source={require('../assets/images/garage-icon.png')} 
+                      style={{ width: 32, height: 32 }}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <Ionicons name={feature.icon as any} size={28} color={feature.color} />
+                  )}
                 </View>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
                 <Text style={styles.featureDescription}>{feature.description}</Text>
