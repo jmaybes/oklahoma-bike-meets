@@ -235,7 +235,7 @@ export default function LandingScreen() {
               style={styles.ctaOverlay}
             >
               <Image 
-                source={require('../assets/images/bike-logo.png')} 
+                source={require('../assets/images/sport-bike-logo.png')} 
                 style={styles.ctaLogo}
                 resizeMode="contain"
               />
