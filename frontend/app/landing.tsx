@@ -161,7 +161,7 @@ export default function LandingScreen() {
         {/* Community Preview */}
         <View style={styles.communitySection}>
           <ImageBackground
-            source={{ uri: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&q=80' }}
+            source={require('../assets/images/community-bikes.jpg')}
             style={styles.communityImage}
             imageStyle={styles.communityImageStyle}
           >
