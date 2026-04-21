@@ -100,7 +100,7 @@
         "expo-notifications",
         {
           "icon": "./assets/images/icon.png",
-          "color": "#51fb00",
+          "color": "#E31837",
           "sounds": []
         }
       ],
@@ -113,7 +113,7 @@
     },
     "notification": {
       "icon": "./assets/images/icon.png",
-      "color": "#51fb00"
+      "color": "#E31837"
     },
     "extra": {
       "router": {},
