@@ -1,70 +1,97 @@
 #!/bin/bash
 # ============================================
-# Oklahoma Car Meets - VPS Setup Script
-# Run this on a fresh Ubuntu VPS
-# Usage: chmod +x setup.sh && sudo ./setup.sh
+# Oklahoma Bike Meets - VPS Setup Script (ADD-ON)
+# Run this on your EXISTING Car Meets VPS
+# to add Bike Meets alongside it on the same machine.
+#
+# - Car Meets:  api.okccarmeets.com  -> port 8001 -> db test_database
+# - Bike Meets: api.okcbikemeets.com -> port 8002 -> db okcbikemeets_db
+#
+# Usage: chmod +x vps-setup.sh && sudo ./vps-setup.sh
 # ============================================
 
 set -e
-echo "🚗 Setting up Oklahoma Car Meets Backend..."
 
-# 1. Update system
-echo "📦 Updating system packages..."
-apt update && apt upgrade -y
+# ----- EDIT THIS LINE IF YOUR REPO URL CHANGES -----
+REPO_URL="https://github.com/jmaybes/oklahoma-bike-meets.git"   # Oklahoma Bike Meets repo
+DOMAIN="api.okcbikemeets.com"
+# --------------------------------------------------
 
-# 2. Install essential packages
-echo "📦 Installing essentials..."
-apt install -y python3 python3-pip python3-venv git nginx certbot python3-certbot-nginx curl gnupg ufw
+APP_NAME="okcbikemeets"
+APP_DIR="/opt/${APP_NAME}"
+BACKEND_DIR="${APP_DIR}/backend"
+SERVICE_NAME="${APP_NAME}"
+PORT="8002"                 # <-- different from Car Meets (8001)
+DB_NAME="${APP_NAME}_db"    # <-- separate MongoDB database
 
-# 3. Install MongoDB 7.0
-echo "📦 Installing MongoDB..."
-curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
-echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-apt update
-apt install -y mongodb-org
-systemctl start mongod
-systemctl enable mongod
-echo "✅ MongoDB installed and running"
+echo "🏍️  Setting up Oklahoma Bike Meets Backend on existing VPS..."
+echo "    Domain : ${DOMAIN}"
+echo "    Port   : ${PORT}"
+echo "    DB name: ${DB_NAME}"
+echo ""
 
-# 4. Clone the repo
-echo "📦 Cloning repository..."
-cd /opt
-git clone https://github.com/jmaybes/okcarevents.git
-cd okcarevents/backend
+# 1. Sanity check — MongoDB & Nginx must already exist (from Car Meets setup)
+if ! systemctl is-active --quiet mongod; then
+    echo "❌ MongoDB is not running. Is Car Meets set up on this VPS?"
+    exit 1
+fi
+if ! command -v nginx >/dev/null 2>&1; then
+    echo "❌ Nginx is not installed. Is Car Meets set up on this VPS?"
+    exit 1
+fi
+echo "✅ MongoDB and Nginx are already present"
 
-# 5. Setup Python virtual environment
+# 2. Clone the Bike Meets repo
+if [ -d "${APP_DIR}" ]; then
+    echo "📦 Repo already cloned at ${APP_DIR}, pulling latest..."
+    cd "${APP_DIR}"
+    git pull
+else
+    echo "📦 Cloning repository to ${APP_DIR}..."
+    cd /opt
+    git clone "${REPO_URL}" "${APP_NAME}"
+fi
+
+# 3. Setup Python venv + install requirements
 echo "🐍 Setting up Python environment..."
+cd "${BACKEND_DIR}"
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
+deactivate
 
-# 6. Create .env file
-echo "⚙️ Creating environment config..."
-cat > .env << 'ENVFILE'
-MONGO_URL=mongodb://localhost:27017/test_database
-JWT_SECRET=your-super-secret-jwt-key-change-this-to-something-random
+# 4. Create .env file (only if it doesn't exist yet)
+if [ ! -f "${BACKEND_DIR}/.env" ]; then
+    echo "⚙️  Creating environment config..."
+    cat > "${BACKEND_DIR}/.env" << ENVFILE
+MONGO_URL=mongodb://localhost:27017/${DB_NAME}
+DB_NAME=${DB_NAME}
+JWT_SECRET=CHANGE_ME_TO_A_RANDOM_STRING_FOR_BIKE_MEETS
 GOOGLE_CLIENT_ID=your-google-client-id
 EMERGENT_LLM_KEY=your-emergent-llm-key
 ENVFILE
+    echo ""
+    echo "⚠️  IMPORTANT: edit ${BACKEND_DIR}/.env with your real values, THEN restart the service:"
+    echo "    sudo systemctl restart ${SERVICE_NAME}"
+    echo ""
+else
+    echo "✅ .env already exists at ${BACKEND_DIR}/.env — leaving it untouched"
+fi
 
-echo ""
-echo "⚠️  IMPORTANT: Edit /opt/okcarevents/backend/.env with your actual API keys!"
-echo ""
-
-# 7. Create systemd service for the backend
-echo "🔧 Creating systemd service..."
-cat > /etc/systemd/system/okcarevents.service << 'SERVICEFILE'
+# 5. Create systemd service
+echo "🔧 Creating systemd service ${SERVICE_NAME}..."
+cat > "/etc/systemd/system/${SERVICE_NAME}.service" << SERVICEFILE
 [Unit]
-Description=Oklahoma Car Meets Backend API
+Description=Oklahoma Bike Meets Backend API
 After=network.target mongod.service
 
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/okcarevents/backend
-Environment=PATH=/opt/okcarevents/backend/venv/bin:/usr/bin
-ExecStart=/opt/okcarevents/backend/venv/bin/uvicorn server:app --host 0.0.0.0 --port 8001 --workers 2
+WorkingDirectory=${BACKEND_DIR}
+Environment=PATH=${BACKEND_DIR}/venv/bin:/usr/bin
+ExecStart=${BACKEND_DIR}/venv/bin/uvicorn server:app --host 0.0.0.0 --port ${PORT} --workers 2
 Restart=always
 RestartSec=5
 
@@ -73,75 +100,78 @@ WantedBy=multi-user.target
 SERVICEFILE
 
 systemctl daemon-reload
-systemctl enable okcarevents
-systemctl start okcarevents
-echo "✅ Backend service started on port 8001"
+systemctl enable "${SERVICE_NAME}"
+systemctl restart "${SERVICE_NAME}"
+echo "✅ Backend service running on port ${PORT}"
 
-# 8. Configure Nginx as reverse proxy
-echo "🌐 Configuring Nginx..."
-cat > /etc/nginx/sites-available/okcarevents << 'NGINXFILE'
+# 6. Configure Nginx as reverse proxy for api.okcbikemeets.com
+echo "🌐 Configuring Nginx for ${DOMAIN}..."
+cat > "/etc/nginx/sites-available/${APP_NAME}" << NGINXFILE
 server {
     listen 80;
-    server_name api.okccarmeets.com;
+    server_name ${DOMAIN};
 
     client_max_body_size 50M;
 
     location / {
-        proxy_pass http://127.0.0.1:8001;
+        proxy_pass http://127.0.0.1:${PORT};
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_read_timeout 300s;
         proxy_connect_timeout 75s;
     }
 }
 NGINXFILE
 
-ln -sf /etc/nginx/sites-available/okcarevents /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
+ln -sf "/etc/nginx/sites-available/${APP_NAME}" "/etc/nginx/sites-enabled/${APP_NAME}"
 nginx -t
-systemctl restart nginx
-echo "✅ Nginx configured"
+systemctl reload nginx
+echo "✅ Nginx configured for ${DOMAIN}"
 
-# 9. Setup firewall
-echo "🔒 Configuring firewall..."
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw --force enable
-echo "✅ Firewall configured"
+# 7. Firewall — already configured by Car Meets setup, but make sure 80/443 are open
+ufw allow 80/tcp  >/dev/null 2>&1 || true
+ufw allow 443/tcp >/dev/null 2>&1 || true
 
-# 10. Setup SSL (run after DNS propagates)
+# 8. Done — print SSL + next-steps instructions
 echo ""
 echo "============================================"
-echo "✅ SETUP COMPLETE!"
+echo "✅ BIKE MEETS BACKEND SETUP COMPLETE!"
 echo "============================================"
 echo ""
-echo "Your backend is running at: http://api.okccarmeets.com"
+echo "Your Bike Meets backend is live at:"
+echo "    http://${DOMAIN}"
 echo ""
 echo "NEXT STEPS:"
 echo ""
-echo "1. Edit your API keys:"
-echo "   nano /opt/okcarevents/backend/.env"
-echo "   (Add your JWT_SECRET, GOOGLE_CLIENT_ID, EMERGENT_LLM_KEY)"
-echo "   Then restart: systemctl restart okcarevents"
+echo "1. Edit your API keys in:"
+echo "     nano ${BACKEND_DIR}/.env"
+echo "   Then restart: sudo systemctl restart ${SERVICE_NAME}"
 echo ""
-echo "2. Once DNS propagates (5-30 min), add free SSL:"
-echo "   certbot --nginx -d api.okccarmeets.com"
+echo "2. Verify it's running:"
+echo "     systemctl status ${SERVICE_NAME}"
+echo "     curl http://127.0.0.1:${PORT}/api/"
 echo ""
-echo "3. Import your database (upload db_export.tar.gz first):"
-echo "   cd /tmp && tar xzf db_export.tar.gz"
-echo "   mongorestore --db test_database /tmp/db_export/test_database/"
+echo "3. Wait for DNS for ${DOMAIN} to propagate (5-30 min)"
+echo "   Then add free SSL:"
+echo "     sudo certbot --nginx -d ${DOMAIN}"
 echo ""
-echo "4. Update your Expo app's eas.json:"
-echo "   Change EXPO_PUBLIC_BACKEND_URL to: https://api.okccarmeets.com"
+echo "4. After SSL, test from outside:"
+echo "     curl -I https://${DOMAIN}/api/"
 echo ""
-echo "5. Rebuild your app:"
-echo "   eas build --platform ios"
-echo "   eas build --platform android"
+echo "5. Your Expo app already points to https://${DOMAIN}"
+echo "   (configured in eas.json). Just rebuild:"
+echo "     eas build --profile preview --platform android"
+echo "     eas build --profile preview --platform ios"
+echo ""
+echo "USEFUL COMMANDS:"
+echo "    Logs:     journalctl -u ${SERVICE_NAME} -f"
+echo "    Restart:  systemctl restart ${SERVICE_NAME}"
+echo "    Stop:     systemctl stop ${SERVICE_NAME}"
+echo "    Mongo:    mongosh ${DB_NAME}"
 echo ""
 echo "============================================"
