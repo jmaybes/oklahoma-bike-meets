@@ -13,7 +13,7 @@
 set -e
 
 # ----- EDIT THESE TWO LINES BEFORE RUNNING -----
-REPO_URL="https://github.com/YOUR_GITHUB_USER/okcbikemeets.git"   # <-- change to your Bike Meets repo URL
+REPO_URL="https://github.com/jmaybes/oklahoma-bike-meets.git"   # Oklahoma Bike Meets repo
 DOMAIN="api.okcbikemeets.com"
 # -----------------------------------------------
 
