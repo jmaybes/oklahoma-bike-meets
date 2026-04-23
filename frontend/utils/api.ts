@@ -2,11 +2,24 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-// For native builds (iOS/Android): ALWAYS use production URL
-// For web (Emergent preview): Allow env variable override
-const API_URL = Platform.OS === 'web'
-  ? (process.env.EXPO_PUBLIC_BACKEND_URL || 'https://api.okcbikemeets.com')
-  : 'https://api.okcbikemeets.com';
+// Detect if we're running in Expo Go (development) or a standalone build
+const isExpoGo = Constants.appOwnership === 'expo';
+
+// For Expo Go development: Use the Emergent preview URL
+// For standalone/production builds: Use production URL
+const getApiUrl = () => {
+  // Always use env variable if available (works for web and Expo Go)
+  if (process.env.EXPO_PUBLIC_BACKEND_URL) {
+    return process.env.EXPO_PUBLIC_BACKEND_URL;
+  }
+  
+  // Fallback to production for standalone builds
+  return 'https://api.okcbikemeets.com';
+};
+
+const API_URL = getApiUrl();
+
+console.log('[API] Platform:', Platform.OS, '| Expo Go:', isExpoGo, '| API_URL:', API_URL);
 
 // Create axios instance with automatic retry for resilience
 const api = axios.create({
