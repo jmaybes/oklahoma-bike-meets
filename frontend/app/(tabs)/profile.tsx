@@ -969,6 +969,17 @@ export default function ProfileScreen() {
           )}
         </View>
 
+        {/* ===== BROWSE PUBLIC GARAGES ===== */}
+        <TouchableOpacity style={[styles.menuItem, { marginHorizontal: 16, marginBottom: 8, backgroundColor: '#1a1a1a', borderRadius: 12 }]} onPress={() => router.push('/garage')}>
+          <Image 
+            source={require('../../assets/images/small-bike-icon.png')} 
+            style={{ width: 28, height: 28 }}
+            resizeMode="contain"
+          />
+          <Text style={styles.menuItemText}>Browse Public Garages</Text>
+          <Ionicons name="chevron-forward" size={24} color="#666" />
+        </TouchableOpacity>
+
         {/* ===== EVENTS & RSVPs ===== */}
         <View style={styles.menuSection}>
           <View style={styles.sectionHeader}>
@@ -1016,15 +1027,6 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/crews')}>
             <Ionicons name="shield" size={24} color="#FFE707" />
             <Text style={styles.menuItemText}>My Crews</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/garage')}>
-            <Image 
-              source={require('../../assets/images/small-bike-icon.png')} 
-              style={{ width: 28, height: 28 }}
-              resizeMode="contain"
-            />
-            <Text style={styles.menuItemText}>Browse Public Garages</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/garage/tagged-photos')}>
