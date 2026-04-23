@@ -303,7 +303,7 @@ export default function ClubsScreen() {
         carTypes: [],
         userId: user?.id || null,
       });
-      Alert.alert('Success', 'Car club created and published successfully!');
+      Alert.alert('Success', 'Motorcycle club created and published successfully!');
       setShowCreateModal(false);
       resetForm();
       fetchClubs();
@@ -471,7 +471,7 @@ export default function ClubsScreen() {
                 style={styles.modalInput}
                 value={clubFocus}
                 onChangeText={setClubFocus}
-                placeholder="e.g. Mustangs, JDM, Classic Cars"
+                placeholder="e.g. Sport Bikes, Cruisers, Vintage"
                 placeholderTextColor="#555"
               />
 

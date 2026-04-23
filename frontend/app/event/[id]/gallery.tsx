@@ -243,7 +243,7 @@ export default function EventGalleryScreen() {
       ));
       setSelectedPhoto(response.data);
       setShowTagModal(false);
-      Alert.alert('Success', 'Your car has been tagged in this photo!');
+      Alert.alert('Success', 'Your bike has been tagged in this photo!');
     } catch (error: any) {
       console.error('Error tagging car:', error);
       Alert.alert('Error', error.response?.data?.detail || 'Could not tag car');

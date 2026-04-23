@@ -559,7 +559,7 @@ export default function AddEventScreen() {
             <Text style={styles.label}>Entry Fee</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., Free, $10, $5 per car"
+              placeholder="e.g., Free, $10, $5 per bike"
               placeholderTextColor="#666"
               value={formData.entryFee}
               onChangeText={(text) => setFormData({ ...formData, entryFee: text })}
