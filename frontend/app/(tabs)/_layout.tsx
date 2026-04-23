@@ -89,7 +89,7 @@ const AnimatedImageTabIcon = ({
   return (
     <Animated.View style={animatedStyle}>
       <Image 
-        source={require('../../assets/images/small-bike-icon.png')} 
+        source={require('../../assets/images/menu-bike-icon.png')} 
         style={{ 
           width: size + 4, 
           height: size + 4,
