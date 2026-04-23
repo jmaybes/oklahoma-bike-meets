@@ -920,7 +920,11 @@ export default function ProfileScreen() {
                         }}
                       >
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                          <Ionicons name="bicycle" size={20} color={car.isActive ? '#E31837' : '#666'} />
+                          <Image 
+                            source={require('../../assets/images/small-bike-icon.png')} 
+                            style={{ width: 24, height: 24, opacity: car.isActive ? 1 : 0.5 }}
+                            resizeMode="contain"
+                          />
                           <View style={{ flex: 1 }}>
                             <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>
                               {car.year} {car.make} {car.model}
@@ -950,7 +954,11 @@ export default function ProfileScreen() {
                 <Ionicons name="construct" size={12} color="#fff" />
                 <Text style={styles.nudgeBadgeText}>FIXED & READY</Text>
               </View>
-              <Ionicons name="bicycle" size={56} color="#E31837" />
+              <Image 
+                source={require('../../assets/images/small-bike-icon.png')} 
+                style={{ width: 64, height: 64 }}
+                resizeMode="contain"
+              />
               <Text style={styles.addCarTitle}>Set Up Your Garage!</Text>
               <Text style={styles.addCarSubtitle}>
                 We've fixed the saving issues — your garage will save correctly now. Add your ride with photos, specs, and mods!
@@ -1013,7 +1021,11 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/garage')}>
-            <Ionicons name="bicycle" size={24} color="#4CAF50" />
+            <Image 
+              source={require('../../assets/images/small-bike-icon.png')} 
+              style={{ width: 28, height: 28 }}
+              resizeMode="contain"
+            />
             <Text style={styles.menuItemText}>Browse Public Garages</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
