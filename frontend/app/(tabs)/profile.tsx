@@ -704,7 +704,7 @@ export default function ProfileScreen() {
           end={{ x: 1, y: 0 }}
           style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
         >
-          <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]}>My Garage</Text>
+          <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt-Regular' }]}>My Garage</Text>
           <Text style={styles.headerSubtitle}>Showcase your ride</Text>
         </LinearGradient>
         
@@ -758,7 +758,7 @@ export default function ProfileScreen() {
         >
           <View style={styles.headerRow}>
             <View>
-              <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]}>My Garage</Text>
+              <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt-Regular' }]}>My Garage</Text>
               <Text style={styles.headerSubtitle}>{user?.name}</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>

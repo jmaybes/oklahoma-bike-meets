@@ -5,11 +5,20 @@ import BetaNoticeModal from '../components/BetaNoticeModal';
 import { useEffect, useCallback } from 'react';
 import * as Updates from 'expo-updates';
 import * as SplashScreen from 'expo-splash-screen';
-import { useFonts } from 'expo-font';
+import * as Font from 'expo-font';
 import { Alert, Platform, View } from 'react-native';
+import { useState } from 'react';
 
 // Prevent splash screen from auto-hiding until fonts are loaded
 SplashScreen.preventAutoHideAsync();
+
+// Load fonts globally
+async function loadFonts() {
+  await Font.loadAsync({
+    'RockSalt-Regular': require('../assets/fonts/RockSalt_400Regular.ttf'),
+    'RockSalt_400Regular': require('../assets/fonts/RockSalt_400Regular.ttf'),
+  });
+}
 
 async function checkForUpdates() {
   if (__DEV__) return; // Skip in development
@@ -33,9 +42,14 @@ async function checkForUpdates() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
-    'RockSalt_400Regular': require('../assets/fonts/RockSalt_400Regular.ttf'),
-  });
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [fontError, setFontError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    loadFonts()
+      .then(() => setFontsLoaded(true))
+      .catch((err) => setFontError(err));
+  }, []);
 
   useEffect(() => {
     checkForUpdates();

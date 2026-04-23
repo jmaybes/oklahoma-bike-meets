@@ -552,7 +552,7 @@ export default function UserGarageScreen() {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.5}>
+          <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt-Regular' }]} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.5}>
             {car.ownerNickname || car.ownerName}'s Garage
           </Text>
         </View>

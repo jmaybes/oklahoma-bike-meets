@@ -85,7 +85,7 @@ export default function CreateCrewScreen() {
               <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]}>Create Crew</Text>
+              <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt-Regular' }]}>Create Crew</Text>
               <Text style={styles.headerSubtitle}>Build your squad</Text>
             </View>
             <View style={{ width: 40 }} />

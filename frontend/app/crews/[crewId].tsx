@@ -273,7 +273,7 @@ export default function CrewDetailScreen() {
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt_400Regular' }]} numberOfLines={1}>{crew.name}</Text>
+            <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt-Regular' }]} numberOfLines={1}>{crew.name}</Text>
             <Text style={styles.headerSubtitle}>
               {crew.memberCount} member{crew.memberCount !== 1 ? 's' : ''}
             </Text>
