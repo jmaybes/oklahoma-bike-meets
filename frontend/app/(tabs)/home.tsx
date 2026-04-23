@@ -738,7 +738,7 @@ export default function HomeScreen() {
           style={styles.heroBottomGradient}
         />
         {/* Hero text content with parallax */}
-        <Animated.View style={[styles.heroContent, heroContentStyle, { paddingTop: insets.top + 16 }]}>
+        <Animated.View style={[styles.heroContent, heroContentStyle, { paddingTop: insets.top + 1 }]}>
           <View style={styles.heroBadgeRow}>
             <View style={styles.heroBadge}>
               <Ionicons name="flame" size={14} color="#E31837" />
