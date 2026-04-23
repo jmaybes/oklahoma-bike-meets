@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Platform, View } from 'react-native';
+import { Platform, View, Image } from 'react-native';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useEffect } from 'react';
 
-// Animated Tab Icon Component
+// Animated Tab Icon Component for Ionicons
 const AnimatedTabIcon = ({ 
   name, 
   focused, 
@@ -50,6 +50,52 @@ const AnimatedTabIcon = ({
         name={name as any} 
         size={size + 2} 
         color={focused ? '#E31837' : '#ccc'} 
+      />
+    </Animated.View>
+  );
+};
+
+// Animated Tab Icon Component for Images
+const AnimatedImageTabIcon = ({ 
+  focused, 
+  size 
+}: { 
+  focused: boolean; 
+  size: number;
+}) => {
+  const scale = useSharedValue(1);
+  const translateY = useSharedValue(0);
+
+  useEffect(() => {
+    if (focused) {
+      scale.value = withSequence(
+        withSpring(1.3, { damping: 8, stiffness: 300 }),
+        withSpring(1.15, { damping: 10, stiffness: 200 })
+      );
+      translateY.value = withSpring(-3, { damping: 10, stiffness: 200 });
+    } else {
+      scale.value = withSpring(1, { damping: 15, stiffness: 200 });
+      translateY.value = withSpring(0, { damping: 15, stiffness: 200 });
+    }
+  }, [focused]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: scale.value },
+      { translateY: translateY.value },
+    ],
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <Image 
+        source={require('../../assets/images/small-bike-icon.png')} 
+        style={{ 
+          width: size + 4, 
+          height: size + 4,
+          opacity: focused ? 1 : 0.5,
+        }}
+        resizeMode="contain"
       />
     </Animated.View>
   );
@@ -98,8 +144,7 @@ export default function TabLayout() {
         options={{
           title: 'Events',
           tabBarIcon: ({ focused, size }) => (
-            <AnimatedTabIcon 
-              name={focused ? "bicycle" : "bicycle-outline"} 
+            <AnimatedImageTabIcon 
               focused={focused}
               size={size} 
             />
@@ -150,8 +195,7 @@ export default function TabLayout() {
         options={{
           title: 'Garage',
           tabBarIcon: ({ focused, size }) => (
-            <AnimatedTabIcon 
-              name={focused ? "bicycle" : "bicycle-outline"} 
+            <AnimatedImageTabIcon 
               focused={focused}
               size={size} 
             />
