@@ -243,7 +243,7 @@ export default function RegisterScreen() {
 
               <View style={styles.inputContainer}>
                 <Image 
-                  source={require('../assets/images/small-bike-icon.png')} 
+                  source={require('../../assets/images/small-bike-icon.png')} 
                   style={{ width: 20, height: 20 }}
                   resizeMode="contain"
                 />
