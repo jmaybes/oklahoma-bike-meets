@@ -77,7 +77,7 @@
         "expo-font",
         {
           "fonts": [
-            "./assets/fonts/RockSalt_400Regular.ttf"
+            "./assets/fonts/RockSalt-Regular.ttf"
           ]
         }
       ],

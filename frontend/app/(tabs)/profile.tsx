@@ -26,7 +26,6 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
-import { useFonts, RockSalt_400Regular } from '@expo-google-fonts/rock-salt';
 
 import { API_URL } from '../../utils/api';
 
@@ -64,7 +63,6 @@ interface UserCar {
 export default function ProfileScreen() {
   const { user, isAuthenticated, logout, login } = useAuth();
   const insets = useSafeAreaInsets();
-  const [fontsLoaded] = useFonts({ RockSalt_400Regular });
   const [userCar, setUserCar] = useState<UserCar | null>(null);
   const [userCars, setUserCars] = useState<UserCar[]>([]);
   const [editingCarId, setEditingCarId] = useState<string | null>(null);
@@ -704,7 +702,7 @@ export default function ProfileScreen() {
           end={{ x: 1, y: 0 }}
           style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
         >
-          <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt-Regular' }]}>My Garage</Text>
+          <Text style={[styles.headerTitle, { fontFamily: 'RockSalt-Regular' }]}>My Garage</Text>
           <Text style={styles.headerSubtitle}>Showcase your ride</Text>
         </LinearGradient>
         
@@ -758,7 +756,7 @@ export default function ProfileScreen() {
         >
           <View style={styles.headerRow}>
             <View>
-              <Text style={[styles.headerTitle, fontsLoaded && { fontFamily: 'RockSalt-Regular' }]}>My Garage</Text>
+              <Text style={[styles.headerTitle, { fontFamily: 'RockSalt-Regular' }]}>My Garage</Text>
               <Text style={styles.headerSubtitle}>{user?.name}</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>

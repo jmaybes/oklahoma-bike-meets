@@ -15,8 +15,7 @@ SplashScreen.preventAutoHideAsync();
 // Load fonts globally
 async function loadFonts() {
   await Font.loadAsync({
-    'RockSalt-Regular': require('../assets/fonts/RockSalt_400Regular.ttf'),
-    'RockSalt_400Regular': require('../assets/fonts/RockSalt_400Regular.ttf'),
+    'RockSalt-Regular': require('../assets/fonts/RockSalt-Regular.ttf'),
   });
 }
 
