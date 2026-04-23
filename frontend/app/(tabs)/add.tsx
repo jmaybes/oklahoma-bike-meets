@@ -38,6 +38,7 @@ export default function AddEventScreen() {
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceDay, setRecurrenceDay] = useState<number | null>(null);
   const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
+  const [showEventTypePicker, setShowEventTypePicker] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -55,7 +56,20 @@ export default function AddEventScreen() {
     website: '',
   });
 
-  const eventTypes = ['Bike Meet', 'Bike Show', 'Group Ride', 'Race', 'Pop Up Race', 'Other'];
+  const eventTypes = [
+    'Bike Meet', 
+    'Bike Show', 
+    'Bike Night',
+    'Swap Meet',
+    'Poker Run',
+    'Charity Ride',
+    'Group Ride', 
+    'Rally',
+    'Race', 
+    'Cruise',
+    'Auction',
+    'Other'
+  ];
   
   const daysOfWeek = [
     { label: 'Sunday', value: 0 },
@@ -382,27 +396,61 @@ export default function AddEventScreen() {
             />
 
             <Text style={styles.label}>Event Type</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.typeList}>
-              {eventTypes.map((type) => (
-                <TouchableOpacity
-                  key={type}
-                  style={[
-                    styles.typeChip,
-                    formData.eventType === type && styles.typeChipActive,
-                  ]}
-                  onPress={() => setFormData({ ...formData, eventType: type })}
-                >
-                  <Text
-                    style={[
-                      styles.typeChipText,
-                      formData.eventType === type && styles.typeChipTextActive,
-                    ]}
-                  >
-                    {type}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            <TouchableOpacity 
+              style={styles.dropdownButton}
+              onPress={() => setShowEventTypePicker(true)}
+            >
+              <Text style={styles.dropdownButtonText}>{formData.eventType}</Text>
+              <Ionicons name="chevron-down" size={20} color="#fff" />
+            </TouchableOpacity>
+
+            {/* Event Type Picker Modal */}
+            <Modal
+              visible={showEventTypePicker}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={() => setShowEventTypePicker(false)}
+            >
+              <TouchableOpacity 
+                style={styles.modalOverlay}
+                activeOpacity={1}
+                onPress={() => setShowEventTypePicker(false)}
+              >
+                <View style={styles.pickerModalContent}>
+                  <View style={styles.pickerHeader}>
+                    <Text style={styles.pickerTitle}>Select Event Type</Text>
+                    <TouchableOpacity onPress={() => setShowEventTypePicker(false)}>
+                      <Ionicons name="close" size={24} color="#fff" />
+                    </TouchableOpacity>
+                  </View>
+                  <ScrollView style={styles.pickerList}>
+                    {eventTypes.map((type) => (
+                      <TouchableOpacity
+                        key={type}
+                        style={[
+                          styles.pickerItem,
+                          formData.eventType === type && styles.pickerItemActive,
+                        ]}
+                        onPress={() => {
+                          setFormData({ ...formData, eventType: type });
+                          setShowEventTypePicker(false);
+                        }}
+                      >
+                        <Text style={[
+                          styles.pickerItemText,
+                          formData.eventType === type && styles.pickerItemTextActive,
+                        ]}>
+                          {type}
+                        </Text>
+                        {formData.eventType === type && (
+                          <Ionicons name="checkmark" size={20} color="#E31837" />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              </TouchableOpacity>
+            </Modal>
 
             <View style={styles.row}>
               <View style={styles.halfInput}>
@@ -931,5 +979,65 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 8,
     fontStyle: 'italic',
+  },
+  dropdownButton: {
+    backgroundColor: '#141414',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  dropdownButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'flex-end',
+  },
+  pickerModalContent: {
+    backgroundColor: '#1a1a1a',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '60%',
+    paddingBottom: 40,
+  },
+  pickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  pickerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  pickerList: {
+    padding: 8,
+  },
+  pickerItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginVertical: 4,
+  },
+  pickerItemActive: {
+    backgroundColor: '#252525',
+  },
+  pickerItemText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  pickerItemTextActive: {
+    color: '#E31837',
+    fontWeight: '600',
   },
 });
