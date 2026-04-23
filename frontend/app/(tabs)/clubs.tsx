@@ -325,7 +325,7 @@ export default function ClubsScreen() {
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.headerTitle}>Bike Clubs</Text>
+            <Text style={styles.headerTitle}>Motorcycle Clubs</Text>
             <Text style={styles.headerSubtitle}>{clubs.length} clubs in Oklahoma</Text>
           </View>
           <Ionicons name="people-circle" size={32} color="#fff" />
