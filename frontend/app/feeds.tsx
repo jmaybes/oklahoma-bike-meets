@@ -491,10 +491,10 @@ const BottomNavBar = () => {
   const bottomPadding = Platform.OS === 'ios' ? Math.max(insets.bottom, 4) : Math.max(insets.bottom, 8);
 
   const tabs = [
-    { name: 'Events', icon: 'bicycle-outline', route: '/(tabs)/home' },
+    { name: 'Events', icon: 'calendar-outline', route: '/(tabs)/home' },
     { name: 'Nearby', icon: 'location-outline', route: '/(tabs)/nearby' },
     { name: 'Clubs', icon: 'people-outline', route: '/(tabs)/clubs' },
-    { name: 'Garage', icon: 'bicycle-outline', route: '/(tabs)/profile' },
+    { name: 'Garage', icon: 'settings-outline', route: '/(tabs)/profile' },
   ];
 
   return (
