@@ -22,6 +22,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as Location from 'expo-location';
+import { NotificationBell } from '../../components/NotificationBell';
 
 import { API_URL } from '../../utils/api';
 
@@ -317,7 +318,7 @@ export default function AddEventScreen() {
                   Share a bike event with the community
                 </Text>
               </View>
-              <Ionicons name="add-circle" size={32} color="#fff" />
+              <NotificationBell />
             </View>
           </LinearGradient>
 

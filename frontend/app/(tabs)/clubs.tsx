@@ -28,6 +28,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../../utils/api';
+import { NotificationBell } from '../../components/NotificationBell';
 import { useAuth } from '../../contexts/AuthContext';
 
 import { API_URL } from '../../utils/api';
@@ -328,7 +329,7 @@ export default function ClubsScreen() {
             <Text style={styles.headerTitle}>Motorcycle Clubs</Text>
             <Text style={styles.headerSubtitle}>{clubs.length} clubs in Oklahoma</Text>
           </View>
-          <Ionicons name="people-circle" size={32} color="#fff" />
+          <NotificationBell />
         </View>
       </LinearGradient>
 

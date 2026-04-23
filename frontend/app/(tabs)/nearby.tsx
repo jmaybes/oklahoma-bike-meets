@@ -26,6 +26,7 @@ import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import MapErrorBoundary from '../../components/MapErrorBoundary';
 import { BikeIcon } from '../../components/BikeIcon';
+import { NotificationBell } from '../../components/NotificationBell';
 
 // Lazy-load NearbyMapView to prevent crashes on import
 let NearbyMapView: React.ComponentType<any> | null = null;
@@ -424,7 +425,7 @@ export default function NearbyScreen() {
         >
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Nearby Enthusiasts</Text>
-            <Ionicons name="location" size={28} color="#fff" />
+            <NotificationBell />
           </View>
         </LinearGradient>
         <View style={styles.centerContainer}>
@@ -464,6 +465,7 @@ export default function NearbyScreen() {
             <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 8, marginTop: 2 }}>{API_URL}</Text>
           </View>
           <View style={styles.headerActions}>
+            <NotificationBell />
             {nearbyUsers.length > 0 && (
               <TouchableOpacity
                 style={[styles.headerBtn, selectionMode && styles.headerBtnActive]}
