@@ -502,7 +502,7 @@ export default function HomeScreen() {
 
   // ===== DROPPING TEXT (Cycling Words) COMPONENT =====
   const DroppingText = () => {
-    const words = ['Meets', 'Shows', 'Cruises', 'Races', '& MORE!'];
+    const words = ['Meets', 'Swap Meets', 'Cruises', 'Races', '& MORE!'];
     const [activeIndex, setActiveIndex] = useState(0);
     const opacity = useSharedValue(0);
     const translateY = useSharedValue(-20);
@@ -905,31 +905,31 @@ export default function HomeScreen() {
             )}
           </TouchableOpacity>
 
-          {/* Shows */}
+          {/* Swap Meets */}
           <TouchableOpacity
             style={[
               styles.sortDropdownItem,
-              selectedType === 'Bike Show' && styles.sortDropdownItemActive,
+              selectedType === 'Swap Meet' && styles.sortDropdownItemActive,
             ]}
             onPress={() => {
-              setSelectedType(selectedType === 'Bike Show' ? 'All' : 'Bike Show');
+              setSelectedType(selectedType === 'Swap Meet' ? 'All' : 'Swap Meet');
               setShowSortMenu(false);
             }}
           >
             <Ionicons
-              name="trophy"
+              name="swap-horizontal"
               size={18}
-              color={selectedType === 'Bike Show' ? '#E31837' : '#999'}
+              color={selectedType === 'Swap Meet' ? '#E31837' : '#999'}
             />
             <Text
               style={[
                 styles.sortDropdownText,
-                selectedType === 'Bike Show' && styles.sortDropdownTextActive,
+                selectedType === 'Swap Meet' && styles.sortDropdownTextActive,
               ]}
             >
-              Shows
+              Swap Meets
             </Text>
-            {selectedType === 'Bike Show' && (
+            {selectedType === 'Swap Meet' && (
               <Ionicons name="checkmark" size={18} color="#E31837" style={{ marginLeft: 'auto' }} />
             )}
           </TouchableOpacity>
