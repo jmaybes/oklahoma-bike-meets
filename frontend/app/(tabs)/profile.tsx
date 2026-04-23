@@ -1446,25 +1446,6 @@ export default function ProfileScreen() {
                 </View>
               </View>
 
-              <Text style={styles.modalLabel}>Drivetrain</Text>
-              <View style={styles.drivetrainOptions}>
-                {['RWD', 'FWD', 'AWD', '4WD'].map((dt) => (
-                  <TouchableOpacity
-                    key={dt}
-                    style={[
-                      styles.drivetrainButton,
-                      carForm.drivetrain === dt && styles.drivetrainButtonActive
-                    ]}
-                    onPress={() => setCarForm({ ...carForm, drivetrain: dt })}
-                  >
-                    <Text style={[
-                      styles.drivetrainText,
-                      carForm.drivetrain === dt && styles.drivetrainTextActive
-                    ]}>{dt}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
               {/* Modifications */}
               <Text style={[styles.modalSectionTitle, { marginTop: 24 }]}>Modifications</Text>
 

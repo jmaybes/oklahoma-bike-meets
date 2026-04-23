@@ -502,7 +502,7 @@ export default function HomeScreen() {
 
   // ===== DROPPING TEXT (Cycling Words) COMPONENT =====
   const DroppingText = () => {
-    const words = ['Meets', 'Swap Meets', 'Cruises', 'Races', '& MORE!'];
+    const words = ['Events', 'Swap Meets', 'Cruises', 'Races', '& MORE!'];
     const [activeIndex, setActiveIndex] = useState(0);
     const opacity = useSharedValue(0);
     const translateY = useSharedValue(-20);
