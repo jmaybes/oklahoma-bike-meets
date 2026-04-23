@@ -238,7 +238,7 @@ export default function PastEventsScreen() {
                     style={styles.uploadPhotosButton}
                     onPress={() => router.push(`/event/${item.id}/gallery`)}
                   >
-                    <Ionicons name="camera" size={18} color="#4CAF50" />
+                    <Ionicons name="camera" size={18} color="#EFFF00" />
                     <Text style={styles.uploadPhotosText}>Upload Photos</Text>
                   </TouchableOpacity>
                 )}
@@ -504,13 +504,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(76, 175, 80, 0.15)',
+    backgroundColor: 'rgba(239, 255, 0, 0.15)',
     paddingVertical: 10,
     borderRadius: 10,
     gap: 6,
   },
   uploadPhotosText: {
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontSize: 13,
     fontWeight: '600',
   },

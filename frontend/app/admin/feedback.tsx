@@ -39,7 +39,7 @@ interface Feedback {
 const statusColors: Record<string, string> = {
   new: '#E31837',
   in_progress: '#2196F3',
-  resolved: '#4CAF50',
+  resolved: '#EFFF00',
   closed: '#888',
 };
 
@@ -212,8 +212,8 @@ export default function AdminFeedbackScreen() {
           <Text style={[styles.statNumber, { color: '#2196F3' }]}>{stats.inProgress}</Text>
           <Text style={styles.statLabel}>In Progress</Text>
         </View>
-        <View style={[styles.statCard, { borderColor: '#4CAF50' }]}>
-          <Text style={[styles.statNumber, { color: '#4CAF50' }]}>{stats.resolved}</Text>
+        <View style={[styles.statCard, { borderColor: '#EFFF00' }]}>
+          <Text style={[styles.statNumber, { color: '#EFFF00' }]}>{stats.resolved}</Text>
           <Text style={styles.statLabel}>Resolved</Text>
         </View>
       </View>
@@ -297,7 +297,7 @@ export default function AdminFeedbackScreen() {
 
                 {feedback.adminResponse && (
                   <View style={styles.responseIndicator}>
-                    <Ionicons name="chatbubble-ellipses" size={14} color="#4CAF50" />
+                    <Ionicons name="chatbubble-ellipses" size={14} color="#EFFF00" />
                     <Text style={styles.responseIndicatorText}>Response sent</Text>
                   </View>
                 )}
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   },
   responseIndicatorText: {
     fontSize: 12,
-    color: '#4CAF50',
+    color: '#EFFF00',
   },
   errorContainer: {
     flex: 1,
@@ -720,7 +720,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderLeftWidth: 3,
-    borderLeftColor: '#4CAF50',
+    borderLeftColor: '#EFFF00',
   },
   existingResponseText: {
     color: '#aaa',
@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sendButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',

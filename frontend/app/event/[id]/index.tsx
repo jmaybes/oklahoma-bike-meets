@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   rsvpButtonActive: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
   },
   rsvpButtonText: {
     color: '#fff',

@@ -263,15 +263,15 @@ export default function AccountSettingsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <View style={[styles.modalIconContainer, { backgroundColor: 'rgba(76, 175, 80, 0.15)' }]}>
-              <Ionicons name="checkmark-circle" size={56} color="#4CAF50" />
+            <View style={[styles.modalIconContainer, { backgroundColor: 'rgba(239, 255, 0, 0.15)' }]}>
+              <Ionicons name="checkmark-circle" size={56} color="#EFFF00" />
             </View>
             <Text style={styles.modalTitle}>Account Deleted</Text>
             <Text style={styles.modalMessage}>
               Your account and all associated data have been permanently removed. We're sorry to see you go! If you ever want to return, you're always welcome to create a new account.
             </Text>
             <TouchableOpacity
-              style={[styles.modalDeleteButton, { backgroundColor: '#4CAF50' }]}
+              style={[styles.modalDeleteButton, { backgroundColor: '#EFFF00' }]}
               onPress={handleSuccessDismiss}
             >
               <Text style={styles.modalDeleteText}>OK</Text>

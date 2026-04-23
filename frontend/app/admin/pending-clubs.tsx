@@ -230,7 +230,7 @@ export default function AdminPendingClubsScreen() {
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="checkmark-done-circle" size={64} color="#4CAF50" />
+            <Ionicons name="checkmark-done-circle" size={64} color="#EFFF00" />
             <Text style={styles.emptyText}>All caught up!</Text>
             <Text style={styles.emptySubtext}>No clubs pending approval</Text>
           </View>
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF3B30',
   },
   approveButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
   },
   actionButtonText: {
     color: '#fff',

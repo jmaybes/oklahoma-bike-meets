@@ -268,7 +268,7 @@ export default function EventSearchScreen() {
           disabled={searching}
         >
           <LinearGradient
-            colors={['#4CAF50', '#45a049']}
+            colors={['#EFFF00', '#45a049']}
             style={styles.searchButtonGradient}
           >
             {searching ? (
@@ -292,7 +292,7 @@ export default function EventSearchScreen() {
                 <Text style={styles.statLabel}>Found</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={[styles.statNumber, { color: '#4CAF50' }]}>
+                <Text style={[styles.statNumber, { color: '#EFFF00' }]}>
                   {lastSearchStats.events_imported}
                 </Text>
                 <Text style={styles.statLabel}>Imported</Text>
@@ -329,7 +329,7 @@ export default function EventSearchScreen() {
           </View>
         ) : pendingEvents.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="checkmark-circle" size={48} color="#4CAF50" />
+            <Ionicons name="checkmark-circle" size={48} color="#EFFF00" />
             <Text style={styles.emptyText}>No events pending approval</Text>
             <Text style={styles.emptySubtext}>
               Run a search to discover new events
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   approveAllButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
   recurringBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   approveButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
   },
   rejectButton: {
     backgroundColor: '#FF3B30',

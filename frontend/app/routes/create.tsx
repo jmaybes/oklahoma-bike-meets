@@ -298,7 +298,7 @@ export default function CreateRouteScreen() {
                 styles.difficultyButton,
                 form.difficulty === level && styles.difficultyButtonActive,
                 form.difficulty === level && {
-                  backgroundColor: level === 'easy' ? '#4CAF50' : level === 'moderate' ? '#FFC107' : '#F44336'
+                  backgroundColor: level === 'easy' ? '#EFFF00' : level === 'moderate' ? '#FFC107' : '#F44336'
                 }
               ]}
               onPress={() => setForm({ ...form, difficulty: level })}
@@ -349,7 +349,7 @@ export default function CreateRouteScreen() {
             <Ionicons 
               name={form.isPublic ? "globe-outline" : "lock-closed-outline"} 
               size={24} 
-              color={form.isPublic ? "#4CAF50" : "#FFC107"} 
+              color={form.isPublic ? "#EFFF00" : "#FFC107"} 
             />
             <View>
               <Text style={styles.toggleTitle}>
@@ -618,7 +618,7 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   toggleSwitchActive: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
   },
   toggleKnob: {
     width: 24,

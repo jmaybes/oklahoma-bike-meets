@@ -21,7 +21,7 @@ export default function NearbyMapView({ location, radius }: NearbyMapViewProps) 
           {location ? `${location.latitude.toFixed(4)}°N, ${Math.abs(location.longitude).toFixed(4)}°W` : 'Loading...'}
         </Text>
         <View style={styles.mapPlaceholderRadius}>
-          <Ionicons name="radio-button-on" size={16} color="#4CAF50" />
+          <Ionicons name="radio-button-on" size={16} color="#EFFF00" />
           <Text style={styles.mapPlaceholderRadiusText}>
             Searching within {radius} miles
           </Text>
@@ -66,13 +66,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginTop: 16,
-    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+    backgroundColor: 'rgba(239, 255, 0, 0.2)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
   },
   mapPlaceholderRadiusText: {
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontSize: 13,
   },
   mapPlaceholderNote: {

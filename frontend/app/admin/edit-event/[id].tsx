@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#333',
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

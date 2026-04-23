@@ -250,7 +250,7 @@ export default function BrowseGaragesScreen() {
             ) : null}
             {car.modifications && car.modifications.length > 0 ? (
               <View style={styles.specChip}>
-                <Ionicons name="build" size={12} color="#4CAF50" />
+                <Ionicons name="build" size={12} color="#EFFF00" />
                 <Text style={styles.specChipText}>{car.modifications.length} mods</Text>
               </View>
             ) : null}

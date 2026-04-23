@@ -143,7 +143,7 @@ export default function MyRunsScreen() {
             )}
             {item.isManualEntry && (
               <View style={styles.manualTag}>
-                <Ionicons name="create" size={10} color="#4CAF50" />
+                <Ionicons name="create" size={10} color="#EFFF00" />
                 <Text style={styles.manualTagText}>Manual</Text>
               </View>
             )}
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
   manualTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(76,175,80,0.15)',
+    backgroundColor: 'rgba(239,255,0,0.15)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   manualTagText: {
     fontSize: 9,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#EFFF00',
   },
   carInfo: {
     fontSize: 12,

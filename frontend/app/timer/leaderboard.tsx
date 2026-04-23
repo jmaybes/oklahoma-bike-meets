@@ -345,7 +345,7 @@ export default function LeaderboardScreen() {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Ionicons name="flash" size={20} color="#4CAF50" />
+            <Ionicons name="flash" size={20} color="#EFFF00" />
             <Text style={styles.statValue}>
               {leaderboard[0]?.time.toFixed(2)}s
             </Text>

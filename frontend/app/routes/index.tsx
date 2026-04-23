@@ -36,7 +36,7 @@ interface Route {
 }
 
 const difficultyColors: { [key: string]: string } = {
-  easy: '#4CAF50',
+  easy: '#EFFF00',
   moderate: '#FFC107',
   challenging: '#F44336',
 };

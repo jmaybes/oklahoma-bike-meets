@@ -271,7 +271,7 @@ export default function NearbyMapView({
       
       {/* Radius info */}
       <View style={styles.radiusInfoBadge}>
-        <Ionicons name="radio-button-on" size={14} color="#4CAF50" />
+        <Ionicons name="radio-button-on" size={14} color="#EFFF00" />
         <Text style={styles.radiusInfoText}>{radius} mi radius</Text>
       </View>
     </View>
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   nearbyUserMarker: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     width: 32,
     height: 32,
     borderRadius: 16,

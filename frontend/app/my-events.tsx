@@ -187,7 +187,7 @@ export default function MyEventsScreen() {
 
   const getStatusBadge = (event: MyEvent) => {
     if (event.isApproved) {
-      return { label: 'Approved', color: '#4CAF50', bg: 'rgba(76,175,80,0.15)' };
+      return { label: 'Approved', color: '#EFFF00', bg: 'rgba(239,255,0,0.15)' };
     }
     return { label: 'Pending', color: '#FFC107', bg: 'rgba(255,193,7,0.15)' };
   };

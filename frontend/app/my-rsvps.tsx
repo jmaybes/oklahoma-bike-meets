@@ -190,7 +190,7 @@ export default function MyRSVPsScreen() {
                 )}
                 {upcoming && (
                   <View style={styles.goingBadge}>
-                    <Ionicons name="checkmark-circle" size={14} color="#4CAF50" />
+                    <Ionicons name="checkmark-circle" size={14} color="#EFFF00" />
                     <Text style={styles.goingBadgeText}>Going</Text>
                   </View>
                 )}
@@ -423,14 +423,14 @@ const styles = StyleSheet.create({
   goingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(76, 175, 80, 0.15)',
+    backgroundColor: 'rgba(239, 255, 0, 0.15)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
     gap: 4,
   },
   goingBadgeText: {
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontSize: 12,
     fontWeight: '600',
   },

@@ -30,7 +30,7 @@ interface Feedback {
 const statusColors: { [key: string]: string } = {
   new: '#2196F3',
   in_progress: '#FFC107',
-  resolved: '#4CAF50',
+  resolved: '#EFFF00',
   closed: '#666',
 };
 

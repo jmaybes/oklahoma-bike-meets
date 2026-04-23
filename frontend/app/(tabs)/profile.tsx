@@ -863,7 +863,7 @@ export default function ProfileScreen() {
                 )}
                 {userCar.modificationNotes && (
                   <View style={styles.carDetailRow}>
-                    <Ionicons name="build" size={16} color="#4CAF50" />
+                    <Ionicons name="build" size={16} color="#EFFF00" />
                     <Text style={styles.carDetailText}>{userCar.modificationNotes}</Text>
                   </View>
                 )}
@@ -978,7 +978,7 @@ export default function ProfileScreen() {
             <Text style={styles.sectionHeaderText}>Events & RSVPs</Text>
           </View>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/my-rsvps')}>
-            <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+            <Ionicons name="checkmark-circle" size={24} color="#EFFF00" />
             <Text style={styles.menuItemText}>My RSVPs</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
@@ -1093,7 +1093,7 @@ export default function ProfileScreen() {
               style={[styles.menuItem, styles.adminMenuItem]} 
               onPress={() => router.push('/admin/event-search')}
             >
-              <Ionicons name="search" size={24} color="#4CAF50" />
+              <Ionicons name="search" size={24} color="#EFFF00" />
               <Text style={styles.menuItemText}>Event Search</Text>
               <Ionicons name="chevron-forward" size={24} color="#666" />
             </TouchableOpacity>
@@ -1131,22 +1131,22 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           <View style={styles.menuItem}>
-            <Ionicons name="notifications" size={24} color={user?.notificationsEnabled !== false ? '#4CAF50' : '#F44336'} />
+            <Ionicons name="notifications" size={24} color={user?.notificationsEnabled !== false ? '#EFFF00' : '#F44336'} />
             <Text style={styles.menuItemText}>Notifications</Text>
             <Switch
               value={user?.notificationsEnabled !== false}
               onValueChange={handleNotificationToggle}
-              trackColor={{ false: '#F44336', true: '#4CAF50' }}
+              trackColor={{ false: '#F44336', true: '#EFFF00' }}
               thumbColor="#fff"
             />
           </View>
           <View style={styles.menuItem}>
-            <Ionicons name="location" size={24} color={user?.locationSharingEnabled !== false ? '#4CAF50' : '#F44336'} />
+            <Ionicons name="location" size={24} color={user?.locationSharingEnabled !== false ? '#EFFF00' : '#F44336'} />
             <Text style={styles.menuItemText}>Location Sharing</Text>
             <Switch
               value={user?.locationSharingEnabled !== false}
               onValueChange={handleLocationToggle}
-              trackColor={{ false: '#F44336', true: '#4CAF50' }}
+              trackColor={{ false: '#F44336', true: '#EFFF00' }}
               thumbColor="#fff"
             />
           </View>
@@ -1200,7 +1200,7 @@ export default function ProfileScreen() {
             style={styles.menuItem} 
             onPress={() => router.push('/routes')}
           >
-            <Ionicons name="navigate" size={24} color="#4CAF50" />
+            <Ionicons name="navigate" size={24} color="#EFFF00" />
             <Text style={styles.menuItemText}>My Scenic Routes</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </TouchableOpacity>
@@ -1230,21 +1230,21 @@ export default function ProfileScreen() {
           </View>
           <View style={[
             styles.visibilityToggleCard,
-            { borderColor: garagePublic ? '#4CAF50' : '#FF5252', borderWidth: 1.5 }
+            { borderColor: garagePublic ? '#EFFF00' : '#FF5252', borderWidth: 1.5 }
           ]}>
             <View style={styles.visibilityStatusRow}>
               <View style={[
                 styles.visibilityBadge,
-                { backgroundColor: garagePublic ? 'rgba(76,175,80,0.15)' : 'rgba(255,82,82,0.15)' }
+                { backgroundColor: garagePublic ? 'rgba(239,255,0,0.15)' : 'rgba(255,82,82,0.15)' }
               ]}>
                 <Ionicons 
                   name={garagePublic ? "globe-outline" : "lock-closed"} 
                   size={20} 
-                  color={garagePublic ? "#4CAF50" : "#FF5252"} 
+                  color={garagePublic ? "#EFFF00" : "#FF5252"} 
                 />
                 <Text style={[
                   styles.visibilityBadgeText,
-                  { color: garagePublic ? '#4CAF50' : '#FF5252' }
+                  { color: garagePublic ? '#EFFF00' : '#FF5252' }
                 ]}>
                   {garagePublic ? 'PUBLIC' : 'PRIVATE'}
                 </Text>
@@ -1252,7 +1252,7 @@ export default function ProfileScreen() {
               <Switch
                 value={garagePublic}
                 onValueChange={toggleGaragePublic}
-                trackColor={{ false: '#FF5252', true: '#4CAF50' }}
+                trackColor={{ false: '#FF5252', true: '#EFFF00' }}
                 thumbColor="#fff"
               />
             </View>
@@ -1603,21 +1603,21 @@ export default function ProfileScreen() {
 
               <View style={[
                 styles.publicToggleContainer,
-                { borderColor: garagePublic ? '#4CAF50' : '#FF5252', borderWidth: 1.5 }
+                { borderColor: garagePublic ? '#EFFF00' : '#FF5252', borderWidth: 1.5 }
               ]}>
                 <View style={styles.publicToggleInfo}>
                   <View style={[
                     styles.visibilityBadge,
-                    { backgroundColor: garagePublic ? 'rgba(76,175,80,0.15)' : 'rgba(255,82,82,0.15)' }
+                    { backgroundColor: garagePublic ? 'rgba(239,255,0,0.15)' : 'rgba(255,82,82,0.15)' }
                   ]}>
                     <Ionicons 
                       name={garagePublic ? "globe-outline" : "lock-closed"} 
                       size={18} 
-                      color={garagePublic ? "#4CAF50" : "#FF5252"} 
+                      color={garagePublic ? "#EFFF00" : "#FF5252"} 
                     />
                     <Text style={[
                       styles.visibilityBadgeText,
-                      { color: garagePublic ? '#4CAF50' : '#FF5252' }
+                      { color: garagePublic ? '#EFFF00' : '#FF5252' }
                     ]}>
                       {garagePublic ? 'PUBLIC' : 'PRIVATE'}
                     </Text>
@@ -1631,7 +1631,7 @@ export default function ProfileScreen() {
                 <Switch
                   value={garagePublic}
                   onValueChange={setGaragePublic}
-                  trackColor={{ false: '#FF5252', true: '#4CAF50' }}
+                  trackColor={{ false: '#FF5252', true: '#EFFF00' }}
                   thumbColor="#fff"
                 />
               </View>
@@ -2248,7 +2248,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 12,

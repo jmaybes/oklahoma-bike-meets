@@ -44,7 +44,7 @@ interface Route {
 }
 
 const difficultyColors: { [key: string]: string } = {
-  easy: '#4CAF50',
+  easy: '#EFFF00',
   moderate: '#FFC107',
   challenging: '#F44336',
 };
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     padding: 16,
     borderRadius: 12,
     gap: 8,

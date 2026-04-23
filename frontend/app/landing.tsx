@@ -99,7 +99,7 @@ export default function LandingScreen() {
       icon: 'location',
       title: 'Location Sharing',
       description: 'Find bike meets and cruises near you',
-      color: '#4CAF50',
+      color: '#EFFF00',
     },
     {
       icon: 'heart',

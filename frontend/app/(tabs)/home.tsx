@@ -643,7 +643,7 @@ export default function HomeScreen() {
                 <View style={styles.eventBadges}>
                   {item.distance !== undefined && (
                     <View style={styles.distanceBadge}>
-                      <Ionicons name="navigate" size={12} color="#4CAF50" />
+                      <Ionicons name="navigate" size={12} color="#EFFF00" />
                       <Text style={styles.distanceText}>{item.distance.toFixed(1)} mi</Text>
                     </View>
                   )}
@@ -1008,18 +1008,18 @@ export default function HomeScreen() {
             <Ionicons
               name={freeOnly ? 'checkmark-circle' : 'pricetag-outline'}
               size={18}
-              color={freeOnly ? '#4CAF50' : '#999'}
+              color={freeOnly ? '#EFFF00' : '#999'}
             />
             <Text
               style={[
                 styles.sortDropdownText,
-                freeOnly && { color: '#4CAF50', fontWeight: '600' },
+                freeOnly && { color: '#EFFF00', fontWeight: '600' },
               ]}
             >
               No Cost
             </Text>
             {freeOnly && (
-              <Ionicons name="checkmark" size={18} color="#4CAF50" style={{ marginLeft: 'auto' }} />
+              <Ionicons name="checkmark" size={18} color="#EFFF00" style={{ marginLeft: 'auto' }} />
             )}
           </TouchableOpacity>
 
@@ -1476,12 +1476,12 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   entryFee: {
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontSize: 12,
     fontWeight: '600',
   },
   freeBadge: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     color: '#fff',
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -1496,14 +1496,14 @@ const styles = StyleSheet.create({
   distanceBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+    backgroundColor: 'rgba(239, 255, 0, 0.2)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
     gap: 4,
   },
   distanceText: {
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontSize: 11,
     fontWeight: '600',
   },

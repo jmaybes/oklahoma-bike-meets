@@ -86,7 +86,7 @@ interface GarageComment {
 const modCategories: { [key: string]: { icon: string; color: string } } = {
   Engine: { icon: 'flash', color: '#F44336' },
   Suspension: { icon: 'git-merge', color: '#2196F3' },
-  Exterior: { icon: 'bicycle', color: '#4CAF50' },
+  Exterior: { icon: 'bicycle', color: '#EFFF00' },
   Interior: { icon: 'apps', color: '#9C27B0' },
   Wheels: { icon: 'ellipse', color: '#FF9800' },
   Exhaust: { icon: 'volume-high', color: '#795548' },
@@ -548,7 +548,7 @@ export default function GarageDetailScreen() {
           )}
           {car.modifications && car.modifications.length > 0 && (
             <View style={styles.statCard}>
-              <Ionicons name="build" size={24} color="#4CAF50" />
+              <Ionicons name="build" size={24} color="#EFFF00" />
               <Text style={styles.statValue}>{car.modifications.length}</Text>
               <Text style={styles.statLabel}>Mods</Text>
             </View>
@@ -1306,7 +1306,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     alignItems: 'center',
     justifyContent: 'center',
   },

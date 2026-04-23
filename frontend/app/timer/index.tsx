@@ -477,7 +477,7 @@ export default function TimerScreen() {
   const formatTime = (seconds: number) => seconds.toFixed(2);
 
   const getSpeedColor = () => {
-    if (currentSpeed < 30) return '#4CAF50';
+    if (currentSpeed < 30) return '#EFFF00';
     if (currentSpeed < 60) return '#FF9800';
     if (currentSpeed < 100) return '#E31837';
     return '#E31837';
@@ -707,7 +707,7 @@ export default function TimerScreen() {
                   styles.distanceBarFill,
                   {
                     width: `${Math.min((distanceCovered / QUARTER_MILE_METERS) * 100, 100)}%`,
-                    backgroundColor: distanceCovered >= QUARTER_MILE_METERS ? '#4CAF50' : '#9C27B0',
+                    backgroundColor: distanceCovered >= QUARTER_MILE_METERS ? '#EFFF00' : '#9C27B0',
                   },
                 ]}
               />
@@ -762,7 +762,7 @@ export default function TimerScreen() {
           <Ionicons
             name={locationPermission ? 'navigate' : 'navigate-outline'}
             size={14}
-            color={gpsAccuracy && gpsAccuracy < 10 ? '#4CAF50' : gpsAccuracy ? '#FF9800' : '#888'}
+            color={gpsAccuracy && gpsAccuracy < 10 ? '#EFFF00' : gpsAccuracy ? '#FF9800' : '#888'}
           />
           <Text style={styles.gpsText}>
             GPS: {gpsAccuracy ? `±${gpsAccuracy.toFixed(0)}m` : 'Waiting...'}
@@ -781,7 +781,7 @@ export default function TimerScreen() {
               disabled={!locationPermission}
             >
               <LinearGradient
-                colors={locationPermission ? ['#4CAF50', '#2E7D32'] : ['#555', '#333']}
+                colors={locationPermission ? ['#EFFF00', '#2E7D32'] : ['#555', '#333']}
                 style={styles.buttonGradient}
               >
                 <Ionicons name="play" size={30} color="#fff" />
@@ -839,7 +839,7 @@ export default function TimerScreen() {
             style={styles.actionButton}
             onPress={() => setShowManualEntry(true)}
           >
-            <Ionicons name="create" size={22} color="#4CAF50" />
+            <Ionicons name="create" size={22} color="#EFFF00" />
             <Text style={styles.actionButtonText}>Manual</Text>
           </TouchableOpacity>
         </View>
@@ -902,7 +902,7 @@ export default function TimerScreen() {
                   })();
               }}
             >
-              <Ionicons name="add-circle-outline" size={20} color="#4CAF50" />
+              <Ionicons name="add-circle-outline" size={20} color="#EFFF00" />
               <Text style={styles.carCustomBtnText}>Enter Custom Car</Text>
             </TouchableOpacity>
           </View>
@@ -1178,7 +1178,7 @@ const styles = StyleSheet.create({
   waitingText: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#EFFF00',
   },
   waitingSubtext: {
     fontSize: 13,
@@ -1294,7 +1294,7 @@ const styles = StyleSheet.create({
   },
   pbDeltaText: {
     fontSize: 12,
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontWeight: '600',
   },
   // Run stats
@@ -1493,7 +1493,7 @@ const styles = StyleSheet.create({
   },
   carCustomBtnText: {
     fontSize: 14,
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontWeight: '600',
   },
   // Manual entry form
@@ -1535,7 +1535,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     paddingVertical: 16,
     borderRadius: 12,
     marginTop: 20,

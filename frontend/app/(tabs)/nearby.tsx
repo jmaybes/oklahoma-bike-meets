@@ -509,7 +509,7 @@ export default function NearbyScreen() {
             <Ionicons
               name={locationPrivate ? "eye-off" : "eye"}
               size={20}
-              color={locationPrivate ? "#888" : "#4CAF50"}
+              color={locationPrivate ? "#888" : "#EFFF00"}
             />
             <Text style={styles.privacyText}>
               {locationPrivate ? "Hidden from map" : "Visible to others"}
@@ -518,7 +518,7 @@ export default function NearbyScreen() {
           <Switch
             value={!locationPrivate}
             onValueChange={(value) => togglePrivacy(!value)}
-            trackColor={{ false: '#444', true: '#4CAF50' }}
+            trackColor={{ false: '#444', true: '#EFFF00' }}
             thumbColor="#fff"
           />
         </View>
@@ -886,7 +886,7 @@ export default function NearbyScreen() {
             {popupStep === 2 && (
               <View style={styles.stepContent}>
                 <View style={styles.stepIconContainer}>
-                  <Ionicons name="location" size={48} color="#4CAF50" />
+                  <Ionicons name="location" size={48} color="#EFFF00" />
                 </View>
                 <Text style={styles.stepQuestion}>
                   Would you like to share your precise location as the pop-up event location?
@@ -963,7 +963,7 @@ export default function NearbyScreen() {
                     </Text>
                     {wantsLocationShare && (
                       <View style={styles.previewLocationTag}>
-                        <Ionicons name="location" size={14} color="#4CAF50" />
+                        <Ionicons name="location" size={14} color="#EFFF00" />
                         <Text style={styles.previewLocationText}>
                           Live location shared for {locationDuration} min
                         </Text>
@@ -995,7 +995,7 @@ export default function NearbyScreen() {
                   </View>
                   {wantsLocationShare && (
                     <View style={styles.summaryRow}>
-                      <Ionicons name="location" size={16} color="#4CAF50" />
+                      <Ionicons name="location" size={16} color="#EFFF00" />
                       <Text style={styles.summaryText}>Location shared for {locationDuration} min</Text>
                     </View>
                   )}
@@ -1577,8 +1577,8 @@ const styles = StyleSheet.create({
     borderColor: '#2a2a2a',
   },
   durationChipActive: {
-    borderColor: '#4CAF50',
-    backgroundColor: 'rgba(76,175,80,0.15)',
+    borderColor: '#EFFF00',
+    backgroundColor: 'rgba(239,255,0,0.15)',
   },
   durationChipText: {
     color: '#888',
@@ -1586,7 +1586,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   durationChipTextActive: {
-    color: '#4CAF50',
+    color: '#EFFF00',
   },
 
   // Step 3 - Compose
@@ -1624,14 +1624,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginTop: 8,
-    backgroundColor: 'rgba(76,175,80,0.12)',
+    backgroundColor: 'rgba(239,255,0,0.12)',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
     alignSelf: 'flex-start',
   },
   previewLocationText: {
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontSize: 13,
     fontWeight: '600',
   },

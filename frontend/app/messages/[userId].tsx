@@ -410,7 +410,7 @@ export default function ChatScreen() {
                         Tap to open in Maps • {Math.round((locShare.remainingSeconds || 0) / 60)} min left
                       </Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={20} color="#4CAF50" />
+                    <Ionicons name="chevron-forward" size={20} color="#EFFF00" />
                   </TouchableOpacity>
                 ) : locationExpired ? (
                   <View style={styles.locationExpired}>
@@ -712,7 +712,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     borderWidth: 2,
     borderColor: '#1976D2',
   },
@@ -740,7 +740,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   connectedDot: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
   },
   connectingDot: {
     backgroundColor: '#FFC107',
@@ -854,17 +854,17 @@ const styles = StyleSheet.create({
   locationButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(76, 175, 80, 0.12)',
+    backgroundColor: 'rgba(239, 255, 0, 0.12)',
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: 'rgba(76, 175, 80, 0.3)',
+    borderColor: 'rgba(239, 255, 0, 0.3)',
   },
   locationButtonIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -873,7 +873,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   locationButtonTitle: {
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontSize: 15,
     fontWeight: '700',
   },
@@ -932,7 +932,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   rsvpAttendButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
   },
   rsvpDeclineButton: {
     backgroundColor: '#666',
@@ -957,7 +957,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   rsvpAttendingBadge: {
-    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+    backgroundColor: 'rgba(239, 255, 0, 0.2)',
   },
   rsvpDeclinedBadge: {
     backgroundColor: 'rgba(244, 67, 54, 0.15)',

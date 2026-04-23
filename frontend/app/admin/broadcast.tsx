@@ -110,7 +110,7 @@ export default function BroadcastScreen() {
           {/* Result Card */}
           {result && (
             <View style={styles.resultCard}>
-              <Ionicons name="checkmark-circle" size={28} color="#4CAF50" />
+              <Ionicons name="checkmark-circle" size={28} color="#EFFF00" />
               <View style={{ flex: 1 }}>
                 <Text style={styles.resultTitle}>Broadcast Complete</Text>
                 <Text style={styles.resultDetail}>
@@ -227,10 +227,10 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#4CAF5040',
+    borderColor: '#EFFF0040',
   },
   resultTitle: {
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 4,

@@ -569,7 +569,7 @@ interface SuccessCheckProps {
 export const SuccessCheck: React.FC<SuccessCheckProps> = ({
   visible,
   size = 60,
-  color = '#4CAF50',
+  color = '#EFFF00',
 }) => {
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);

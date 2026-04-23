@@ -174,7 +174,7 @@ export default function BetaNoticeModal() {
                 {/* Privacy Notice */}
                 <View style={styles.privacyBox}>
                   <View style={styles.privacyHeader}>
-                    <Ionicons name="shield-checkmark" size={18} color="#4CAF50" />
+                    <Ionicons name="shield-checkmark" size={18} color="#EFFF00" />
                     <Text style={styles.privacyTitle}>Your Privacy Matters!</Text>
                   </View>
                   <Text style={styles.privacyText}>

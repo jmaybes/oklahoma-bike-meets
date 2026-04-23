@@ -1374,7 +1374,7 @@ const carPickerStyles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     left: 4,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 6,

@@ -300,7 +300,7 @@ export default function GoogleCallbackScreen() {
                 Signed in with {authProvider === 'apple' ? 'Apple' : 'Google'}
               </Text>
             </View>
-            <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+            <Ionicons name="checkmark-circle" size={24} color="#EFFF00" />
           </View>
 
           {/* Username Input */}
@@ -321,7 +321,7 @@ export default function GoogleCallbackScreen() {
               {checkingNickname ? (
                 <ActivityIndicator size="small" color="#E31837" />
               ) : nickname.length >= 3 && !nicknameError ? (
-                <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+                <Ionicons name="checkmark-circle" size={24} color="#EFFF00" />
               ) : null}
             </View>
             

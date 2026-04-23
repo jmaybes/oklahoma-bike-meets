@@ -460,9 +460,9 @@ export default function AddEventScreen() {
               disabled={loadingLocation}
             >
               {loadingLocation ? (
-                <ActivityIndicator size="small" color="#4CAF50" />
+                <ActivityIndicator size="small" color="#EFFF00" />
               ) : (
-                <Ionicons name="location" size={20} color="#4CAF50" />
+                <Ionicons name="location" size={20} color="#EFFF00" />
               )}
               <Text style={styles.locationButtonText}>
                 {loadingLocation ? 'Getting Location...' : 'Use My Current Location'}
@@ -491,7 +491,7 @@ export default function AddEventScreen() {
             {/* Recurring Event Toggle */}
             <View style={styles.recurringToggleContainer}>
               <View style={styles.recurringToggleInfo}>
-                <Ionicons name="repeat" size={24} color="#4CAF50" />
+                <Ionicons name="repeat" size={24} color="#EFFF00" />
                 <View style={styles.recurringToggleText}>
                   <Text style={styles.recurringToggleTitle}>Recurring Event</Text>
                   <Text style={styles.recurringToggleDescription}>
@@ -502,7 +502,7 @@ export default function AddEventScreen() {
               <Switch
                 value={isRecurring}
                 onValueChange={setIsRecurring}
-                trackColor={{ false: '#3e3e3e', true: '#4CAF50' }}
+                trackColor={{ false: '#3e3e3e', true: '#EFFF00' }}
                 thumbColor={isRecurring ? '#fff' : '#f4f3f4'}
               />
             </View>
@@ -823,10 +823,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 16,
     borderWidth: 1,
-    borderColor: '#4CAF50',
+    borderColor: '#EFFF00',
   },
   locationButtonText: {
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -872,7 +872,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#4CAF50',
+    borderColor: '#EFFF00',
   },
   recurringToggleInfo: {
     flexDirection: 'row',
@@ -901,7 +901,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginTop: 12,
     borderWidth: 1,
-    borderColor: '#4CAF50',
+    borderColor: '#EFFF00',
   },
   dayList: {
     flexGrow: 0,
@@ -915,7 +915,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   dayChipActive: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#EFFF00',
   },
   dayChipText: {
     color: '#888',

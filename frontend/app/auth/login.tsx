@@ -401,7 +401,7 @@ export default function LoginScreen() {
 
             {rememberMe && email && password && (
               <View style={styles.savedIndicator}>
-                <Ionicons name="shield-checkmark" size={16} color="#4CAF50" />
+                <Ionicons name="shield-checkmark" size={16} color="#EFFF00" />
                 <Text style={styles.savedIndicatorText}>
                   Credentials will be saved securely
                 </Text>
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   savedIndicatorText: {
-    color: '#4CAF50',
+    color: '#EFFF00',
     fontSize: 12,
   },
   registerLink: {

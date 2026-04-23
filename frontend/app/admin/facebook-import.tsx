@@ -177,8 +177,8 @@ export default function FacebookImportScreen() {
                   <Text style={styles.statNumber}>{results.totalPostsAnalyzed}</Text>
                   <Text style={styles.statLabel}>Posts Analyzed</Text>
                 </View>
-                <View style={[styles.statBox, { borderColor: '#4CAF50' }]}>
-                  <Text style={[styles.statNumber, { color: '#4CAF50' }]}>{results.eventsCreated}</Text>
+                <View style={[styles.statBox, { borderColor: '#EFFF00' }]}>
+                  <Text style={[styles.statNumber, { color: '#EFFF00' }]}>{results.eventsCreated}</Text>
                   <Text style={styles.statLabel}>Events Created</Text>
                 </View>
                 <View style={styles.statBox}>
@@ -192,7 +192,7 @@ export default function FacebookImportScreen() {
                   <Text style={styles.eventsListTitle}>Created Events:</Text>
                   {results.events.map((ev, idx) => (
                     <View key={idx} style={styles.eventItem}>
-                      <Ionicons name="checkmark-circle" size={18} color="#4CAF50" />
+                      <Ionicons name="checkmark-circle" size={18} color="#EFFF00" />
                       <View style={{ flex: 1, marginLeft: 8 }}>
                         <Text style={styles.eventItemTitle}>{ev.title}</Text>
                         <Text style={styles.eventItemDate}>{ev.date}</Text>

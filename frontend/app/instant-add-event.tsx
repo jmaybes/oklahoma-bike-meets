@@ -252,7 +252,7 @@ export default function InstantAddEventScreen() {
 
         <View style={styles.doneContainer}>
           <View style={styles.doneIconWrap}>
-            <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
+            <Ionicons name="checkmark-circle" size={80} color="#EFFF00" />
           </View>
           <Text style={styles.doneTitle}>Event Submitted!</Text>
           <Text style={styles.doneSubtitle}>
