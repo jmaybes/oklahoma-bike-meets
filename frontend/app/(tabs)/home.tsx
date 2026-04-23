@@ -1216,12 +1216,13 @@ const styles = StyleSheet.create({
   },
   droppingWord: {
     fontSize: 38,
-    fontWeight: '700',
+    fontWeight: '900',
     color: '#fff',
+    lineHeight: 42,
     letterSpacing: -0.5,
-    textShadowColor: '#E31837',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 12,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 5 },
+    textShadowRadius: 0,
   },
   droppingRow: {
     flexDirection: 'row',
