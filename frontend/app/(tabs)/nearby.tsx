@@ -25,6 +25,7 @@ import { API_URL } from '../../utils/api';
 import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import MapErrorBoundary from '../../components/MapErrorBoundary';
+import { BikeIcon } from '../../components/BikeIcon';
 
 // Lazy-load NearbyMapView to prevent crashes on import
 let NearbyMapView: React.ComponentType<any> | null = null;
@@ -396,7 +397,7 @@ export default function NearbyScreen() {
             style={styles.garageButton}
             onPress={() => router.push(`/user-garage/${nearbyUser.id}`)}
           >
-            <Ionicons name="bicycle" size={18} color="#E31837" />
+            <BikeIcon size={18} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.messageButton}
@@ -632,7 +633,7 @@ export default function NearbyScreen() {
             </View>
           ) : nearbyUsers.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="bicycle-outline" size={48} color="#444" />
+              <BikeIcon size={48} />
               <Text style={styles.emptyText}>
                 No riders found within {radius} miles.
               </Text>
