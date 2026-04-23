@@ -333,6 +333,20 @@ const ComposeModal = ({ visible, onClose, onPostCreated, user, userCarPhoto }: {
   const [text, setText] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [posting, setPosting] = useState(false);
+  const [showEmojis, setShowEmojis] = useState(false);
+
+  // Common emojis for motorcycle/automotive community
+  const emojis = [
+    '🏍️', '🔥', '💨', '🏁', '⚡', '💪', '🤘', '👍', 
+    '❤️', '🖤', '💯', '🔧', '⛽', '🛣️', '🌅', '🌙',
+    '😎', '🤩', '😍', '🙌', '👏', '💥', '✨', '🎉',
+    '🏆', '🥇', '🎯', '💀', '☠️', '🦅', '🐺', '🦁',
+    '🌟', '⭐', '🔴', '🟡', '🟢', '🔵', '⚫', '⚪',
+  ];
+
+  const insertEmoji = (emoji: string) => {
+    setText(prev => prev + emoji);
+  };
 
   const avatarSource = userCarPhoto ? ensureUri(userCarPhoto) : (user?.profilePic ? ensureUri(user.profilePic) : null);
   const displayName = user?.nickname || user?.name || 'User';
@@ -453,8 +467,31 @@ const ComposeModal = ({ visible, onClose, onPostCreated, user, userCarPhoto }: {
                 Photo {images.length > 0 ? `(${images.length}/4)` : ''}
               </Text>
             </TouchableOpacity>
+            <TouchableOpacity style={composeModalS.toolbarBtn} onPress={() => setShowEmojis(!showEmojis)}>
+              <Ionicons name={showEmojis ? "happy" : "happy-outline"} size={24} color={showEmojis ? '#E31837' : '#E31837'} />
+              <Text style={composeModalS.toolbarText}>Emoji</Text>
+            </TouchableOpacity>
             <Text style={composeModalS.charCount}>{text.length}/2000</Text>
           </View>
+
+          {/* Emoji picker */}
+          {showEmojis && (
+            <View style={[composeModalS.emojiPicker, { paddingBottom: insets.bottom + 8 }]}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={composeModalS.emojiGrid}>
+                  {emojis.map((emoji, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      style={composeModalS.emojiBtn}
+                      onPress={() => insertEmoji(emoji)}
+                    >
+                      <Text style={composeModalS.emojiText}>{emoji}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          )}
         </KeyboardAvoidingView>
       </View>
     </Modal>
@@ -482,6 +519,10 @@ const composeModalS = StyleSheet.create({
   toolbarBtn: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   toolbarText: { color: '#E31837', fontSize: 15, fontWeight: '600' },
   charCount: { color: '#bbb', fontSize: 13 },
+  emojiPicker: { backgroundColor: '#f8f8f8', borderTopWidth: 1, borderTopColor: '#e0e0e0', paddingTop: 12, paddingHorizontal: 8 },
+  emojiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, paddingHorizontal: 8 },
+  emojiBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center', borderRadius: 8 },
+  emojiText: { fontSize: 26 },
 });
 
 // ====================== BOTTOM NAV BAR ======================
