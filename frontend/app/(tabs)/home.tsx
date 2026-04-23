@@ -1231,6 +1231,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
+    marginTop: -15,
   },
   facebookButton: {
     justifyContent: 'center',

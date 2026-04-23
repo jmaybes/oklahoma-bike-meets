@@ -391,6 +391,7 @@ def main():
             "time": "TBA",
             "city": event['city'],
             "state": event.get('state', 'OK'),
+            "location": f"{event['city']}, OK",
             "address": f"{event['city']}, OK",
             "eventType": event['eventType'],
             "entryFee": event.get('entryFee', 'Contact organizer'),
