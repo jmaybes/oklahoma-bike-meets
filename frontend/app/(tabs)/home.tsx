@@ -739,17 +739,10 @@ export default function HomeScreen() {
         />
         {/* Hero text content with parallax */}
         <Animated.View style={[styles.heroContent, heroContentStyle, { paddingTop: insets.top + 16 }]}>
-          <View style={styles.heroBadge}>
-            <Ionicons name="flame" size={14} color="#E31837" />
-            <Text style={styles.heroBadgeText}>OKC's #1 Bike Community</Text>
-          </View>
-          <View style={styles.heroTitleRow}>
-            <View>
-              <Text style={styles.heroTitle}>Oklahoma</Text>
-              <View style={styles.droppingRow}>
-                <Text style={styles.heroTitle}>Bike </Text>
-                <DroppingText />
-              </View>
+          <View style={styles.heroBadgeRow}>
+            <View style={styles.heroBadge}>
+              <Ionicons name="flame" size={14} color="#E31837" />
+              <Text style={styles.heroBadgeText}>OKC's #1 Bike Community</Text>
             </View>
             <TouchableOpacity
               style={styles.facebookButton}
@@ -764,6 +757,15 @@ export default function HomeScreen() {
                 resizeMode="contain"
               />
             </TouchableOpacity>
+          </View>
+          <View style={styles.heroTitleRow}>
+            <View>
+              <Text style={styles.heroTitle}>Oklahoma</Text>
+              <View style={styles.droppingRow}>
+                <Text style={styles.heroTitle}>Bike </Text>
+                <DroppingText />
+              </View>
+            </View>
           </View>
           <Text style={styles.heroSubtitle}>Discover events near you!</Text>
           <View style={styles.heroStats}>
@@ -1174,6 +1176,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     justifyContent: 'center',
   },
+  heroBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingRight: '7%',
+  },
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1184,11 +1193,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(255,107,53,0.4)',
-    marginBottom: 12,
     gap: 6,
   },
   heroBadgeText: {
-    color: '#E31837',
+    color: '#D3D3D3',
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.5,
@@ -1227,8 +1235,6 @@ const styles = StyleSheet.create({
   facebookButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 4,
-    marginRight: '7%',
   },
   facebookIcon: {
     width: 40,
