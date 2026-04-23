@@ -5,6 +5,7 @@ import re
 import os
 import httpx
 import jwt
+import bcrypt
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -42,7 +43,21 @@ async def register_user(user: UserCreate):
 async def login_user(credentials: UserLogin):
     normalized_email = credentials.email.strip().lower()
     user = await db.users.find_one({"email": normalized_email})
-    if not user or user.get("password") != credentials.password:
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Verify password with bcrypt
+    stored_password = user.get("password", "")
+    try:
+        password_valid = bcrypt.checkpw(
+            credentials.password.encode('utf-8'), 
+            stored_password.encode('utf-8')
+        )
+    except Exception:
+        password_valid = False
+    
+    if not password_valid:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     # Generate JWT token
