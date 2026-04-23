@@ -226,10 +226,10 @@ export default function TaggedPhotosScreen() {
               )}
             </View>
 
-            {/* Tagged Cars Info */}
+            {/* Tagged Bikes Info */}
             {selectedPhoto?.userTags && selectedPhoto.userTags.length > 0 && (
               <View style={styles.taggedCarsContainer}>
-                <Text style={styles.taggedCarsTitle}>Your Tagged Cars:</Text>
+                <Text style={styles.taggedCarsTitle}>Your Tagged Bikes:</Text>
                 {selectedPhoto.userTags.map((tag, index) => (
                   <View key={index} style={styles.taggedCarItem}>
                     <Ionicons name="bicycle" size={18} color="#E31837" />

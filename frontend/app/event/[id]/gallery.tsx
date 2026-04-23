@@ -463,7 +463,7 @@ export default function EventGalleryScreen() {
             {/* Tags */}
             {selectedPhoto && selectedPhoto.tags.length > 0 && (
               <View style={styles.tagsContainer}>
-                <Text style={styles.tagsTitle}>Tagged Cars:</Text>
+                <Text style={styles.tagsTitle}>Tagged Bikes:</Text>
                 {selectedPhoto.tags.map((tag, index) => (
                   <View key={index} style={styles.tagItem}>
                     <Ionicons name="bicycle" size={16} color="#E31837" />
@@ -495,7 +495,7 @@ export default function EventGalleryScreen() {
               {isAuthenticated && !myTagInPhoto && (
                 <TouchableOpacity style={styles.tagButton} onPress={openTagModal}>
                   <Ionicons name="bicycle-outline" size={22} color="#fff" />
-                  <Text style={styles.tagButtonText}>Tag My Car</Text>
+                  <Text style={styles.tagButtonText}>Tag My Bike</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -524,7 +524,7 @@ export default function EventGalleryScreen() {
             ) : userCars.length === 0 ? (
               <View style={styles.noCarsContainer}>
                 <Ionicons name="bicycle-outline" size={48} color="#444" />
-                <Text style={styles.noCarsText}>No cars in your garage</Text>
+                <Text style={styles.noCarsText}>No bikes in your garage</Text>
                 <TouchableOpacity 
                   style={styles.addCarButton}
                   onPress={() => {
@@ -533,7 +533,7 @@ export default function EventGalleryScreen() {
                     router.push('/garage/add');
                   }}
                 >
-                  <Text style={styles.addCarButtonText}>Add a Car</Text>
+                  <Text style={styles.addCarButtonText}>Add a Bike</Text>
                 </TouchableOpacity>
               </View>
             ) : (

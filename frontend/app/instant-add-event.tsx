@@ -162,7 +162,7 @@ export default function InstantAddEventScreen() {
   };
 
   // Event type options
-  const eventTypes = ['Bike Meet', 'Bike Show', 'Car Cruise', 'Rally', 'Autocross', 'Auction', 'Other'];
+  const eventTypes = ['Bike Meet', 'Bike Show', 'Bike Cruise', 'Rally', 'Autocross', 'Auction', 'Other'];
   const feeOptions = ['Free', 'Paid', 'Donation'];
 
   // Capture step — camera/gallery buttons

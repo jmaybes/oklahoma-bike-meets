@@ -347,7 +347,7 @@ export default function EventDetailScreen() {
             entering={FadeInDown.delay(400).springify()}
             style={styles.section}
           >
-            <Text style={styles.sectionTitle}>Car Types Expected</Text>
+            <Text style={styles.sectionTitle}>Bike Types Expected</Text>
             <View style={styles.tagContainer}>
               {event.carTypes.map((type, index) => (
                 <Animated.View 

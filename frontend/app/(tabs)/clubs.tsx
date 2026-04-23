@@ -466,7 +466,7 @@ export default function ClubsScreen() {
                 textAlignVertical="top"
               />
 
-              <Text style={styles.fieldLabel}>Focus / Car Types</Text>
+              <Text style={styles.fieldLabel}>Focus / Bike Types</Text>
               <TextInput
                 style={styles.modalInput}
                 value={clubFocus}

@@ -889,7 +889,7 @@ export default function ProfileScreen() {
                     onPress={handleAddSecondCar}
                   >
                     <Ionicons name="add-circle-outline" size={18} color="#E31837" />
-                    <Text style={styles.addCarInlineText}>2nd Car</Text>
+                    <Text style={styles.addCarInlineText}>2nd Bike</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -1651,7 +1651,7 @@ export default function ProfileScreen() {
                 ) : (
                   <>
                     <Ionicons name="checkmark" size={20} color="#fff" />
-                    <Text style={styles.saveButtonText}>Save Car</Text>
+                    <Text style={styles.saveButtonText}>Save Bike</Text>
                   </>
                 )}
               </TouchableOpacity>

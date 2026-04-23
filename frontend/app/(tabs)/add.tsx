@@ -565,7 +565,7 @@ export default function AddEventScreen() {
               onChangeText={(text) => setFormData({ ...formData, entryFee: text })}
             />
 
-            <Text style={styles.label}>Car Types Expected</Text>
+            <Text style={styles.label}>Bike Types Expected</Text>
             <TextInput
               style={styles.input}
               placeholder="e.g., JDM, Muscle, Euro (comma separated)"

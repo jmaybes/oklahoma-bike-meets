@@ -156,7 +156,7 @@ export default function FacebookImportScreen() {
               style={styles.jsonInput}
               value={jsonInput}
               onChangeText={setJsonInput}
-              placeholder={'[\n  {\n    "text": "Car meet this Saturday...",\n    "groupName": "Oklahoma Bike Meets",\n    "timestamp": "2026-04-10"\n  }\n]'}
+              placeholder={'[\n  {\n    "text": "Bike meet this Saturday...",\n    "groupName": "Oklahoma Bike Meets",\n    "timestamp": "2026-04-10"\n  }\n]'}
               placeholderTextColor="#444"
               multiline
               textAlignVertical="top"

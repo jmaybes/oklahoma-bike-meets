@@ -400,11 +400,11 @@ export default function AdminEditEventScreen() {
               style={styles.input}
               value={form.cost}
               onChangeText={(text) => setForm({ ...form, cost: text })}
-              placeholder="e.g., Free, $10, $20 per car"
+              placeholder="e.g., Free, $10, $20 per bike"
               placeholderTextColor="#666"
             />
 
-            <Text style={styles.label}>Car Types (comma separated)</Text>
+            <Text style={styles.label}>Bike Types (comma separated)</Text>
             <TextInput
               style={styles.input}
               value={form.carTypes}

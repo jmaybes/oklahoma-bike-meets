@@ -1482,7 +1482,7 @@ const styles = StyleSheet.create({
   },
   freeBadge: {
     backgroundColor: '#EFFF00',
-    color: '#fff',
+    color: '#000',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 8,
