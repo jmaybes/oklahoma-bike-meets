@@ -1331,7 +1331,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   sortByButtonText: {
-    color: '#E31837',
+    color: '#D3D3D3',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -1377,7 +1377,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   calendarViewButtonText: {
-    color: '#E31837',
+    color: '#D3D3D3',
     fontSize: 13,
     fontWeight: '600',
   },
