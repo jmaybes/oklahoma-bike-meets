@@ -741,13 +741,13 @@ export default function HomeScreen() {
         <Animated.View style={[styles.heroContent, heroContentStyle, { paddingTop: insets.top + 16 }]}>
           <View style={styles.heroBadge}>
             <Ionicons name="flame" size={14} color="#E31837" />
-            <Text style={styles.heroBadgeText}>OKC's #1 Car Community</Text>
+            <Text style={styles.heroBadgeText}>OKC's #1 Bike Community</Text>
           </View>
           <View style={styles.heroTitleRow}>
             <View>
               <Text style={styles.heroTitle}>Oklahoma</Text>
               <View style={styles.droppingRow}>
-                <Text style={styles.heroTitle}>Car </Text>
+                <Text style={styles.heroTitle}>Bike </Text>
                 <DroppingText />
               </View>
             </View>
