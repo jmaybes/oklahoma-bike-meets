@@ -10,10 +10,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "updates": {
-      "enabled": true,
-      "url": "https://u.expo.dev/5648ba9c-abad-4362-a599-7c998f8f07d3",
-      "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0
+      "enabled": false
     },
     "ios": {
       "supportsTablet": true,
@@ -105,8 +102,7 @@
         }
       ],
       "expo-secure-store",
-      "expo-web-browser",
-      "expo-updates"
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
