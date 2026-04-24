@@ -718,7 +718,7 @@ export default function HomeScreen() {
       {/* Parallax Hero Section */}
       <View style={[styles.heroContainer, { height: HERO_HEIGHT }]}>
         <Animated.Image
-          source={{ uri: HERO_IMAGES[0] }}
+          source={require('../../assets/images/hero-bg.jpg')}
           style={[styles.heroImage, { height: HERO_HEIGHT + 100 }, heroImageStyle]}
           resizeMode="cover"
           onLoad={() => setHeroImageLoaded(true)}
