@@ -1356,7 +1356,7 @@ export default function ProfileScreen() {
               <Text style={styles.modalLabel}>Model *</Text>
               <TextInput
                 style={styles.modalInput}
-                placeholder="e.g., Mustang, Camaro, Supra"
+                placeholder="e.g., Street Glide, CBR600RR, Ninja"
                 placeholderTextColor="#666"
                 value={carForm.model}
                 onChangeText={(text) => setCarForm({ ...carForm, model: text })}
