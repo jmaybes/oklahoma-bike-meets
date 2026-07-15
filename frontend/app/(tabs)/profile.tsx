@@ -26,6 +26,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
+import { HeaderLogo } from '../../components/HeaderLogo';
 
 import { API_URL } from '../../utils/api';
 
@@ -755,9 +756,12 @@ export default function ProfileScreen() {
           style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
         >
           <View style={styles.headerRow}>
-            <View>
-              <Text style={[styles.headerTitle, { fontFamily: 'RockSalt-Regular' }]}>My Garage</Text>
-              <Text style={styles.headerSubtitle}>{user?.name}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <HeaderLogo height={32} />
+              <View>
+                <Text style={[styles.headerTitle, { fontFamily: 'RockSalt-Regular', fontSize: 18 }]}>My Garage</Text>
+                <Text style={styles.headerSubtitle}>{user?.name}</Text>
+              </View>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
               <TouchableOpacity onPress={() => setShowNotifModal(true)} style={{ position: 'relative' }}>

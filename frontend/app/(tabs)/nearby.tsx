@@ -27,6 +27,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import MapErrorBoundary from '../../components/MapErrorBoundary';
 import { BikeIcon } from '../../components/BikeIcon';
 import { NotificationBell } from '../../components/NotificationBell';
+import { HeaderLogo } from '../../components/HeaderLogo';
 
 // Lazy-load NearbyMapView to prevent crashes on import
 let NearbyMapView: React.ComponentType<any> | null = null;
@@ -424,7 +425,10 @@ export default function NearbyScreen() {
           style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
         >
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Nearby Enthusiasts</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <HeaderLogo height={32} />
+              <Text style={styles.headerTitle}>Nearby Enthusiasts</Text>
+            </View>
             <NotificationBell />
           </View>
         </LinearGradient>

@@ -23,6 +23,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as Location from 'expo-location';
 import { NotificationBell } from '../../components/NotificationBell';
+import { HeaderLogo } from '../../components/HeaderLogo';
 
 import { API_URL } from '../../utils/api';
 
@@ -326,11 +327,14 @@ export default function AddEventScreen() {
             style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
           >
             <View style={styles.header}>
-              <View>
-                <Text style={styles.headerTitle}>Add New Event</Text>
-                <Text style={styles.headerSubtitle}>
-                  Share a bike event with the community
-                </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <HeaderLogo height={32} />
+                <View>
+                  <Text style={styles.headerTitle}>Add New Event</Text>
+                  <Text style={styles.headerSubtitle}>
+                    Share a bike event with the community
+                  </Text>
+                </View>
               </View>
               <NotificationBell />
             </View>

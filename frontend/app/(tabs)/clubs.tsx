@@ -29,6 +29,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../../utils/api';
 import { NotificationBell } from '../../components/NotificationBell';
+import { HeaderLogo } from '../../components/HeaderLogo';
 import { useAuth } from '../../contexts/AuthContext';
 
 import { API_URL } from '../../utils/api';
@@ -325,9 +326,12 @@ export default function ClubsScreen() {
         style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
       >
         <View style={styles.header}>
-          <View>
-            <Text style={styles.headerTitle}>Motorcycle Clubs</Text>
-            <Text style={styles.headerSubtitle}>{clubs.length} clubs in Oklahoma</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <HeaderLogo height={32} />
+            <View>
+              <Text style={styles.headerTitle}>Motorcycle Clubs</Text>
+              <Text style={styles.headerSubtitle}>{clubs.length} clubs in Oklahoma</Text>
+            </View>
           </View>
           <NotificationBell />
         </View>

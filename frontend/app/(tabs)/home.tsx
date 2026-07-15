@@ -36,6 +36,7 @@ import api from '../../utils/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 import { API_URL } from '../../utils/api';
+import { HeaderLogo } from '../../components/HeaderLogo';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -740,10 +741,7 @@ export default function HomeScreen() {
         {/* Hero text content with parallax */}
         <Animated.View style={[styles.heroContent, heroContentStyle, { paddingTop: insets.top + 1 }]}>
           <View style={styles.heroBadgeRow}>
-            <View style={styles.heroBadge}>
-              <Ionicons name="flame" size={14} color="#E31837" />
-              <Text style={styles.heroBadgeText}>OKC's #1 Bike Community</Text>
-            </View>
+            <HeaderLogo height={36} />
             <TouchableOpacity
               style={styles.facebookButton}
               onPress={() => {
