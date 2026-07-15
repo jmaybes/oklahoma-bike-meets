@@ -1347,7 +1347,7 @@ export default function ProfileScreen() {
               <Text style={styles.modalLabel}>Make *</Text>
               <TextInput
                 style={styles.modalInput}
-                placeholder="e.g., Ford, Chevrolet, Toyota"
+                placeholder="e.g., Harley-Davidson, Honda, Kawasaki"
                 placeholderTextColor="#666"
                 value={carForm.make}
                 onChangeText={(text) => setCarForm({ ...carForm, make: text })}
@@ -1375,7 +1375,7 @@ export default function ProfileScreen() {
               <Text style={styles.modalLabel}>Trim</Text>
               <TextInput
                 style={styles.modalInput}
-                placeholder="e.g., GT, SS, TRD Pro"
+                placeholder="e.g., Special, Limited, CVO"
                 placeholderTextColor="#666"
                 value={carForm.trim}
                 onChangeText={(text) => setCarForm({ ...carForm, trim: text })}
@@ -1384,7 +1384,7 @@ export default function ProfileScreen() {
               <Text style={styles.modalLabel}>Color</Text>
               <TextInput
                 style={styles.modalInput}
-                placeholder="e.g., Grabber Blue, Triple Yellow"
+                placeholder="e.g., Vivid Black, Candy Red"
                 placeholderTextColor="#666"
                 value={carForm.color}
                 onChangeText={(text) => setCarForm({ ...carForm, color: text })}
@@ -1396,7 +1396,7 @@ export default function ProfileScreen() {
               <Text style={styles.modalLabel}>Engine</Text>
               <TextInput
                 style={styles.modalInput}
-                placeholder="e.g., 5.0L V8, 2JZ-GTE, LS3"
+                placeholder="e.g., Milwaukee-Eight 114, Inline-4"
                 placeholderTextColor="#666"
                 value={carForm.engine}
                 onChangeText={(text) => setCarForm({ ...carForm, engine: text })}
@@ -1456,7 +1456,7 @@ export default function ProfileScreen() {
               <Text style={styles.modalLabel}>Modification List</Text>
               <TextInput
                 style={[styles.modalInput, styles.modalTextArea]}
-                placeholder="List your mods: cold air intake, exhaust, lowering springs, wheels, etc..."
+                placeholder="List your mods: exhaust, air intake, tuner, handlebars, etc..."
                 placeholderTextColor="#666"
                 multiline
                 numberOfLines={5}
@@ -1557,7 +1557,7 @@ export default function ProfileScreen() {
               <Text style={styles.modalLabel}>Description</Text>
               <TextInput
                 style={[styles.modalInput, styles.modalTextArea]}
-                placeholder="Tell us about your ride, its story, future plans..."
+                placeholder="Tell us about your ride, its story, where you ride..."
                 placeholderTextColor="#666"
                 multiline
                 numberOfLines={4}
@@ -2709,3 +2709,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 });
+
